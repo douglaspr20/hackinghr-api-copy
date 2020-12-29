@@ -60,7 +60,7 @@ const AuthController = () => {
         };
 
         console.log("**** userInfo ", userInfo);
-        return res.status(HttpCodes.OK).json({ userInfo });
+        return res.status(HttpCodes.OK).json({ userInfo, User });
         const user = await User.create(userInfo);
 
         if (!user) {
