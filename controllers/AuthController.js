@@ -76,7 +76,7 @@ const AuthController = () => {
         console.log(err);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Internal server error" });
+          .json({ msg: "Internal server error", error: err });
       }
     }
     return res
