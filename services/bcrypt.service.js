@@ -1,9 +1,9 @@
 const bcrypt = require("bcrypt");
 
 const bcryptService = () => {
-  const password = (user) => {
+  const password = (pw) => {
     const salt = bcrypt.genSaltSync();
-    const hash = bcrypt.hashSync(user.password, salt);
+    const hash = bcrypt.hashSync(pw, salt);
 
     return hash;
   };

@@ -1,5 +1,3 @@
-const privateRoutes = {
-  "GET /users": "UserController.getAll",
-};
+const privateRoutes = {};
 
 module.exports = privateRoutes;
