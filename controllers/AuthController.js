@@ -47,7 +47,6 @@ const AuthController = () => {
   const register = async (req, res) => {
     const { body } = req;
 
-    console.log("**** register ", body);
 
     if (body.password === body.password2) {
       try {
@@ -59,18 +58,31 @@ const AuthController = () => {
           role: UserRoles.USER,
         };
 
-        console.log("**** userInfo ", userInfo);
-        const user = await User.create(userInfo);
+        // check if the email is already used.
+        const existedUser = await User.findOne({
+          where: {
+            email: userInfo.email,
+          },
+        });
 
-        if (!user) {
+        if (existedUser) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Internal server error" });
+            .json({ msg: "This email was used by someone" });
+        } else {
+          console.log("**** userInfo ", userInfo);
+          const user = await User.create(userInfo);
+
+          if (!user) {
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+          }
+
+          const token = authService().issue({ id: user.id });
+
+          return res.status(HttpCodes.OK).json({ token, user });
         }
-
-        const token = authService().issue({ id: user.id });
-
-        return res.status(HttpCodes.OK).json({ token, user });
       } catch (err) {
         console.log(err);
         return res
