@@ -25,8 +25,8 @@ const mappedAuthRoutes = mapRoutes(routes.privateRoutes, "controllers/");
 app.use(cors());
 
 // parsing the request bodys
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.urlencoded());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 // secure your private routes with jwt authentication middleware
 // app.all('/private/*', (req, res, next) => auth(req, res, next));
