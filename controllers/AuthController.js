@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const UserRoles = require("../enum").USER_ROLE;
 const bcryptService = require("../services/bcrypt.service");
 const authService = require("../services/auth.service");
+const profileUtils = require("../utils/profile");
 
 const User = db.User;
 
@@ -47,16 +48,20 @@ const AuthController = () => {
   const register = async (req, res) => {
     const { body } = req;
 
-
     if (body.password === body.password2) {
       try {
-        const userInfo = {
+        let userInfo = {
           email: body.email,
           password: bcryptService().password(body.password),
           firstName: body.firstName,
           lastName: body.lastName,
           role: UserRoles.USER,
         };
+
+        userInfo.percentOfCompletion = profileUtils.getProfileCompletion(
+          userInfo
+        );
+        userInfo.completed = userInfo.percentOfCompletion === 100;
 
         // check if the email is already used.
         const existedUser = await User.findOne({

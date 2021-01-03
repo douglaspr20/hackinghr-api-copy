@@ -19,6 +19,7 @@
     "express-routes-mapper": "^1.0.2",
     "http-codes": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.20",
     "path": "^0.12.7",
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",
