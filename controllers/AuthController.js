@@ -22,7 +22,7 @@ const AuthController = () => {
         if (!user) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Bad Request: User not found" });
+            .json({ msg: "Email is wrong." });
         }
 
         if (bcryptService().comparePassword(password, user.password)) {
@@ -31,7 +31,7 @@ const AuthController = () => {
           return res.status(HttpCodes.OK).json({ token, user });
         }
 
-        return res.status(HttpCodes.UNAUTHORIZED).json({ msg: "Unauthorized" });
+        return res.status(HttpCodes.UNAUTHORIZED).json({ msg: "Password is wrong." });
       } catch (err) {
         console.log(err);
         return res
