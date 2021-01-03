@@ -1,4 +1,5 @@
 const db = require("../models");
+const profileUtils = require("../utils/profile");
 const HttpCodes = require("http-codes");
 
 const User = db.User;
@@ -41,6 +42,8 @@ const UserController = () => {
 
     if (user) {
       try {
+        user.percentOfCompletion = profileUtils.getProfileCompletion(user);
+        user.completed = user.percentOfCompletion === 100;
         user.abbrName = `${(user.firstName || "").slice(0, 1).toUpperCase()}${(
           user.lastName || ""
         )
@@ -57,7 +60,7 @@ const UserController = () => {
           .status(HttpCodes.OK)
           .json({ numberOfAffectedRows, affectedRows });
       } catch (error) {
-        console.log(err);
+        console.log(error);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
