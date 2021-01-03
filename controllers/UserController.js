@@ -35,8 +35,37 @@ const UserController = () => {
     }
   };
 
+  const updateUser = async (req, res) => {
+    const user = req.body;
+    const { id } = req.query;
+
+    if (user) {
+      try {
+        const [numberOfAffectedRows, affectedRows] = await User.update(user, {
+          where: { id },
+          returning: true,
+          plain: true,
+        });
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(err);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
   return {
     getUser,
+    updateUser,
   };
 };
 
