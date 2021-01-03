@@ -31,7 +31,9 @@ const AuthController = () => {
           return res.status(HttpCodes.OK).json({ token, user });
         }
 
-        return res.status(HttpCodes.UNAUTHORIZED).json({ msg: "Password is wrong." });
+        return res
+          .status(HttpCodes.UNAUTHORIZED)
+          .json({ msg: "Password is wrong." });
       } catch (err) {
         console.log(err);
         return res
@@ -62,6 +64,11 @@ const AuthController = () => {
           userInfo
         );
         userInfo.completed = userInfo.percentOfCompletion === 100;
+        userInfo.abbrName = `${(userInfo.firstName || "")
+          .slice(0, 1)
+          .toUpperCase()}${(userInfo.lastName || "")
+          .slice(0, 1)
+          .toUpperCase()}`;
 
         // check if the email is already used.
         const existedUser = await User.findOne({

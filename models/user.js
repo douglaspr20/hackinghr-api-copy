@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       timezone: DataTypes.STRING,
       completed: DataTypes.BOOLEAN,
       percentOfCompletion: DataTypes.INTEGER,
+      abbrName: DataTypes.STRING,
     },
     {
       sequelize,

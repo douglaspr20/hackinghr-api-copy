@@ -36,11 +36,17 @@ const UserController = () => {
   };
 
   const updateUser = async (req, res) => {
-    const user = req.body;
+    let user = req.body;
     const { id } = req.query;
 
     if (user) {
       try {
+        user.abbrName = `${(user.firstName || "").slice(0, 1).toUpperCase()}${(
+          user.lastName || ""
+        )
+          .slice(0, 1)
+          .toUpperCase()}`;
+
         const [numberOfAffectedRows, affectedRows] = await User.update(user, {
           where: { id },
           returning: true,
