@@ -22,7 +22,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM,
         values: ["admin", "user"],
       },
-      picture: DataTypes.STRING,
       company: DataTypes.STRING,
       about: DataTypes.STRING,
       titleProfessions: DataTypes.STRING,
@@ -34,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       completed: DataTypes.BOOLEAN,
       percentOfCompletion: DataTypes.INTEGER,
       abbrName: DataTypes.STRING,
+      img: DataTypes.BLOB,
     },
     {
       sequelize,
