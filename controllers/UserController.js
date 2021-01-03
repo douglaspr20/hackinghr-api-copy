@@ -72,9 +72,43 @@ const UserController = () => {
     }
   };
 
+  const updateImage = async (req, res) => {
+    const { id } = req.query;
+
+    try {
+      let user = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      user = { ...user.dataValues, img: req.file };
+
+      user.percentOfCompletion = profileUtils.getProfileCompletion(user);
+
+      user.completed = user.percentOfCompletion === 100;
+
+      let [numberOfAffectedRows, affectedRows] = await User.update(user, {
+        where: { id },
+        returning: true,
+        plain: true,
+      });
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
+    updateImage,
   };
 };
 
