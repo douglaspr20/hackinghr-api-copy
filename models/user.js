@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       completed: DataTypes.BOOLEAN,
       percentOfCompletion: DataTypes.INTEGER,
       abbrName: DataTypes.STRING,
-      img: DataTypes.BLOB,
+      img: DataTypes.STRING,
     },
     {
       sequelize,
