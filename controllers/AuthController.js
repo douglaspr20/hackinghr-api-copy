@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const UserRoles = require("../enum").USER_ROLE;
 const bcryptService = require("../services/bcrypt.service");
 const authService = require("../services/auth.service");
+const reCaptchaService = require("../services/recaptcha.service");
 const profileUtils = require("../utils/profile");
 
 const User = db.User;
@@ -52,6 +53,13 @@ const AuthController = () => {
 
     if (body.password === body.password2) {
       try {
+        const recaptChaVerify = await reCaptchaService().verify(body.recaptcha);
+        if (!recaptChaVerify) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "ReCAPTCHA verification failed. Please try again." });
+        }
+
         let userInfo = {
           email: body.email,
           password: bcryptService().password(body.password),
