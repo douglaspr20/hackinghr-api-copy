@@ -8,6 +8,7 @@ const privateRoutes = {
     path: "UserController.updateImage",
     middlewares: [upload.single("file")],
   },
+  "POST /feedback/": "FeedbackController.sendMail",
 };
 
 module.exports = privateRoutes;
