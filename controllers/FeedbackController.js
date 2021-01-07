@@ -1,12 +1,22 @@
+const db = require("../models");
 const HttpCodes = require("http-codes");
 const smtpService = require("../services/smtp.service");
 
+const User = db.User;
+
 const FeedbackController = () => {
   const sendMail = async (req, res) => {
-    const { message } = req.body;
+    const { message, userId } = req.body;
 
-    if (message) {
+    console.log(userId);
+
+    if (message && userId) {
       try {
+        let user = await User.findOne({
+          where: {
+            id: userId,
+          },
+        });
         const smtpTransort = {
           host: process.env.FEEDBACK_EMAIL_CONFIG_HOST,
           port: process.env.FEEDBACK_EMAIL_CONFIG_PORT,
@@ -19,7 +29,12 @@ const FeedbackController = () => {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER,
           subject: process.env.FEEDBACK_EMAIL_CONFIG_SUBJECT,
-          text: message,
+          html: `
+                <strong>User</strong>: ${user.firstName} ${user.lastName}<br>
+                <strong>e-Mail</strong>: ${user.email}<br>
+                <strong>Feedback message</strong>:<br>
+                ${message}
+                `,
         };
         const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
         if (sentResult) {
@@ -41,7 +56,7 @@ const FeedbackController = () => {
 
     return res
       .status(HttpCodes.BAD_REQUEST)
-      .json({ msg: "Bad Request: message is empty" });
+      .json({ msg: "Bad Request: message or userId are empty" });
   };
 
   return {
