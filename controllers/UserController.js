@@ -55,7 +55,11 @@ const UserController = () => {
     if (user) {
       try {
         if (user.imageStr) {
-          const imageUrl = await getImageUrl("profile", id, user.imageStr);
+          const imageUrl = await getImageUrl(
+            "profile",
+            user.img,
+            user.imageStr
+          );
           user.img = imageUrl;
         }
         user.percentOfCompletion = profileUtils.getProfileCompletion(user);
@@ -108,9 +112,35 @@ const UserController = () => {
     });
   };
 
-  const getImageUrl = async (folder = "profile", userId, base64Image) => {
+  const deleteUserPicture = (url) => {
+    if (url) {
+      const path = url.slice(s3Url.length + 1);
+      const params = {
+        Bucket: UserImageBucketName,
+        Key: path,
+      };
+
+      return new Promise((resolve, reject) => {
+        userImageBucket.deleteObject(params, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve("success");
+          }
+        });
+      });
+    }
+    return;
+  };
+
+  const getImageUrl = async (folder = "profile", prevImg, base64Image) => {
     const buffer = getImgBuffer(base64Image);
-    return imageUpload(`${folder}/${userId}.jpeg`, buffer);
+    const currentTime = new Date().getTime();
+    // delete previous image from s3 bucket
+    if (prevImg) {
+      await deleteUserPicture(prevImg);
+    }
+    return imageUpload(`${folder}/${currentTime}.jpeg`, buffer);
   };
 
   return {
