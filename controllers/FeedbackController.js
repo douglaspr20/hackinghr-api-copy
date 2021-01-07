@@ -18,8 +18,7 @@ const FeedbackController = () => {
           },
         });
         const smtpTransort = {
-          host: process.env.FEEDBACK_EMAIL_CONFIG_HOST,
-          port: process.env.FEEDBACK_EMAIL_CONFIG_PORT,
+          service: 'gmail',
           auth: {
             user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
             pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD
