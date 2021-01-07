@@ -54,8 +54,10 @@ const UserController = () => {
 
     if (user) {
       try {
-        const imageUrl = await getImageUrl("profile", id, user.img);
-        user.img = imageUrl;
+        if (user.imageStr) {
+          const imageUrl = await getImageUrl("profile", id, user.imageStr);
+          user.img = imageUrl;
+        }
         user.percentOfCompletion = profileUtils.getProfileCompletion(user);
         user.completed = user.percentOfCompletion === 100;
         user.abbrName = `${(user.firstName || "").slice(0, 1).toUpperCase()}${(
@@ -114,7 +116,6 @@ const UserController = () => {
   return {
     getUser,
     updateUser,
-    updateImage,
   };
 };
 
