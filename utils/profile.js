@@ -8,7 +8,6 @@ const getProfileCompletion = (user) => {
     "img",
     "about",
     "titleProfessions",
-    "proficiencyLevel",
     "topicsOfInterest",
     "personalLinks",
     "language",

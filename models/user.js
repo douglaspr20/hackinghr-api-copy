@@ -34,6 +34,11 @@ module.exports = (sequelize, DataTypes) => {
       percentOfCompletion: DataTypes.INTEGER,
       abbrName: DataTypes.STRING,
       img: DataTypes.STRING,
+      memberShip: {
+        type: DataTypes.STRING,
+        defaultValue: "free",
+        values: ["free", "premium"],
+      },
     },
     {
       sequelize,
