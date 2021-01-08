@@ -39,6 +39,7 @@ const FeedbackController = () => {
         if (sentResult) {
           return res
             .status(HttpCodes.OK)
+            .json({ msg: "The mail has been sent successfully." })
             .send();
         } else {
           return res
