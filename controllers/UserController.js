@@ -143,9 +143,41 @@ const UserController = () => {
     return imageUpload(`${folder}/${currentTime}.jpeg`, buffer);
   };
 
+  const upgradePlan = async (req, res) => {
+    let data = req.body;
+    const { id } = req.query;
+
+    if (data && data.memberShip) {
+      try {
+        const [numberOfAffectedRows, affectedRows] = await User.update(
+          { memberShip: data.memberShip },
+          {
+            where: { id },
+            returning: true,
+            plain: true,
+          }
+        );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
+    upgradePlan,
   };
 };
 
