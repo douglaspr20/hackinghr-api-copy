@@ -13,10 +13,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   Heart.init(
     {
-      heartCatalogId: DataTypes.STRING,
+      category: DataTypes.STRING,
       parentId: DataTypes.INTEGER,
-      text: DataTypes.STRING,
-      score: DataTypes.DECIMAL,
+      content: DataTypes.STRING,
+      rate: DataTypes.DECIMAL,
     },
     {
       sequelize,

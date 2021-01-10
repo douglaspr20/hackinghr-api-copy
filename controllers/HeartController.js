@@ -11,11 +11,25 @@ const HeartController = () => {
    */
   const getAll = async (req, res) => {
     try {
-      const heart = await Heart.findAll();
+      let heart = await Heart.findAll({
+        order: [
+          ['createdAt', 'DESC'],
+        ],
+      });
       if (!heart) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
+      }
+
+      for(let index in heart){
+        let childrenHeart = await Heart.findAll({
+          where: { parentId: heart[index].id },
+          order: [
+            ['createdAt', 'DESC'],
+          ],
+        });
+        heart[index].dataValues['responses'] = childrenHeart;
       }
 
       return res.status(HttpCodes.OK).json({ heart });
@@ -66,8 +80,14 @@ const HeartController = () => {
    * @param {*} res 
    */
   const add = async (req, res) => {
+    const {category, content, rate, parentId} = req.body
     try {
-      await Heart.create(req.body);
+      await Heart.create({
+        parentId,
+        category,
+        content,
+        rate
+      });
 
       return res
               .status(HttpCodes.OK)
