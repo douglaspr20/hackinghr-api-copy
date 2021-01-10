@@ -5,6 +5,7 @@ const mapRoutes = require("express-routes-mapper");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
+const authPolicy = require("./policies/auth.policy");
 
 dotenv.config();
 
@@ -18,7 +19,13 @@ const routes = require("./routes");
  */
 const app = express();
 const mappedOpenRoutes = mapRoutes(routes.publicRoutes, "controllers/");
-const mappedAuthRoutes = mapRoutes(routes.privateRoutes, "controllers/");
+const mappedAuthRoutes = mapRoutes(routes.privateRoutes, "controllers/", [
+  authPolicy.validate,
+]);
+const mappedAdminRoutes = mapRoutes(routes.adminRoutes, "controllers/", [
+  authPolicy.validate,
+  authPolicy.checkAdminRole,
+]);
 
 // allow cross origin requests
 // configure to only allow requests from certain origins
@@ -34,6 +41,7 @@ app.use(bodyParser.json());
 // fill routes for express application
 app.use("/public", mappedOpenRoutes);
 app.use("/private", mappedAuthRoutes);
+app.use("/admin", mappedAdminRoutes);
 
 const port = process.env.PORT || 3001;
 
