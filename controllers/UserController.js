@@ -18,7 +18,7 @@ const User = db.User;
 
 const UserController = () => {
   const getUser = async (req, res) => {
-    const { id } = req.query;
+    const { id } = req.token;
 
     if (id) {
       try {
@@ -50,7 +50,7 @@ const UserController = () => {
 
   const updateUser = async (req, res) => {
     let user = req.body;
-    const { id } = req.query;
+    const { id } = req.token;
 
     if (user) {
       try {
@@ -145,7 +145,7 @@ const UserController = () => {
 
   const upgradePlan = async (req, res) => {
     let data = req.body;
-    const { id } = req.query;
+    const { id } = req.token;
 
     if (data && data.memberShip) {
       try {
