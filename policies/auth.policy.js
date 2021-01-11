@@ -50,7 +50,7 @@ const checkIsAdmin = async (req, res, next) => {
 };
 
 const checkAdminRole = async (req, res, next) => {
-  const { id } = req.body;
+  const { id } = req.token;
 
   if (id) {
     try {
