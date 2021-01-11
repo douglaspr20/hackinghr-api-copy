@@ -3,7 +3,8 @@ const privateRoutes = {
   "PUT /user/": "UserController.updateUser",
   "POST /feedback/": "FeedbackController.sendMail",
   "PUT /user/upgrade-plan/": "UserController.upgradePlan",
-
+  "GET /events/": "EventController.getAllEvents",
+  "GET /event/:id/": "EventController.getEvent",
   "GET /heart/": "HeartController.getAll",
   "GET /heart/:id": "HeartController.get",
   "POST /heart/": "HeartController.add",
