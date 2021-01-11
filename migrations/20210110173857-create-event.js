@@ -23,7 +23,7 @@ module.exports = {
       },
       type: Sequelize.ARRAY(Sequelize.STRING),
       location: Sequelize.ARRAY(Sequelize.STRING),
-      description: Sequelize.TEXT,
+      description: Sequelize.JSON,
       link: Sequelize.STRING,
       credit: Sequelize.JSON,
       code: Sequelize.STRING,
