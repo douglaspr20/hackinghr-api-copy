@@ -71,8 +71,26 @@ const s3Service = () => {
     return imageUpload(`${folder}/${currentTime}.jpeg`, buffer);
   };
 
+  const getUserImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(
+      S3.PROFILE_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
+
+    return url;
+  };
+
+  const getEventImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(S3.EVENT_IMAGE_FOLDER, prevImg, base64Image);
+
+    return url;
+  };
+
   return {
     getImageUrl,
+    getUserImageUrl,
+    getEventImageUrl,
     deleteUserPicture,
   };
 };

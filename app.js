@@ -32,8 +32,14 @@ const mappedAdminRoutes = mapRoutes(routes.adminRoutes, "controllers/", [
 app.use(cors());
 
 // parsing the request bodys
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(
+  bodyParser.urlencoded({
+    limit: "50mb",
+    extended: true,
+    parameterLimit: 50000,
+  })
+);
 
 // secure your private routes with jwt authentication middleware
 // app.all('/private/*', (req, res, next) => auth(req, res, next));

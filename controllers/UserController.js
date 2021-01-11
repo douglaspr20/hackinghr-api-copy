@@ -44,8 +44,7 @@ const UserController = () => {
     if (user) {
       try {
         if (user.imageStr) {
-          const imageUrl = await s3Service().getImageUrl(
-            "profile",
+          const imageUrl = await s3Service().getUserImageUrl(
             user.img,
             user.imageStr
           );
