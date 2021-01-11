@@ -12,6 +12,7 @@ const HeartController = () => {
   const getAll = async (req, res) => {
     try {
       let heart = await Heart.findAll({
+        where: { parentId: null},
         order: [
           ['createdAt', 'DESC'],
         ],
