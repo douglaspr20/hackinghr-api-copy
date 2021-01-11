@@ -90,7 +90,6 @@ const AuthController = () => {
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "This email was used by someone" });
         } else {
-          console.log("**** userInfo ", userInfo);
           const user = await User.create(userInfo);
 
           if (!user) {
