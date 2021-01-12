@@ -12,7 +12,7 @@ const HeartController = () => {
   const getAll = async (req, res) => {
     try {
       let heart = await Heart.findAll({
-        where: { parentId: null},
+        where: { parentId: null },
         order: [
           ['createdAt', 'DESC'],
         ],
@@ -23,15 +23,14 @@ const HeartController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      for(let index in heart){
-        let childrenHeart = await Heart.findAll({
-          where: { parentId: heart[index].id },
-          order: [
-            ['createdAt', 'DESC'],
-          ],
-        });
-        heart[index].dataValues['responses'] = childrenHeart;
-      }
+      let requests = heart.map(h => Heart.findAll({
+        where: { parentId: h.id },
+        order: [
+          ['createdAt', 'DESC'],
+        ],
+      }));
+      let results = await Promise.all(requests);
+      results.map((item, index) => { heart[index].dataValues['responses'] = item });
 
       return res.status(HttpCodes.OK).json({ heart });
     } catch (error) {
@@ -81,7 +80,7 @@ const HeartController = () => {
    * @param {*} res 
    */
   const add = async (req, res) => {
-    const {category, content, rate, parentId} = req.body
+    const { category, content, rate, parentId } = req.body
     try {
       await Heart.create({
         parentId,
@@ -91,8 +90,8 @@ const HeartController = () => {
       });
 
       return res
-              .status(HttpCodes.OK)
-              .send();
+        .status(HttpCodes.OK)
+        .send();
     } catch (error) {
       console.log(error);
       return res
@@ -106,16 +105,16 @@ const HeartController = () => {
    * @param {*} res 
    */
   const update = async (req, res) => {
-    let {id} = req.params;
+    let { id } = req.params;
 
     if (id) {
       try {
-        await Heart.update(req.body,{
+        await Heart.update(req.body, {
           where: { id }
         })
         return res
-                .status(HttpCodes.OK)
-                .send();
+          .status(HttpCodes.OK)
+          .send();
       } catch (error) {
         console.log(error);
         return res
@@ -134,7 +133,7 @@ const HeartController = () => {
    * @param {*} res 
    */
   const remove = async (req, res) => {
-    let {id} = req.params;
+    let { id } = req.params;
 
     if (id) {
       try {
@@ -142,8 +141,8 @@ const HeartController = () => {
           where: { id }
         })
         return res
-                .status(HttpCodes.OK)
-                .send();
+          .status(HttpCodes.OK)
+          .send();
       } catch (error) {
         console.log(error);
         return res
