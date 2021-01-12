@@ -43,6 +43,33 @@ const UserController = () => {
 
     if (user) {
       try {
+        const prevUser = await User.findOne({
+          where: {
+            id,
+          },
+        });
+        if (!prevUser) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: data is wrong" });
+        }
+
+        // in case of email update
+        if (user.email !== prevUser.email) {
+          const existing = await User.findOne({
+            where: {
+              email: user.email,
+            },
+          });
+
+          if (existing) {
+            return res
+              .status(HttpCodes.BAD_REQUEST)
+              .json({ msg: "This email was used by someone." });
+          }
+        }
+
+        // in case of profile picture
         if (user.imageStr) {
           const imageUrl = await s3Service().getUserImageUrl(
             user.img,
