@@ -5,6 +5,8 @@ const getProfileCompletion = (user) => {
     "firstName",
     "lastName",
     "company",
+    "location",
+    "city",
     "img",
     "about",
     "titleProfessions",

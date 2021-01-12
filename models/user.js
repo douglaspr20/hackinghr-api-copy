@@ -23,6 +23,8 @@ module.exports = (sequelize, DataTypes) => {
         values: ["admin", "user"],
       },
       company: DataTypes.STRING,
+      location: DataTypes.STRING,
+      city: DataTypes.STRING,
       about: DataTypes.STRING,
       titleProfessions: DataTypes.STRING,
       proficiencyLevel: DataTypes.STRING,
