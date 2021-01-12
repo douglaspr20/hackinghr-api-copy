@@ -64,11 +64,11 @@ const EventController = () => {
   };
 
   const getEvent = async (req, res) => {
-    const { id } = req.query;
+    const { id } = req.params;
 
     if (id) {
       try {
-        const event = await Event.find({
+        const event = await Event.findOne({
           where: {
             id,
           },
