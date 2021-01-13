@@ -41,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: "free",
         values: ["free", "premium"],
       },
+      events: {
+        type:DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
     },
     {
       sequelize,

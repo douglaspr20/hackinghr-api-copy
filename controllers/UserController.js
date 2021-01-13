@@ -138,10 +138,96 @@ const UserController = () => {
     }
   };
 
+  const addEvent = async (req, res) => {
+    let event = req.body;
+    const { id } = req.token;
+
+    try {
+      const user = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "User not found" });
+      }
+
+      let newEvents = user.events
+        .map((item) => JSON.parse(item))
+        .filter((item) => item.id !== event.id);
+      newEvents = [
+        ...newEvents,
+        { id: event.id, status: "going" },
+      ].map((item) => JSON.stringify(item));
+
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          events: newEvents,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const removeEvent = async (req, res) => {
+    let event = req.body;
+    const { id } = req.token;
+
+    try {
+      const user = await User.findOne({
+        where: {
+          id,
+        },
+      });
+      user.events = user.events
+        .map((item) => JSON.parse(item))
+        .filter((e) => e.id !== event.id)
+        .map((item) => JSON.stringify(item));
+
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          events: user.events,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
     upgradePlan,
+    addEvent,
+    removeEvent,
   };
 };
 
