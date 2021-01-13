@@ -17,9 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     organizer: DataTypes.STRING,
     startDate: DataTypes.STRING,
-    startTime: DataTypes.STRING,
     endDate: DataTypes.STRING,
-    endTime: DataTypes.STRING,
     timezone: DataTypes.STRING,
     category: DataTypes.STRING,
     ticket: {
