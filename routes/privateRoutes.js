@@ -5,6 +5,11 @@ const privateRoutes = {
   "PUT /user/upgrade-plan/": "UserController.upgradePlan",
   "GET /events/": "EventController.getAllEvents",
   "GET /event/:id/": "EventController.getEvent",
+  "GET /heart/": "HeartController.getAll",
+  "GET /heart/:id": "HeartController.get",
+  "POST /heart/": "HeartController.add",
+  "PUT /heart/:id": "HeartController.update",
+  "DELETE /heart/:id": "HeartController.remove",
 };
 
 module.exports = privateRoutes;
