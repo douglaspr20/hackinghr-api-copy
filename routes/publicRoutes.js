@@ -7,6 +7,7 @@ const publicRoutes = {
     path: "AuthController.login",
     middlewares: [checkIsAdmin],
   },
+  "POST /stripe/webhook": "StripeController.webhook",
 };
 
 module.exports = publicRoutes;
