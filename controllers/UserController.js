@@ -4,6 +4,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 
 const User = db.User;
+const Event = db.Event;
 
 const UserController = () => {
   const getUser = async (req, res) => {
@@ -222,12 +223,54 @@ const UserController = () => {
     }
   };
 
+  const getMyEvents = async (req, res) => {
+    const { id } = req.token;
+
+    try {
+      const user = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "User not found" });
+      }
+
+      let requests = user.events
+        .map((item) => JSON.parse(item))
+        .map((item) => {
+          return Event.findOne({
+            where: {
+              id: item.id,
+            },
+          });
+        });
+
+      let results = await Promise.all(requests);
+      results = results.map((event, index) => ({
+        ...event.dataValues,
+        status: JSON.parse(user.events[index]).status,
+      }));
+
+      return res.status(HttpCodes.OK).json({ myEvents: results });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
     upgradePlan,
     addEvent,
     removeEvent,
+    getMyEvents,
   };
 };
 

@@ -7,6 +7,7 @@ const privateRoutes = {
   "GET /event/:id/": "EventController.getEvent",
   "PUT /user/add-event/": "UserController.addEvent",
   "PUT /user/remove-event/": "UserController.removeEvent",
+  "GET /user/my-events/": "UserController.getMyEvents",
 };
 
 module.exports = privateRoutes;
