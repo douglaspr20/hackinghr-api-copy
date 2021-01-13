@@ -5,7 +5,7 @@ const privateRoutes = {
   "PUT /user/upgrade-plan/": "UserController.upgradePlan",
   "GET /events/": "EventController.getAllEvents",
   "GET /event/:id/": "EventController.getEvent",
-  "POST /stripe/checkout-session/": "StripeController.createCheckoutSession"
+  "POST /stripe/checkout-session/": "StripeController.createCheckoutSession",
   "GET /heart/": "HeartController.getAll",
   "GET /heart/:id": "HeartController.get",
   "POST /heart/": "HeartController.add",
