@@ -2,6 +2,7 @@ const db = require("../models");
 const profileUtils = require("../utils/profile");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
+const Sequelize = require("sequelize");
 
 const User = db.User;
 const Event = db.Event;
@@ -144,32 +145,33 @@ const UserController = () => {
     const { id } = req.token;
 
     try {
-      const user = await User.findOne({
-        where: {
-          id,
-        },
-      });
-
-      if (!user) {
-        return res
-          .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "User not found" });
-      }
-
-      let newEvents = user.events
-        .map((item) => JSON.parse(item))
-        .filter((item) => item.id !== event.id);
-      newEvents = [
-        ...newEvents,
-        { id: event.id, status: "going" },
-      ].map((item) => JSON.stringify(item));
-
-      const [numberOfAffectedRows, affectedRows] = await User.update(
+      await User.update(
         {
-          events: newEvents,
+          events: Sequelize.fn(
+            "array_append",
+            Sequelize.col("events"),
+            event.id.toString()
+          ),
         },
         {
           where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      // update users and status field from Events model
+      const [numberOfAffectedRows, affectedRows] = await Event.update(
+        {
+          users: Sequelize.fn(
+            "array_append",
+            Sequelize.col("users"),
+            id.toString()
+          ),
+          [`status.${id}`]: "going",
+        },
+        {
+          where: { id: event.id },
           returning: true,
           plain: true,
         }
@@ -191,22 +193,32 @@ const UserController = () => {
     const { id } = req.token;
 
     try {
-      const user = await User.findOne({
-        where: {
-          id,
-        },
-      });
-      user.events = user.events
-        .map((item) => JSON.parse(item))
-        .filter((e) => e.id !== event.id)
-        .map((item) => JSON.stringify(item));
-
-      const [numberOfAffectedRows, affectedRows] = await User.update(
+      await User.update(
         {
-          events: user.events,
+          events: Sequelize.fn(
+            "array_remove",
+            Sequelize.col("events"),
+            event.id.toString()
+          ),
         },
         {
           where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      const [numberOfAffectedRows, affectedRows] = await Event.update(
+        {
+          users: Sequelize.fn(
+            "array_remove",
+            Sequelize.col("users"),
+            id.toString()
+          ),
+          [`status.${id}`]: null,
+        },
+        {
+          where: { id: event.id },
           returning: true,
           plain: true,
         }
