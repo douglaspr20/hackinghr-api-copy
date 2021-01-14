@@ -4,6 +4,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const Sequelize = require("sequelize");
 
+const QueryTypes = Sequelize.QueryTypes;
 const User = db.User;
 const Event = db.Event;
 
@@ -231,33 +232,14 @@ const UserController = () => {
     const { id } = req.token;
 
     try {
-      const user = await User.findOne({
-        where: {
-          id,
-        },
+      let query = `
+        SELECT public."Events".*
+        FROM public."Events" JOIN public."Users" ON public."Events".id = ANY (public."Users".events) 
+        WHERE public."Users".id = ${id} ORDER BY "startDate";
+      `;
+      const results = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
-
-      if (!user) {
-        return res
-          .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "User not found" });
-      }
-
-      let requests = user.events
-        .map((item) => JSON.parse(item))
-        .map((item) => {
-          return Event.findOne({
-            where: {
-              id: item.id,
-            },
-          });
-        });
-
-      let results = await Promise.all(requests);
-      results = results.map((event, index) => ({
-        ...event.dataValues,
-        status: JSON.parse(user.events[index]).status,
-      }));
 
       return res.status(HttpCodes.OK).json({ myEvents: results });
     } catch (error) {
