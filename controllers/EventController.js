@@ -158,11 +158,46 @@ const EventController = () => {
     }
   };
 
+  const updateEventStatus = async (req, res) => {
+    const { id: eventId } = req.params;
+    const { id: userId } = req.token;
+    const { status } = req.body;
+
+    if (eventId && userId) {
+      try {
+        const [numberOfAffectedRows, affectedRows] = await Event.update(
+          {
+            [`status.${userId}`]: status,
+          },
+          {
+            where: { id: eventId },
+            returning: true,
+            plain: true,
+          }
+        );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(err);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
   return {
     create,
     getAllEvents,
     getEvent,
     updateEvent,
+    updateEventStatus,
   };
 };
 
