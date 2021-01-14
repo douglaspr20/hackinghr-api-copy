@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: {},
       },
       users: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
     },

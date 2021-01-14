@@ -14,7 +14,7 @@ module.exports = {
         defaultValue: {},
       }),
       queryInterface.addColumn("Events", "users", {
-        type: Sequelize.ARRAY(Sequelize.STRING),
+        type: Sequelize.ARRAY(Sequelize.INTEGER),
         defaultValue: [],
       }),
     ]); 

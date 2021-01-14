@@ -150,7 +150,7 @@ const UserController = () => {
           events: Sequelize.fn(
             "array_append",
             Sequelize.col("events"),
-            event.id.toString()
+            event.id
           ),
         },
         {
@@ -163,11 +163,7 @@ const UserController = () => {
       // update users and status field from Events model
       const [numberOfAffectedRows, affectedRows] = await Event.update(
         {
-          users: Sequelize.fn(
-            "array_append",
-            Sequelize.col("users"),
-            id.toString()
-          ),
+          users: Sequelize.fn("array_append", Sequelize.col("users"), id),
           [`status.${id}`]: "going",
         },
         {
@@ -198,7 +194,7 @@ const UserController = () => {
           events: Sequelize.fn(
             "array_remove",
             Sequelize.col("events"),
-            event.id.toString()
+            event.id
           ),
         },
         {
@@ -210,11 +206,7 @@ const UserController = () => {
 
       const [numberOfAffectedRows, affectedRows] = await Event.update(
         {
-          users: Sequelize.fn(
-            "array_remove",
-            Sequelize.col("users"),
-            id.toString()
-          ),
+          users: Sequelize.fn("array_remove", Sequelize.col("users"), id),
           [`status.${id}`]: null,
         },
         {

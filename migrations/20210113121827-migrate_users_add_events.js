@@ -10,7 +10,7 @@ module.exports = {
      */
     return Promise.all([
       queryInterface.addColumn("Users", "events", {
-        type: Sequelize.ARRAY(Sequelize.STRING),
+        type: Sequelize.ARRAY(Sequelize.INTEGER),
         defaultValue: [],
       }),
     ]);
