@@ -6,6 +6,7 @@ const privateRoutes = {
   "GET /events/": "EventController.getAllEvents",
   "GET /event/:id/": "EventController.getEvent",
   "POST /stripe/checkout-session/": "StripeController.createCheckoutSession",
+  "POST /stripe/portal-session/": "StripeController.createPortalSession",
 };
 
 module.exports = privateRoutes;

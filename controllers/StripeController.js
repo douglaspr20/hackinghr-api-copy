@@ -55,6 +55,53 @@ const StripeController = () => {
       .send();
   };
   /**
+   * Function to get customer portal session object
+   * and return to redirect.
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const createPortalSession = async (req, res) => {
+    const { id } = req.token;
+
+    const user = await User.findOne({
+      where: {
+        id,
+      },
+    });
+
+    try {
+      const customers = await stripe.customers.list({
+        email: user.email,
+        limit: 1,
+      });
+      if(customers.data.length > 0){
+        const customer = customers.data[0];
+        console.log(customer);
+        const subscription = customer.subscriptions.data[0];
+        const session = await stripe.billingPortal.sessions.create({
+          customer: customer.id,
+          return_url: process.env.STRIPE_CALLBACK_URL,
+        });
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ session, subscription })
+          .send();
+      }else {
+        return res
+          .status(HttpCodes.OK)
+          .json({ session: null, subscription: null })
+          .send();
+      }
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" })
+        .send();
+    }
+  };
+  /**
    * Function to manage stripe events
    * @param {*} req 
    * @param {*} res 
@@ -88,6 +135,7 @@ const StripeController = () => {
 
   return {
     createCheckoutSession,
+    createPortalSession,
     webhook,
   };
 };
