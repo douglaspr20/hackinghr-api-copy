@@ -1,7 +1,9 @@
 const db = require("../models");
+const Sequelize = require('sequelize');
 const HttpCodes = require("http-codes");
 
 const Heart = db.Heart;
+const HeartUserRate = db.HeartUserRate;
 
 const HeartController = () => {
   /**
@@ -81,12 +83,14 @@ const HeartController = () => {
    */
   const add = async (req, res) => {
     const { category, content, rate, parentId } = req.body
+    const { id } = req.token;
     try {
       await Heart.create({
         parentId,
         category,
         content,
-        rate
+        rate,
+        UserId: id
       });
 
       return res
@@ -105,11 +109,24 @@ const HeartController = () => {
    * @param {*} res 
    */
   const update = async (req, res) => {
-    let { id } = req.params;
+    const { id } = req.params;
+    const { id: userId } = req.token;
+    const { category, content, rate } = req.body
 
     if (id) {
       try {
-        await Heart.update(req.body, {
+        let data = {};
+        if(category){
+          data = {...data, category};
+        }
+        if(content){
+          data = {...data, content};
+        }
+        if(rate){
+          let rateAvg = await setCommentRateByUser(userId, id, rate);
+          data = {...data, rate: rateAvg};
+        }
+        await Heart.update(data, {
           where: { id }
         })
         return res
@@ -137,9 +154,15 @@ const HeartController = () => {
 
     if (id) {
       try {
+        await HeartUserRate.destroy({
+          where: { HeartId: id }
+        });
+        await Heart.destroy({
+          where: { parentId: id }
+        });
         await Heart.destroy({
           where: { id }
-        })
+        });
         return res
           .status(HttpCodes.OK)
           .send();
@@ -155,6 +178,46 @@ const HeartController = () => {
         .json({ msg: "Bad Request: data is wrong" });
     }
   };
+  /**
+   * Set comment by user and return average rate by comment
+   * @param {number} userId 
+   * @param {number} heartId 
+   * @param {decimal} rate 
+   */
+  const setCommentRateByUser = async (userId, heartId, rate) => {
+    try {
+      let heartUserRate = await HeartUserRate.findOne({
+        where: {
+          UserId: userId,
+          HeartId: heartId,
+        }
+      });
+  
+      let data = {
+        rate,
+        UserId: userId,
+        HeartId: heartId,
+      };
+  
+      if (!heartUserRate) {
+        await HeartUserRate.create(data);
+      } else {
+        await HeartUserRate.update(data, {
+          where: { id: heartUserRate.id }
+        });
+      }
+  
+      let rateAvg = await HeartUserRate.findOne({
+        where: {
+          HeartId: heartId,
+        },
+        attributes: [[Sequelize.fn('AVG', Sequelize.col('rate')), 'rate']]
+      })
+      return rateAvg.rate;
+    }catch (error) {
+      console.log(error);
+    }
+  }
 
   return {
     getAll,
