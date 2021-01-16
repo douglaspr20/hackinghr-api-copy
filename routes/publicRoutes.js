@@ -7,6 +7,9 @@ const publicRoutes = {
     path: "AuthController.login",
     middlewares: [checkIsAdmin],
   },
+  "POST /auth/password-recovery": "AuthController.sendMailPasswordRecovery",
+  "POST /auth/verify-token": "AuthController.verifyResetPasswordToken",
+  "PATCH /auth/reset-password": "AuthController.resetPassword",
   "POST /stripe/webhook": "StripeController.webhook",
 };
 
