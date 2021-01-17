@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
+const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 
 const Library = db.Library;
 
@@ -80,10 +81,29 @@ const LibraryController = () => {
         };
       }
 
+      let order = [];
+
+      switch (filter.order) {
+        case SortOptions["Newest first"]:
+          order.push(["createdAt", "DESC"]);
+          break;
+        case SortOptions["Newest last"]:
+          order.push(["createdAt", "ASC"]);
+          break;
+        case SortOptions["Sort by name"]:
+          order.push(["title", "ASC"]);
+          break;
+        case SortOptions["Sort by type"]:
+          order.push(["contentType", "ASC"]);
+          break;
+        default:
+      }
+
       const libraries = await Library.findAndCountAll({
         where,
         offset: (filter.page - 1) * filter.num,
         limit: filter.num,
+        order,
       });
 
       return res.status(HttpCodes.OK).json({ libraries });
