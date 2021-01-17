@@ -16,6 +16,9 @@ const privateRoutes = {
   "POST /heart/": "HeartController.add",
   "PUT /heart/:id": "HeartController.update",
   "DELETE /heart/:id": "HeartController.remove",
+  "POST /library/": "LibraryController.create",
+  "GET /library/all/": "LibraryController.getAll",
+  "GET /library/:id/": "LibraryController.getLibrary",
 };
 
 module.exports = privateRoutes;

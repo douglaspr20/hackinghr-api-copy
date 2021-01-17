@@ -8,5 +8,6 @@ module.exports = {
     IMAGE_BUCKET_URL: "https://lab-user-images.s3.us-east-2.amazonaws.com",
     PROFILE_IMAGE_FOLDER: "profile",
     EVENT_IMAGE_FOLDER: "event",
+    LIBRARY_IMAGE_FOLDER: "library",
   },
 };
