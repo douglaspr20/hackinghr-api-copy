@@ -1,6 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
+const isEmpty = require("lodash/isEmpty");
+const { Op } = require("sequelize");
 
 const Library = db.Library;
 
@@ -48,7 +50,38 @@ const LibraryController = () => {
     const filter = req.query;
 
     try {
+      let where = {};
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      if (
+        filter["content type"] &&
+        !isEmpty(JSON.parse(filter["content type"]))
+      ) {
+        where = {
+          ...where,
+          contentType: JSON.parse(filter["content type"]),
+        };
+      }
+
+      if (filter.language && !isEmpty(JSON.parse(filter.language))) {
+        where = {
+          ...where,
+          language: {
+            [Op.overlap]: JSON.parse(filter.language),
+          },
+        };
+      }
+
       const libraries = await Library.findAndCountAll({
+        where,
         offset: (filter.page - 1) * filter.num,
         limit: filter.num,
       });
