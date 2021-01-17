@@ -38,7 +38,7 @@ const LibraryController = () => {
         console.log(error);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Internal server error", error: err });
+          .json({ msg: "Internal server error", error: error });
       }
     }
 
