@@ -4,6 +4,7 @@ const UserRoles = require("../enum").USER_ROLE;
 const bcryptService = require("../services/bcrypt.service");
 const authService = require("../services/auth.service");
 const reCaptchaService = require("../services/recaptcha.service");
+const smtpService = require("../services/smtp.service");
 const profileUtils = require("../utils/profile");
 
 const User = db.User;
@@ -113,10 +114,151 @@ const AuthController = () => {
       .status(HttpCodes.BAD_REQUEST)
       .json({ msg: "Bad Request: Passwords don't match" });
   };
+  /**
+   * Send link to password recovery via email
+   * @param {*} req
+   * @param {*} res
+   */
+  const sendMailPasswordRecovery = async (req, res) => {
+    const { email } = req.body;
+    const minutes = process.env.PASSWORD_RECOVERY_TOKEN_EXP_TIME_MINUTES;
+    try {
+      if (email) {
+        let user = await User.findOne({
+          where: {
+            email: email,
+          },
+        });
+        if (!user) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Email don't match with any user." })
+            .send();
+        }
+        const token = authService().issue({
+          exp: Math.floor(Date.now() / 1000) + minutes * 60,
+          email,
+        });
+        const smtpTransort = {
+          service: "gmail",
+          auth: {
+            user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+            pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+          },
+        };
+        const mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: email,
+          subject: "Forgotten password reset",
+          html: `
+                  Somebody (hopefully you) requested a new password account for ${email}. 
+                  No changes have been made to your account yet.
+                  <br/>
+                  You can reset your password by clicking the link bellow:
+                  <br/>
+                  <a href="${process.env.RECOVERY_PASSWORD_PREFIX_URL}${token}" target="_blank">Reset password</a>
+                  <br/>
+                  If you did not request a new password, please let us know immediately.
+                  <br/>
+                  Yours,
+                  <br/>
+                  Hacking HR Team.
+                  `,
+        };
+
+        const sentResult = await smtpService().sendMail(
+          smtpTransort,
+          mailOptions
+        );
+        if (sentResult) {
+          return res
+            .status(HttpCodes.OK)
+            .json({ msg: "The mail has been sent successfully." })
+            .send();
+        } else {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+      } else {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request: Email is empty!" })
+          .send();
+      }
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error", error: err })
+        .send();
+    }
+  };
+  /**
+   * Verify token to allow reset password
+   * @param {*} req
+   * @param {*} res
+   */
+  const verifyResetPasswordToken = async (req, res) => {
+    const { token } = req.body;
+    try {
+      if (!token) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error", error: err })
+          .send();
+      }
+      const response = authService().verify(token);
+      return res.status(HttpCodes.OK).json({ response }).send();
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error", error: err })
+        .send();
+    }
+  };
+  /**
+   * Set new password after verify token
+   * @param {*} req
+   * @param {*} res
+   */
+  const resetPassword = async (req, res) => {
+    const { token, password } = req.body;
+    try {
+      if (!password || !token) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error", error: err })
+          .send();
+      }
+      const infoToken = authService().verify(token);
+      await User.update(
+        {
+          password: bcryptService().password(password),
+        },
+        {
+          where: {
+            email: infoToken.email,
+          },
+        }
+      );
+      return res.status(HttpCodes.OK).send();
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error", error: err })
+        .send();
+    }
+  };
 
   return {
     login,
     register,
+    sendMailPasswordRecovery,
+    verifyResetPasswordToken,
+    resetPassword,
   };
 };
 
