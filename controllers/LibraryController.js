@@ -16,7 +16,7 @@ const LibraryController = () => {
         };
 
         if (libraryInfo.image) {
-          libraryInfo.image = await s3Service().getEventImageUrl(
+          libraryInfo.image = await s3Service().getLibraryImageUrl(
             "",
             libraryInfo.image
           );
