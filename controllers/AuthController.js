@@ -116,35 +116,35 @@ const AuthController = () => {
   };
   /**
    * Send link to password recovery via email
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const sendMailPasswordRecovery = async (req, res) => {
     const { email } = req.body;
     const minutes = process.env.PASSWORD_RECOVERY_TOKEN_EXP_TIME_MINUTES;
-    try{
-      if(email){
+    try {
+      if (email) {
         let user = await User.findOne({
           where: {
             email: email,
           },
         });
-        if(!user){
+        if (!user) {
           return res
-          .status(HttpCodes.BAD_REQUEST)
-          .json({ msg: "Email don't match with any user." })
-          .send();
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Email don't match with any user." })
+            .send();
         }
         const token = authService().issue({
-          exp: Math.floor(Date.now() / 1000) + (minutes * minutes),
-          email
+          exp: Math.floor(Date.now() / 1000) + minutes * 60,
+          email,
         });
         const smtpTransort = {
-          service: 'gmail',
+          service: "gmail",
           auth: {
             user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-            pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD
-          }
+            pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+          },
         };
         const mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
@@ -165,7 +165,11 @@ const AuthController = () => {
                   Hacking HR Team.
                   `,
         };
-        const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+
+        const sentResult = await smtpService().sendMail(
+          smtpTransort,
+          mailOptions
+        );
         if (sentResult) {
           return res
             .status(HttpCodes.OK)
@@ -176,13 +180,13 @@ const AuthController = () => {
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
-      }else{
+      } else {
         return res
           .status(HttpCodes.BAD_REQUEST)
           .json({ msg: "Bad Request: Email is empty!" })
           .send();
       }
-    }catch(err){
+    } catch (err) {
       console.log(err);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -192,23 +196,20 @@ const AuthController = () => {
   };
   /**
    * Verify token to allow reset password
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const verifyResetPasswordToken = async (req, res) => {
     const { token } = req.body;
     try {
-      if(!token){
+      if (!token) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error", error: err })
           .send();
       }
       const response = authService().verify(token);
-      return res
-        .status(HttpCodes.OK)
-        .json({ response })
-        .send();
+      return res.status(HttpCodes.OK).json({ response }).send();
     } catch (err) {
       console.log(err);
       return res
@@ -216,32 +217,33 @@ const AuthController = () => {
         .json({ msg: "Internal server error", error: err })
         .send();
     }
-  }
+  };
   /**
    * Set new password after verify token
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const resetPassword = async (req, res) => {
     const { token, password } = req.body;
     try {
-      if(!password || !token){
+      if (!password || !token) {
         return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error", error: err })
-        .send();
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error", error: err })
+          .send();
       }
       const infoToken = authService().verify(token);
-      await User.update({
-        password: bcryptService().password(password),
-      }, {
-        where: {
-          email: infoToken.email,
+      await User.update(
+        {
+          password: bcryptService().password(password),
         },
-      });
-      return res
-        .status(HttpCodes.OK)
-        .send();
+        {
+          where: {
+            email: infoToken.email,
+          },
+        }
+      );
+      return res.status(HttpCodes.OK).send();
     } catch (err) {
       console.log(err);
       return res
@@ -249,14 +251,14 @@ const AuthController = () => {
         .json({ msg: "Internal server error", error: err })
         .send();
     }
-  }
+  };
 
   return {
     login,
     register,
     sendMailPasswordRecovery,
     verifyResetPasswordToken,
-    resetPassword
+    resetPassword,
   };
 };
 
