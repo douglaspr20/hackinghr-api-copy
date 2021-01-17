@@ -62,9 +62,35 @@ const LibraryController = () => {
     }
   };
 
+  const getLibrary = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const library = await Library.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!library) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Bad Request: Library not found" });
+      }
+
+      return res.status(HttpCodes.OK).json({ library });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
+    getLibrary,
   };
 };
 
