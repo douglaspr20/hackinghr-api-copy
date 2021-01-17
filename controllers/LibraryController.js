@@ -44,8 +44,27 @@ const LibraryController = () => {
       .json({ msg: "Bad Request: Title is needed." });
   };
 
+  const getAll = async (req, res) => {
+    const filter = req.query;
+
+    try {
+      const libraries = await Library.findAndCountAll({
+        offset: (filter.page - 1) * filter.num,
+        limit: filter.num,
+      });
+
+      return res.status(HttpCodes.OK).json({ libraries });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
+    getAll,
   };
 };
 
