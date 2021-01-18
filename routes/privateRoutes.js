@@ -18,6 +18,7 @@ const privateRoutes = {
   "DELETE /heart/:id": "HeartController.remove",
   "POST /library/": "LibraryController.create",
   "GET /library/all/": "LibraryController.getAll",
+  "GET /library/recommendations/": "LibraryController.getRecommendations",
   "GET /library/:id/": "LibraryController.getLibrary",
 };
 

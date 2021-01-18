@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       contentType: DataTypes.STRING,
       image: DataTypes.STRING,
       language: DataTypes.STRING,
+      recommended: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
