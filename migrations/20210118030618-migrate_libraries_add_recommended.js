@@ -11,6 +11,7 @@ module.exports = {
     return Promise.all([
       queryInterface.addColumn("Libraries", "recommended", {
         type: Sequelize.BOOLEAN,
+        defaultValue: false,
       }),
     ]);
   }, 

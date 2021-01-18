@@ -140,10 +140,34 @@ const LibraryController = () => {
     }
   };
 
+  const getRecommendations = async (req, res) => {
+    try {
+      const libraries = await Library.findAll({
+        where: {
+          recommended: true,
+        },
+      });
+
+      if (!libraries) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Bad Request: Recommendations not found" });
+      }
+
+      return res.status(HttpCodes.OK).json({ libraries });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
     getLibrary,
+    getRecommendations,
   };
 };
 
