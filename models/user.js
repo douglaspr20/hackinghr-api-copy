@@ -43,9 +43,11 @@ module.exports = (sequelize, DataTypes) => {
         values: ["free", "premium"],
       },
       events: {
-        type:DataTypes.ARRAY(DataTypes.INTEGER),
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
+      mentor: DataTypes.INTEGER,
+      mentee: DataTypes.INTEGER,
     },
     {
       sequelize,
