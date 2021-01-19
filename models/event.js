@@ -18,7 +18,6 @@ module.exports = (sequelize, DataTypes) => {
       startDate: DataTypes.STRING,
       endDate: DataTypes.STRING,
       timezone: DataTypes.STRING,
-      category: DataTypes.STRING,
       ticket: {
         type: DataTypes.STRING,
         defaultValue: "free",
