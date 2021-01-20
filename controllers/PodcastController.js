@@ -1,6 +1,9 @@
 const db = require("../models");
-const Sequelize = require('sequelize');
 const HttpCodes = require("http-codes");
+const s3Service = require("../services/s3.service");
+
+const { AWSConfig } = require("../enum");
+const { S3 } = AWSConfig;
 
 const Podcast = db.Podcast;
 
@@ -75,8 +78,15 @@ const PodcastController = () => {
    * @param {*} res 
    */
   const add = async (req, res) => {
+    const { imageData } = req.body;
     try {
-      await Podcast.create(req.body);
+      let podcast = await Podcast.create(req.body);
+      if(imageData){
+        let imageUrl = await s3Service().getPodcastImageUrl('', imageData);
+        await Podcast.update({ imageUrl: imageUrl }, {
+          where: { id: podcast.id }
+        })
+      }
       return res
               .status(HttpCodes.OK)
               .send();
@@ -95,16 +105,40 @@ const PodcastController = () => {
   const update = async (req, res) => {
     const { id } = req.params;
     const { id: userId } = req.token;
-    const { category, content, rate } = req.body
+    const { body } = req
 
     if (id) {
       try {
         let data = {};
-        if (category) {
-          data = { ...data, category };
+        let fields = [
+          'title',
+          'description',
+          'order',
+          'imageUrl',
+          'dateEpisode',
+          'vimeoLink',
+          'anchorLink',
+          'appleLink',
+          'googleLink',
+          'breakerLink',
+          'pocketLink',
+          'radioPublicLink',
+          'spotifyLink',
+          'iHeartRadioLink',
+        ];
+        for(let item of fields){
+          if(body[item]){
+            data = {...data, [item]: body[item] };
+          }
         }
-        if (content) {
-          data = { ...data, content };
+        if(body.imageData){
+          const podcast = await Podcast.findOne({
+            where: {
+              id,
+            },
+          });
+          let imageUrl = await s3Service().getPodcastImageUrl((podcast.imageUrl || ''), body.imageData);
+          data = {...data, imageUrl}
         }
         await Podcast.update(data, {
           where: { id }

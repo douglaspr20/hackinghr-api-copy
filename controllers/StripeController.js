@@ -76,7 +76,6 @@ const StripeController = () => {
       });
       if(customers.data.length > 0){
         const customer = customers.data[0];
-        console.log(customer);
         const subscription = customer.subscriptions.data[0];
         const session = await stripe.billingPortal.sessions.create({
           customer: customer.id,
