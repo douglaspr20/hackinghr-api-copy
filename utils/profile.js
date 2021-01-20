@@ -12,7 +12,7 @@ const getProfileCompletion = (user) => {
     "titleProfessions",
     "topicsOfInterest",
     "personalLinks",
-    "language",
+    "languages",
     "timezone",
   ];
   const length = fields.length;
