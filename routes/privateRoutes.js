@@ -21,10 +21,6 @@ const privateRoutes = {
   "GET /library/recommendations/": "LibraryController.getRecommendations",
   "GET /library/:id/": "LibraryController.getLibrary",
   "GET /podcast/": "PodcastController.getAll",
-  "GET /podcast/:id": "PodcastController.get",
-  "POST /podcast/": "PodcastController.add",
-  "PUT /podcast/:id": "PodcastController.update",
-  "DELETE /podcast/:id": "PodcastController.remove",
 };
 
 module.exports = privateRoutes;
