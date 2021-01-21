@@ -93,11 +93,18 @@ const s3Service = () => {
     return url;
   };
 
+  const getPodcastImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(S3.PODCAST_IMAGE_FOLDER, prevImg, base64Image);
+
+    return url;
+  };
+
   return {
     getImageUrl,
     getUserImageUrl,
     getEventImageUrl,
     getLibraryImageUrl,
+    getPodcastImageUrl,
     deleteUserPicture,
   };
 };
