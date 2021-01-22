@@ -10,5 +10,6 @@ module.exports = {
     EVENT_IMAGE_FOLDER: "event",
     LIBRARY_IMAGE_FOLDER: "library",
     PODCAST_IMAGE_FOLDER: "podcast",
+    MARKETPLACE_IMAGE_FOLDER: "marketplace",
   },
 };
