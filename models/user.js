@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       proficiencyLevel: DataTypes.STRING,
       topicsOfInterest: DataTypes.ARRAY(DataTypes.STRING),
       personalLinks: DataTypes.JSON,
-      language: DataTypes.STRING,
+      languages: DataTypes.ARRAY(DataTypes.STRING),
       timezone: DataTypes.STRING,
       completed: DataTypes.BOOLEAN,
       percentOfCompletion: DataTypes.INTEGER,

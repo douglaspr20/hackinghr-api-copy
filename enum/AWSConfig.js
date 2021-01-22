@@ -9,5 +9,6 @@ module.exports = {
     PROFILE_IMAGE_FOLDER: "profile",
     EVENT_IMAGE_FOLDER: "event",
     LIBRARY_IMAGE_FOLDER: "library",
+    PODCAST_IMAGE_FOLDER: "podcast",
   },
 };

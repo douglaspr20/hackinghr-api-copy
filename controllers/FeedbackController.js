@@ -8,8 +8,6 @@ const FeedbackController = () => {
   const sendMail = async (req, res) => {
     const { message, userId } = req.body;
 
-    console.log(userId);
-
     if (message && userId) {
       try {
         let user = await User.findOne({
