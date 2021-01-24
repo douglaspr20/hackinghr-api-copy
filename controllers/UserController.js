@@ -3,6 +3,8 @@ const profileUtils = require("../utils/profile");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const Sequelize = require("sequelize");
+const smtpService = require("../services/smtp.service");
+const moment = require("moment");
 
 const QueryTypes = Sequelize.QueryTypes;
 const User = db.User;
@@ -141,12 +143,80 @@ const UserController = () => {
     }
   };
 
+  const generateAttendEmail = async (user, event) => {
+    const smtpTransort = {
+      service: "gmail",
+      auth: {
+        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      },
+    };
+
+    const calendarInvite = smtpService().generateCalendarInvite(
+      event.startDate,
+      event.endDate,
+      event.title,
+      event.description,
+      event.location,
+      `${process.env.DOMAIN_URL}/public-event/${event.id}`,
+      "Name",
+      process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER
+    );
+
+    const startDate = moment(event.startDate);
+
+    const mailOptions = {
+      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      to: user.email,
+      subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
+      html: `
+        Hi, ${user.firstName}
+        <br/>
+        <strongThank you for registering for ${event.title}!
+        <br/>
+        We look forward to seeing you on ${startDate.format(
+          "MMM DD"
+        )} at ${startDate.format("h:mm")}. 
+        <br/>
+        We are sending the calendar invite attached. Please add it in your calendar. 
+        <br/>
+        Please remember to go back to the Hacking HR LAB the day after the event and certify that you attended. If you are a PREMIUM MEMBER you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits. 
+        <br />
+        Thank you! 
+        <br />
+        Hacking HR Team
+        <br/>
+      `,
+    };
+
+    if (calendarInvite) {
+      let alternatives = {
+        "Content-Type": "text/calendar",
+        method: "REQUEST",
+        content: new Buffer(calendarInvite.toString()),
+        component: "VEVENT",
+        "Content-Class": "urn:content-classes:calendarmessage",
+      };
+      mailOptions["alternatives"] = alternatives;
+      mailOptions["alternatives"]["contentType"] = "text/calendar";
+      mailOptions["alternatives"]["content"] = new Buffer(
+        calendarInvite.toString()
+      );
+    }
+
+    console.log("**** mailOptions ", mailOptions);
+
+    const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+
+    return sentResult;
+  };
+
   const addEvent = async (req, res) => {
     let event = req.body;
     const { id } = req.token;
 
     try {
-      await User.update(
+      const [rows, user] = await User.update(
         {
           events: Sequelize.fn(
             "array_append",
@@ -173,6 +243,8 @@ const UserController = () => {
           plain: true,
         }
       );
+
+      generateAttendEmail(user, affectedRows);
 
       return res
         .status(HttpCodes.OK)

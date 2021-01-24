@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const ical = require("ical-generator");
 
 const smtpService = () => {
   const sendMail = async (smtpTransort, mailOptions) => {
@@ -17,7 +18,7 @@ const smtpService = () => {
        * https://nodemailer.com/smtp/
        */
       const transporter = nodemailer.createTransport(smtpTransort);
-      
+
       /**
        * Message configuration (mailOptions)
        * {
@@ -42,8 +43,43 @@ const smtpService = () => {
     });
   };
 
+  const generateCalendarInvite = (
+    startTime,
+    endTime,
+    summary,
+    description,
+    location,
+    url,
+    name,
+    email
+  ) => {
+    const cal = ical({ domain: process.env.DOMAIN_URL, name: "invite" });
+
+    cal.domain(process.env.DOMAIN_URL);
+
+    const eventObject = {
+      start: startTime,
+      end: endTime,
+      summary: summary,
+      description: description,
+      location: location,
+      url: url,
+      organizer: {
+        name,
+        email,
+      },
+    };
+
+    console.log("**** eventObject ", eventObject);
+
+    cal.createEvent(eventObject);
+
+    return cal;
+  };
+
   return {
     sendMail,
+    generateCalendarInvite,
   };
 };
 
