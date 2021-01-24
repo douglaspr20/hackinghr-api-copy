@@ -1,9 +1,10 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const user = require("../models/user");
+const Sequelize = require("sequelize");
 
 const Mentoring = db.Mentoring;
 const User = db.User;
+const QueryTypes = Sequelize.QueryTypes;
 
 const MentoringController = () => {
   const create = async (req, res) => {
@@ -92,10 +93,62 @@ const MentoringController = () => {
     }
   };
 
+  const getMentorList = async (req, res) => {
+    const filter = req.query;
+
+    try {
+      let query = `
+      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
+        FROM public."Mentorings" 
+        JOIN public."Users" ON public."Mentorings".user = public."Users".id 
+        WHERE public."Mentorings"."isMentor" = 1
+        LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
+      `;
+
+      const mentorList = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      return res.status(HttpCodes.OK).json({ mentorList });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const getMenteeList = async (req, res) => {
+    const filter = req.query;
+
+    try {
+      let query = `
+      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
+        FROM public."Mentorings" 
+        JOIN public."Users" ON public."Mentorings".user = public."Users".id 
+        WHERE public."Mentorings"."isMentor" = 0
+        LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
+      `;
+
+      const menteeList = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      return res.status(HttpCodes.OK).json({ menteeList });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getMentoringInfo,
     updateMentoringInfo,
+    getMentorList,
+    getMenteeList,
   };
 };
 

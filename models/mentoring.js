@@ -20,8 +20,8 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: [],
       },
       isMentor: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false, // true: mentor; false: mentee
+        type: DataTypes.INTEGER,
+        defaultValue: 0, // 1: mentor; 0: mentee
       },
       connectedMembers: {
         type: DataTypes.ARRAY(DataTypes.INTEGER),

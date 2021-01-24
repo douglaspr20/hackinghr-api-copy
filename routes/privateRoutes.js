@@ -23,6 +23,8 @@ const privateRoutes = {
   "POST /mentoring": "MentoringController.create",
   "GET /mentoring": "MentoringController.getMentoringInfo",
   "PUT /mentoring": "MentoringController.updateMentoringInfo",
+  "GET /mentor/all/": "MentoringController.getMentorList",
+  "GET /mentee/all/": "MentoringController.getMenteeList",
   "GET /podcast/": "PodcastController.getAll",
 };
 
