@@ -99,7 +99,7 @@ const MentoringController = () => {
 
     try {
       let query = `
-      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
+      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
         FROM public."Mentorings" 
         JOIN public."Users" ON public."Mentorings".user = public."Users".id 
         WHERE public."Mentorings"."isMentor" = 1 AND public."Mentorings"."user" <> ${id}
@@ -125,7 +125,7 @@ const MentoringController = () => {
 
     try {
       let query = `
-      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
+      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
         FROM public."Mentorings" 
         JOIN public."Users" ON public."Mentorings".user = public."Users".id 
         WHERE public."Mentorings"."isMentor" = 0 AND public."Mentorings"."user" <> ${id}
@@ -145,12 +145,42 @@ const MentoringController = () => {
     }
   };
 
+  const setMatch = async (req, res) => {
+    const { source, target, match } = req.query;
+
+    try {
+      let updates = {
+        connectedMembers: Sequelize.fn(
+          match ? "array_append" : "array_remove",
+          Sequelize.col("connectedMembers"),
+          target
+        ),
+      };
+
+      const [numberOfAffectedRows, affectedRows] = await Mentoring.update(updates, {
+        where: { id: source },
+        returning: true,
+        plain: true,
+      });
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getMentoringInfo,
     updateMentoringInfo,
     getMentorList,
     getMenteeList,
+    setMatch,
   };
 };
 

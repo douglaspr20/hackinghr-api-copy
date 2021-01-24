@@ -25,6 +25,7 @@ const privateRoutes = {
   "PUT /mentoring": "MentoringController.updateMentoringInfo",
   "GET /mentor/all/": "MentoringController.getMentorList",
   "GET /mentee/all/": "MentoringController.getMenteeList",
+  "PUT /mentoring/match": "MentoringController.setMatch",
   "GET /podcast/": "PodcastController.getAll",
 };
 
