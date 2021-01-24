@@ -1,7 +1,6 @@
 const privateRoutes = {
   "GET /user/": "UserController.getUser",
   "GET /events/": "EventController.getAllEvents",
-  "GET /event/:id/": "EventController.getEvent",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
   "PUT /user/": "UserController.updateUser",
