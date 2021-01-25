@@ -143,6 +143,10 @@ const UserController = () => {
     }
   };
 
+  const getEventDescription = (rawData) => {
+    return rawData ? rawData.blocks.map((item) => item.text).join(`/n`) : "";
+  };
+
   const generateAttendEmail = async (user, event) => {
     const smtpTransort = {
       service: "gmail",
@@ -159,7 +163,7 @@ const UserController = () => {
       startDate,
       endDate,
       event.title,
-      event.description,
+      getEventDescription(event.description),
       event.location,
       `${process.env.DOMAIN_URL}/public-event/${event.id}`,
       event.organizer,
