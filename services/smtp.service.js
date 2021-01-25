@@ -51,7 +51,8 @@ const smtpService = () => {
     location,
     url,
     name,
-    email
+    email,
+    timezone
   ) => {
     const cal = ical({ domain: process.env.DOMAIN_URL, name: "invite" });
 
@@ -68,6 +69,7 @@ const smtpService = () => {
         name,
         email,
       },
+      timezone,
     };
 
     console.log("**** eventObject ", eventObject);

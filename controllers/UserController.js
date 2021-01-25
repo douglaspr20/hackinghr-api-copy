@@ -5,6 +5,7 @@ const s3Service = require("../services/s3.service");
 const Sequelize = require("sequelize");
 const smtpService = require("../services/smtp.service");
 const moment = require("moment");
+const TimeZoneList = require("../enum/TimeZoneList");
 
 const QueryTypes = Sequelize.QueryTypes;
 const User = db.User;
@@ -158,16 +159,19 @@ const UserController = () => {
 
     const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
     const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
+    const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
     const calendarInvite = smtpService().generateCalendarInvite(
       startDate,
       endDate,
       event.title,
       getEventDescription(event.description),
-      event.location,
+      "",
+      // event.location,
       `${process.env.DOMAIN_URL}/public-event/${event.id}`,
       event.organizer,
-      process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER
+      process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER,
+      timezone.utc[0]
     );
 
     const mailOptions = {
