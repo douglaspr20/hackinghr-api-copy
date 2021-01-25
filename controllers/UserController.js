@@ -152,9 +152,12 @@ const UserController = () => {
       },
     };
 
+    const startDate = moment(event.startDate, "YYYY-MM-DD hh:mm a");
+    const endDate = moment(event.endDate, "YYYY-MM-DD hh:mm a");
+
     const calendarInvite = smtpService().generateCalendarInvite(
-      event.startDate,
-      event.endDate,
+      startDate,
+      endDate,
       event.title,
       event.description,
       event.location,
