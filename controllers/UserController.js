@@ -166,8 +166,6 @@ const UserController = () => {
       process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER
     );
 
-    const startDate = moment(event.startDate);
-
     const mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: user.email,
