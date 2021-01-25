@@ -152,8 +152,8 @@ const UserController = () => {
       },
     };
 
-    const startDate = moment(event.startDate, "YYYY-MM-DD hh:mm a");
-    const endDate = moment(event.endDate, "YYYY-MM-DD hh:mm a");
+    const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
+    const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
 
     const calendarInvite = smtpService().generateCalendarInvite(
       startDate,
@@ -162,7 +162,7 @@ const UserController = () => {
       event.description,
       event.location,
       `${process.env.DOMAIN_URL}/public-event/${event.id}`,
-      "Name",
+      event.organizer,
       process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER
     );
 
@@ -177,7 +177,7 @@ const UserController = () => {
         <br/>
         We look forward to seeing you on ${startDate.format(
           "MMM DD"
-        )} at ${startDate.format("h:mm")}. 
+        )} at ${startDate.format("h:mm a")}. 
         <br/>
         We are sending the calendar invite attached. Please add it in your calendar. 
         <br/>
