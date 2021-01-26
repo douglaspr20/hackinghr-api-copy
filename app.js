@@ -6,6 +6,8 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const authPolicy = require("./policies/auth.policy");
+const cron = require("node-cron");
+const EventController = require("./controllers/EventController");
 
 dotenv.config();
 
@@ -26,6 +28,12 @@ const mappedAdminRoutes = mapRoutes(routes.adminRoutes, "controllers/", [
   authPolicy.validate,
   authPolicy.checkAdminRole,
 ]);
+
+// Creating a cron job which runs on every an hour.
+cron.schedule("25 * * * *", () => {
+  console.log("running a task every 1 hour.");
+  EventController().emailAfterEventThread();
+});
 
 // allow cross origin requests
 // configure to only allow requests from certain origins
