@@ -2,8 +2,12 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
+const { Op } = require("sequelize");
+const moment = require("moment-timezone");
+const smtpService = require("../services/smtp.service");
 
 const Event = db.Event;
+const User = db.User;
 
 const EventController = () => {
   const create = async (req, res) => {
@@ -192,12 +196,112 @@ const EventController = () => {
     }
   };
 
+  const sendEmailAfterEvent = async (event) => {
+    try {
+      let requests = event.users.map((user) => {
+        return User.findOne({
+          where: {
+            id: user,
+          },
+        });
+      });
+      const users = await Promise.all(requests);
+
+      const smtpTransort = {
+        service: "gmail",
+        auth: {
+          user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+        },
+      };
+
+      let mailOptions = {
+        from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        subject: `Did you attend ${event.title}? – Get Your Digital Certificate!`,
+      };
+
+      requests = users.map((user) => {
+        mailOptions.to = user.email;
+        mailOptions.html = `
+          Hi ${user.firstName},
+          <br/>
+          Were you able to attend our ${event.title} event?
+          <br/>
+          <br/>
+          If so, please go back to the Hacking HR LAB, click on Events and My Past Events, and certify your attendance.
+          <br/>
+          And if you are a Hacking HR LAB PREMIUM Member, you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits.
+          <br/>
+          <br/>
+          Thank you! We hope to see you in many more events!
+          <br/>
+          Hacking HR Team
+        `;
+
+        console.log("**** mailOptions = ", mailOptions);
+        return smtpService().sendMail(smtpTransort, mailOptions);
+      });
+      await Promise.all(requests);
+      console.log("******* sent !!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const emailAfterEventThread = async () => {
+    console.log("***** calling emailAfterEvent", moment().toString());
+
+    try {
+      const currentUTCTime = moment.utc().format();
+      const results = await Event.findAll({
+        where: {
+          [Op.and]: [
+            {
+              startDate: {
+                [Op.lte]: currentUTCTime,
+              },
+            },
+            {
+              isOverEmailSent: {
+                [Op.not]: true,
+              },
+            },
+          ],
+        },
+      });
+
+      let requests = [];
+      requests = results.map((event) => {
+        return sendEmailAfterEvent(event);
+      });
+      await Promise.all(requests);
+
+      if (results && results.length > 0) {
+        await Event.update(
+          {
+            isOverEmailSent: true,
+          },
+          {
+            where: {
+              id: {
+                [Op.in]: results.map((event) => event.id),
+              },
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     create,
     getAllEvents,
     getEvent,
     updateEvent,
     updateEventStatus,
+    emailAfterEventThread,
   };
 };
 
