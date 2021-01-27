@@ -6,6 +6,9 @@ const Sequelize = require("sequelize");
 const smtpService = require("../services/smtp.service");
 const moment = require("moment");
 const TimeZoneList = require("../enum/TimeZoneList");
+const { readExcelFile, progressLog } = require("../utils/excel");
+const { USER_ROLE } = require("../enum");
+const bcryptService = require("../services/bcrypt.service");
 
 const QueryTypes = Sequelize.QueryTypes;
 const User = db.User;
@@ -331,6 +334,43 @@ const UserController = () => {
     }
   };
 
+  const importUsers = async (fileName) => {
+    const users = readExcelFile(fileName);
+
+    try {
+      for (let index = 0; index < users.length; index++) {
+        const username = users[index].first_name
+          ? users[index].first_name.split(" ")
+          : [""];
+        let userInfo = {
+          email: users[index].email,
+          password: bcryptService().password("12345678"),
+          firstName: username[0],
+          lastName: username.length > 1 ? username[1] : "",
+          role: USER_ROLE.USER,
+        };
+
+        userInfo.percentOfCompletion = profileUtils.getProfileCompletion(
+          userInfo
+        );
+        userInfo.completed = userInfo.percentOfCompletion === 100;
+        userInfo.abbrName = `${(userInfo.firstName || "")
+          .slice(0, 1)
+          .toUpperCase()}${(userInfo.lastName || "")
+          .slice(0, 1)
+          .toUpperCase()}`;
+
+        await User.create(userInfo);
+
+        progressLog(`${index + 1} / ${users.length} created.`);
+      }
+
+      console.log("Done.");
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   return {
     getUser,
     updateUser,
@@ -338,6 +378,7 @@ const UserController = () => {
     addEvent,
     removeEvent,
     getMyEvents,
+    importUsers,
   };
 };
 

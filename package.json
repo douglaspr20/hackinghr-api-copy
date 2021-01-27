@@ -33,6 +33,7 @@
     "request": "^2.88.2",
     "sequelize": "^6.3.5",
     "sequelize-cli": "^6.2.0",
-    "stripe": "^8.130.0"
+    "stripe": "^8.130.0",
+    "xlsx": "^0.16.9"
   }
 }
