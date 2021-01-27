@@ -48,6 +48,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       mentor: DataTypes.INTEGER,
       mentee: DataTypes.INTEGER,
+      subscription_startdate: DataTypes.DATE,
+      subscription_enddate: DataTypes.DATE,
+      external_payment: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,

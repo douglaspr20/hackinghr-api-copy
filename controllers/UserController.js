@@ -334,7 +334,7 @@ const UserController = () => {
     }
   };
 
-  const importUsers = async (fileName) => {
+  const importUsers = async (fileName, startDate, endDate) => {
     const users = readExcelFile(fileName);
 
     try {
@@ -348,6 +348,10 @@ const UserController = () => {
           firstName: username[0],
           lastName: username.length > 1 ? username[1] : "",
           role: USER_ROLE.USER,
+          subscription_startdate: startDate,
+          subscription_enddate: endDate,
+          external_payment: 1,
+          memberShip: "premium",
         };
 
         userInfo.percentOfCompletion = profileUtils.getProfileCompletion(
@@ -369,7 +373,7 @@ const UserController = () => {
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 
   return {
     getUser,
