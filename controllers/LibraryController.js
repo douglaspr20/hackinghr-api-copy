@@ -47,6 +47,47 @@ const LibraryController = () => {
       .json({ msg: "Bad Request: Title is needed." });
   };
 
+  const share = async (req, res) => {
+    const { body } = req;
+
+    if (body.title) {
+      try {
+        let libraryInfo = {
+          ...body,
+          link: body.link ? `https://${body.link}` : "",
+        };
+
+        if (libraryInfo.image) {
+          libraryInfo.image = await s3Service().getLibraryImageUrl(
+            "",
+            libraryInfo.image
+          );
+        }
+
+        const newLibrary = await Library.create(libraryInfo);
+
+        if (!newLibrary) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        // send email to admin user.
+
+        return res.status(HttpCodes.OK).json({ library: newLibrary });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error", error: error });
+      }
+    }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Title is needed." });
+  }
+
   const getAll = async (req, res) => {
     const filter = req.query;
 
@@ -165,6 +206,7 @@ const LibraryController = () => {
 
   return {
     create,
+    share,
     getAll,
     getLibrary,
     getRecommendations,
