@@ -1,29 +1,24 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Marketplace extends Model {
+  class MarketplaceCategories extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      MarketplaceCategories.hasMany(models.Marketplace);
     }
   }
-  Marketplace.init(
+  MarketplaceCategories.init(
     {
       name: DataTypes.STRING,
-      logoUrl: DataTypes.STRING,
-      description: DataTypes.STRING,
-      url: DataTypes.STRING,
-      contact_name: DataTypes.STRING,
-      contact_email: DataTypes.STRING,
-      contact_phone: DataTypes.STRING,
     },
     {
       sequelize,
-      modelName: "Marketplace",
+      modelName: "MarketplaceCategories",
     }
   );
-  return Marketplace;
+  return MarketplaceCategories;
 };

@@ -1,19 +1,18 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const s3Service = require("../services/s3.service");
 
-const Marketplace = db.Marketplace;
+const MarketplaceCategories = db.MarketplaceCategories;
 
-const MarketplaceController = () => {
+const MarketplaceCategoriesController = () => {
   /**
-   * Method to get all MarketPlace objects
+   * Method to get all MarketplaceCategories objects
    * @param {*} req 
    * @param {*} res 
    */
   const getAll = async (req, res) => {
     try {
-      let marketplace = await Marketplace.findAll();
-      if (!marketplace) {
+      let marketplaceCategories = await MarketplaceCategories.findAll();
+      if (!marketplaceCategories) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
@@ -21,7 +20,7 @@ const MarketplaceController = () => {
 
       return res
         .status(HttpCodes.OK)
-        .json(marketplace);
+        .json(marketplaceCategories);
     } catch (error) {
       console.log(error);
       return res
@@ -38,13 +37,13 @@ const MarketplaceController = () => {
     const { id } = req.params;
     if (id) {
       try {
-        const marketPlace = await Marketplace.findOne({
+        const marketplaceCategories = await MarketplaceCategories.findOne({
           where: {
             id,
           },
         });
 
-        if (!marketPlace) {
+        if (!marketplaceCategories) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
@@ -52,7 +51,7 @@ const MarketplaceController = () => {
 
         return res
           .status(HttpCodes.OK)
-          .json(marketPlace);
+          .json(marketplaceCategories);
       } catch (error) {
         console.log(error);
         return res
@@ -71,32 +70,8 @@ const MarketplaceController = () => {
    * @param {*} res 
    */
   const add = async (req, res) => {
-    const { 
-      name,
-      description,
-      url,
-      contact_name,
-      contact_email,
-      contact_phone,
-      logoUrl,
-      MarketplaceCategoryId,
-    } = req.body;
     try {
-      let marketplace = await Marketplace.create({
-        name,
-        description,
-        url,
-        contact_name,
-        contact_email,
-        contact_phone,
-        MarketplaceCategoryId,
-      });
-      if (logoUrl) {
-        let imageUrl = await s3Service().getMarketplaceImageUrl('', logoUrl);
-        await Marketplace.update({ logoUrl: imageUrl }, {
-          where: { id: marketplace.id }
-        })
-      }
+      await MarketplaceCategories.create(req.body);
       return res
         .status(HttpCodes.OK)
         .send();
@@ -114,35 +89,20 @@ const MarketplaceController = () => {
    */
   const update = async (req, res) => {
     const { id } = req.params;
-    const { body } = req
+    const { body } = req;
 
     if (id) {
       try {
         let data = {};
         let fields = [
           'name',
-          'description',
-          'url',
-          'contact_name',
-          'contact_email',
-          'contact_phone',
-          'MarketplaceCategoryId',
         ];
         for (let item of fields) {
           if (body[item]) {
             data = { ...data, [item]: body[item] };
           }
         }
-        if (body.logoUrl) {
-          const marketplace = await Marketplace.findOne({
-            where: {
-              id,
-            },
-          });
-          let imageUrl = await s3Service().getMarketplaceImageUrl((marketplace.logoUrl || ''), body.logoUrl);
-          data = { ...data, logoUrl: imageUrl }
-        }
-        await Marketplace.update(data, {
+        await MarketplaceCategories.update(data, {
           where: { id }
         })
         return res
@@ -170,7 +130,7 @@ const MarketplaceController = () => {
 
     if (id) {
       try {
-        await Marketplace.destroy({
+        await MarketplaceCategories.destroy({
           where: { id }
         });
         return res
@@ -198,4 +158,4 @@ const MarketplaceController = () => {
   };
 };
 
-module.exports = MarketplaceController;
+module.exports = MarketplaceCategoriesController;
