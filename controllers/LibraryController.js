@@ -1,9 +1,11 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
+const { isValidURL } = require("../utils/profile");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
+const { ReviewStatus } = require("../enum");
 
 const Library = db.Library;
 
@@ -86,7 +88,7 @@ const LibraryController = () => {
     return res
       .status(HttpCodes.BAD_REQUEST)
       .json({ msg: "Bad Request: Title is needed." });
-  }
+  };
 
   const getAll = async (req, res) => {
     const filter = req.query;
@@ -204,12 +206,151 @@ const LibraryController = () => {
     }
   };
 
+  const update = async (req, res) => {
+    const { id } = req.params;
+    const library = req.body;
+
+    try {
+      let libraryInfo = {
+        ...library,
+      };
+
+      const prevLibrary = await Library.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!prevLibrary) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request: library not found." });
+      }
+
+      if (library.image && !isValidURL(library.image)) {
+        libraryInfo.image = await s3Service().getLibraryImageUrl(
+          "",
+          library.image
+        );
+
+        if (prevLibrary.image) {
+          await s3Service().deleteUserPicture(prevLibrary.image);
+        }
+      }
+
+      if (prevLibrary.image && !library.image) {
+        await s3Service().deleteUserPicture(prevLibrary.image);
+      }
+
+      const [numberOfAffectedRows, affectedRows] = await Library.update(
+        libraryInfo,
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const approve = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await Library.update(
+        {
+          approvalStatus: ReviewStatus.APPROVED,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const reject = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await Library.update(
+        {
+          approvalStatus: ReviewStatus.REJECTED,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const recommend = async (req, res) => {
+    const { id } = req.params;
+    const { recommend } = req.body;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await Library.update(
+        {
+          recommended: recommend,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     share,
     getAll,
     getLibrary,
     getRecommendations,
+    update,
+    approve,
+    reject,
+    recommend,
   };
 };
 
