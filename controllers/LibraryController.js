@@ -158,6 +158,79 @@ const LibraryController = () => {
     }
   };
 
+  const getApproved = async (req, res) => {
+    const filter = req.query;
+
+    try {
+      let where = {};
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      if (
+        filter["content type"] &&
+        !isEmpty(JSON.parse(filter["content type"]))
+      ) {
+        where = {
+          ...where,
+          contentType: JSON.parse(filter["content type"]),
+        };
+      }
+
+      if (filter.language && !isEmpty(JSON.parse(filter.language))) {
+        where = {
+          ...where,
+          language: {
+            [Op.overlap]: JSON.parse(filter.language),
+          },
+        };
+      }
+
+      where = {
+        ...where,
+        approvalStatus: ReviewStatus.APPROVED,
+      };
+
+      let order = [];
+
+      switch (filter.order) {
+        case SortOptions["Newest first"]:
+          order.push(["createdAt", "DESC"]);
+          break;
+        case SortOptions["Newest last"]:
+          order.push(["createdAt", "ASC"]);
+          break;
+        case SortOptions["Sort by name"]:
+          order.push(["title", "ASC"]);
+          break;
+        case SortOptions["Sort by type"]:
+          order.push(["contentType", "ASC"]);
+          break;
+        default:
+      }
+
+      const libraries = await Library.findAndCountAll({
+        where,
+        offset: (filter.page - 1) * filter.num,
+        limit: filter.num,
+        order,
+      });
+
+      return res.status(HttpCodes.OK).json({ libraries });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const getLibrary = async (req, res) => {
     const { id } = req.params;
 
@@ -351,6 +424,7 @@ const LibraryController = () => {
     approve,
     reject,
     recommend,
+    getApproved,
   };
 };
 

@@ -5,6 +5,7 @@ const adminRoutes = {
   "POST /podcast/": "PodcastController.add",
   "PUT /podcast/:id": "PodcastController.update",
   "DELETE /podcast/:id": "PodcastController.remove",
+  "GET /library/all/": "LibraryController.getAll",
   "POST /library/": "LibraryController.create",
   "PUT /library/:id": "LibraryController.update",
   "PUT /library/approve/:id": "LibraryController.approve",
