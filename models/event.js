@@ -44,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      publicLink: DataTypes.STRING,
     },
     {
       sequelize,
