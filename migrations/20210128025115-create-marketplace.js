@@ -11,7 +11,7 @@ module.exports = {
       },
       name: Sequelize.STRING,
       logoUrl: Sequelize.STRING,
-      description: Sequelize.STRING,
+      description: Sequelize.STRING(1000),
       url: Sequelize.STRING,
       MarketplaceCategoryId: {
         type: Sequelize.INTEGER,
@@ -26,6 +26,7 @@ module.exports = {
       contact_name: Sequelize.STRING,
       contact_email: Sequelize.STRING,
       contact_phone: Sequelize.STRING,
+      contact_position: Sequelize.STRING,
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

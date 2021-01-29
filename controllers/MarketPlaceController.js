@@ -12,13 +12,23 @@ const MarketplaceController = () => {
    * @param {*} res 
    */
   const getAll = async (req, res) => {
-    const { orderParam } = req.body;
+    const { orderParam, filter } = req.body;
     try {
+      let where = {};
+      if(filter){
+        let filterData = JSON.parse(filter);
+        if(filterData.length > 0){
+          where = {
+            MarketplaceCategoryId: filterData,
+          };
+        }
+      }
       let marketplace = await Marketplace.findAll({
         include: {
           model: MarketplaceCategories,
           required: true,
         },
+        where,
         order: [
           ['name', orderParam],
         ]
@@ -88,6 +98,7 @@ const MarketplaceController = () => {
       contact_name,
       contact_email,
       contact_phone,
+      contact_position,
       logoUrl,
       MarketplaceCategoryId,
     } = req.body;
@@ -99,6 +110,7 @@ const MarketplaceController = () => {
         contact_name,
         contact_email,
         contact_phone,
+        contact_position,
         MarketplaceCategoryId,
       });
       if (logoUrl) {
@@ -136,6 +148,7 @@ const MarketplaceController = () => {
           'contact_name',
           'contact_email',
           'contact_phone',
+          'contact_position',
           'MarketplaceCategoryId',
         ];
         for (let item of fields) {
