@@ -11,7 +11,8 @@ const publicRoutes = {
   "POST /auth/verify-token": "AuthController.verifyResetPasswordToken",
   "PATCH /auth/reset-password": "AuthController.resetPassword",
   "POST /stripe/webhook": "StripeController.webhook",
-  "GET /marketPlace/": "MarketPlaceController.getAll",
+  "POST /marketPlace/": "MarketplaceController.getAll",
+  "GET /marketPlace-categories/": "MarketplaceCategoriesController.getAll",
 };
 
 module.exports = publicRoutes;

@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 
 const Marketplace = db.Marketplace;
+const MarketplaceCategories = db.MarketplaceCategories;
 
 const MarketplaceController = () => {
   /**
@@ -11,8 +12,17 @@ const MarketplaceController = () => {
    * @param {*} res 
    */
   const getAll = async (req, res) => {
+    const { orderParam } = req.body;
     try {
-      let marketplace = await Marketplace.findAll();
+      let marketplace = await Marketplace.findAll({
+        include: {
+          model: MarketplaceCategories,
+          required: true,
+        },
+        order: [
+          ['name', orderParam],
+        ]
+      });
       if (!marketplace) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
