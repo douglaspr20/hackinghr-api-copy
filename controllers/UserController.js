@@ -202,18 +202,18 @@ const UserController = () => {
     };
 
     if (calendarInvite) {
-      let alternatives = {
-        "Content-Type": "text/calendar",
-        method: "REQUEST",
-        content: new Buffer(calendarInvite.toString()),
-        component: "VEVENT",
-        "Content-Class": "urn:content-classes:calendarmessage",
-      };
-      mailOptions["alternatives"] = alternatives;
-      mailOptions["alternatives"]["contentType"] = "text/calendar";
-      mailOptions["alternatives"]["content"] = new Buffer(
-        calendarInvite.toString()
-      );
+      // let alternatives = {
+      //   "Content-Type": "text/calendar",
+      //   method: "REQUEST",
+      //   content: new Buffer(calendarInvite.toString()),
+      //   component: "VEVENT",
+      //   "Content-Class": "urn:content-classes:calendarmessage",
+      // };
+      // mailOptions["alternatives"] = alternatives;
+      // mailOptions["alternatives"]["contentType"] = "text/calendar";
+      // mailOptions["alternatives"]["content"] = new Buffer(
+      //   calendarInvite.toString()
+      // );
     }
 
     console.log("**** mailOptions ", mailOptions);

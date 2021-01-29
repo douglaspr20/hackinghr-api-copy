@@ -41,7 +41,18 @@ const EventController = () => {
             .json({ msg: "Internal server error" });
         }
 
-        return res.status(HttpCodes.OK).json({ event });
+        const [numberOfAffectedRows, affectedRows] = await Event.update(
+          {
+            publicLink: `${process.env.DOMAIN_URL}public-event/${event.id}`,
+          },
+          {
+            where: { id: event.id },
+            returning: true,
+            plain: true,
+          }
+        );
+
+        return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {
         console.log(error);
         return res
