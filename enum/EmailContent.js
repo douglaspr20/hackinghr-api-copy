@@ -9,12 +9,11 @@ module.exports = {
     </p>
     <p>
       Thank you!
-    </p>
-    <p>
+      <br />
       Hacking HR Team.
     </p>
   `,
-  MENTEE_EMAIL: () => `
+  MENTEE_EMAIL: (source, target) => `
     <p>
       Hi, ${source.firstName} and ${target.firstName}, 
     </p>
@@ -26,8 +25,7 @@ module.exports = {
     </p>
     <p>
       Thank you!
-    </p>
-    <p>
+      <br />
       Hacking HR Team.
     </p>
   `,
