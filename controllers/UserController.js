@@ -9,6 +9,7 @@ const TimeZoneList = require("../enum/TimeZoneList");
 const { readExcelFile, progressLog } = require("../utils/excel");
 const { USER_ROLE } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
+const { getEventPeriod } = require("../utils/format");
 
 const QueryTypes = Sequelize.QueryTypes;
 const User = db.User;
@@ -184,15 +185,22 @@ const UserController = () => {
       html: `
         Hi, ${user.firstName}
         <br/>
-        <strongThank you for registering for ${event.title}!
+        <p>
+        <strong>Thank you for registering for ${event.title}!
         <br/>
-        We look forward to seeing you on ${startDate.format(
-          "MMM DD"
-        )} at ${startDate.format("h:mm a")}. 
+        We look forward to seeing you on ${getEventPeriod(
+          event.startDate,
+          event.endDate,
+          event.timezone
+        )}. 
+        </p>
         <br/>
+        <p>
         We are sending the calendar invite attached. Please add it in your calendar. 
         <br/>
         Please remember to go back to the Hacking HR LAB the day after the event and certify that you attended. If you are a PREMIUM MEMBER you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits. 
+        <br />
+        </p>
         <br />
         Thank you! 
         <br />

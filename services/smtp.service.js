@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const ical = require("ical-generator");
+const { EmailContent } = require("../enum");
 
 const smtpService = () => {
   const sendMail = async (smtpTransort, mailOptions) => {
@@ -79,9 +80,35 @@ const smtpService = () => {
     return cal;
   };
 
+  const sendMatchEvent = async (source, target, isMentor) => {
+    const smtpTransort = {
+      service: "gmail",
+      auth: {
+        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      },
+    };
+
+    const mailOptions = {
+      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      to: `${source.email}, ${target.email}`,
+      subject: `Mentor and Mentee!`,
+      html: isMentor
+        ? EmailContent.MENTOR_EMAIL(source, target)
+        : EmailContent.MENTEE_EMAIL(source, target),
+    };
+
+    console.log("**** mailOptions ", mailOptions);
+
+    const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+
+    return sentResult;
+  };
+
   return {
     sendMail,
     generateCalendarInvite,
+    sendMatchEvent,
   };
 };
 
