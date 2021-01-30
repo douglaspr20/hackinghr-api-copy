@@ -1,6 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const Sequelize = require("sequelize");
+const smtpService = require("../services/smtp.service");
 
 const Mentoring = db.Mentoring;
 const User = db.User;
@@ -149,19 +150,49 @@ const MentoringController = () => {
     const { source, target, match } = req.query;
 
     try {
-      let updates = {
-        connectedMembers: Sequelize.fn(
-          match ? "array_append" : "array_remove",
-          Sequelize.col("connectedMembers"),
-          target
-        ),
-      };
+      await Mentoring.update(
+        {
+          connectedMembers: Sequelize.fn(
+            match ? "array_append" : "array_remove",
+            Sequelize.col("connectedMembers"),
+            source
+          ),
+        },
+        {
+          where: { id: target },
+          returning: true,
+          plain: true,
+        }
+      );
 
-      const [numberOfAffectedRows, affectedRows] = await Mentoring.update(updates, {
-        where: { id: source },
-        returning: true,
-        plain: true,
-      });
+      const [numberOfAffectedRows, affectedRows] = await Mentoring.update(
+        {
+          connectedMembers: Sequelize.fn(
+            match ? "array_append" : "array_remove",
+            Sequelize.col("connectedMembers"),
+            target
+          ),
+        },
+        {
+          where: { id: source },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      const { isMentor } = affectedRows;
+
+      const [srcMember, targetMember] = await Promise.all(
+        isMentor ? [
+          User.findOne({ where: { mentor: source }}),
+          User.findOne({ where: { mentee: target }})
+        ] : [
+          User.findOne({ where: { mentee: source }}),
+          User.findOne({ where: { mentor: target }})
+        ]
+      )
+
+      await smtpService().sendMatchEvent(srcMember, targetMember, isMentor);
 
       return res
         .status(HttpCodes.OK)
