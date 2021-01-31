@@ -29,4 +29,26 @@ module.exports = {
       Hacking HR Team.
     </p>
   `,
+  EVENT_ATTEND_EMAIL: (user, event, getEventPeriod) => `
+    <p>
+    Hi, ${user.firstName}
+    </p>
+    <p>
+    Thank you for registering for ${event.title}!
+    <br/>
+    We look forward to seeing you on ${getEventPeriod(
+      event.startDate,
+      event.endDate,
+      event.timezone
+    )}. 
+    </p>
+    <p>
+    Please remember to go back to the Hacking HR LAB the day after the event and certify that you attended. If you are a PREMIUM MEMBER you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits. 
+    <br />
+    </p>
+    Thank you! 
+    <br />
+    Hacking HR Team
+    <br/>
+  `,
 };
