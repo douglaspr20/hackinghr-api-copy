@@ -7,7 +7,7 @@ const smtpService = require("../services/smtp.service");
 const moment = require("moment");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { readExcelFile, progressLog } = require("../utils/excel");
-const { USER_ROLE } = require("../enum");
+const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
 const { getEventPeriod } = require("../utils/format");
 
@@ -182,30 +182,7 @@ const UserController = () => {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: user.email,
       subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
-      html: `
-        <p>
-        Hi, ${user.firstName}
-        </p>
-        <p>
-        Thank you for registering for ${event.title}!
-        <br/>
-        We look forward to seeing you on ${getEventPeriod(
-          event.startDate,
-          event.endDate,
-          event.timezone
-        )}. 
-        </p>
-        <p>
-        We are sending the calendar invite attached. Please add it in your calendar. 
-        <br/>
-        Please remember to go back to the Hacking HR LAB the day after the event and certify that you attended. If you are a PREMIUM MEMBER you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits. 
-        <br />
-        </p>
-        Thank you! 
-        <br />
-        Hacking HR Team
-        <br/>
-      `,
+      html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
     };
 
     if (calendarInvite) {
