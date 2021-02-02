@@ -3,11 +3,13 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 const { Op } = require("sequelize");
+const Sequelize = require("sequelize");
 const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
 
 const Event = db.Event;
 const User = db.User;
+const QueryTypes = Sequelize.QueryTypes;
 
 const EventController = () => {
   const create = async (req, res) => {
@@ -306,6 +308,36 @@ const EventController = () => {
     }
   };
 
+  const getEventUsers = async (req, res) => {
+    const { id } = req.params;
+
+    if (id) {
+      try {
+        let query = `
+          SELECT public."Events".id as eventId, public."Users".*
+          FROM public."Events"
+          JOIN public."Users" ON public."Users".id = ANY (public."Events".users::int[])
+          WHERE public."Events".id = ${id};
+        `;
+
+        const userList = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+
+        return res.status(HttpCodes.OK).json({ userList });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: event id is wrong" });
+  };
+
   return {
     create,
     getAllEvents,
@@ -313,6 +345,7 @@ const EventController = () => {
     updateEvent,
     updateEventStatus,
     emailAfterEventThread,
+    getEventUsers,
   };
 };
 
