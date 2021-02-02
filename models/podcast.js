@@ -26,6 +26,8 @@ module.exports = (sequelize, DataTypes) => {
       radioPublicLink: DataTypes.STRING,
       spotifyLink: DataTypes.STRING,
       iHeartRadioLink: DataTypes.STRING,
+      topics: DataTypes.ARRAY(DataTypes.STRING),
+      contentType: DataTypes.STRING,
     },
     {
       sequelize,
