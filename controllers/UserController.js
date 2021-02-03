@@ -10,6 +10,7 @@ const { readExcelFile, progressLog } = require("../utils/excel");
 const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
 const { getEventPeriod } = require("../utils/format");
+const omit = require("lodash/omit");
 
 const QueryTypes = Sequelize.QueryTypes;
 const User = db.User;
@@ -228,10 +229,11 @@ const UserController = () => {
       );
 
       // update users and status field from Events model
+      const prevEvent = await Event.findOne({ where: { id: event.id } });
       const [numberOfAffectedRows, affectedRows] = await Event.update(
         {
           users: Sequelize.fn("array_append", Sequelize.col("users"), id),
-          [`status.${id}`]: "going",
+          status: { ...prevEvent.status, [id]: "going" },
         },
         {
           where: { id: event.id },
@@ -273,10 +275,11 @@ const UserController = () => {
         }
       );
 
+      const prevEvent = await Event.findOne({ where: { id: event.id } });
       const [numberOfAffectedRows, affectedRows] = await Event.update(
         {
           users: Sequelize.fn("array_remove", Sequelize.col("users"), id),
-          [`status.${id}`]: null,
+          status: omit(prevEvent.status, id),
         },
         {
           where: { id: event.id },
