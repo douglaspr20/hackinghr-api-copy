@@ -182,9 +182,10 @@ const EventController = () => {
 
     if (eventId && userId) {
       try {
+        const prevEvent = await Event.findOne({ where: { id: eventId } });
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
-            [`status.${userId}`]: status,
+            status: { ...prevEvent.status, [userId]: status },
           },
           {
             where: { id: eventId },
