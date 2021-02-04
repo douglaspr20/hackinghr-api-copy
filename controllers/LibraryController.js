@@ -27,6 +27,13 @@ const LibraryController = () => {
           );
         }
 
+        if (libraryInfo.image2) {
+          libraryInfo.image2 = await s3Service().getLibraryImageUrl(
+            "",
+            libraryInfo.image2
+          );
+        }
+
         const newLibrary = await Library.create(libraryInfo);
 
         if (!newLibrary) {
@@ -292,6 +299,22 @@ const LibraryController = () => {
 
       if (prevLibrary.image && !library.image) {
         await s3Service().deleteUserPicture(prevLibrary.image);
+      }
+
+      // in case of recommend image
+      if (library.image2 && !isValidURL(library.image2)) {
+        libraryInfo.image2 = await s3Service().getLibraryImageUrl(
+          "",
+          library.image2
+        );
+
+        if (prevLibrary.image2) {
+          await s3Service().deleteUserPicture(prevLibrary.image2);
+        }
+      }
+
+      if (prevLibrary.image2 && !library.image2) {
+        await s3Service().deleteUserPicture(prevLibrary.image2);
       }
 
       const [numberOfAffectedRows, affectedRows] = await Library.update(
