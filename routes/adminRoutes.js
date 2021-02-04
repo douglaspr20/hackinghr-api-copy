@@ -12,6 +12,9 @@ const adminRoutes = {
   "PUT /library/approve/:id": "LibraryController.approve",
   "PUT /library/reject/:id": "LibraryController.reject",
   "PUT /library/recommend/:id": "LibraryController.recommend",
+  "POST /category": "CategoryController.create",
+  "PUT /category": "CategoryController.update",
+  "DELETE /category/:id": "CategoryController.remove",
 };
 
 module.exports = adminRoutes;
