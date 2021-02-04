@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       topics: DataTypes.ARRAY(DataTypes.STRING),
       contentType: DataTypes.STRING,
       image: DataTypes.STRING,
+      image2: DataTypes.STRING,
       language: DataTypes.STRING,
       recommended: {
         type: DataTypes.BOOLEAN,
