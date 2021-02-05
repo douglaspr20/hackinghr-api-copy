@@ -32,7 +32,9 @@ const CategoryController = () => {
 
   const getAll = async (req, res) => {
     try {
-      const categories = await Category.findAll();
+      const categories = await Category.findAll({
+        order: [["title"]],
+      });
 
       return res.status(HttpCodes.OK).json({ categories });
     } catch (err) {
