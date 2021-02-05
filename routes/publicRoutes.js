@@ -11,6 +11,8 @@ const publicRoutes = {
   "POST /auth/verify-token": "AuthController.verifyResetPasswordToken",
   "PATCH /auth/reset-password": "AuthController.resetPassword",
   "POST /stripe/webhook": "StripeController.webhook",
+  "POST /marketPlace/": "MarketPlaceController.getAll",
+  "GET /marketPlace-categories/": "MarketplaceCategoriesController.getAll",
   "GET /event/:id/": "EventController.getEvent",
 };
 
