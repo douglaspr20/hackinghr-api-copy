@@ -3,6 +3,14 @@ const profileUtils = require("../utils/profile");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const Sequelize = require("sequelize");
+const smtpService = require("../services/smtp.service");
+const moment = require("moment");
+const TimeZoneList = require("../enum/TimeZoneList");
+const { readExcelFile, progressLog } = require("../utils/excel");
+const { USER_ROLE, EmailContent } = require("../enum");
+const bcryptService = require("../services/bcrypt.service");
+const { getEventPeriod } = require("../utils/format");
+const omit = require("lodash/omit");
 
 const QueryTypes = Sequelize.QueryTypes;
 const User = db.User;
@@ -141,12 +149,71 @@ const UserController = () => {
     }
   };
 
+  const getEventDescription = (rawData) => {
+    return rawData ? rawData.blocks.map((item) => item.text).join(`/n`) : "";
+  };
+
+  const generateAttendEmail = async (user, event) => {
+    const smtpTransort = {
+      service: "gmail",
+      auth: {
+        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      },
+    };
+
+    const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
+    const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
+    const timezone = TimeZoneList.find((item) => item.value === event.timezone);
+
+    const calendarInvite = smtpService().generateCalendarInvite(
+      startDate,
+      endDate,
+      event.title,
+      getEventDescription(event.description),
+      "",
+      // event.location,
+      `${process.env.DOMAIN_URL}/public-event/${event.id}`,
+      event.organizer,
+      process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER,
+      timezone.utc[0]
+    );
+
+    const mailOptions = {
+      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      to: user.email,
+      subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
+      html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
+    };
+
+    if (calendarInvite) {
+      // let alternatives = {
+      //   "Content-Type": "text/calendar",
+      //   method: "REQUEST",
+      //   content: new Buffer(calendarInvite.toString()),
+      //   component: "VEVENT",
+      //   "Content-Class": "urn:content-classes:calendarmessage",
+      // };
+      // mailOptions["alternatives"] = alternatives;
+      // mailOptions["alternatives"]["contentType"] = "text/calendar";
+      // mailOptions["alternatives"]["content"] = new Buffer(
+      //   calendarInvite.toString()
+      // );
+    }
+
+    console.log("**** mailOptions ", mailOptions);
+
+    const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+
+    return sentResult;
+  };
+
   const addEvent = async (req, res) => {
     let event = req.body;
     const { id } = req.token;
 
     try {
-      await User.update(
+      const [rows, user] = await User.update(
         {
           events: Sequelize.fn(
             "array_append",
@@ -162,10 +229,11 @@ const UserController = () => {
       );
 
       // update users and status field from Events model
+      const prevEvent = await Event.findOne({ where: { id: event.id } });
       const [numberOfAffectedRows, affectedRows] = await Event.update(
         {
           users: Sequelize.fn("array_append", Sequelize.col("users"), id),
-          [`status.${id}`]: "going",
+          status: { ...prevEvent.status, [id]: "going" },
         },
         {
           where: { id: event.id },
@@ -173,6 +241,8 @@ const UserController = () => {
           plain: true,
         }
       );
+
+      generateAttendEmail(user, affectedRows);
 
       return res
         .status(HttpCodes.OK)
@@ -205,10 +275,11 @@ const UserController = () => {
         }
       );
 
+      const prevEvent = await Event.findOne({ where: { id: event.id } });
       const [numberOfAffectedRows, affectedRows] = await Event.update(
         {
           users: Sequelize.fn("array_remove", Sequelize.col("users"), id),
-          [`status.${id}`]: null,
+          status: omit(prevEvent.status, id),
         },
         {
           where: { id: event.id },
@@ -250,6 +321,47 @@ const UserController = () => {
     }
   };
 
+  const importUsers = async (fileName, startDate, endDate) => {
+    const users = readExcelFile(fileName);
+
+    try {
+      for (let index = 0; index < users.length; index++) {
+        const username = users[index].first_name
+          ? users[index].first_name.split(" ")
+          : [""];
+        let userInfo = {
+          email: users[index].email,
+          password: bcryptService().password("12345678"),
+          firstName: username[0],
+          lastName: username.length > 1 ? username[1] : "",
+          role: USER_ROLE.USER,
+          subscription_startdate: startDate,
+          subscription_enddate: endDate,
+          external_payment: 1,
+          memberShip: "premium",
+        };
+
+        userInfo.percentOfCompletion = profileUtils.getProfileCompletion(
+          userInfo
+        );
+        userInfo.completed = userInfo.percentOfCompletion === 100;
+        userInfo.abbrName = `${(userInfo.firstName || "")
+          .slice(0, 1)
+          .toUpperCase()}${(userInfo.lastName || "")
+          .slice(0, 1)
+          .toUpperCase()}`;
+
+        await User.create(userInfo);
+
+        progressLog(`${index + 1} / ${users.length} created.`);
+      }
+
+      console.log("Done.");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -257,6 +369,7 @@ const UserController = () => {
     addEvent,
     removeEvent,
     getMyEvents,
+    importUsers,
   };
 };
 

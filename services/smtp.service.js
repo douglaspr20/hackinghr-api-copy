@@ -1,4 +1,6 @@
 const nodemailer = require("nodemailer");
+const ical = require("ical-generator");
+const { EmailContent } = require("../enum");
 
 const smtpService = () => {
   const sendMail = async (smtpTransort, mailOptions) => {
@@ -17,7 +19,7 @@ const smtpService = () => {
        * https://nodemailer.com/smtp/
        */
       const transporter = nodemailer.createTransport(smtpTransort);
-      
+
       /**
        * Message configuration (mailOptions)
        * {
@@ -42,8 +44,71 @@ const smtpService = () => {
     });
   };
 
+  const generateCalendarInvite = (
+    startTime,
+    endTime,
+    summary,
+    description,
+    location,
+    url,
+    name,
+    email,
+    timezone
+  ) => {
+    const cal = ical({ domain: process.env.DOMAIN_URL, name: "invite" });
+
+    cal.domain(process.env.DOMAIN_URL);
+
+    const eventObject = {
+      start: startTime,
+      end: endTime,
+      summary: summary,
+      description: description,
+      location: location,
+      url: url,
+      organizer: {
+        name,
+        email,
+      },
+      timezone,
+    };
+
+    console.log("**** eventObject ", eventObject);
+
+    cal.createEvent(eventObject);
+
+    return cal;
+  };
+
+  const sendMatchEvent = async (source, target, isMentor) => {
+    const smtpTransort = {
+      service: "gmail",
+      auth: {
+        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      },
+    };
+
+    const mailOptions = {
+      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      to: `${source.email}, ${target.email}`,
+      subject: `Mentor and Mentee!`,
+      html: isMentor
+        ? EmailContent.MENTOR_EMAIL(source, target)
+        : EmailContent.MENTEE_EMAIL(source, target),
+    };
+
+    console.log("**** mailOptions ", mailOptions);
+
+    const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+
+    return sentResult;
+  };
+
   return {
     sendMail,
+    generateCalendarInvite,
+    sendMatchEvent,
   };
 };
 

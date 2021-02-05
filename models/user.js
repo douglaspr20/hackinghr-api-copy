@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       company: DataTypes.STRING,
       location: DataTypes.STRING,
       city: DataTypes.STRING,
-      about: DataTypes.STRING,
+      about: DataTypes.TEXT,
       titleProfessions: DataTypes.STRING,
       proficiencyLevel: DataTypes.STRING,
       topicsOfInterest: DataTypes.ARRAY(DataTypes.STRING),
@@ -43,8 +43,16 @@ module.exports = (sequelize, DataTypes) => {
         values: ["free", "premium"],
       },
       events: {
-        type:DataTypes.ARRAY(DataTypes.INTEGER),
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
+      },
+      mentor: DataTypes.INTEGER,
+      mentee: DataTypes.INTEGER,
+      subscription_startdate: DataTypes.DATE,
+      subscription_enddate: DataTypes.DATE,
+      external_payment: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
     },
     {

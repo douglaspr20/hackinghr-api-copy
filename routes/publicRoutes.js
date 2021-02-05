@@ -13,6 +13,7 @@ const publicRoutes = {
   "POST /stripe/webhook": "StripeController.webhook",
   "POST /marketPlace/": "MarketplaceController.getAll",
   "GET /marketPlace-categories/": "MarketplaceCategoriesController.getAll",
+  "GET /event/:id/": "EventController.getEvent",
 };
 
 module.exports = publicRoutes;

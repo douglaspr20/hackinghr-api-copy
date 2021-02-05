@@ -1,5 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
+const { ReviewStatus } = require("../enum");
+
 module.exports = (sequelize, DataTypes) => {
   class Library extends Model {
     /**
@@ -15,14 +17,24 @@ module.exports = (sequelize, DataTypes) => {
     {
       title: DataTypes.STRING,
       link: DataTypes.STRING,
-      description: DataTypes.STRING,
+      description: DataTypes.TEXT,
       topics: DataTypes.ARRAY(DataTypes.STRING),
       contentType: DataTypes.STRING,
       image: DataTypes.STRING,
+      image2: DataTypes.STRING,
       language: DataTypes.STRING,
       recommended: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+      },
+      approvalStatus: {
+        type: DataTypes.STRING,
+        values: [
+          ReviewStatus.APPROVED,
+          ReviewStatus.REJECTED,
+          ReviewStatus.PENDING,
+        ],
+        defaultValue: ReviewStatus.PENDING,
       },
     },
     {

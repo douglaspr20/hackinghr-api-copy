@@ -40,6 +40,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
+      isOverEmailSent: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      publicLink: DataTypes.STRING,
     },
     {
       sequelize,

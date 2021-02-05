@@ -1,7 +1,6 @@
 const privateRoutes = {
   "GET /user/": "UserController.getUser",
   "GET /events/": "EventController.getAllEvents",
-  "GET /event/:id/": "EventController.getEvent",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
   "PUT /user/": "UserController.updateUser",
@@ -16,11 +15,19 @@ const privateRoutes = {
   "POST /heart/": "HeartController.add",
   "PUT /heart/:id": "HeartController.update",
   "DELETE /heart/:id": "HeartController.remove",
-  "POST /library/": "LibraryController.create",
-  "GET /library/all/": "LibraryController.getAll",
+  "POST /library/share": "LibraryController.share",
+  "GET /library/approved/": "LibraryController.getApproved",
   "GET /library/recommendations/": "LibraryController.getRecommendations",
   "GET /library/:id/": "LibraryController.getLibrary",
+  "POST /mentoring": "MentoringController.create",
+  "GET /mentoring": "MentoringController.getMentoringInfo",
+  "PUT /mentoring": "MentoringController.updateMentoringInfo",
+  "GET /mentor/all/": "MentoringController.getMentorList",
+  "GET /mentee/all/": "MentoringController.getMenteeList",
+  "PUT /mentoring/match": "MentoringController.setMatch",
   "GET /podcast/": "PodcastController.getAll",
+  "GET /category": "CategoryController.getAll",
+  "GET /category/:id": "CategoryController.get",
 };
 
 module.exports = privateRoutes;
