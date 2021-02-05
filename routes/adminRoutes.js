@@ -13,7 +13,7 @@ const adminRoutes = {
   "PUT /library/reject/:id": "LibraryController.reject",
   "PUT /library/recommend/:id": "LibraryController.recommend",
   "POST /category": "CategoryController.create",
-  "PUT /category": "CategoryController.update",
+  "PUT /category/:id": "CategoryController.update",
   "DELETE /category/:id": "CategoryController.remove",
 };
 

@@ -5,21 +5,29 @@ const Category = db.Category;
 
 const CategoryController = () => {
   const create = async (req, res) => {
-    const { body } = req;
+    const { title, value } = req.body;
 
-    try {
-      let categoryInfo = {
-        ...body,
-      };
+    if (title) {
+      try {
+        let categoryInfo = {
+          title,
+          value,
+        };
 
-      const category = await Category.create(categoryInfo);
+        const category = await Category.create(categoryInfo);
 
-      return res.status(HttpCodes.OK).json({ category });
-    } catch (error) {
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error", error: err });
+        return res.status(HttpCodes.OK).json({ category });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error", error });
+      }
     }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: title is not empty." });
   };
 
   const getAll = async (req, res) => {
