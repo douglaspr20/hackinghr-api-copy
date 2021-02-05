@@ -119,6 +119,8 @@ const CategoryController = () => {
             id,
           },
         });
+
+        return res.status(HttpCodes.OK).json({});
       } catch (error) {
         console.log(error);
         return res
