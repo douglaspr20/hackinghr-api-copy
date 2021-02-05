@@ -1,5 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const isEmpty = require("lodash/isEmpty");
+const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 
 const { AWSConfig } = require("../enum");
@@ -14,8 +16,20 @@ const PodcastController = () => {
    * @param {*} res 
    */
   const getAll = async (req, res) => {
+    const filter = req.query;
     try {
+      let where = {};
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
       let podcast = await Podcast.findAll({
+        where,
         order: [
           ['order', 'DESC'],
         ],
@@ -80,7 +94,7 @@ const PodcastController = () => {
   const add = async (req, res) => {
     const { imageData } = req.body;
     try {
-      let podcast = await Podcast.create(req.body);
+      let podcast = await Podcast.create({...req.body, contentType: 'podcast'});
       if(imageData){
         let imageUrl = await s3Service().getPodcastImageUrl('', imageData);
         await Podcast.update({ imageUrl: imageUrl }, {
@@ -125,6 +139,8 @@ const PodcastController = () => {
           'radioPublicLink',
           'spotifyLink',
           'iHeartRadioLink',
+          'topics',
+          'contentType',
         ];
         for(let item of fields){
           if(body[item]){
