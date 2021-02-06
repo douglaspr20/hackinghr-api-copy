@@ -190,15 +190,24 @@ const UserController = () => {
       let alternatives = {
         "Content-Type": "text/calendar",
         method: "REQUEST",
+        charset: "UTF-8",
         content: new Buffer(calendarInvite.toString()),
         component: "VEVENT",
         "Content-Class": "urn:content-classes:calendarmessage",
       };
       mailOptions["alternatives"] = alternatives;
-      mailOptions["alternatives"]["contentType"] = "text/calendar";
+      mailOptions["alternatives"]["contentType"] = "application/ics";
       mailOptions["alternatives"]["content"] = new Buffer(
         calendarInvite.toString()
       );
+      mailOptions["attachments"] = [
+        {
+            filename: 'invite.ics',
+            content: calendarInvite.toString(),
+            contentType: 'application/ics; charset=UTF-8; method=REQUEST',
+            contentDisposition: 'inline'
+        },
+      ]
     }
 
     console.log("**** mailOptions ", mailOptions);
