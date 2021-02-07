@@ -30,7 +30,7 @@ function getEventPeriod(date, date2, timezone) {
       "h:mm a"
     )} to ${endDate.format("h:mm a")}, ${tz}`;
   } else {
-    res = `${date.format("h:mm a")} - ${date2.format(
+    res = `${startDate.format("h:mm a")} - ${endDate.format(
       "YYYY-MM-DD h:mm a"
     )} ${tz}`;
   }
