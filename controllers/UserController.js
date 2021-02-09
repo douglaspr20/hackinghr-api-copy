@@ -202,18 +202,21 @@ const UserController = () => {
       );
       mailOptions["attachments"] = [
         {
-            filename: 'invite.ics',
-            content: calendarInvite.toString(),
-            contentType: 'application/ics; charset=UTF-8; method=REQUEST',
-            contentDisposition: 'inline'
+          filename: "invite.ics",
+          content: calendarInvite.toString(),
+          contentType: "application/ics; charset=UTF-8; method=REQUEST",
+          contentDisposition: "inline",
         },
-      ]
+      ];
     }
 
     console.log("**** mailOptions ", mailOptions);
-    try{
-      const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
-    } catch(err) {
+    try {
+      const sentResult = await smtpService().sendMail(
+        smtpTransort,
+        mailOptions
+      );
+    } catch (err) {
       console.log(err);
     }
 
@@ -225,6 +228,9 @@ const UserController = () => {
     const { id } = req.token;
 
     try {
+      const prevUser = await User.findOne({
+        where: { id },
+      });
       const [rows, user] = await User.update(
         {
           events: Sequelize.fn(
@@ -232,6 +238,7 @@ const UserController = () => {
             Sequelize.col("events"),
             event.id
           ),
+          attended: { ...prevUser.attended, [event.id]: moment().format() },
         },
         {
           where: { id },
@@ -272,6 +279,9 @@ const UserController = () => {
     const { id } = req.token;
 
     try {
+      const prevUser = await User.findOne({
+        where: { id },
+      });
       await User.update(
         {
           events: Sequelize.fn(
@@ -279,6 +289,7 @@ const UserController = () => {
             Sequelize.col("events"),
             event.id
           ),
+          attended: omit(prevUser.attended, event.id),
         },
         {
           where: { id },
