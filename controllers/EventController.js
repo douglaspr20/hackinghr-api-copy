@@ -318,7 +318,8 @@ const EventController = () => {
           SELECT public."Events".id as eventId, public."Users".*
           FROM public."Events"
           JOIN public."Users" ON public."Users".id = ANY (public."Events".users::int[])
-          WHERE public."Events".id = ${id};
+          WHERE public."Events".id = ${id}
+          ORDER BY public."Users".firstName;
         `;
 
         const userList = await db.sequelize.query(query, {
