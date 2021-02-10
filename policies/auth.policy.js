@@ -23,7 +23,7 @@ const checkIsAdmin = async (req, res, next) => {
           .json({ msg: "Email is wrong." });
       }
 
-      if (user.role !== UserRoles.ADMIN) {
+      if (user.role !== UserRoles.ADMIN && user.role !== UserRoles.EDITOR) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "You are not allowed." });
@@ -66,7 +66,7 @@ const checkAdminRole = async (req, res, next) => {
           .json({ msg: "User not found." });
       }
 
-      if (user.role !== UserRoles.ADMIN) {
+      if (user.role !== UserRoles.ADMIN && user.role !== UserRoles.EDITOR) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "You are not allowed." });
