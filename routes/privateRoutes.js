@@ -28,6 +28,11 @@ const privateRoutes = {
   "GET /podcast/": "PodcastController.getAll",
   "GET /category": "CategoryController.getAll",
   "GET /category/:id": "CategoryController.get",
+  "GET /journey/": "JourneyController.getAll",
+  "GET /journey/:id": "JourneyController.get",
+  "POST /journey/": "JourneyController.add",
+  "PUT /journey/:id": "JourneyController.update",
+  "DELETE /journey/:id": "JourneyController.remove",
 };
 
 module.exports = privateRoutes;
