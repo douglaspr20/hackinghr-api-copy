@@ -99,19 +99,41 @@ const MentoringController = () => {
     const { id } = req.token;
 
     try {
-      let query = `
-      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
-        FROM public."Mentorings" 
-        JOIN public."Users" ON public."Mentorings".user = public."Users".id 
-        WHERE public."Mentorings"."isMentor" = 1 AND public."Mentorings"."user" <> ${id}
-        LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
-      `;
+      const user = await User.findByPk(id);
+      if (user.mentee) {
+        const menteeInfo = await Mentoring.findByPk(user.mentee);
 
-      const mentorList = await db.sequelize.query(query, {
-        type: QueryTypes.SELECT,
-      });
+        if (!menteeInfo) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Mentee Info not found." });
+        }
 
-      return res.status(HttpCodes.OK).json({ mentorList });
+        let query = `
+        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers,
+          CASE WHEN (public."Mentorings".areas)::text[] && ('{${menteeInfo.areas.join(
+            ","
+          )}}')::text[] THEN 1 ELSE 0 END AS ismatch,
+          SUM(CASE WHEN (public."Mentorings".areas)::text[] && ('{${menteeInfo.areas.join(
+            ","
+          )}}')::text[] THEN 1 ELSE 0 END) OVER() as matchnum
+          FROM public."Mentorings" 
+          JOIN public."Users" ON public."Mentorings".user = public."Users".id 
+          WHERE public."Mentorings"."isMentor" = 1 AND public."Mentorings"."user" <> ${id}
+          ORDER BY ismatch DESC
+          LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
+        `;
+
+        const mentorList = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+
+        return res.status(HttpCodes.OK).json({ mentorList });
+      }
+
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "You are not allowed." });
     } catch (error) {
       console.log(error);
       return res
@@ -125,19 +147,41 @@ const MentoringController = () => {
     const { id } = req.token;
 
     try {
-      let query = `
-      SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
-        FROM public."Mentorings" 
-        JOIN public."Users" ON public."Mentorings".user = public."Users".id 
-        WHERE public."Mentorings"."isMentor" = 0 AND public."Mentorings"."user" <> ${id}
-        LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
-      `;
+      const user = await User.findByPk(id);
+      if (user.mentor) {
+        const mentorInfo = await Mentoring.findByPk(user.mentor);
 
-      const menteeList = await db.sequelize.query(query, {
-        type: QueryTypes.SELECT,
-      });
+        if (!mentorInfo) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Mentor Info not found." });
+        }
 
-      return res.status(HttpCodes.OK).json({ menteeList });
+        let query = `
+        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers,
+          CASE WHEN (public."Mentorings".areas)::text[] && ('{${mentorInfo.areas.join(
+            ","
+          )}}')::text[] THEN 1 ELSE 0 END AS ismatch,
+          SUM(CASE WHEN (public."Mentorings".areas)::text[] && ('{${mentorInfo.areas.join(
+            ","
+          )}}')::text[] THEN 1 ELSE 0 END) OVER() as matchnum
+          FROM public."Mentorings" 
+          JOIN public."Users" ON public."Mentorings".user = public."Users".id 
+          WHERE public."Mentorings"."isMentor" = 0 AND public."Mentorings"."user" <> ${id}
+          ORDER BY ismatch DESC
+          LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
+        `;
+
+        const menteeList = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+
+        return res.status(HttpCodes.OK).json({ menteeList });
+      }
+
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "You are not allowed." });
     } catch (error) {
       console.log(error);
       return res
@@ -183,14 +227,16 @@ const MentoringController = () => {
       const { isMentor } = affectedRows;
 
       const [srcMember, targetMember] = await Promise.all(
-        isMentor ? [
-          User.findOne({ where: { mentor: source }}),
-          User.findOne({ where: { mentee: target }})
-        ] : [
-          User.findOne({ where: { mentee: source }}),
-          User.findOne({ where: { mentor: target }})
-        ]
-      )
+        isMentor
+          ? [
+              User.findOne({ where: { mentor: source } }),
+              User.findOne({ where: { mentee: target } }),
+            ]
+          : [
+              User.findOne({ where: { mentee: source } }),
+              User.findOne({ where: { mentor: target } }),
+            ]
+      );
 
       await smtpService().sendMatchEvent(srcMember, targetMember, isMentor);
 
