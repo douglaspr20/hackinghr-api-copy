@@ -44,7 +44,7 @@ module.exports = {
     )}. 
     </p>
     <p>
-    Please connect in this link at the time of the event: <a target="_blank" href="${event.publicLink}">${event.publicLink}</a>
+    Please connect in this link at the time of the event: <a target="_blank" href="${event.link}">${event.link}</a>
     </p>
     <p>
     Please remember to go back to the Hacking HR LAB the day after the event and certify that you attended. If you are a PREMIUM MEMBER you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits.
