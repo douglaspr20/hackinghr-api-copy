@@ -76,7 +76,6 @@ const StripeController = () => {
       });
       if(customers.data.length > 0){
         const customer = customers.data[0];
-        const subscription = customer.subscriptions.data[0];
         const session = await stripe.billingPortal.sessions.create({
           customer: customer.id,
           return_url: process.env.STRIPE_CALLBACK_URL,
@@ -84,7 +83,49 @@ const StripeController = () => {
 
         return res
           .status(HttpCodes.OK)
-          .json({ session, subscription })
+          .json({ session })
+          .send();
+      }else {
+        return res
+          .status(HttpCodes.OK)
+          .json({ session: null, subscription: null })
+          .send();
+      }
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" })
+        .send();
+    }
+  };
+  /**
+   * Function to get customer portal session object
+   * and return to redirect.
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const getSubscription = async (req, res) => {
+    const { id } = req.token;
+
+    const user = await User.findOne({
+      where: {
+        id,
+      },
+    });
+
+    try {
+      const customers = await stripe.customers.list({
+        email: user.email,
+        limit: 1,
+      });
+      if(customers.data.length > 0){
+        const customer = customers.data[0];
+        const subscription = customer.subscriptions.data[0];
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ subscription })
           .send();
       }else {
         return res
@@ -135,6 +176,7 @@ const StripeController = () => {
   return {
     createCheckoutSession,
     createPortalSession,
+    getSubscription,
     webhook,
   };
 };
