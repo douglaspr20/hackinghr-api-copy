@@ -1,9 +1,11 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
+const isEmpty = require("lodash/isEmpty");
+const { Op } = require("sequelize");
 
 const Marketplace = db.Marketplace;
-const MarketplaceCategories = db.MarketplaceCategories;
+const Category = db.Category;
 
 const MarketplaceController = () => {
   /**
@@ -16,18 +18,16 @@ const MarketplaceController = () => {
     try {
       let where = {};
       if(filter){
-        let filterData = JSON.parse(filter);
-        if(filterData.length > 0){
+        if (filter && !isEmpty(JSON.parse(filter))) {
           where = {
-            MarketplaceCategoryId: filterData,
+            ...where,
+            topics: {
+              [Op.overlap]: JSON.parse(filter),
+            },
           };
         }
       }
       let marketplace = await Marketplace.findAll({
-        include: {
-          model: MarketplaceCategories,
-          required: true,
-        },
         where,
         order: [
           ['name', orderParam],
@@ -100,7 +100,7 @@ const MarketplaceController = () => {
       contact_phone,
       contact_position,
       logoUrl,
-      MarketplaceCategoryId,
+      topics,
     } = req.body;
     try {
       let marketplace = await Marketplace.create({
@@ -111,7 +111,7 @@ const MarketplaceController = () => {
         contact_email,
         contact_phone,
         contact_position,
-        MarketplaceCategoryId,
+        topics,
       });
       if (logoUrl) {
         let imageUrl = await s3Service().getMarketplaceImageUrl('', logoUrl);
@@ -149,7 +149,7 @@ const MarketplaceController = () => {
           'contact_email',
           'contact_phone',
           'contact_position',
-          'MarketplaceCategoryId',
+          'topics',
         ];
         for (let item of fields) {
           if (body[item]) {
