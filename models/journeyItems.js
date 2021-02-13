@@ -8,7 +8,6 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      JourneyItems.hasMany(models.Journey);
     }
   }
   JourneyItems.init(

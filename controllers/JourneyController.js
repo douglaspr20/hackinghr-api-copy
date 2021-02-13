@@ -12,25 +12,16 @@ const JourneyController = () => {
    * @param {*} res 
    */
   const getAll = async (req, res) => {
-    const filter = req.query;
+    const { id: UserId } = req.token;
     try {
-      let where = {};
-
-      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
-        where = {
-          ...where,
-          topics: {
-            [Op.overlap]: JSON.parse(filter.topics),
-          },
-        };
-      }
-      let journey = await Journey.findAll({
+      let where = { UserId };
+      let journeys = await Journey.findAll({
         where,
         order: [
-          ['order', 'DESC'],
+          ['createdAt', 'DESC'],
         ],
       });
-      if (!journey) {
+      if (!journeys) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
@@ -38,7 +29,7 @@ const JourneyController = () => {
 
       return res
         .status(HttpCodes.OK)
-        .json({ journey });
+        .json({ journeys });
     } catch (error) {
       console.log(error);
       return res
