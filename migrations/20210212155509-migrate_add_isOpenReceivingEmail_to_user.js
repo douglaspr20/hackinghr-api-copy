@@ -11,7 +11,7 @@ module.exports = {
     return Promise.all([
       queryInterface.addColumn("Users", "isOpenReceivingEmail", {
         type: Sequelize.INTEGER,
-        defaultValue: 0,
+        defaultValue: -1,
       }),
     ]);
   },

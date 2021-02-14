@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       isOpenReceivingEmail: {
         type: DataTypes.INTEGER,
-        defaultValue: 0,
+        defaultValue: -1,
       },
     },
     {
