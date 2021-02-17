@@ -2,8 +2,14 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
+const Sequelize = require("sequelize");
 
+const QueryTypes = Sequelize.QueryTypes;
 const Journey = db.Journey;
+const JourneyItems = db.JourneyItems;
+const Library = db.Library;
+const Podcast = db.Podcast;
+const Event = db.Event;
 
 const JourneyController = () => {
   /**
@@ -79,9 +85,48 @@ const JourneyController = () => {
    * @param {*} res 
    */
   const add = async (req, res) => {
+    const { topics, contentType } = req.body;
     const { id: userId } = req.token;
     try {
-      await Journey.create({ ...req.body, UserId: userId });
+      let journey = await Journey.create({ ...req.body, UserId: userId });
+      topics.map((itemTopic) => {
+        contentType.map( async (itemContent) => {
+          let library = await Library.findAll({
+            where: {
+              topics: {
+                [Op.contains]: [itemTopic],
+              },
+              contentType: itemContent,
+              approvalStatus: 'approved',
+            }
+          });
+          library.map(async (itemLibrary) => {
+            try {
+              const results = await JourneyItems.findAll({
+                where: {
+                  JourneyId: journey.id,
+                  contentId: itemLibrary.dataValues.id,
+                  contentType: itemContent,
+                }
+              });
+              console.log({JourneyId: journey.id,
+                contentId: itemLibrary.dataValues.id,
+                contentType: itemContent,});
+              if(results.length == 0){
+                await JourneyItems.create({
+                  JourneyId: journey.id,
+                  contentType: itemContent,
+                  contentId: itemLibrary.dataValues.id,
+                  itemCreatedAt: itemLibrary.dataValues.createdAt,
+                });
+              }
+            } catch(error){
+              console.log(error);
+            }
+          });
+        });
+      });
+      
       return res
         .status(HttpCodes.OK)
         .send();

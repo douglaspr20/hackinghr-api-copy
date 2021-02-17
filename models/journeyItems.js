@@ -13,11 +13,13 @@ module.exports = (sequelize, DataTypes) => {
   JourneyItems.init(
     {
       contentType: DataTypes.STRING,
+      topic: DataTypes.INTEGER,
       contentId: DataTypes.INTEGER,
       viewed: DataTypes.BOOLEAN,
       removed: DataTypes.BOOLEAN,
       isNew: DataTypes.BOOLEAN,
       order: DataTypes.INTEGER,
+      itemCreatedAt: DataTypes.DATE,
     },
     {
       sequelize,
