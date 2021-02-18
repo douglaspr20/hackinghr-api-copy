@@ -385,6 +385,25 @@ const UserController = () => {
     }
   };
 
+  const getAll = async (req, res) => {
+    try {
+      const users = await User.findAll();
+
+      if (!users) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Bad Request: Users not found" });
+      }
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -393,6 +412,7 @@ const UserController = () => {
     removeEvent,
     getMyEvents,
     importUsers,
+    getAll,
   };
 };
 

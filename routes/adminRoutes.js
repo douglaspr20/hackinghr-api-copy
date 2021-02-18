@@ -23,6 +23,7 @@ const adminRoutes = {
   "POST /category": "CategoryController.create",
   "PUT /category/:id": "CategoryController.update",
   "DELETE /category/:id": "CategoryController.remove",
+  "GET /user/all": "UserController.getAll",
 };
 
 module.exports = adminRoutes;
