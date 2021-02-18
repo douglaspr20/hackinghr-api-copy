@@ -89,44 +89,47 @@ const JourneyController = () => {
     const { id: userId } = req.token;
     try {
       let journey = await Journey.create({ ...req.body, UserId: userId });
-      topics.map((itemTopic) => {
-        contentType.map( async (itemContent) => {
-          let library = await Library.findAll({
-            where: {
-              topics: {
-                [Op.contains]: [itemTopic],
-              },
-              contentType: itemContent,
-              approvalStatus: 'approved',
-            }
-          });
-          library.map(async (itemLibrary) => {
-            try {
-              const results = await JourneyItems.findAll({
-                where: {
-                  JourneyId: journey.id,
-                  contentId: itemLibrary.dataValues.id,
-                  contentType: itemContent,
-                }
-              });
-              console.log({JourneyId: journey.id,
-                contentId: itemLibrary.dataValues.id,
-                contentType: itemContent,});
-              if(results.length == 0){
-                await JourneyItems.create({
-                  JourneyId: journey.id,
-                  contentType: itemContent,
-                  contentId: itemLibrary.dataValues.id,
-                  itemCreatedAt: itemLibrary.dataValues.createdAt,
-                });
-              }
-            } catch(error){
-              console.log(error);
-            }
+
+      topics.forEach(async (itemTopic) => {
+        contentType.forEach(async (itemContent) => {
+          let prefixQuery = 'INSERT INTO "JourneyItems" ("JourneyId", "topic", "contentType", "contentId", "itemCreatedAt", "createdAt", "updatedAt") ';
+          let table = {
+            article: "Libraries",
+            event: "Events",
+            podcast: "Podcasts",
+            video: "Libraries",
+          };
+
+          let query = `
+            ${prefixQuery}
+            SELECT ${journey.id}, '${itemTopic}', '${itemContent}', public."${table[itemContent]}".id, public."${table[itemContent]}"."createdAt", NOW(), NOW()
+            FROM public."${table[itemContent]}"
+            WHERE`;
+
+          if (itemContent !== 'event') {
+            query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".topics)`;
+          } else {
+            query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".categories)`;
+          }
+
+          if (itemContent !== 'event') {
+            query += ` AND public."${table[itemContent]}"."contentType" = '${itemContent}'`;
+          }
+
+          query += `  AND public."${table[itemContent]}".id NOT IN 
+            (
+              SELECT public."JourneyItems"."contentId" from public."JourneyItems" 
+              WHERE public."JourneyItems"."JourneyId" = ${journey.id} 
+              AND public."JourneyItems"."contentType" = '${itemContent}'
+
+            )
+          `;
+          await db.sequelize.query(query, {
+            type: QueryTypes.INSERT,
           });
         });
       });
-      
+
       return res
         .status(HttpCodes.OK)
         .send();
@@ -208,6 +211,29 @@ const JourneyController = () => {
         .json({ msg: "Bad Request: data is wrong" });
     }
   };
+
+  const getJourneyItems = async () => {
+    const JourneyId = 1;
+    const query = `
+      SELECT id, title, description, link, "createdAt" FROM (
+        SELECT ji.id, l.title, l.description, l.link, l."createdAt" FROM "Libraries" l
+        INNER JOIN "JourneyItems" ji ON l.id = ji."contentId"
+        WHERE ji."JourneyId" = ${JourneyId}
+        AND ji."contentType" IN ('article', 'video')
+        UNION
+        SELECT ji.id, p.title, p.description, p."appleLink" AS link, p."createdAt" FROM "Podcasts" p
+        INNER JOIN "JourneyItems" ji ON p.id = ji."contentId"
+        WHERE ji."JourneyId" = ${JourneyId}
+        AND ji."contentType" = 'podcast'
+        UNION
+        SELECT ji.id, e.title, CAST(e.description AS varchar) AS description, e.link, e."createdAt" FROM "Events" e
+        INNER JOIN "JourneyItems" ji ON e.id = ji."contentId"
+        WHERE ji."JourneyId" = ${JourneyId}
+        AND ji."contentType" = 'event'
+      ) JourneyItemsUnion
+      ORDER BY "createdAt" DESC
+    `
+  }
 
   return {
     getAll,
