@@ -212,29 +212,6 @@ const JourneyController = () => {
     }
   };
 
-  const getJourneyItems = async () => {
-    const JourneyId = 1;
-    const query = `
-      SELECT id, title, description, link, "createdAt" FROM (
-        SELECT ji.id, l.title, l.description, l.link, l."createdAt" FROM "Libraries" l
-        INNER JOIN "JourneyItems" ji ON l.id = ji."contentId"
-        WHERE ji."JourneyId" = ${JourneyId}
-        AND ji."contentType" IN ('article', 'video')
-        UNION
-        SELECT ji.id, p.title, p.description, p."appleLink" AS link, p."createdAt" FROM "Podcasts" p
-        INNER JOIN "JourneyItems" ji ON p.id = ji."contentId"
-        WHERE ji."JourneyId" = ${JourneyId}
-        AND ji."contentType" = 'podcast'
-        UNION
-        SELECT ji.id, e.title, CAST(e.description AS varchar) AS description, e.link, e."createdAt" FROM "Events" e
-        INNER JOIN "JourneyItems" ji ON e.id = ji."contentId"
-        WHERE ji."JourneyId" = ${JourneyId}
-        AND ji."contentType" = 'event'
-      ) JourneyItemsUnion
-      ORDER BY "createdAt" DESC
-    `
-  }
-
   return {
     getAll,
     get,
