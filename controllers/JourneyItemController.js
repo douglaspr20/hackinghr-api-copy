@@ -1,26 +1,28 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const isEmpty = require("lodash/isEmpty");
-const { Op } = require("sequelize");
 const Sequelize = require("sequelize");
 
 const QueryTypes = Sequelize.QueryTypes;
-const Journey = db.Journey;
 const JourneyItems = db.JourneyItems;
-const Library = db.Library;
-const Podcast = db.Podcast;
-const Event = db.Event;
 
 const JourneyItemController = () => {
   /**
-   * Method to get all journey objects
+   * Method to get all JourneyItem objects by Journey
    * @param {*} req 
    * @param {*} res 
    */
   const getItemsByJourney = async (req, res) => {
     const { id } = req.params;
-    
+    let { removed } = req.query;
+    let loadRemovedItems = '';
+
     try {
+      removed = (removed === 'true');
+
+      if(removed === false){
+        loadRemovedItems = ' WHERE removed = FALSE ';
+      }
+
       const query = `
         SELECT * FROM (
           SELECT ji.*, l.title, l.description, l.link, l.image FROM "Libraries" l
@@ -38,6 +40,7 @@ const JourneyItemController = () => {
           WHERE ji."JourneyId" = ${id}
           AND ji."contentType" = 'event'
         ) JourneyItemsUnion
+        ${loadRemovedItems}
         ORDER BY "createdAt" DESC
       `;
 
@@ -63,8 +66,51 @@ const JourneyItemController = () => {
     }
   };
 
+  /**
+   * Method to updated JourneyItem object
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const update = async (req, res) => {
+    const { id } = req.params;
+    const { body } = req
+
+    if (id) {
+      try {
+        let data = {};
+        let fields = [
+          "viewed",
+          "removed",
+          "isNew",
+          "order",
+        ];
+        for (let item of fields) {
+          if (body[item] != null && body[item] != undefined) {
+            data = { ...data, [item]: body[item] };
+          }
+        }
+        await JourneyItems.update(data, {
+          where: { id }
+        });
+        return res
+          .status(HttpCodes.OK)
+          .send();
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
   return {
     getItemsByJourney,
+    update,
   };
 };
 module.exports = JourneyItemController;

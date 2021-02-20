@@ -1,15 +1,10 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const isEmpty = require("lodash/isEmpty");
-const { Op } = require("sequelize");
 const Sequelize = require("sequelize");
 
 const QueryTypes = Sequelize.QueryTypes;
 const Journey = db.Journey;
 const JourneyItems = db.JourneyItems;
-const Library = db.Library;
-const Podcast = db.Podcast;
-const Event = db.Event;
 
 const JourneyController = () => {
   /**
@@ -89,46 +84,7 @@ const JourneyController = () => {
     const { id: userId } = req.token;
     try {
       let journey = await Journey.create({ ...req.body, UserId: userId });
-
-      topics.forEach(async (itemTopic) => {
-        contentType.forEach(async (itemContent) => {
-          let prefixQuery = 'INSERT INTO "JourneyItems" ("JourneyId", "topic", "contentType", "contentId", "itemCreatedAt", "createdAt", "updatedAt") ';
-          let table = {
-            article: "Libraries",
-            event: "Events",
-            podcast: "Podcasts",
-            video: "Libraries",
-          };
-
-          let query = `
-            ${prefixQuery}
-            SELECT ${journey.id}, '${itemTopic}', '${itemContent}', public."${table[itemContent]}".id, public."${table[itemContent]}"."createdAt", NOW(), NOW()
-            FROM public."${table[itemContent]}"
-            WHERE`;
-
-          if (itemContent !== 'event') {
-            query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".topics)`;
-          } else {
-            query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".categories)`;
-          }
-
-          if (itemContent !== 'event') {
-            query += ` AND public."${table[itemContent]}"."contentType" = '${itemContent}'`;
-          }
-
-          query += `  AND public."${table[itemContent]}".id NOT IN 
-            (
-              SELECT public."JourneyItems"."contentId" from public."JourneyItems" 
-              WHERE public."JourneyItems"."JourneyId" = ${journey.id} 
-              AND public."JourneyItems"."contentType" = '${itemContent}'
-
-            )
-          `;
-          await db.sequelize.query(query, {
-            type: QueryTypes.INSERT,
-          });
-        });
-      });
+      loadJourneyItems(journey.id ,topics, contentType);
 
       return res
         .status(HttpCodes.OK)
@@ -147,7 +103,6 @@ const JourneyController = () => {
    */
   const update = async (req, res) => {
     const { id } = req.params;
-    const { id: userId } = req.token;
     const { body } = req
 
     if (id) {
@@ -158,16 +113,20 @@ const JourneyController = () => {
           "description",
           "topics",
           "contentType",
-          "mainLanguage",
         ];
         for (let item of fields) {
           if (body[item]) {
             data = { ...data, [item]: body[item] };
           }
         }
-        await Journey.update(data, {
+        let journey = await Journey.update(data, {
           where: { id }
         })
+        await JourneyItems.destroy({
+          where: { JourneyId: id }
+        });
+        loadJourneyItems(id, body.topics, body.contentType);
+
         return res
           .status(HttpCodes.OK)
           .send();
@@ -211,6 +170,48 @@ const JourneyController = () => {
         .json({ msg: "Bad Request: data is wrong" });
     }
   };
+
+  const loadJourneyItems = (journeyId, topics, contentType) => {
+    topics.forEach(async (itemTopic) => {
+      contentType.forEach(async (itemContent) => {
+        let prefixQuery = 'INSERT INTO "JourneyItems" ("JourneyId", "topic", "contentType", "contentId", "itemCreatedAt", "createdAt", "updatedAt") ';
+        let table = {
+          article: "Libraries",
+          event: "Events",
+          podcast: "Podcasts",
+          video: "Libraries",
+        };
+
+        let query = `
+          ${prefixQuery}
+          SELECT ${journeyId}, '${itemTopic}', '${itemContent}', public."${table[itemContent]}".id, public."${table[itemContent]}"."createdAt", NOW(), NOW()
+          FROM public."${table[itemContent]}"
+          WHERE`;
+
+        if (itemContent !== 'event') {
+          query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".topics)`;
+        } else {
+          query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".categories)`;
+        }
+
+        if (itemContent !== 'event') {
+          query += ` AND public."${table[itemContent]}"."contentType" = '${itemContent}'`;
+        }
+
+        query += `  AND public."${table[itemContent]}".id NOT IN 
+          (
+            SELECT public."JourneyItems"."contentId" from public."JourneyItems" 
+            WHERE public."JourneyItems"."JourneyId" = ${journeyId} 
+            AND public."JourneyItems"."contentType" = '${itemContent}'
+
+          )
+        `;
+        await db.sequelize.query(query, {
+          type: QueryTypes.INSERT,
+        });
+      });
+    });
+  }
 
   return {
     getAll,

@@ -12,10 +12,26 @@ module.exports = {
       contentType: Sequelize.STRING,
       topic: Sequelize.STRING,
       contentId: Sequelize.INTEGER,
-      viewed: Sequelize.BOOLEAN,
-      removed: Sequelize.BOOLEAN,
-      isNew: Sequelize.BOOLEAN,
-      order: Sequelize.INTEGER,
+      viewed: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      removed: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      isNew: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      order: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
       itemCreatedAt: Sequelize.DATE,
       JourneyId: {
         type: Sequelize.INTEGER,
