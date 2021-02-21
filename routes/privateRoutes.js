@@ -28,6 +28,7 @@ const privateRoutes = {
   "PUT /mentoring/match": "MentoringController.setMatch",
   "GET /podcast/": "PodcastController.getAll",
   "GET /category/:id": "CategoryController.get",
+  "GET /conference/": "ConferenceController.getAll",
 };
 
 module.exports = privateRoutes;
