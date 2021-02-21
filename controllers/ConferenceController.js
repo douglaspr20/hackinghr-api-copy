@@ -43,11 +43,11 @@ const ConferenceController = () => {
     try {
       let where = {};
 
-      if (filter.categories && !isEmpty(JSON.parse(filter.categories))) {
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
         where = {
           ...where,
           categories: {
-            [Op.overlap]: JSON.parse(filter.categories),
+            [Op.overlap]: JSON.parse(filter.topics),
           },
         };
       }
