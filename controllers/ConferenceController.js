@@ -52,10 +52,12 @@ const ConferenceController = () => {
         };
       }
 
-      if (filter.year) {
+      if (filter.year && !isEmpty(JSON.parse(filter.year))) {
         where = {
           ...where,
-          year: filter.year,
+          year: {
+            [Op.in]: JSON.parse(filter.year),
+          },
         };
       }
 
