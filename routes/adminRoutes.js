@@ -13,7 +13,8 @@ const adminRoutes = {
   "GET /marketplace-categories/:id": "MarketplaceCategoriesController.get",
   "POST /marketplace-categories/": "MarketplaceCategoriesController.add",
   "PUT /marketplace-categories/:id": "MarketplaceCategoriesController.update",
-  "DELETE /marketplace-categories/:id": "MarketplaceCategoriesController.remove",
+  "DELETE /marketplace-categories/:id":
+    "MarketplaceCategoriesController.remove",
   "GET /library/all/": "LibraryController.getAll",
   "POST /library/": "LibraryController.create",
   "PUT /library/:id": "LibraryController.update",
@@ -23,6 +24,11 @@ const adminRoutes = {
   "POST /category": "CategoryController.create",
   "PUT /category/:id": "CategoryController.update",
   "DELETE /category/:id": "CategoryController.remove",
+  "GET /user/all": "UserController.getAll",
+  "GET /conference/:id/": "ConferenceController.get",
+  "POST /conference/": "ConferenceController.create",
+  "PUT /conference/:id": "ConferenceController.update",
+  "DELETE /conference/:id": "ConferenceController.remove",
 };
 
 module.exports = adminRoutes;

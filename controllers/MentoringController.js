@@ -110,17 +110,14 @@ const MentoringController = () => {
         }
 
         let query = `
-        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers,
-          CASE WHEN (public."Mentorings".areas)::text[] && ('{${menteeInfo.areas.join(
-            ","
-          )}}')::text[] THEN 1 ELSE 0 END AS ismatch,
-          SUM(CASE WHEN (public."Mentorings".areas)::text[] && ('{${menteeInfo.areas.join(
-            ","
-          )}}')::text[] THEN 1 ELSE 0 END) OVER() as matchnum
+        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
           FROM public."Mentorings" 
           JOIN public."Users" ON public."Mentorings".user = public."Users".id 
-          WHERE public."Mentorings"."isMentor" = 1 AND public."Mentorings"."user" <> ${id}
-          ORDER BY ismatch DESC
+          WHERE public."Mentorings"."isMentor" = 1 
+          AND (public."Mentorings".areas)::text[] && ('{${menteeInfo.areas.join(
+            ","
+          )}}')::text[] 
+          AND public."Mentorings"."user" <> ${id}
           LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
         `;
 
@@ -158,17 +155,14 @@ const MentoringController = () => {
         }
 
         let query = `
-        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers,
-          CASE WHEN (public."Mentorings".areas)::text[] && ('{${mentorInfo.areas.join(
-            ","
-          )}}')::text[] THEN 1 ELSE 0 END AS ismatch,
-          SUM(CASE WHEN (public."Mentorings".areas)::text[] && ('{${mentorInfo.areas.join(
-            ","
-          )}}')::text[] THEN 1 ELSE 0 END) OVER() as matchnum
+        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."connectedMembers" as connectedMembers
           FROM public."Mentorings" 
           JOIN public."Users" ON public."Mentorings".user = public."Users".id 
-          WHERE public."Mentorings"."isMentor" = 0 AND public."Mentorings"."user" <> ${id}
-          ORDER BY ismatch DESC
+          WHERE public."Mentorings"."isMentor" = 0 
+          AND (public."Mentorings".areas)::text[] && ('{${mentorInfo.areas.join(
+            ","
+          )}}')::text[]
+          AND public."Mentorings"."user" <> ${id}
           LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}
         `;
 

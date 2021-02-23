@@ -35,6 +35,7 @@ const privateRoutes = {
   "DELETE /journey/:id": "JourneyController.remove",
   "GET /journey-items/:id": "JourneyItemController.getItemsByJourney",
   "PUT /journey-items/:id": "JourneyItemController.update",
+  "GET /conference/": "ConferenceController.getAll",
 };
 
 module.exports = privateRoutes;

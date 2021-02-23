@@ -24,7 +24,7 @@ const AuthController = () => {
         if (!user) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Email is wrong." });
+            .json({ msg: "You are not registered." });
         }
 
         if (bcryptService().comparePassword(password, user.password)) {

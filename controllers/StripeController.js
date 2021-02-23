@@ -35,6 +35,7 @@ const StripeController = () => {
             { price: priceId, quantity: 1 },
           ],
           mode: 'subscription',
+          allow_promotion_codes: true,
         });
         return res
           .status(HttpCodes.OK)
