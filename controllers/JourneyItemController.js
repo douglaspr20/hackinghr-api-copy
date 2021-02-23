@@ -35,7 +35,7 @@ const JourneyItemController = () => {
           WHERE ji."JourneyId" = ${id}
           AND ji."contentType" = 'podcast'
           UNION
-          SELECT ji.*, e.title, CAST(e.description AS varchar) AS description, e.link, e.image FROM "Events" e
+          SELECT ji.*, e.title, CAST(e.description AS varchar) AS description, e."publicLink" as link, e.image FROM "Events" e
           INNER JOIN "JourneyItems" ji ON e.id = ji."contentId"
           WHERE ji."JourneyId" = ${id}
           AND ji."contentType" = 'event'

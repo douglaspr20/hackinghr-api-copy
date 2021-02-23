@@ -15,12 +15,24 @@ const JourneyController = () => {
   const getAll = async (req, res) => {
     const { id: UserId } = req.token;
     try {
-      let where = { UserId };
-      let journeys = await Journey.findAll({
-        where,
-        order: [
-          ['createdAt', 'DESC'],
-        ],
+      let query = `
+        SELECT 
+        *,
+        CASE WHEN total_elements > 0 AND viewed_elements > 0 THEN
+        (viewed_elements * 100 / total_elements)::FLOAT
+        END as progress
+        FROM (SELECT
+        *,
+        (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id) AS total_elements,
+        (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id AND viewed = TRUE) AS viewed_elements
+        FROM "Journeys" j 
+        WHERE j."UserId" = ${UserId}
+        ORDER BY j."createdAt" DESC
+        )
+        AS journeys_summary;
+      `;
+      const journeys = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
       if (!journeys) {
         return res
@@ -47,12 +59,26 @@ const JourneyController = () => {
     const { id } = req.params;
     if (id) {
       try {
-        const journey = await Journey.findOne({
-          where: {
-            id,
-          },
+        let query = `
+          SELECT 
+          *,
+          CASE WHEN total_elements > 0 AND viewed_elements > 0 THEN
+          (viewed_elements * 100 / total_elements)::FLOAT
+          END as progress
+          FROM (SELECT
+          *,
+          (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id) AS total_elements,
+          (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id AND viewed = TRUE) AS viewed_elements
+          FROM "Journeys" j 
+          WHERE j.id = ${id}
+          ORDER BY j."createdAt" DESC
+          )
+          AS journeys_summary;
+        `;
+        let journey = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
         });
-
+        journey = journey[0];
         if (!journey) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
