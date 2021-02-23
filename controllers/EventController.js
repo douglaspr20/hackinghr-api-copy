@@ -45,7 +45,7 @@ const EventController = () => {
 
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
-            publicLink: `${process.env.DOMAIN_URL}public-event/${event.id}`,
+            publicLink: `${process.env.DOMAIN_URL}/${event.id}`,
           },
           {
             where: { id: event.id },
