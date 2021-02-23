@@ -41,7 +41,7 @@ const JourneyItemController = () => {
           AND ji."contentType" = 'event'
         ) JourneyItemsUnion
         ${loadRemovedItems}
-        ORDER BY "createdAt" DESC
+        ORDER BY "title" ASC
       `;
 
       const results = await db.sequelize.query(query, {

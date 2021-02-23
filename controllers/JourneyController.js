@@ -23,8 +23,8 @@ const JourneyController = () => {
         END as progress
         FROM (SELECT
         *,
-        (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id) AS total_elements,
-        (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id AND viewed = TRUE) AS viewed_elements
+        (SELECT count(1) FROM "JourneyItems" ji WHERE removed = FALSE AND ji."JourneyId" = j.id) AS total_elements,
+        (SELECT count(1) FROM "JourneyItems" ji WHERE removed = FALSE AND ji."JourneyId" = j.id AND viewed = TRUE) AS viewed_elements
         FROM "Journeys" j 
         WHERE j."UserId" = ${UserId}
         ORDER BY j."createdAt" DESC
@@ -67,8 +67,8 @@ const JourneyController = () => {
           END as progress
           FROM (SELECT
           *,
-          (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id) AS total_elements,
-          (SELECT count(1) FROM "JourneyItems" ji WHERE ji."JourneyId" = j.id AND viewed = TRUE) AS viewed_elements
+          (SELECT count(1) FROM "JourneyItems" ji WHERE removed = FALSE AND ji."JourneyId" = j.id) AS total_elements,
+          (SELECT count(1) FROM "JourneyItems" ji WHERE removed = FALSE AND ji."JourneyId" = j.id AND viewed = TRUE) AS viewed_elements
           FROM "Journeys" j 
           WHERE j.id = ${id}
           ORDER BY j."createdAt" DESC
