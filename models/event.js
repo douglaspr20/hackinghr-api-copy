@@ -45,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: false,
       },
       publicLink: DataTypes.STRING,
+      organizerEmail: DataTypes.STRING,
     },
     {
       sequelize,
