@@ -173,7 +173,7 @@ const UserController = () => {
       getEventDescription(event.description),
       "",
       // event.location,
-      `${process.env.DOMAIN_URL}/public-event/${event.id}`,
+      `${process.env.DOMAIN_URL}${event.id}`,
       event.organizer,
       process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER,
       timezone.utc[0]
