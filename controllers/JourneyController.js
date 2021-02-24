@@ -148,10 +148,13 @@ const JourneyController = () => {
         let journey = await Journey.update(data, {
           where: { id }
         })
+        
+        /*
         await JourneyItems.destroy({
           where: { JourneyId: id }
         });
         loadJourneyItems(id, body.topics, body.contentType);
+        */
 
         return res
           .status(HttpCodes.OK)
