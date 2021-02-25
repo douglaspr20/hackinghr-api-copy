@@ -28,6 +28,13 @@ const privateRoutes = {
   "PUT /mentoring/match": "MentoringController.setMatch",
   "GET /podcast/": "PodcastController.getAll",
   "GET /category/:id": "CategoryController.get",
+  "GET /journey/": "JourneyController.getAll",
+  "GET /journey/:id": "JourneyController.get",
+  "POST /journey/": "JourneyController.add",
+  "PUT /journey/:id": "JourneyController.update",
+  "DELETE /journey/:id": "JourneyController.remove",
+  "GET /journey-items/:id": "JourneyItemController.getItemsByJourney",
+  "PUT /journey-items/:id": "JourneyItemController.update",
   "GET /conference/": "ConferenceController.getAll",
 };
 
