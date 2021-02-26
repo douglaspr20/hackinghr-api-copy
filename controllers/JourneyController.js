@@ -1,6 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const Sequelize = require("sequelize");
+const moment = require("moment");
 
 const QueryTypes = Sequelize.QueryTypes;
 const Journey = db.Journey;
@@ -110,7 +111,7 @@ const JourneyController = () => {
     const { id: userId } = req.token;
     try {
       let journey = await Journey.create({ ...req.body, UserId: userId });
-      loadJourneyItems(journey.id ,topics, contentType);
+      loadJourneyItems(journey.id, topics, contentType);
 
       return res
         .status(HttpCodes.OK)
@@ -148,7 +149,7 @@ const JourneyController = () => {
         let journey = await Journey.update(data, {
           where: { id }
         })
-        
+
         /*
         await JourneyItems.destroy({
           where: { JourneyId: id }
@@ -200,10 +201,11 @@ const JourneyController = () => {
     }
   };
 
-  const loadJourneyItems = (journeyId, topics, contentType) => {
+  const loadJourneyItems = (journeyId, topics, contentType, isNew=false) => {
+    let columnNewInsert = `, "isNew"`;
     topics.forEach(async (itemTopic) => {
       contentType.forEach(async (itemContent) => {
-        let prefixQuery = 'INSERT INTO "JourneyItems" ("JourneyId", "topic", "contentType", "contentId", "itemCreatedAt", "createdAt", "updatedAt") ';
+        let prefixQuery = `INSERT INTO "JourneyItems" ("JourneyId", "topic", "contentType", "contentId", "itemCreatedAt", "createdAt", "updatedAt" ${ isNew ? columnNewInsert : ''}) `;
         let table = {
           article: "Libraries",
           event: "Events",
@@ -213,18 +215,22 @@ const JourneyController = () => {
 
         let query = `
           ${prefixQuery}
-          SELECT ${journeyId}, '${itemTopic}', '${itemContent}', public."${table[itemContent]}".id, public."${table[itemContent]}"."createdAt", NOW(), NOW()
+          SELECT ${journeyId}, '${itemTopic}', '${itemContent}', public."${table[itemContent]}".id, public."${table[itemContent]}"."createdAt", NOW(), NOW() ${ isNew ? ", TRUE" : ""}
           FROM public."${table[itemContent]}"
           WHERE`;
 
         if (itemContent !== 'event') {
-          query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".topics)`;
+          query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".topics) `;
         } else {
-          query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".categories)`;
+          query += ` '${itemTopic}' = ANY(public."${table[itemContent]}".categories) `;
+        }
+
+        if (itemContent === 'Libraries') {
+          query += ` AND public."${table[itemContent]}"."approvalStatus" = 'approved' `;
         }
 
         if (itemContent !== 'event') {
-          query += ` AND public."${table[itemContent]}"."contentType" = '${itemContent}'`;
+          query += ` AND public."${table[itemContent]}"."contentType" = '${itemContent}' `;
         }
 
         query += `  AND public."${table[itemContent]}".id NOT IN 
@@ -240,7 +246,35 @@ const JourneyController = () => {
         });
       });
     });
-  }
+  };
+
+  const createNewItems = async () => {
+    console.log("***** calling Journey createNewItems", moment().toString());
+    try {
+      let journeys = await Journey.findAll();
+      journeys.map((journey) => {
+        loadJourneyItems(journey.id, journey.topics, journey.contentType, true);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const resetNewColumn = async () => {
+    console.log("***** calling Journey resetNewColumn", moment().toString());
+    try {
+      let query = `
+        UPDATE "JourneyItems"
+        SET "isNew" = FALSE
+        WHERE "isNew" = true AND "createdAt" < NOW() - INTERVAL '12 HOURS';
+      `;
+      await db.sequelize.query(query, {
+        type: QueryTypes.UPDATE,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return {
     getAll,
@@ -248,6 +282,8 @@ const JourneyController = () => {
     add,
     update,
     remove,
+    createNewItems,
+    resetNewColumn,
   };
 };
 
