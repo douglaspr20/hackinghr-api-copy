@@ -35,6 +35,7 @@ const JourneyController = () => {
       const journeys = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
       });
+
       if (!journeys) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -80,11 +81,14 @@ const JourneyController = () => {
           type: QueryTypes.SELECT,
         });
         journey = journey[0];
+
         if (!journey) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
+
+        resetNewItems(journey.id);
 
         return res
           .status(HttpCodes.OK)
@@ -260,19 +264,30 @@ const JourneyController = () => {
     }
   };
 
-  const resetNewColumn = async () => {
-    console.log("***** calling Journey resetNewColumn", moment().toString());
+  /**
+   * Method to reset journeyItems objects
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const resetNewItems = async (id) => {
     try {
-      let query = `
-        UPDATE "JourneyItems"
-        SET "isNew" = FALSE
-        WHERE "isNew" = true AND "createdAt" < NOW() - INTERVAL '12 HOURS';
-      `;
-      await db.sequelize.query(query, {
-        type: QueryTypes.UPDATE,
-      });
+      await JourneyItems.update({
+        isNew: false,
+      }, {
+        where: {
+          isNew: true,
+          JourneyId: id,
+        }
+      })
+
+      return res
+        .status(HttpCodes.OK)
+        .send();
     } catch (error) {
       console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
     }
   };
 
@@ -283,7 +298,7 @@ const JourneyController = () => {
     update,
     remove,
     createNewItems,
-    resetNewColumn,
+    resetNewItems,
   };
 };
 

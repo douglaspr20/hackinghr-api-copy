@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const authPolicy = require("./policies/auth.policy");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
+const JourneyController = require("./controllers/JourneyController");
 
 dotenv.config();
 
@@ -33,6 +34,12 @@ const mappedAdminRoutes = mapRoutes(routes.adminRoutes, "controllers/", [
 cron.schedule("25 * * * *", () => {
   console.log("running a task every 1 hour.");
   EventController().emailAfterEventThread();
+});
+
+// Creating a cron job which runs on every day.
+cron.schedule("* 0 * * *", () => {
+  console.log("running a task every 1 day.");
+  JourneyController().createNewItems();
 });
 
 // allow cross origin requests
