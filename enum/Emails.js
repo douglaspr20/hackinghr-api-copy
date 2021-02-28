@@ -94,7 +94,7 @@ module.exports = {
       <br/>
     `,
   },
-  EVENT_REMINDER_2_HOURS: {
+  EVENT_REMINDER_45_MINUTES: {
     subject: (event) => `Almost here! Coming up in two hours: ${event.title}`,
     body: (user, event) => `
       <p>
