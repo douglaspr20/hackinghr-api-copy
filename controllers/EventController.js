@@ -23,7 +23,6 @@ const EventController = () => {
     console.log('****** set event reminders ', interval1, interval2)
 
     cronService().addTask(`${event.title}-24`, interval1, true, async () => {
-      console.log('********* event 24 hours later', event)
       const targetEvent = await Event.findOne({ where: { id: event.id } });
       const eventUsers = await Promise.all(
         (targetEvent.users || []).map((user) => {
@@ -34,6 +33,8 @@ const EventController = () => {
           });
         })
       );
+
+      console.log('**** 24 event reminder,', eventUsers.map(item => item.email))
 
       await Promise.all(
         eventUsers.map((user) => {
