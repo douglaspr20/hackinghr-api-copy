@@ -3,6 +3,7 @@ const AWSConfig = require("./AWSConfig");
 const FilterSettings = require("./FilterSettings");
 const ReviewStatus = require("./ReviewStatus");
 const EmailContent = require("./EmailContent");
+const LabEmails = require("./Emails") ;
 
 module.exports = {
   USER_ROLE,
@@ -10,4 +11,5 @@ module.exports = {
   FilterSettings,
   ReviewStatus,
   EmailContent,
+  LabEmails,
 };

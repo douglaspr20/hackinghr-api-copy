@@ -211,11 +211,9 @@ const UserController = () => {
     }
 
     console.log("**** mailOptions ", mailOptions);
+    let sentResult = null;
     try {
-      const sentResult = await smtpService().sendMail(
-        smtpTransort,
-        mailOptions
-      );
+      sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
     } catch (err) {
       console.log(err);
     }

@@ -5,13 +5,94 @@ const { isValidURL } = require("../utils/profile");
 const { Op } = require("sequelize");
 const Sequelize = require("sequelize");
 const moment = require("moment-timezone");
+const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
+const cronService = require("../services/cron.service");
 
 const Event = db.Event;
 const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
 
 const EventController = () => {
+  const setEventReminders = (event) => {
+    const dateBefore24Hours = moment(event.startDate).subtract(1, "days");
+    const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
+    const dateBefore2Hours = moment(event.startDate).subtract(2, "hours");
+    const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
+
+    cronService().addTask(`${event.title}-24`, interval1, true, async () => {
+      const targetEvent = await Event.findOne({ where: { id: event.id } });
+      const eventUsers = await Promise.all(
+        (targetEvent.users || []).map((user) => {
+          return User.findOne({
+            where: {
+              id: user,
+            },
+          });
+        })
+      );
+
+      await Promise.all(
+        eventUsers.map((user) => {
+          const targetEventDate = moment(targetEvent.startDate);
+          const smtpTransort = {
+            service: "gmail",
+            auth: {
+              user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+              pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+            },
+          };
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: user.email,
+            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+            html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+              user,
+              targetEvent,
+              targetEventDate.format("MMM DD"),
+              targetEventDate.format("h:mm a")
+            ),
+          };
+
+          return smtpService().sendMail(smtpTransort, mailOptions);
+        })
+      );
+    });
+
+    cronService().addTask(`${event.title}-2`, interval2, true, async () => {
+      const targetEvent = await Event.findOne({ where: { id: event.id } });
+      const eventUsers = await Promise.all(
+        (targetEvent.users || []).map((user) => {
+          return User.findOne({
+            where: {
+              id: user,
+            },
+          });
+        })
+      );
+
+      await Promise.all(
+        eventUsers.map((user) => {
+          const smtpTransort = {
+            service: "gmail",
+            auth: {
+              user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+              pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+            },
+          };
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: user.email,
+            subject: LabEmails.EVENT_REMINDER_2_HOURS.subject(targetEvent),
+            html: LabEmails.EVENT_REMINDER_2_HOURS.body(user, targetEvent),
+          };
+
+          return smtpService().sendMail(smtpTransort, mailOptions);
+        })
+      );
+    });
+  };
+
   const create = async (req, res) => {
     const { body } = req;
 
@@ -53,6 +134,8 @@ const EventController = () => {
             plain: true,
           }
         );
+
+        setEventReminders(event);
 
         return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {
