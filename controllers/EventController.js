@@ -93,6 +93,11 @@ const EventController = () => {
     });
   };
 
+  const removeEventReminders = (event) => {
+    cronService().stopTask(`${event.title}-24`);
+    cronService().stopTask(`${event.title}-2`);
+  }
+
   const create = async (req, res) => {
     const { body } = req;
 
@@ -422,6 +427,37 @@ const EventController = () => {
       .json({ msg: "Bad Request: event id is wrong" });
   };
 
+  const remove = async (req, res) => {
+    const { id } = req.params;
+
+    if (id) {
+      try {
+        const event = await Event.findOne({
+          where: { id },
+        })
+        const result = await Event.destroy({
+          where: {
+            id,
+          },
+        });
+
+        // remove reminders
+        removeEventReminders(event);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Event id is wrong" });
+  };
+
   return {
     create,
     getAllEvents,
@@ -430,6 +466,7 @@ const EventController = () => {
     updateEventStatus,
     emailAfterEventThread,
     getEventUsers,
+    remove,
   };
 };
 

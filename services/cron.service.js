@@ -30,9 +30,17 @@ const cronService = () => {
     }
   };
 
+  const stopTask = (name) => {
+    if (cronJobManager.exists(name)) {
+      cronJobManager.stop(name);
+      cronJobManager.deleteJob(name);
+    }
+  }
+
   return {
     addTask,
     updateTask,
+    stopTask,
   };
 };
 
