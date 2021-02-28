@@ -173,7 +173,7 @@ const UserController = () => {
       getEventDescription(event.description),
       "",
       // event.location,
-      `${process.env.DOMAIN_URL}/public-event/${event.id}`,
+      `${process.env.DOMAIN_URL}${event.id}`,
       event.organizer,
       process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER,
       timezone.utc[0]
@@ -211,11 +211,9 @@ const UserController = () => {
     }
 
     console.log("**** mailOptions ", mailOptions);
+    let sentResult = null;
     try {
-      const sentResult = await smtpService().sendMail(
-        smtpTransort,
-        mailOptions
-      );
+      sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
     } catch (err) {
       console.log(err);
     }

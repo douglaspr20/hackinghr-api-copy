@@ -6,10 +6,32 @@ const authService = require("../services/auth.service");
 const reCaptchaService = require("../services/recaptcha.service");
 const smtpService = require("../services/smtp.service");
 const profileUtils = require("../utils/profile");
+const { LabEmails } = require("../enum");
 
 const User = db.User;
 
 const AuthController = () => {
+  const sendEmailAfterRegister = async (user) => {
+    const smtpTransort = {
+      service: "gmail",
+      auth: {
+        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      },
+    };
+    const mailOptions = {
+      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      to: user.email,
+      subject: LabEmails.NEW_USER_SIGNUP.subject(),
+      html: LabEmails.NEW_USER_SIGNUP.body(user),
+    };
+
+    await smtpService().sendMail(
+      smtpTransort,
+      mailOptions
+    );
+  }
+
   const login = async (req, res) => {
     const { email, password } = req.body;
 
@@ -98,6 +120,8 @@ const AuthController = () => {
               .status(HttpCodes.INTERNAL_SERVER_ERROR)
               .json({ msg: "Internal server error" });
           }
+
+          sendEmailAfterRegister(user);
 
           const token = authService().issue({ id: user.id });
 
