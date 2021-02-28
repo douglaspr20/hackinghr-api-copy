@@ -35,60 +35,35 @@ const EventController = () => {
       );
 
       console.log('**** 24 event reminder,', eventUsers.map(item => item.email))
-      for(let i = 0; i < eventUsers.length; i++) {
-        const user = eventUsers[i];
-        const targetEventDate = moment(targetEvent.startDate);
-        const smtpTransort = {
-          service: "gmail",
-          auth: {
-            user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-            pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-          },
-        };
-        let mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          to: user.email,
-          subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
-          html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-            user,
-            targetEvent,
-            targetEventDate.format("MMM DD"),
-            targetEventDate.format("h:mm a")
-          ),
-        };
 
-        console.log('************ mailOptions ', mailOptions);
-        
-        await smtpService().sendMail(smtpTransort, mailOptions);
-      }
+      await Promise.all(
+        eventUsers.map((user) => {
+          const targetEventDate = moment(targetEvent.startDate);
+          const smtpTransort = {
+            service: "gmail",
+            auth: {
+              user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+              pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+            },
+          };
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: user.email,
+            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+            // html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+            //   user,
+            //   targetEvent,
+            //   targetEventDate.format("MMM DD"),
+            //   targetEventDate.format("h:mm a")
+            // ),
+            html: `<p>Thank you</p>`
+          };
 
-      // await Promise.all(
-      //   eventUsers.map((user) => {
-      //     const targetEventDate = moment(targetEvent.startDate);
-      //     const smtpTransort = {
-      //       service: "gmail",
-      //       auth: {
-      //         user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-      //         pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-      //       },
-      //     };
-      //     let mailOptions = {
-      //       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-      //       to: user.email,
-      //       subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
-      //       html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-      //         user,
-      //         targetEvent,
-      //         targetEventDate.format("MMM DD"),
-      //         targetEventDate.format("h:mm a")
-      //       ),
-      //     };
+          console.log('************ mailOptions ', mailOptions);
 
-      //     console.log('************ mailOptions ', mailOptions);
-
-      //     return smtpService().sendMail(smtpTransort, mailOptions);
-      //   })
-      // );
+          return smtpService().sendMail(smtpTransort, mailOptions);
+        })
+      );
     });
 
     cronService().addTask(`${event.title}-45`, interval2, true, async () => {
