@@ -98,6 +98,50 @@ const EventController = () => {
     cronService().stopTask(`${event.title}-2`);
   }
 
+  const sendParticipantsListToOrganizer = async (event) => {
+    const targetEvent = await Event.findOne({ where: { id: event.id } });
+    const eventUsers = await Promise.all(
+      (targetEvent.users || []).map((user) => {
+        return User.findOne({
+          where: {
+            id: user,
+          },
+        });
+      })
+    );
+    const smtpTransort = {
+      service: "gmail",
+      auth: {
+        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      },
+    };
+    let mailOptions = {
+      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      to: event.organizerEmail,
+      subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
+      html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(eventUsers),
+    };
+    await smtpService().sendMail(smtpTransort, mailOptions);
+  }
+
+  const setOrganizerReminders = (event) => {
+    const dates = [
+      moment(event.startDate).subtract(1, "days"),
+      moment(event.startDate).subtract(2, "hours"),
+      moment(event.startDate).subtract(30, "minutes")
+    ];
+    dates.forEach((date, index) => {
+      const interval = `0 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
+      cronService().addTask(
+        `${event.title}-participant-list-reminder-${index}`,
+        interval,
+        true,
+        () => sendParticipantsListToOrganizer(event),
+      );
+    })
+  }
+
   const create = async (req, res) => {
     const { body } = req;
 
@@ -141,6 +185,7 @@ const EventController = () => {
         );
 
         setEventReminders(event);
+        setOrganizerReminders(event);
 
         return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {

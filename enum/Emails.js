@@ -119,4 +119,15 @@ module.exports = {
       <br/>
     `,
   },
+  PARTICIPANTS_LIST_TO_ORGANIZER: {
+    subject: () => `PARTICIPANTS LIST`,
+    body: (users) =>
+      users.map((user) => {
+        return `
+        <p>
+          ${user.firstName}, ${user.lastName} ${user.email}
+        </P>
+      `;
+      }),
+  },
 };

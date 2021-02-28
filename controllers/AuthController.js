@@ -11,7 +11,7 @@ const { LabEmails } = require("../enum");
 const User = db.User;
 
 const AuthController = () => {
-  const sendEmailAfterRegister = (user) => {
+  const sendEmailAfterRegister = async (user) => {
     const smtpTransort = {
       service: "gmail",
       auth: {
@@ -31,7 +31,7 @@ const AuthController = () => {
       mailOptions
     );
   }
-  
+
   const login = async (req, res) => {
     const { email, password } = req.body;
 
