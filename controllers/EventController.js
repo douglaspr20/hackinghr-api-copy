@@ -58,6 +58,8 @@ const EventController = () => {
             ),
           };
 
+          console.log('************ mailOptions ', mailOptions);
+
           return smtpService().sendMail(smtpTransort, mailOptions);
         })
       );
