@@ -96,7 +96,7 @@ const EventController = () => {
   const removeEventReminders = (event) => {
     cronService().stopTask(`${event.title}-24`);
     cronService().stopTask(`${event.title}-2`);
-  }
+  };
 
   const sendParticipantsListToOrganizer = async (event) => {
     const targetEvent = await Event.findOne({ where: { id: event.id } });
@@ -123,13 +123,13 @@ const EventController = () => {
       html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(eventUsers),
     };
     await smtpService().sendMail(smtpTransort, mailOptions);
-  }
+  };
 
   const setOrganizerReminders = (event) => {
     const dates = [
       moment(event.startDate).subtract(1, "days"),
       moment(event.startDate).subtract(2, "hours"),
-      moment(event.startDate).subtract(30, "minutes")
+      moment(event.startDate).subtract(30, "minutes"),
     ];
     dates.forEach((date, index) => {
       const interval = `0 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
@@ -137,10 +137,40 @@ const EventController = () => {
         `${event.title}-participant-list-reminder-${index}`,
         interval,
         true,
-        () => sendParticipantsListToOrganizer(event),
+        () => sendParticipantsListToOrganizer(event)
       );
-    })
-  }
+    });
+  };
+
+  const sendMessage = async (users, message) => {
+    const smtpTransort = {
+      service: "gmail",
+      auth: {
+        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      },
+    };
+    let mailOptions = {
+      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      subject: "Message",
+      html: `
+        <p>
+          ${message}
+        </p>
+      `,
+    };
+
+    await Promise.all(
+      users.map((user) => {
+        mailOptions = {
+          ...mailOptions,
+          to: user.email,
+        };
+
+        return smtpService().sendMail(smtpTransort, mailOptions);
+      })
+    );
+  };
 
   const create = async (req, res) => {
     const { body } = req;
@@ -479,7 +509,7 @@ const EventController = () => {
       try {
         const event = await Event.findOne({
           where: { id },
-        })
+        });
         const result = await Event.destroy({
           where: {
             id,
@@ -488,6 +518,38 @@ const EventController = () => {
 
         // remove reminders
         removeEventReminders(event);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Event id is wrong" });
+  };
+
+  const sendMessageToParticipants = async (req, res) => {
+    const { id } = req.params;
+    const { message } = req.body;
+
+    if (id) {
+      try {
+        const event = await Event.findOne({
+          where: { id },
+        });
+
+        const users = await Promise.all(
+          (event.users || []).map((user) => {
+            return User.findOne({ where: { id: user } });
+          })
+        );
+
+        sendMessage(users, message);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
@@ -512,6 +574,7 @@ const EventController = () => {
     emailAfterEventThread,
     getEventUsers,
     remove,
+    sendMessageToParticipants,
   };
 };
 
