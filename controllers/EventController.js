@@ -122,6 +122,7 @@ const EventController = () => {
       subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
       html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(eventUsers),
     };
+    console.log('***** mailOptions ', mailOptions);
     await smtpService().sendMail(smtpTransort, mailOptions);
   };
 
