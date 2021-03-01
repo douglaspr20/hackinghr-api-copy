@@ -50,6 +50,8 @@ const EventController = () => {
             html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
           };
 
+          console.log('****** mailOptions ', mailOptions);
+
           return smtpService().sendMail(smtpTransort, mailOptions);
         })
       );
