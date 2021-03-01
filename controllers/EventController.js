@@ -260,7 +260,7 @@ const EventController = () => {
         );
 
         setEventReminders(event);
-        setOrganizerReminders(event);
+        // setOrganizerReminders(event);
 
         return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {
