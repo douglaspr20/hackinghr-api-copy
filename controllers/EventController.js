@@ -120,9 +120,11 @@ const EventController = () => {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,
       subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
-      html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(targetEvent, eventUsers),
+      html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(
+        targetEvent,
+        eventUsers
+      ),
     };
-    console.log('***** mailOptions ', mailOptions);
     await smtpService().sendMail(smtpTransort, mailOptions);
   };
 
@@ -143,7 +145,7 @@ const EventController = () => {
     });
   };
 
-  const sendMessage = async (users, message) => {
+  const sendMessage = async (users, subject, message) => {
     const smtpTransort = {
       service: "gmail",
       auth: {
@@ -153,12 +155,8 @@ const EventController = () => {
     };
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-      subject: "Message",
-      html: `
-        <p>
-          ${message}
-        </p>
-      `,
+      subject,
+      html: message,
     };
 
     await Promise.all(
@@ -532,7 +530,7 @@ const EventController = () => {
 
   const sendMessageToParticipants = async (req, res) => {
     const { id } = req.params;
-    const { message } = req.body;
+    const { subject, message } = req.body;
 
     if (id) {
       try {
@@ -546,7 +544,7 @@ const EventController = () => {
           })
         );
 
-        sendMessage(users, message);
+        sendMessage(users, subject, message);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
