@@ -34,11 +34,8 @@ const EventController = () => {
         })
       );
 
-      console.log('**** 24 event reminder,', eventUsers.map(item => item.email))
-
-      const values = await Promise.all(
+      await Promise.all(
         eventUsers.map((user) => {
-          // const targetEventDate = moment(targetEvent.startDate);
           const smtpTransort = {
             service: "gmail",
             auth: {
@@ -49,26 +46,59 @@ const EventController = () => {
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
-            // subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
-            // html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-            //   user,
-            //   targetEvent,
-            //   targetEventDate.format("MMM DD"),
-            //   targetEventDate.format("h:mm a")
-            // ),
             subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
             html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
           };
 
-          const promise = smtpService().sendMail(smtpTransort, mailOptions);
-          console.log('************ smtpTransort ', smtpTransort);
-          console.log('************ mailOptions ', mailOptions, promise instanceof Promise);
-
-          return promise;
+          return smtpService().sendMail(smtpTransort, mailOptions);
         })
       );
+      // const targetEvent = await Event.findOne({ where: { id: event.id } });
+      // const eventUsers = await Promise.all(
+      //   (targetEvent.users || []).map((user) => {
+      //     return User.findOne({
+      //       where: {
+      //         id: user,
+      //       },
+      //     });
+      //   })
+      // );
 
-      console.log('*** promise all **** ', values);
+      // console.log('**** 24 event reminder,', eventUsers.map(item => item.email))
+
+      // const values = await Promise.all(
+      //   eventUsers.map((user) => {
+      //     // const targetEventDate = moment(targetEvent.startDate);
+      //     const smtpTransort = {
+      //       service: "gmail",
+      //       auth: {
+      //         user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+      //         pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+      //       },
+      //     };
+      //     let mailOptions = {
+      //       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      //       to: user.email,
+      //       // subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+      //       // html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+      //       //   user,
+      //       //   targetEvent,
+      //       //   targetEventDate.format("MMM DD"),
+      //       //   targetEventDate.format("h:mm a")
+      //       // ),
+      //       subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
+      //       html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
+      //     };
+
+      //     const promise = smtpService().sendMail(smtpTransort, mailOptions);
+      //     console.log('************ smtpTransort ', smtpTransort);
+      //     console.log('************ mailOptions ', mailOptions, promise instanceof Promise);
+
+      //     return promise;
+      //   })
+      // );
+
+      // console.log('*** promise all **** ', values);
     });
 
     cronService().addTask(`${event.title}-45`, interval2, true, async () => {
