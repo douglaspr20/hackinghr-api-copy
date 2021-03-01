@@ -133,6 +133,7 @@ const EventController = () => {
     ];
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
+      console.log('***** interval ', index, interval);
       cronService().addTask(
         `${event.title}-participant-list-reminder-${index}`,
         interval,
