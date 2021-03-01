@@ -49,14 +49,16 @@ const EventController = () => {
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
-            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+            // subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
             // html: LabEmails.EVENT_REMINDER_24_HOURS.body(
             //   user,
             //   targetEvent,
             //   targetEventDate.format("MMM DD"),
             //   targetEventDate.format("h:mm a")
             // ),
-            html: `<p>Thank you</p>`
+            subject: "Message title",
+            text: "Plaintext version of the message",
+            html: "<p>HTML version of the message</p>"
           };
 
           console.log('************ mailOptions ', mailOptions);
