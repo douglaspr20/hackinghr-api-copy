@@ -528,6 +528,44 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
+  const sendTestMessage = async (req, res) => {
+    const { emails, subject, message } = req.body;
+    const emailList = emails.split(",").map((item) => item.trim());
+
+    try {
+      const smtpTransort = {
+        service: "gmail",
+        auth: {
+          user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+        },
+      };
+      let mailOptions = {
+        from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        subject,
+        html: message,
+      };
+
+      await Promise.all(
+        emailList.map((email) => {
+          mailOptions = {
+            ...mailOptions,
+            to: email,
+          };
+
+          return smtpService().sendMail(smtpTransort, mailOptions);
+        })
+      );
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const sendMessageToParticipants = async (req, res) => {
     const { id } = req.params;
     const { subject, message } = req.body;
@@ -570,6 +608,7 @@ const EventController = () => {
     getEventUsers,
     remove,
     sendMessageToParticipants,
+    sendTestMessage,
   };
 };
 
