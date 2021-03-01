@@ -159,7 +159,7 @@ const StripeController = () => {
         await User.update({
           memberShip: 'premium'
         }, {
-          where: { email: customerInformation.email }
+          where: { email: customerInformation.email.toLowerCase() }
         });
       }
       return res

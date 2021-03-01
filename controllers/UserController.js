@@ -66,10 +66,10 @@ const UserController = () => {
         }
 
         // in case of email update
-        if (user.email !== prevUser.email) {
+        if (user.email.toLowerCase() !== prevUser.email) {
           const existing = await User.findOne({
             where: {
-              email: user.email,
+              email: user.email.toLowerCase(),
             },
           });
 
@@ -351,7 +351,7 @@ const UserController = () => {
           ? users[index].first_name.split(" ")
           : [""];
         let userInfo = {
-          email: users[index].email,
+          email: users[index].email.toLowerCase(),
           password: bcryptService().password("12345678"),
           firstName: username[0],
           lastName: username.length > 1 ? username[1] : "",
