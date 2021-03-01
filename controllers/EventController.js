@@ -120,7 +120,7 @@ const EventController = () => {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,
       subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
-      html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(eventUsers),
+      html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(targetEvent, eventUsers),
     };
     console.log('***** mailOptions ', mailOptions);
     await smtpService().sendMail(smtpTransort, mailOptions);
