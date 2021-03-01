@@ -49,20 +49,18 @@ const EventController = () => {
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
-            // subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
-            // html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-            //   user,
-            //   targetEvent,
-            //   targetEventDate.format("MMM DD"),
-            //   targetEventDate.format("h:mm a")
-            // ),
-            subject: "Message title",
-            text: "Plaintext version of the message",
-            html: "<p>HTML version of the message</p>"
+            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+            html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+              user,
+              targetEvent,
+              targetEventDate.format("MMM DD"),
+              targetEventDate.format("h:mm a")
+            ),
           };
 
           const promise = smtpService().sendMail(smtpTransort, mailOptions);
           console.log('************ smtpTransort ', smtpTransort);
+          console.log('************ targetEventDate.format("MMM DD") ', targetEventDate.format("MMM DD"));
           console.log('************ mailOptions ', mailOptions, typeof promise);
 
           return promise;
