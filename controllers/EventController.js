@@ -20,8 +20,6 @@ const EventController = () => {
     const dateBefore2Hours = moment(event.startDate).subtract(45, "minutes");
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
 
-    console.log("****** set event reminders ", interval1, interval2);
-
     cronService().addTask(`${event.title}-24`, interval1, true, async () => {
       const targetEvent = await Event.findOne({ where: { id: event.id } });
       const eventUsers = await Promise.all(
@@ -56,14 +54,12 @@ const EventController = () => {
             ),
           };
 
-          console.log("************ mailOptions ", mailOptions);
           return smtpService().sendMail(smtpTransort, mailOptions);
         })
       );
     });
 
     cronService().addTask(`${event.title}-45`, interval2, true, async () => {
-      console.log("********* event 45 minutes hours later", event);
       const targetEvent = await Event.findOne({ where: { id: event.id } });
       const eventUsers = await Promise.all(
         (targetEvent.users || []).map((user) => {
@@ -136,7 +132,7 @@ const EventController = () => {
       moment(event.startDate).subtract(30, "minutes"),
     ];
     dates.forEach((date, index) => {
-      const interval = `0 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
+      const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
       cronService().addTask(
         `${event.title}-participant-list-reminder-${index}`,
         interval,
@@ -219,7 +215,7 @@ const EventController = () => {
         );
 
         setEventReminders(event);
-        // setOrganizerReminders(event);
+        setOrganizerReminders(event);
 
         return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {
@@ -419,19 +415,15 @@ const EventController = () => {
           Hacking HR Team
         `;
 
-        console.log("**** mailOptions = ", mailOptions);
         return smtpService().sendMail(smtpTransort, mailOptions);
       });
       await Promise.all(requests);
-      console.log("******* sent !!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     } catch (error) {
       console.log(error);
     }
   };
 
   const emailAfterEventThread = async () => {
-    console.log("***** calling emailAfterEvent", moment().toString());
-
     try {
       const currentUTCTime = moment.utc().format();
       const results = await Event.findAll({
