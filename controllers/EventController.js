@@ -38,7 +38,7 @@ const EventController = () => {
 
       const values = await Promise.all(
         eventUsers.map((user) => {
-          const targetEventDate = moment(targetEvent.startDate);
+          // const targetEventDate = moment(targetEvent.startDate);
           const smtpTransort = {
             service: "gmail",
             auth: {
@@ -49,19 +49,21 @@ const EventController = () => {
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
-            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
-            html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-              user,
-              targetEvent,
-              targetEventDate.format("MMM DD"),
-              targetEventDate.format("h:mm a")
-            ),
+            // subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+            // html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+            //   user,
+            //   targetEvent,
+            //   targetEventDate.format("MMM DD"),
+            //   targetEventDate.format("h:mm a")
+            // ),
+            subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
+            html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
           };
 
           const promise = smtpService().sendMail(smtpTransort, mailOptions);
           console.log('************ smtpTransort ', smtpTransort);
           console.log('************ targetEventDate.format("MMM DD") ', targetEventDate.format("MMM DD"));
-          console.log('************ mailOptions ', mailOptions, typeof promise);
+          console.log('************ mailOptions ', mailOptions, promise instanceof Promise);
 
           return promise;
         })
