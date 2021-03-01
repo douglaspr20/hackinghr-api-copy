@@ -128,6 +128,6 @@ module.exports = {
           ${user.firstName}, ${user.lastName} ${user.email}
         </P>
       `;
-      }),
+      }).join(""),
   },
 };

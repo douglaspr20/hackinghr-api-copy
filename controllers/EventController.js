@@ -127,32 +127,20 @@ const EventController = () => {
   };
 
   const setOrganizerReminders = (event) => {
-    const date1 = moment(event.startDate).subtract(1, "days")
-    const interval1 = `10 ${date1.minutes()} ${date1.hours()} ${date1.date()} ${date1.month()} *`;
-    cronService().addTask(
-      `${event.title}-participant-list-reminder-1`,
-      interval1,
-      true,
-      () => sendParticipantsListToOrganizer(event)
-    );
-
-    const date2 = moment(event.startDate).subtract(2, "hours")
-    const interval2 = `10 ${date2.minutes()} ${date2.hours()} ${date2.date()} ${date2.month()} *`;
-    cronService().addTask(
-      `${event.title}-participant-list-reminder-2`,
-      interval2,
-      true,
-      () => sendParticipantsListToOrganizer(event)
-    );
-
-    const date3 = moment(event.startDate).subtract(30, "minutes")
-    const interval3 = `10 ${date3.minutes()} ${date3.hours()} ${date3.date()} ${date3.month()} *`;
-    cronService().addTask(
-      `${event.title}-participant-list-reminder-3`,
-      interval3,
-      true,
-      () => sendParticipantsListToOrganizer(event)
-    );
+    const dates = [
+      moment(event.startDate).subtract(1, "days"),
+      moment(event.startDate).subtract(2, "hours"),
+      moment(event.startDate).subtract(30, "minutes"),
+    ];
+    dates.forEach((date, index) => {
+      const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
+      cronService().addTask(
+        `${event.title}-participant-list-reminder-${index}`,
+        interval,
+        true,
+        () => sendParticipantsListToOrganizer(event)
+      );
+    });
   };
 
   const sendMessage = async (users, message) => {
