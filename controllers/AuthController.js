@@ -26,11 +26,8 @@ const AuthController = () => {
       html: LabEmails.NEW_USER_SIGNUP.body(user),
     };
 
-    await smtpService().sendMail(
-      smtpTransort,
-      mailOptions
-    );
-  }
+    await smtpService().sendMail(smtpTransort, mailOptions);
+  };
 
   const login = async (req, res) => {
     const { email, password } = req.body;
@@ -161,7 +158,7 @@ const AuthController = () => {
         }
         const token = authService().issue({
           exp: Math.floor(Date.now() / 1000) + minutes * 60,
-          email.toLowerCase(),
+          email: email.toLowerCase(),
         });
         const smtpTransort = {
           service: "gmail",
