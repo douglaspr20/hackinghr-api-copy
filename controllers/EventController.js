@@ -19,8 +19,8 @@ const EventController = () => {
     const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
     const dateBefore2Hours = moment(event.startDate).subtract(45, "minutes");
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
-    
-    console.log('****** set event reminders ', interval1, interval2)
+
+    console.log("****** set event reminders ", interval1, interval2);
 
     cronService().addTask(`${event.title}-24`, interval1, true, async () => {
       const targetEvent = await Event.findOne({ where: { id: event.id } });
@@ -36,6 +36,7 @@ const EventController = () => {
 
       await Promise.all(
         eventUsers.map((user) => {
+          const targetEventDate = moment(targetEvent.startDate);
           const smtpTransort = {
             service: "gmail",
             auth: {
@@ -46,65 +47,23 @@ const EventController = () => {
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
-            subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
-            html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
+            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+            html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+              user,
+              targetEvent,
+              targetEventDate.format("MMM DD"),
+              targetEventDate.format("h:mm a")
+            ),
           };
 
-          console.log('****** mailOptions ', mailOptions);
-
+          console.log("************ mailOptions ", mailOptions);
           return smtpService().sendMail(smtpTransort, mailOptions);
         })
       );
-      // const targetEvent = await Event.findOne({ where: { id: event.id } });
-      // const eventUsers = await Promise.all(
-      //   (targetEvent.users || []).map((user) => {
-      //     return User.findOne({
-      //       where: {
-      //         id: user,
-      //       },
-      //     });
-      //   })
-      // );
-
-      // console.log('**** 24 event reminder,', eventUsers.map(item => item.email))
-
-      // const values = await Promise.all(
-      //   eventUsers.map((user) => {
-      //     // const targetEventDate = moment(targetEvent.startDate);
-      //     const smtpTransort = {
-      //       service: "gmail",
-      //       auth: {
-      //         user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-      //         pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-      //       },
-      //     };
-      //     let mailOptions = {
-      //       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-      //       to: user.email,
-      //       // subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
-      //       // html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-      //       //   user,
-      //       //   targetEvent,
-      //       //   targetEventDate.format("MMM DD"),
-      //       //   targetEventDate.format("h:mm a")
-      //       // ),
-      //       subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
-      //       html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
-      //     };
-
-      //     const promise = smtpService().sendMail(smtpTransort, mailOptions);
-      //     console.log('************ smtpTransort ', smtpTransort);
-      //     console.log('************ mailOptions ', mailOptions, promise instanceof Promise);
-
-      //     return promise;
-      //   })
-      // );
-
-      // console.log('*** promise all **** ', values);
     });
 
     cronService().addTask(`${event.title}-45`, interval2, true, async () => {
-      console.log('********* event 45 minutes hours later', event)
+      console.log("********* event 45 minutes hours later", event);
       const targetEvent = await Event.findOne({ where: { id: event.id } });
       const eventUsers = await Promise.all(
         (targetEvent.users || []).map((user) => {
