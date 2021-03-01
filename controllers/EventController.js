@@ -62,7 +62,6 @@ const EventController = () => {
 
           const promise = smtpService().sendMail(smtpTransort, mailOptions);
           console.log('************ smtpTransort ', smtpTransort);
-          console.log('************ targetEventDate.format("MMM DD") ', targetEventDate.format("MMM DD"));
           console.log('************ mailOptions ', mailOptions, promise instanceof Promise);
 
           return promise;
