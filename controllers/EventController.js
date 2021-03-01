@@ -36,7 +36,7 @@ const EventController = () => {
 
       console.log('**** 24 event reminder,', eventUsers.map(item => item.email))
 
-      await Promise.all(
+      const values = await Promise.all(
         eventUsers.map((user) => {
           const targetEventDate = moment(targetEvent.startDate);
           const smtpTransort = {
@@ -61,11 +61,15 @@ const EventController = () => {
             html: "<p>HTML version of the message</p>"
           };
 
-          console.log('************ mailOptions ', mailOptions);
+          const promise = smtpService().sendMail(smtpTransort, mailOptions);
+          console.log('************ smtpTransort ', smtpTransort);
+          console.log('************ mailOptions ', mailOptions, typeof promise);
 
-          return smtpService().sendMail(smtpTransort, mailOptions);
+          return promise;
         })
       );
+
+      console.log('*** promise all **** ', values);
     });
 
     cronService().addTask(`${event.title}-45`, interval2, true, async () => {
