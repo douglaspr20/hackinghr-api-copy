@@ -129,8 +129,8 @@ const EventController = () => {
   const setOrganizerReminders = (event) => {
     const dates = [
       moment(event.startDate).subtract(1, "days"),
-      moment(event.startDate).subtract(2, "hours"),
-      moment(event.startDate).subtract(30, "minutes"),
+      // moment(event.startDate).subtract(2, "hours"),
+      // moment(event.startDate).subtract(30, "minutes"),
     ];
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
