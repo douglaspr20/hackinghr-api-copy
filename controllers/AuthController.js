@@ -26,11 +26,8 @@ const AuthController = () => {
       html: LabEmails.NEW_USER_SIGNUP.body(user),
     };
 
-    await smtpService().sendMail(
-      smtpTransort,
-      mailOptions
-    );
-  }
+    await smtpService().sendMail(smtpTransort, mailOptions);
+  };
 
   const login = async (req, res) => {
     const { email, password } = req.body;
@@ -39,7 +36,7 @@ const AuthController = () => {
       try {
         const user = await User.findOne({
           where: {
-            email,
+            email: email.toLowerCase(),
           },
         });
 
@@ -84,7 +81,7 @@ const AuthController = () => {
         }
 
         let userInfo = {
-          email: body.email,
+          email: body.email.toLowerCase(),
           password: bcryptService().password(body.password),
           firstName: body.firstName,
           lastName: body.lastName,
@@ -104,7 +101,7 @@ const AuthController = () => {
         // check if the email is already used.
         const existedUser = await User.findOne({
           where: {
-            email: userInfo.email,
+            email: userInfo.email.toLowerCase(),
           },
         });
 
@@ -150,18 +147,18 @@ const AuthController = () => {
       if (email) {
         let user = await User.findOne({
           where: {
-            email: email,
+            email: email.toLowerCase(),
           },
         });
         if (!user) {
           return res
             .status(HttpCodes.BAD_REQUEST)
-            .json({ msg: "Email don't match with any user." })
+            .json({ msg: "Email doesn't match with any user." })
             .send();
         }
         const token = authService().issue({
           exp: Math.floor(Date.now() / 1000) + minutes * 60,
-          email,
+          email: email.toLowerCase(),
         });
         const smtpTransort = {
           service: "gmail",
@@ -263,7 +260,7 @@ const AuthController = () => {
         },
         {
           where: {
-            email: infoToken.email,
+            email: infoToken.email.toLowerCase(),
           },
         }
       );

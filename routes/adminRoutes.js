@@ -4,6 +4,7 @@ const adminRoutes = {
   "GET /event/:id/users": "EventController.getEventUsers",
   "DELETE /event/:id": "EventController.remove",
   "PUT /event/send-message/:id": "EventController.sendMessageToParticipants",
+  "PUT /event/send-test-message/:id": "EventController.sendTestMessage",
   "GET /podcast/:id": "PodcastController.get",
   "POST /podcast/": "PodcastController.add",
   "PUT /podcast/:id": "PodcastController.update",

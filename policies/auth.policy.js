@@ -13,7 +13,7 @@ const checkIsAdmin = async (req, res, next) => {
     try {
       const user = await User.findOne({
         where: {
-          email,
+          email: email.toLowerCase(),
         },
       });
 
