@@ -175,7 +175,7 @@ const UserController = () => {
       // event.location,
       `${process.env.DOMAIN_URL}${event.id}`,
       event.organizer,
-      process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER,
+      process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       timezone.utc[0]
     );
 
@@ -184,26 +184,17 @@ const UserController = () => {
       to: user.email,
       subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
       html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
+      contentType: 'text/calendar',
     };
+    
+    let icsContent = calendarInvite.toString();
+    icsContent = icsContent.replace('BEGIN:VEVENT', `METHOD:REQUEST\r\nBEGIN:VEVENT`)
 
     if (calendarInvite) {
-      let alternatives = {
-        "Content-Type": "text/calendar",
-        method: "REQUEST",
-        charset: "UTF-8",
-        content: new Buffer(calendarInvite.toString()),
-        component: "VEVENT",
-        "Content-Class": "urn:content-classes:calendarmessage",
-      };
-      mailOptions["alternatives"] = alternatives;
-      mailOptions["alternatives"]["contentType"] = "application/ics";
-      mailOptions["alternatives"]["content"] = new Buffer(
-        calendarInvite.toString()
-      );
       mailOptions["attachments"] = [
         {
           filename: "invite.ics",
-          content: calendarInvite.toString(),
+          content: icsContent,
           contentType: "application/ics; charset=UTF-8; method=REQUEST",
           contentDisposition: "inline",
         },
