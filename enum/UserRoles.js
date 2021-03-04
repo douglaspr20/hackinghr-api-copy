@@ -1,5 +1,6 @@
 module.exports = {
   ADMIN: "admin",
   USER: "user",
-  EDITOR: "editor",
+  PODCAST: "editor",
+  CONFERENCE: "conference",
 };
