@@ -392,6 +392,55 @@ const UserController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+  /**
+   * This function generate and send invitation email
+   * @param {*} req 
+   * @param {*} res 
+   * @returns 
+   */
+  const generateInvitationEmail = async (req, res) => {
+    const { id } = req.token;
+    let { email } = req.body;
+    try {
+      const user = await User.findOne({
+        where: { id },
+      });
+
+      email = email.split(',')
+
+      const smtpTransort = {
+        service: "gmail",
+        auth: {
+          user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+        },
+      };
+      
+      let listPromises = [];
+
+      email.map((item) => {
+        const mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: item.trim(),
+          subject: `Hacking HR Invitation`,
+          html: EmailContent.INVITE_EMAIL(user),
+          contentType: 'text/html',
+        };
+        listPromises.push(smtpService().sendMail(smtpTransort, mailOptions));
+      });
+
+      await Promise.all(listPromises);
+      
+      return res
+              .status(HttpCodes.OK)
+              .send();
+    } catch (err) {
+      console.log(err);
+      return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+    }
+  };
 
   return {
     getUser,
@@ -402,6 +451,7 @@ const UserController = () => {
     getMyEvents,
     importUsers,
     getAll,
+    generateInvitationEmail,
   };
 };
 
