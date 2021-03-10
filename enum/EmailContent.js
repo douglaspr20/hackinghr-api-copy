@@ -55,4 +55,20 @@ module.exports = {
     Hacking HR Team
     <br/>
   `,
+  INVITE_EMAIL: (user) => `
+  <p>Hi, your friend ${user.firstName} is inviting you to join Hacking HR LAB! Please follow this <a target="_blank" href="https://www.hackinghrlab.io/">link</a> to check it out!</p>
+  <p>Hacking HR LAB is a one-stop shop for mentoring, peer-to-peer coaching and learning. It includes:<p>
+  <ul>
+    <li>A powerful and dynamic learning library</li>
+    <li>A comprehensive event calendar (Both for Hacking HR and partner events)</li>
+    <li>Mentoring and peer-to-peer coaching functionalities</li>
+    <li>A LAB for collaborative problem-solving</li>
+    <li>A HUB for policy/process collaborative design</li>
+    <li>Peer-to-peer assessed evaluations for certifications and micro-credentials</li>
+    <li>Learning Journeys to achieve learning objectives leveraging Adaptive Learning approaches</li>
+  </ul>
+  <p>Come form part of the HR of the Future!</p>
+  <br />
+  The Hacking HR Team
+  `
 };
