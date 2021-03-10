@@ -399,12 +399,9 @@ const UserController = () => {
    * @returns 
    */
   const generateInvitationEmail = async (req, res) => {
-    const { id } = req.token;
+    const { user } = req;
     let { email } = req.body;
     try {
-      const user = await User.findOne({
-        where: { id },
-      });
 
       email = email.split(',')
 
@@ -422,7 +419,7 @@ const UserController = () => {
         const mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: item.trim(),
-          subject: `Hacking HR Invitation`,
+          subject: `${user.firstName} thought you’d like to join the best platform for HR pros`,
           html: EmailContent.INVITE_EMAIL(user),
           contentType: 'text/html',
         };

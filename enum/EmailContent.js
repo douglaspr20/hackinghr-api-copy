@@ -56,7 +56,7 @@ module.exports = {
     <br/>
   `,
   INVITE_EMAIL: (user) => `
-  <p>Your friend ${user.firstName} is inviting you to join Hacking HR LAB! Please follow this link to check it out!</p>
+  <p>Hi, your friend ${user.firstName} is inviting you to join Hacking HR LAB! Please follow this <a target="_blank" href="https://www.hackinghrlab.io/">link</a> to check it out!</p>
   <p>Hacking HR LAB is a one-stop shop for mentoring, peer-to-peer coaching and learning. It includes:<p>
   <ul>
     <li>A powerful and dynamic learning library</li>
