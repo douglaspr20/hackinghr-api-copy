@@ -11,5 +11,6 @@ module.exports = {
     LIBRARY_IMAGE_FOLDER: "library",
     PODCAST_IMAGE_FOLDER: "podcast",
     MARKETPLACE_IMAGE_FOLDER: "marketplace",
+    CHANNEL_IMAGE_FOLDER: "channel",
   },
 };

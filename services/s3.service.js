@@ -105,6 +105,12 @@ const s3Service = () => {
     return url;
   };
 
+  const getChannelImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(S3.CHANNEL_IMAGE_FOLDER, prevImg, base64Image);
+
+    return url;
+  }
+
   return {
     getImageUrl,
     getUserImageUrl,
@@ -112,6 +118,7 @@ const s3Service = () => {
     getLibraryImageUrl,
     getPodcastImageUrl,
     getMarketplaceImageUrl,
+    getChannelImageUrl,
     deleteUserPicture,
   };
 };
