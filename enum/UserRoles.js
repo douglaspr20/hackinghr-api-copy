@@ -3,4 +3,5 @@ module.exports = {
   USER: "user",
   PODCAST: "editor",
   CONFERENCE: "conference",
+  CHANNEL_ADMIN: "channel_admin",
 };
