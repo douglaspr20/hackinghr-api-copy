@@ -63,6 +63,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: -1,
       },
+      followChannels: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
+      channel: {
+        type: DataTypes.INTEGER,
+      },
     },
     {
       sequelize,
