@@ -29,7 +29,13 @@ const checkIsAdmin = async (req, res, next) => {
         UserRoles.CONFERENCE,
       ];
 
-      if (!adminRoles.includes(user.role)) {
+      if (user.role === UserRoles.CHANNEL_ADMIN) {
+        if (!user.channel) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "You are not owner of channel." });
+        }
+      } else if (!adminRoles.includes(user.role)) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "You are not allowed." });
