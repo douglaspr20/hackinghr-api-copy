@@ -15,7 +15,6 @@ module.exports = (sequelize, DataTypes) => {
     {
       title: DataTypes.STRING,
       value: DataTypes.STRING,
-      channel: DataTypes.INTEGER,
     },
     {
       sequelize,

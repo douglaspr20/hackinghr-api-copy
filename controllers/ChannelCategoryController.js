@@ -6,14 +6,12 @@ const ChannelCategory = db.ChannelCategory;
 const ChannelCategoryController = () => {
   const create = async (req, res) => {
     const { title, value } = req.body;
-    const { id } = req.token;
 
     if (title) {
       try {
         let categoryInfo = {
           title,
           value,
-          channel: id,
         };
 
         const category = await ChannelCategory.create(categoryInfo);
@@ -33,11 +31,8 @@ const ChannelCategoryController = () => {
   };
 
   const getAll = async (req, res) => {
-    const { channel } = req.query;
-
     try {
       const categories = await ChannelCategory.findAll({
-        where: { channel },
         order: [["title"]],
       });
 
