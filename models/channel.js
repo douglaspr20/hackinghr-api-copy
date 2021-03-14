@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     podcasts: DataTypes.ARRAY(DataTypes.INTEGER),
     events: DataTypes.ARRAY(DataTypes.INTEGER),
     followedUsers: DataTypes.ARRAY(DataTypes.INTEGER),
+    categories: DataTypes.ARRAY(DataTypes.STRING),
   }, {
     sequelize,
     modelName: 'Channel',
