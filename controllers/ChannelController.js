@@ -100,7 +100,7 @@ const ChannelController = () => {
           order.push(["createdAt", "ASC"]);
           break;
         case SortOptions["Sort by name"]:
-          order.push(["title", "ASC"]);
+          order.push(["name", "ASC"]);
           break;
         case SortOptions["Sort by type"]:
           order.push(["contentType", "ASC"]);
