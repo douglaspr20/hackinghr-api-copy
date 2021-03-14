@@ -1,12 +1,15 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
+const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 
 const Channel = db.Channel;
+const User = db.User;
 
 const ChannelController = () => {
   const create = async (req, res) => {
     const { body } = req;
+    const { id: userId } = req.token;
 
     if (body.name) {
       try {
@@ -23,6 +26,14 @@ const ChannelController = () => {
 
         const newChannel = await Channel.create(channelInfo);
 
+        await User.update(
+          {
+            channel: newChannel.id,
+          },
+          {
+            where: { id: userId },
+          }
+        );
         if (!newChannel) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -75,8 +86,34 @@ const ChannelController = () => {
   };
 
   const getAll = async (req, res) => {
+    const params = req.query;
+
     try {
-      const channels = await Channel.findAll({});
+      let where = {};
+      let order = [];
+
+      switch (params.order) {
+        case SortOptions["Newest first"]:
+          order.push(["createdAt", "DESC"]);
+          break;
+        case SortOptions["Newest last"]:
+          order.push(["createdAt", "ASC"]);
+          break;
+        case SortOptions["Sort by name"]:
+          order.push(["title", "ASC"]);
+          break;
+        case SortOptions["Sort by type"]:
+          order.push(["contentType", "ASC"]);
+          break;
+        default:
+      }
+
+      const channels = await Channel.findAndCountAll({
+        where,
+        offset: (params.page - 1) * params.num,
+        limit: params.num,
+        order,
+      });
 
       return res.status(HttpCodes.OK).json({ channels });
     } catch (err) {

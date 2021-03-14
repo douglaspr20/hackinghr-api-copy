@@ -37,6 +37,8 @@ const privateRoutes = {
   "GET /journey-items/:id": "JourneyItemController.getItemsByJourney",
   "PUT /journey-items/:id": "JourneyItemController.update",
   "GET /conference/": "ConferenceController.getAll",
+  "POST /channel/": "ChannelController.create",
+  "GET /channel/": "ChannelController.getAll",
 };
 
 module.exports = privateRoutes;
