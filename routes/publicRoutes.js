@@ -15,6 +15,7 @@ const publicRoutes = {
   "GET /marketPlace-categories/": "MarketplaceCategoriesController.getAll",
   "GET /event/:id/": "EventController.getEvent",
   "GET /category": "CategoryController.getAll",
+  "GET /channel-category": "ChannelCategoryController.getAll",
 };
 
 module.exports = publicRoutes;

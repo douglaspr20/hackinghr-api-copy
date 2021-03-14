@@ -32,6 +32,9 @@ const adminRoutes = {
   "POST /conference/": "ConferenceController.create",
   "PUT /conference/:id": "ConferenceController.update",
   "DELETE /conference/:id": "ConferenceController.remove",
+  "POST /channel-category": "ChannelCategoryController.create",
+  "PUT /channel-category/:id": "ChannelCategoryController.update",
+  "DELETE /channel-category/:id": "ChannelCategoryController.remove",
 };
 
 module.exports = adminRoutes;
