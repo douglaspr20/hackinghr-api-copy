@@ -15,6 +15,7 @@ const ChannelController = () => {
       try {
         let channelInfo = {
           ...body,
+          owner: id,
         };
 
         if (channelInfo.image) {
