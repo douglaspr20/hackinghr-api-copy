@@ -215,11 +215,9 @@ const UserController = () => {
   const addEvent = async (req, res) => {
     let event = req.body;
     const { id } = req.token;
+    const { user: prevUser } = req;
 
     try {
-      const prevUser = await User.findOne({
-        where: { id },
-      });
       const [rows, user] = await User.update(
         {
           events: Sequelize.fn(
