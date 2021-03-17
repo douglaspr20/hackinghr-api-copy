@@ -1,6 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
+const { isEmpty } = require("lodash");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 
 const Channel = db.Channel;
@@ -92,6 +94,15 @@ const ChannelController = () => {
     try {
       let where = {};
       let order = [];
+
+      if (params.category && !isEmpty(JSON.parse(params.category))) {
+        where = {
+          ...where,
+          categories: {
+            [Op.overlap]: JSON.parse(params.category),
+          },
+        };
+      }
 
       switch (params.order) {
         case SortOptions["Newest first"]:
