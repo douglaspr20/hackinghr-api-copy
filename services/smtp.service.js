@@ -3,7 +3,7 @@ const ical = require("ical-generator");
 const { EmailContent } = require("../enum");
 
 const smtpService = () => {
-  const sendMail = async (smtpTransort, mailOptions) => {
+  const sendMail = async (mailOptions) => {
     return await new Promise((resolve, reject) => {
       /**
        * SMTP Transport template
@@ -18,7 +18,16 @@ const smtpService = () => {
        * }
        * https://nodemailer.com/smtp/
        */
-      const transporter = nodemailer.createTransport(smtpTransort);
+      const transporter = nodemailer.createTransport({
+        port: 587,
+        host: process.env.AWS_SES_SMTP_HOST,
+        secure: false,
+        auth: {
+          user: process.env.AWS_SES_SMTP_USERNAME,
+          pass: process.env.AWS_SES_SMTP_PASSWORD
+        },
+        debug: false
+      });
 
       /**
        * Message configuration (mailOptions)
@@ -81,14 +90,6 @@ const smtpService = () => {
   };
 
   const sendMatchEvent = async (source, target, isMentor) => {
-    const smtpTransort = {
-      service: "gmail",
-      auth: {
-        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-      },
-    };
-
     const mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: `${source.email}, ${target.email}`,
@@ -100,7 +101,7 @@ const smtpService = () => {
 
     console.log("**** mailOptions ", mailOptions);
 
-    const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+    const sentResult = await smtpService().sendMail(mailOptions);
 
     return sentResult;
   };

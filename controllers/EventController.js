@@ -35,13 +35,6 @@ const EventController = () => {
       await Promise.all(
         eventUsers.map((user) => {
           const targetEventDate = moment(targetEvent.startDate);
-          const smtpTransort = {
-            service: "gmail",
-            auth: {
-              user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-              pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-            },
-          };
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
@@ -54,7 +47,7 @@ const EventController = () => {
             ),
           };
 
-          return smtpService().sendMail(smtpTransort, mailOptions);
+          return smtpService().sendMail(mailOptions);
         })
       );
     });
@@ -73,13 +66,6 @@ const EventController = () => {
 
       await Promise.all(
         eventUsers.map((user) => {
-          const smtpTransort = {
-            service: "gmail",
-            auth: {
-              user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-              pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-            },
-          };
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
@@ -87,7 +73,7 @@ const EventController = () => {
             html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
           };
 
-          return smtpService().sendMail(smtpTransort, mailOptions);
+          return smtpService().sendMail(mailOptions);
         })
       );
     });
@@ -109,13 +95,6 @@ const EventController = () => {
         });
       })
     );
-    const smtpTransort = {
-      service: "gmail",
-      auth: {
-        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-      },
-    };
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,
@@ -125,7 +104,7 @@ const EventController = () => {
         eventUsers
       ),
     };
-    await smtpService().sendMail(smtpTransort, mailOptions);
+    await smtpService().sendMail(mailOptions);
   };
 
   const setOrganizerReminders = (event) => {
@@ -146,13 +125,6 @@ const EventController = () => {
   };
 
   const sendMessage = async (users, subject, message) => {
-    const smtpTransort = {
-      service: "gmail",
-      auth: {
-        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-      },
-    };
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       subject,
@@ -166,7 +138,7 @@ const EventController = () => {
           to: user.email,
         };
 
-        return smtpService().sendMail(smtpTransort, mailOptions);
+        return smtpService().sendMail(mailOptions);
       })
     );
   };
@@ -383,14 +355,6 @@ const EventController = () => {
       });
       const users = await Promise.all(requests);
 
-      const smtpTransort = {
-        service: "gmail",
-        auth: {
-          user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-        },
-      };
-
       let mailOptions = {
         from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
         subject: `Did you attend ${event.title}? – Get Your Digital Certificate!`,
@@ -414,7 +378,7 @@ const EventController = () => {
           Hacking HR Team
         `;
 
-        return smtpService().sendMail(smtpTransort, mailOptions);
+        return smtpService().sendMail(mailOptions);
       });
       await Promise.all(requests);
     } catch (error) {
@@ -533,13 +497,6 @@ const EventController = () => {
     const emailList = emails.split(",").map((item) => item.trim());
 
     try {
-      const smtpTransort = {
-        service: "gmail",
-        auth: {
-          user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-        },
-      };
       let mailOptions = {
         from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
         subject,
@@ -553,7 +510,7 @@ const EventController = () => {
             to: email,
           };
 
-          return smtpService().sendMail(smtpTransort, mailOptions);
+          return smtpService().sendMail(mailOptions);
         })
       );
 

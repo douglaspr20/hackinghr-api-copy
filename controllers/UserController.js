@@ -154,14 +154,6 @@ const UserController = () => {
   };
 
   const generateAttendEmail = async (user, event) => {
-    const smtpTransort = {
-      service: "gmail",
-      auth: {
-        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-      },
-    };
-
     const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
     const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
@@ -204,7 +196,7 @@ const UserController = () => {
     console.log("**** mailOptions ", mailOptions);
     let sentResult = null;
     try {
-      sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+      sentResult = await smtpService().sendMail(mailOptions);
     } catch (err) {
       console.log(err);
     }
@@ -402,14 +394,6 @@ const UserController = () => {
     try {
 
       email = email.split(',')
-
-      const smtpTransort = {
-        service: "gmail",
-        auth: {
-          user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-        },
-      };
       
       let listPromises = [];
 
@@ -421,7 +405,7 @@ const UserController = () => {
           html: EmailContent.INVITE_EMAIL(user),
           contentType: 'text/html',
         };
-        listPromises.push(smtpService().sendMail(smtpTransort, mailOptions));
+        listPromises.push(smtpService().sendMail(mailOptions));
       });
 
       await Promise.all(listPromises);
