@@ -39,6 +39,7 @@ const privateRoutes = {
   "GET /conference/": "ConferenceController.getAll",
   "POST /channel/": "ChannelController.create",
   "GET /channel/": "ChannelController.getAll",
+  "GET /channel/:id": "ChannelController.get",
   "GET /channel-category/:id": "ChannelCategoryController.get",
 };
 

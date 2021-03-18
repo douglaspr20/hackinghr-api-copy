@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.HeartUserRate);
       User.hasMany(models.Heart);
       User.hasMany(models.Journey);
+      User.hasOne(models.Channel, {
+        foreignKey: {
+          name: "owner",
+          allowNull: true,
+        },
+      });
     }
   }
   User.init(

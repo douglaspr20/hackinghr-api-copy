@@ -66,6 +66,9 @@ const ChannelController = () => {
           where: {
             id,
           },
+          include: {
+            model: User,
+          },
         });
 
         if (!channel) {
