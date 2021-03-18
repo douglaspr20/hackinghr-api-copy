@@ -1,6 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const { literal ,Op } = require("sequelize");
+const { literal, Op, fn } = require("sequelize");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 
 const Library = db.Library;
@@ -12,22 +12,39 @@ const HomeController = () => {
   const getRecommendations = async (req, res) => {
     try {
       const libraries = await Library.findAll({
-        random: true,
+        where: {
+          approvalStatus: 'approved',
+        },
+        order: [
+          [fn('RANDOM')]
+        ],
         limit: 3,
       });
 
       const podcasts = await Podcast.findAll({
-        random: true,
+        order: [
+          [fn('RANDOM')]
+        ],
         limit: 3,
       });
 
       const events = await Event.findAll({
-        random: true,
+        where: {
+          startDate: {
+            [Op.gte]: new Date(),
+          }
+
+        },
+        order: [
+          [fn('RANDOM')]
+        ],
         limit: 3,
       });
 
       const conferenceLibrary = await ConferenceLibrary.findAll({
-        random: true,
+        order: [
+          [fn('RANDOM')]
+        ],
         limit: 3,
       });
 
