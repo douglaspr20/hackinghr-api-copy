@@ -8,7 +8,7 @@ const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const { ReviewStatus, Settings } = require("../enum");
 
 const Library = db.Library;
-const VisibleLevel = Settings.ISIBLE_LEVEL;
+const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 const LibraryController = () => {
   const create = async (req, res) => {
@@ -183,8 +183,8 @@ const LibraryController = () => {
         ...where,
         approvalStatus: ReviewStatus.APPROVED,
         level: {
-          [Op.ne]: VisibleLevel.CHANNEL,
-        }
+          [Op.or]: [VisibleLevel.DEFAULT, VisibleLevel.ALL],
+        },
       };
 
       let order = [];
