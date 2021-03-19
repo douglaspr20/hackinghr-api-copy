@@ -19,12 +19,12 @@ const smtpService = () => {
        * https://nodemailer.com/smtp/
        */
       const transporter = nodemailer.createTransport({
-        port: 587,
-        host: process.env.AWS_SES_SMTP_HOST,
-        secure: false,
+        port: process.env.SMTP_PORT,
+        host: process.env.SMTP_HOST,
+        secure: process.env.SMTP_SECURE,
         auth: {
-          user: process.env.AWS_SES_SMTP_USERNAME,
-          pass: process.env.AWS_SES_SMTP_PASSWORD
+          user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
+          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD
         },
         debug: false
       });
