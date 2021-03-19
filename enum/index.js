@@ -4,6 +4,7 @@ const FilterSettings = require("./FilterSettings");
 const ReviewStatus = require("./ReviewStatus");
 const EmailContent = require("./EmailContent");
 const LabEmails = require("./Emails") ;
+const Settings = require("./Settings");
 
 module.exports = {
   USER_ROLE,
@@ -12,4 +13,5 @@ module.exports = {
   ReviewStatus,
   EmailContent,
   LabEmails,
+  Settings,
 };

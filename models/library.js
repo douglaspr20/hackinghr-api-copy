@@ -1,6 +1,8 @@
 "use strict";
 const { Model } = require("sequelize");
-const { ReviewStatus } = require("../enum");
+const { ReviewStatus, Settings } = require("../enum");
+
+const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 module.exports = (sequelize, DataTypes) => {
   class Library extends Model {
@@ -36,6 +38,12 @@ module.exports = (sequelize, DataTypes) => {
         ],
         defaultValue: ReviewStatus.PENDING,
       },
+      level: {
+        type: DataTypes.INTEGER,
+        values: [VisibleLevel.DEFAULT, VisibleLevel.CHANNEL, VisibleLevel.ALL],
+        defaultValue: VisibleLevel.DEFAULT,
+      },
+      channel: DataTypes.INTEGER,
     },
     {
       sequelize,

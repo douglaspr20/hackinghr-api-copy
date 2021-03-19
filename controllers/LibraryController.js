@@ -5,9 +5,10 @@ const { isValidURL } = require("../utils/profile");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
-const { ReviewStatus } = require("../enum");
+const { ReviewStatus, Settings } = require("../enum");
 
 const Library = db.Library;
+const VisibleLevel = Settings.ISIBLE_LEVEL;
 
 const LibraryController = () => {
   const create = async (req, res) => {
@@ -181,7 +182,80 @@ const LibraryController = () => {
       where = {
         ...where,
         approvalStatus: ReviewStatus.APPROVED,
+        level: {
+          [Op.ne]: VisibleLevel.CHANNEL,
+        }
       };
+
+      let order = [];
+
+      switch (filter.order) {
+        case SortOptions["Newest first"]:
+          order.push(["createdAt", "DESC"]);
+          break;
+        case SortOptions["Newest last"]:
+          order.push(["createdAt", "ASC"]);
+          break;
+        case SortOptions["Sort by name"]:
+          order.push(["title", "ASC"]);
+          break;
+        case SortOptions["Sort by type"]:
+          order.push(["contentType", "ASC"]);
+          break;
+        default:
+      }
+
+      const libraries = await Library.findAndCountAll({
+        where,
+        offset: (filter.page - 1) * filter.num,
+        limit: filter.num,
+        order,
+      });
+
+      return res.status(HttpCodes.OK).json({ libraries });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const getChannelLibraries = async (req, res) => {
+    const filter = req.query;
+
+    try {
+      let where = {
+        channel: filter.channel,
+      };
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      if (
+        filter["content type"] &&
+        !isEmpty(JSON.parse(filter["content type"]))
+      ) {
+        where = {
+          ...where,
+          contentType: JSON.parse(filter["content type"]),
+        };
+      }
+
+      if (filter.language && !isEmpty(JSON.parse(filter.language))) {
+        where = {
+          ...where,
+          language: {
+            [Op.overlap]: JSON.parse(filter.language),
+          },
+        };
+      }
 
       let order = [];
 
@@ -427,6 +501,7 @@ const LibraryController = () => {
     reject,
     recommend,
     getApproved,
+    getChannelLibraries,
   };
 };
 
