@@ -12,13 +12,6 @@ const User = db.User;
 
 const AuthController = () => {
   const sendEmailAfterRegister = async (user) => {
-    const smtpTransort = {
-      service: "gmail",
-      auth: {
-        user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-        pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-      },
-    };
     const mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: user.email,
@@ -26,7 +19,7 @@ const AuthController = () => {
       html: LabEmails.NEW_USER_SIGNUP.body(user),
     };
 
-    await smtpService().sendMail(smtpTransort, mailOptions);
+    await smtpService().sendMail(mailOptions);
   };
 
   const login = async (req, res) => {
@@ -160,13 +153,7 @@ const AuthController = () => {
           exp: Math.floor(Date.now() / 1000) + minutes * 60,
           email: email.toLowerCase(),
         });
-        const smtpTransort = {
-          service: "gmail",
-          auth: {
-            user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-            pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
-          },
-        };
+        
         const mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: email,
@@ -188,7 +175,6 @@ const AuthController = () => {
         };
 
         const sentResult = await smtpService().sendMail(
-          smtpTransort,
           mailOptions
         );
         if (sentResult) {

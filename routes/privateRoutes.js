@@ -21,7 +21,7 @@ const privateRoutes = {
   "POST /library/channel": "LibraryController.create",
   "GET /library/approved/": "LibraryController.getApproved",
   "GET /library/channel/": "LibraryController.getChannelLibraries",
-  "GET /library/recommendations/": "LibraryController.getRecommendations",
+  "GET /library/recommendations/": "HomeController.getRecommendations",
   "GET /library/:id/": "LibraryController.getLibrary",
   "POST /mentoring": "MentoringController.create",
   "GET /mentoring": "MentoringController.getMentoringInfo",
