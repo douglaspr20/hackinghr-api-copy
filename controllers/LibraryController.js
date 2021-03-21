@@ -227,6 +227,7 @@ const LibraryController = () => {
     try {
       let where = {
         channel: filter.channel,
+        contentType: filter.contentType,
       };
 
       if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
@@ -235,16 +236,6 @@ const LibraryController = () => {
           topics: {
             [Op.overlap]: JSON.parse(filter.topics),
           },
-        };
-      }
-
-      if (
-        filter["content type"] &&
-        !isEmpty(JSON.parse(filter["content type"]))
-      ) {
-        where = {
-          ...where,
-          contentType: JSON.parse(filter["content type"]),
         };
       }
 
