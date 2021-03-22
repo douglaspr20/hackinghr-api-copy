@@ -65,7 +65,7 @@ const ConferenceController = () => {
         where,
         offset: (filter.page - 1) * filter.num,
         limit: filter.num,
-        order: [["order", "DESC"]],
+        order: [["year", "DESC"], ["order", "DESC"]],
       });
 
       return res.status(HttpCodes.OK).json({ conferences });
