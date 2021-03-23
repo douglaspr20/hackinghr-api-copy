@@ -14,6 +14,7 @@ const publicRoutes = {
   "POST /marketPlace/": "MarketPlaceController.getAll",
   "GET /marketPlace-categories/": "MarketplaceCategoriesController.getAll",
   "GET /event/:id/": "EventController.getEvent",
+  "GET /event/ics/:id": "EventController.downloadICS",
   "GET /category": "CategoryController.getAll",
 };
 
