@@ -57,7 +57,7 @@ module.exports = {
   `,
   INVITE_EMAIL: (user) => `
     <p>Hi!</P
-    <p>Your friend ${user.firstName} ${user.lastName} is inviting you to join Hacking HR LAB! Please join here: <a target="_blank" href="${process.env.DOMAIN_URL}/join">${process.env.DOMAIN_URL}/join</a></p>
+    <p>Your friend ${user.firstName} ${user.lastName} is inviting you to join Hacking HR LAB! Please join here: <a target="_blank" href="${process.env.DOMAIN_URL}join">${process.env.DOMAIN_URL}join</a></p>
     <p>Hacking HR LAB is a one-stop shop to support the growth, development and advancement of HR professionals. Some of the feature it includes:<p>
     <ul>
       <li>A powerful and dynamic learning library</li>
@@ -67,7 +67,7 @@ module.exports = {
       <li>Learning Journeys to achieve learning objectives leveraging Adaptive Learning approaches</li>
       <li>Many more features coming up.</li>
     </ul>
-    <p>Join us! Create your FREE account today: <a target="_blank" href="${process.env.DOMAIN_URL}/join">${process.env.DOMAIN_URL}/join</a></p>
+    <p>Join us! Create your FREE account today: <a target="_blank" href="${process.env.DOMAIN_URL}join">${process.env.DOMAIN_URL}join</a></p>
     <br />
     Thank you! 
     <br />
