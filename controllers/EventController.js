@@ -577,7 +577,9 @@ const EventController = () => {
 
       const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
       const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
-      const timezone = TimeZoneList.find((item) => item.value === event.timezone);
+      const timezone = TimeZoneList.find(
+        (item) => item.value === event.timezone
+      );
 
       const calendarInvite = smtpService().generateCalendarInvite(
         startDate,
@@ -593,11 +595,17 @@ const EventController = () => {
       );
 
       let icsContent = calendarInvite.toString();
-      icsContent = icsContent.replace('BEGIN:VEVENT', `METHOD:REQUEST\r\nBEGIN:VEVENT`);
+      icsContent = icsContent.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
 
-      res.setHeader('Content-Type', 'application/ics; charset=UTF-8;');
-      res.setHeader('Content-Disposition', `attachment; filename=${event.title}.ics`);
-      res.setHeader('Content-Length', icsContent.length);
+      res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${event.title}.ics`
+      );
+      res.setHeader("Content-Length", icsContent.length);
       return res.end(icsContent);
     } catch (error) {
       console.log(error);
