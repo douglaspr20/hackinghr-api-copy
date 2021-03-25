@@ -56,19 +56,22 @@ module.exports = {
     <br/>
   `,
   INVITE_EMAIL: (user) => `
-  <p>Hi, your friend ${user.firstName} is inviting you to join Hacking HR LAB! Please follow this <a target="_blank" href="https://www.hackinghrlab.io/">link</a> to check it out!</p>
-  <p>Hacking HR LAB is a one-stop shop for mentoring, peer-to-peer coaching and learning. It includes:<p>
-  <ul>
-    <li>A powerful and dynamic learning library</li>
-    <li>A comprehensive event calendar (Both for Hacking HR and partner events)</li>
-    <li>Mentoring and peer-to-peer coaching functionalities</li>
-    <li>A LAB for collaborative problem-solving</li>
-    <li>A HUB for policy/process collaborative design</li>
-    <li>Peer-to-peer assessed evaluations for certifications and micro-credentials</li>
-    <li>Learning Journeys to achieve learning objectives leveraging Adaptive Learning approaches</li>
-  </ul>
-  <p>Come form part of the HR of the Future!</p>
-  <br />
-  The Hacking HR Team
+    <p>Hi!</P
+    <p>Your friend ${user.firstName} ${user.lastName} is inviting you to join Hacking HR LAB! Please join here: <a target="_blank" href="${process.env.DOMAIN_URL}/join">${process.env.DOMAIN_URL}/join</a></p>
+    <p>Hacking HR LAB is a one-stop shop to support the growth, development and advancement of HR professionals. Some of the feature it includes:<p>
+    <ul>
+      <li>A powerful and dynamic learning library</li>
+      <li>Conference Library with the videos from our global events</li>
+      <li>A comprehensive event calendar (Both for Hacking HR and partner events)</li>
+      <li>Mentoring</li>
+      <li>Learning Journeys to achieve learning objectives leveraging Adaptive Learning approaches</li>
+      <li>Many more features coming up.</li>
+    </ul>
+    <p>Join us! Create your FREE account today: <a target="_blank" href="${process.env.DOMAIN_URL}/join">${process.env.DOMAIN_URL}/join</a></p>
+    <br />
+    Thank you! 
+    <br />
+    The Hacking HR Team
+    <br/>
   `
 };
