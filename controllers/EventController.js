@@ -8,6 +8,7 @@ const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
+const TimeZoneList = require("../enum/TimeZoneList");
 
 const Event = db.Event;
 const User = db.User;
@@ -555,6 +556,65 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
+  const getEventDescription = (rawData) => {
+    return rawData ? rawData.blocks.map((item) => item.text).join(`/n`) : "";
+  };
+
+  const downloadICS = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const event = await Event.findOne({
+        where: { id },
+      });
+
+      if (!event) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
+      const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
+      const timezone = TimeZoneList.find(
+        (item) => item.value === event.timezone
+      );
+
+      const calendarInvite = smtpService().generateCalendarInvite(
+        startDate,
+        endDate,
+        event.title,
+        getEventDescription(event.description),
+        "",
+        // event.location,
+        `${process.env.DOMAIN_URL}${event.id}`,
+        event.organizer,
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        timezone.utc[0]
+      );
+
+      let icsContent = calendarInvite.toString();
+      icsContent = icsContent.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
+
+      res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${event.title}.ics`
+      );
+      res.setHeader("Content-Length", icsContent.length);
+      return res.end(icsContent);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAllEvents,
@@ -566,6 +626,7 @@ const EventController = () => {
     remove,
     sendMessageToParticipants,
     sendTestMessage,
+    downloadICS,
   };
 };
 
