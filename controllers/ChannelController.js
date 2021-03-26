@@ -20,6 +20,19 @@ const ChannelController = () => {
           owner: userId,
         };
 
+        // check channel name
+        const existed = await Channel.findOne({
+          where: {
+            name: channelInfo.name,
+          },
+        });
+
+        if (existed) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Channel name is existed. Please use another one." });
+        }
+
         if (channelInfo.image) {
           channelInfo.image = await s3Service().getChannelImageUrl(
             "",
