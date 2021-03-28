@@ -308,7 +308,7 @@ const UserController = () => {
       let query = `
         SELECT public."Events".*
         FROM public."Events" JOIN public."Users" ON public."Events".id = ANY (public."Users".events) 
-        WHERE public."Users".id = ${id} ORDER BY "startDate";
+        WHERE public."Users".id = ${id} AND public."Events".level = 0 ORDER BY "startDate";
       `;
       const results = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,

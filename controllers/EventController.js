@@ -9,10 +9,13 @@ const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
+const { Settings } = require("../enum");
+const isEmpty = require("lodash/isEmpty");
 
 const Event = db.Event;
 const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
+const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 const EventController = () => {
   const setEventReminders = (event) => {
@@ -268,7 +271,13 @@ const EventController = () => {
 
   const getAllEvents = async (req, res) => {
     try {
-      const events = await Event.findAll();
+      const events = await Event.findAll({
+        where: {
+          level: {
+            [Op.or]: [VisibleLevel.DEFAULT, VisibleLevel.ALL],
+          },
+        },
+      });
 
       return res.status(HttpCodes.OK).json({ events });
     } catch (err) {
@@ -615,6 +624,34 @@ const EventController = () => {
     }
   };
 
+  const getChannelEvents = async (req, res) => {
+    const filter = req.query;
+
+    try {
+      let where = {
+        channel: filter.channel,
+      };
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          categories: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      const channelEvents = await Event.findAll({ where });
+
+      return res.status(HttpCodes.OK).json({ channelEvents });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAllEvents,
@@ -627,6 +664,7 @@ const EventController = () => {
     sendMessageToParticipants,
     sendTestMessage,
     downloadICS,
+    getChannelEvents,
   };
 };
 

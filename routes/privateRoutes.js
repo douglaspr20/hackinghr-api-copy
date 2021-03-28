@@ -45,6 +45,8 @@ const privateRoutes = {
   "GET /channel/": "ChannelController.getAll",
   "GET /channel/:id": "ChannelController.get",
   "GET /channel-category/:id": "ChannelCategoryController.get",
+  "POST /event/channel": "EventController.create",
+  "GET /event/channel": "EventController.getChannelEvents",
 };
 
 module.exports = privateRoutes;
