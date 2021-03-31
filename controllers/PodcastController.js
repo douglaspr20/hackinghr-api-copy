@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
+const { isValidURL } = require("../utils/profile");
 
 const { AWSConfig, Settings } = require("../enum");
 const { S3 } = AWSConfig;
@@ -126,12 +127,13 @@ const PodcastController = () => {
 
     if (id) {
       try {
-        let data = {};
+        let data = {
+          imageUrl: body.imageData,
+        };
         let fields = [
           "title",
           "description",
           "order",
-          "imageUrl",
           "dateEpisode",
           "vimeoLink",
           "anchorLink",
@@ -150,18 +152,33 @@ const PodcastController = () => {
             data = { ...data, [item]: body[item] };
           }
         }
-        if (body.imageData) {
-          const podcast = await Podcast.findOne({
-            where: {
-              id,
-            },
-          });
-          let imageUrl = await s3Service().getPodcastImageUrl(
-            podcast.imageUrl || "",
+        const podcast = await Podcast.findOne({
+          where: {
+            id,
+          },
+        });
+        if (!podcast) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: podcast not found." });
+        }
+        if (body.imageData && !isValidURL(body.imageData)) {
+          data.imageUrl = await s3Service().getPodcastImageUrl(
+            "",
             body.imageData
           );
-          data = { ...data, imageUrl };
+
+          if (podcast.imageData) {
+            await s3Service().deleteUserPicture(podcast.imageData);
+          }
         }
+
+        if (podcast.imageData && !body.imageData) {
+          await s3Service().deleteUserPicture(podcast.imageData);
+        }
+
+        console.log('***** data ', data);
+
         await Podcast.update(data, {
           where: { id },
         });
