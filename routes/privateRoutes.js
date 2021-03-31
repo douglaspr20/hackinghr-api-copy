@@ -48,6 +48,7 @@ const privateRoutes = {
   "POST /event/channel": "EventController.create",
   "GET /event/channel": "EventController.getChannelEvents",
   "DELETE /library/channel/:id": "LibraryController.deleteChannelLibrary",
+  "PUT /library/channel/:id": "LibraryController.update",
 };
 
 module.exports = privateRoutes;
