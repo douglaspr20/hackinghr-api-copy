@@ -236,6 +236,32 @@ const PodcastController = () => {
     }
   };
 
+  const deleteChannelPodcast = async (req, res) => {
+    const { channel } = req.query;
+    const { id } = req.params;
+
+    if (req.user.channel != channel) {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: You are not allowed." });
+    }
+
+    try {
+      await Podcast.destroy({
+        where: {
+          id,
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getAll,
     get,
@@ -243,6 +269,7 @@ const PodcastController = () => {
     update,
     remove,
     getChannelPodcasts,
+    deleteChannelPodcast,
   };
 };
 
