@@ -51,6 +51,7 @@ const privateRoutes = {
   "PUT /library/channel/:id": "LibraryController.update",
   "DELETE /podcast/channel/:id": "PodcastController.deleteChannelPodcast",
   "PUT /podcast/channel/:id": "PodcastController.update",
+  "DELETE /event/channel/:id": "EventController.deleteChannelEvent",
 };
 
 module.exports = privateRoutes;

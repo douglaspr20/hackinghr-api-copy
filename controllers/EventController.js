@@ -88,6 +88,12 @@ const EventController = () => {
     cronService().stopTask(`${event.title}-2`);
   };
 
+  const removeOrganizerReminders = (event) => {
+    cronService().stopTask(`${event.title}-participant-list-reminder-0`);
+    cronService().stopTask(`${event.title}-participant-list-reminder-1`);
+    cronService().stopTask(`${event.title}-participant-list-reminder-2`);
+  };
+
   const sendParticipantsListToOrganizer = async (event) => {
     const targetEvent = await Event.findOne({ where: { id: event.id } });
     const eventUsers = await Promise.all(
@@ -487,6 +493,7 @@ const EventController = () => {
 
         // remove reminders
         removeEventReminders(event);
+        removeOrganizerReminders(event);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
@@ -652,6 +659,38 @@ const EventController = () => {
     }
   };
 
+  const deleteChannelEvent = async (req, res) => {
+    const { channel } = req.query;
+    const { id } = req.params;
+
+    if (req.user.channel != channel) {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: You are not allowed." });
+    }
+
+    try {
+      const event = await Event.findOne({
+        where: { id },
+      });
+
+      await Event.destroy({
+        where: { id },
+      });
+
+      // remove reminders
+      removeEventReminders(event);
+      removeOrganizerReminders(event);
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAllEvents,
@@ -665,6 +704,7 @@ const EventController = () => {
     sendTestMessage,
     downloadICS,
     getChannelEvents,
+    deleteChannelEvent,
   };
 };
 
