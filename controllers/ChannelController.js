@@ -4,6 +4,7 @@ const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isEmpty } = require("lodash");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
+const Sequelize = require("sequelize");
 
 const Channel = db.Channel;
 const User = db.User;
@@ -233,12 +234,64 @@ const ChannelController = () => {
       .json({ msg: "Bad Request: channel id is wrong" });
   };
 
+  const setFollow = async (req, res) => {
+    const user = req.user;
+    const { id } = req.params;
+
+    try {
+      await Channel.update(
+        {
+          followedUsers: Sequelize.fn(
+            "array_append",
+            Sequelize.col("followedUsers"),
+            user.id
+          ),
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+      const channel = await Channel.findOne({
+        where: {
+          id,
+        },
+        include: {
+          model: User,
+        },
+      });
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          followChannels: Sequelize.fn(
+            "array_append",
+            Sequelize.col("followChannels"),
+            id
+          ),
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows, channel });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     get,
     getAll,
     put,
     remove,
+    setFollow,
   };
 };
 
