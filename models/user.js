@@ -11,6 +11,12 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.HeartUserRate);
       User.hasMany(models.Heart);
       User.hasMany(models.Journey);
+      User.hasOne(models.Channel, {
+        foreignKey: {
+          name: "owner",
+          allowNull: true,
+        },
+      });
     }
   }
   User.init(
@@ -62,6 +68,13 @@ module.exports = (sequelize, DataTypes) => {
       isOpenReceivingEmail: {
         type: DataTypes.INTEGER,
         defaultValue: -1,
+      },
+      followChannels: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
+      channel: {
+        type: DataTypes.INTEGER,
       },
     },
     {

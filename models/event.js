@@ -1,5 +1,9 @@
 "use strict";
 const { Model } = require("sequelize");
+const { Settings } = require("../enum");
+
+const VisibleLevel = Settings.VISIBLE_LEVEL;
+
 module.exports = (sequelize, DataTypes) => {
   class Event extends Model {
     /**
@@ -46,6 +50,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       publicLink: DataTypes.STRING,
       organizerEmail: DataTypes.STRING,
+      level: {
+        type: DataTypes.INTEGER,
+        values: [VisibleLevel.DEFAULT, VisibleLevel.CHANNEL, VisibleLevel.ALL],
+        defaultValue: VisibleLevel.DEFAULT,
+      },
+      channel: DataTypes.INTEGER,
     },
     {
       sequelize,

@@ -9,10 +9,13 @@ const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
+const { Settings } = require("../enum");
+const isEmpty = require("lodash/isEmpty");
 
 const Event = db.Event;
 const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
+const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 const EventController = () => {
   const setEventReminders = (event) => {
@@ -83,6 +86,12 @@ const EventController = () => {
   const removeEventReminders = (event) => {
     cronService().stopTask(`${event.title}-24`);
     cronService().stopTask(`${event.title}-2`);
+  };
+
+  const removeOrganizerReminders = (event) => {
+    cronService().stopTask(`${event.title}-participant-list-reminder-0`);
+    cronService().stopTask(`${event.title}-participant-list-reminder-1`);
+    cronService().stopTask(`${event.title}-participant-list-reminder-2`);
   };
 
   const sendParticipantsListToOrganizer = async (event) => {
@@ -268,7 +277,13 @@ const EventController = () => {
 
   const getAllEvents = async (req, res) => {
     try {
-      const events = await Event.findAll();
+      const events = await Event.findAll({
+        where: {
+          level: {
+            [Op.or]: [VisibleLevel.DEFAULT, VisibleLevel.ALL],
+          },
+        },
+      });
 
       return res.status(HttpCodes.OK).json({ events });
     } catch (err) {
@@ -478,6 +493,7 @@ const EventController = () => {
 
         // remove reminders
         removeEventReminders(event);
+        removeOrganizerReminders(event);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
@@ -615,6 +631,66 @@ const EventController = () => {
     }
   };
 
+  const getChannelEvents = async (req, res) => {
+    const filter = req.query;
+
+    try {
+      let where = {
+        channel: filter.channel,
+      };
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          categories: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      const channelEvents = await Event.findAll({ where });
+
+      return res.status(HttpCodes.OK).json({ channelEvents });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const deleteChannelEvent = async (req, res) => {
+    const { channel } = req.query;
+    const { id } = req.params;
+
+    if (req.user.channel != channel) {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: You are not allowed." });
+    }
+
+    try {
+      const event = await Event.findOne({
+        where: { id },
+      });
+
+      await Event.destroy({
+        where: { id },
+      });
+
+      // remove reminders
+      removeEventReminders(event);
+      removeOrganizerReminders(event);
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAllEvents,
@@ -627,6 +703,8 @@ const EventController = () => {
     sendMessageToParticipants,
     sendTestMessage,
     downloadICS,
+    getChannelEvents,
+    deleteChannelEvent,
   };
 };
 
