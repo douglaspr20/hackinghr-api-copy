@@ -10,7 +10,7 @@ module.exports = {
      */
     return Promise.all([
       queryInterface.addColumn("ConferenceLibraries", "meta", {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         defaultValue: "",
       }),
     ]);
