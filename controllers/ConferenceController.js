@@ -65,7 +65,7 @@ const ConferenceController = () => {
         where = {
           ...where,
           meta: {
-            [Op.like]: `%${filter.meta}%`,
+            [Op.iLike]: `%${filter.meta}%`,
           },
         };
       }
