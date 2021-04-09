@@ -2,6 +2,7 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
+const { isValidURL } = require("../utils/profile");
 const { isEmpty } = require("lodash");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const Sequelize = require("sequelize");
