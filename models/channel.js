@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       Channel.hasOne(models.User, {
         foreignKey: {
           name: "channel",
-          allowNull: false,
+          allowNull: true,
         },
       });
     }
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       owner: DataTypes.INTEGER,
       name: DataTypes.STRING,
-      description: DataTypes.STRING,
+      description: DataTypes.TEXT,
       image: DataTypes.STRING,
       resources: DataTypes.ARRAY(DataTypes.INTEGER),
       videos: DataTypes.ARRAY(DataTypes.INTEGER),

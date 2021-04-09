@@ -33,6 +33,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 1,
       },
+      meta: {
+        type: DataTypes.TEXT,
+        defaultValue: "",
+      },
     },
     {
       sequelize,

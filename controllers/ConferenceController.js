@@ -61,11 +61,23 @@ const ConferenceController = () => {
         };
       }
 
+      if (filter.meta) {
+        where = {
+          ...where,
+          meta: {
+            [Op.iLike]: `%${filter.meta}%`,
+          },
+        };
+      }
+
       const conferences = await ConferenceLibrary.findAndCountAll({
         where,
         offset: (filter.page - 1) * filter.num,
         limit: filter.num,
-        order: [["year", "DESC"], ["order", "DESC"]],
+        order: [
+          ["year", "DESC"],
+          ["order", "DESC"],
+        ],
       });
 
       return res.status(HttpCodes.OK).json({ conferences });
