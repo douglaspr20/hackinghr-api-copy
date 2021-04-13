@@ -4,6 +4,8 @@ const HttpCodes = require("http-codes");
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SK_KEY);
 
+const moment = require('moment');
+
 const User = db.User;
 
 const StripeController = () => {
@@ -155,10 +157,16 @@ const StripeController = () => {
         const customerInformation = await stripe.customers.retrieve(
           customer
         );
+        
+        let newUserData = { memberShip: 'premium' };
 
-        await User.update({
-          memberShip: 'premium'
-        }, {
+        if(customerInformation.subscriptions.data.length > 0){
+          const subscription = customerInformation.subscriptions.data[0];
+          newUserData["subscription_startdate"] = moment.unix(subscription.current_period_start).format("YYYY-MM-DD HH:mm:ss");
+          newUserData["subscription_enddate"] = moment.unix(subscription.current_period_end).format("YYYY-MM-DD HH:mm:ss");
+        }
+        
+        await User.update(newUserData, {
           where: { email: customerInformation.email.toLowerCase() }
         });
       }
