@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: VisibleLevel.DEFAULT,
       },
       channel: DataTypes.INTEGER,
+      meta: {
+        type: DataTypes.TEXT,
+        defaultValue: "",
+      },
     },
     {
       sequelize,
