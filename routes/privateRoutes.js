@@ -54,6 +54,7 @@ const privateRoutes = {
   "DELETE /event/channel/:id": "EventController.deleteChannelEvent",
   "PUT /event/channel/:id": "EventController.updateEvent",
   "PUT /channel/follow/:id": "ChannelController.setFollow",
+  "PUT /channel/unfollow/:id": "ChannelController.unsetFollow",
   "PUT /channel/:id": "ChannelController.put",
 };
 
