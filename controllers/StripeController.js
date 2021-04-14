@@ -14,11 +14,13 @@ const StripeController = () => {
    * @param {*} res 
    */
   const createCheckoutSession = async (req, res) => {
-    const { priceId } = req.body;
+    const { prices, user } = req.body;
     const { id } = req.token;
 
-    if (priceId) {
-      
+    if (prices) {
+      let checkoutSessionPrinces = [];
+      prices.map(item => checkoutSessionPrinces.push({ price: item, quantity: 1 }));
+
       const user = await User.findOne({
         where: {
           id,
@@ -26,16 +28,26 @@ const StripeController = () => {
       });
 
       try {
+        let additionalData = {};
+        const customers = await stripe.customers.list({
+          email: user.email,
+          limit: 1,
+        });
+
+        if(customers.data.length > 0){
+          additionalData["customer"] = customers.data[0].id;
+        }else{
+          additionalData["customer_email"] = user.email;
+        }
+
         const session = await stripe.checkout.sessions.create({
-          customer_email: user.email,
           success_url: process.env.STRIPE_CALLBACK_URL,
           cancel_url: process.env.STRIPE_CALLBACK_URL,
           payment_method_types: ['card'],
-          line_items: [
-            { price: priceId, quantity: 1 },
-          ],
+          line_items: checkoutSessionPrinces,
           mode: 'subscription',
           allow_promotion_codes: true,
+          ...additionalData
         });
         return res
           .status(HttpCodes.OK)
