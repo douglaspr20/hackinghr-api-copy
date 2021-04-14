@@ -286,6 +286,57 @@ const ChannelController = () => {
     }
   };
 
+  const unsetFollow = async (req, res) => {
+    const user = req.user;
+    const { id } = req.params;
+
+    try {
+      await Channel.update(
+        {
+          followedUsers: Sequelize.fn(
+            "array_remove",
+            Sequelize.col("followedUsers"),
+            user.id
+          ),
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+      const channel = await Channel.findOne({
+        where: {
+          id,
+        },
+        include: {
+          model: User,
+        },
+      });
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          followChannels: Sequelize.fn(
+            "array_remove",
+            Sequelize.col("followChannels"),
+            id
+          ),
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows, channel });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     get,
@@ -293,6 +344,7 @@ const ChannelController = () => {
     put,
     remove,
     setFollow,
+    unsetFollow,
   };
 };
 
