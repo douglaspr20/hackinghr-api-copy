@@ -36,9 +36,9 @@ const StripeController = () => {
           limit: 1,
         });
 
-        if(customers.data.length > 0){
+        if (customers.data.length > 0) {
           additionalData["customer"] = customers.data[0].id;
-        }else{
+        } else {
           additionalData["customer_email"] = user.email;
         }
 
@@ -89,7 +89,7 @@ const StripeController = () => {
         email: user.email,
         limit: 1,
       });
-      if(customers.data.length > 0){
+      if (customers.data.length > 0) {
         const customer = customers.data[0];
         const session = await stripe.billingPortal.sessions.create({
           customer: customer.id,
@@ -100,7 +100,7 @@ const StripeController = () => {
           .status(HttpCodes.OK)
           .json({ session })
           .send();
-      }else {
+      } else {
         return res
           .status(HttpCodes.OK)
           .json({ session: null, subscription: null })
@@ -134,15 +134,32 @@ const StripeController = () => {
         email: user.email,
         limit: 1,
       });
-      if(customers.data.length > 0){
+      if (customers.data.length > 0) {
         const customer = customers.data[0];
-        const subscription = customer.subscriptions.data[0];
+        let subscription = null;
+        let premiumPrices = [
+          process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
+          process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_ID,
+          process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
+        ]
+
+        for (let item of premiumPrices) {
+          const premiumSubscriptions = await stripe.subscriptions.list({
+            customer: customer.id,
+            price: item,
+            limit: 1,
+          });
+          if (premiumSubscriptions.data.length > 0) {
+            subscription = premiumSubscriptions.data[0];
+            break;
+          }
+        }
 
         return res
           .status(HttpCodes.OK)
           .json({ subscription })
           .send();
-      }else {
+      } else {
         return res
           .status(HttpCodes.OK)
           .json({ session: null, subscription: null })
@@ -165,19 +182,54 @@ const StripeController = () => {
     const { type, data } = req.body;
     try {
       if (type === 'customer.subscription.created') {
+        let newUserData = {};
         const { customer } = data.object;
         const customerInformation = await stripe.customers.retrieve(
           customer
         );
         
-        let newUserData = { memberShip: 'premium' };
+        const user = await User.findOne({
+          where: {
+            email: customerInformation.email.toLowerCase()
+          },
+        });
 
-        if(customerInformation.subscriptions.data.length > 0){
-          const subscription = customerInformation.subscriptions.data[0];
-          newUserData["subscription_startdate"] = moment.unix(subscription.current_period_start).format("YYYY-MM-DD HH:mm:ss");
-          newUserData["subscription_enddate"] = moment.unix(subscription.current_period_end).format("YYYY-MM-DD HH:mm:ss");
+        if (user.memberShip == "free") {
+          newUserData = { "memberShip": "premium" };
+          let premiumPrices = [
+            process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
+            process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_ID,
+            process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
+          ]
+
+          for (let item of premiumPrices) {
+            const premiumSubscriptions = await stripe.subscriptions.list({
+              customer: customer.id,
+              price: item,
+              limit: 1,
+            });
+            if (premiumSubscriptions.data.length > 0) {
+              const item = premiumSubscriptions.data[0];
+              newUserData["subscription_startdate"] = moment.unix(item.current_period_start).format("YYYY-MM-DD HH:mm:ss");
+              newUserData["subscription_enddate"] = moment.unix(item.current_period_end).format("YYYY-MM-DD HH:mm:ss");
+              break;
+            }
+          }
         }
-        
+
+        const channelsSubscriptions = await stripe.subscriptions.list({
+          customer: customer.id,
+          price: process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_CHANNELS_ID,
+          limit: 1,
+        });
+
+        if (channelsSubscriptions.data.length > 0) {
+          const item = channelsSubscriptions.data[0];
+          newUserData["channelsSubscription"] = true;
+          newUserData["channelsSubscription_startdate"] = moment.unix(item.current_period_start).format("YYYY-MM-DD HH:mm:ss");
+          newUserData["channelsSubscription_enddate"] = moment.unix(item.current_period_end).format("YYYY-MM-DD HH:mm:ss");
+        }
+
         await User.update(newUserData, {
           where: { email: customerInformation.email.toLowerCase() }
         });
