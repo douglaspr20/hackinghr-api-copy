@@ -180,9 +180,9 @@ const StripeController = () => {
   const webhook = async (req, res) => {
     const { type, data } = req.body;
     try {
+      console.log("********* STRIPE Webhook *************");
+      console.log(`********* Type ${type} *************`);
       if (type === 'customer.subscription.created') {
-        console.log("********* STRIPE Webhook *************");
-        console.log("********* customer.subscription.created *************");
         console.log(data.object);
 
         let newUserData = {};
