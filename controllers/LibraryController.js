@@ -179,6 +179,15 @@ const LibraryController = () => {
         };
       }
 
+      if (filter.meta) {
+        where = {
+          ...where,
+          meta: {
+            [Op.iLike]: `%${filter.meta}%`,
+          },
+        };
+      }
+
       where = {
         ...where,
         approvalStatus: ReviewStatus.APPROVED,
