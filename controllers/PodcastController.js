@@ -34,6 +34,16 @@ const PodcastController = () => {
           },
         };
       }
+
+      if (filter.meta) {
+        where = {
+          ...where,
+          meta: {
+            [Op.iLike]: `%${filter.meta}%`,
+          },
+        };
+      }
+      
       let podcast = await Podcast.findAll({
         where,
         order: [["order", "DESC"]],
@@ -146,6 +156,7 @@ const PodcastController = () => {
           "iHeartRadioLink",
           "topics",
           "contentType",
+          "meta",
         ];
         for (let item of fields) {
           if (body[item]) {
