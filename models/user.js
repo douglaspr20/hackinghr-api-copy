@@ -76,6 +76,9 @@ module.exports = (sequelize, DataTypes) => {
       channel: {
         type: DataTypes.INTEGER,
       },
+      channelsSubscription: DataTypes.BOOLEAN,
+      channelsSubscription_startdate: DataTypes.DATE,
+      channelsSubscription_enddate: DataTypes.DATE,
     },
     {
       sequelize,
