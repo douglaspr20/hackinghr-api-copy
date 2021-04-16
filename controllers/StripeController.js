@@ -1,5 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const UserRoles = require("../enum").USER_ROLE;
 
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_SK_KEY);
@@ -235,6 +236,9 @@ const StripeController = () => {
           if (channelsSubscriptions.data.length > 0) {
             const channelsSubscription = channelsSubscriptions.data[0];
             newUserData["channelsSubscription"] = true;
+            if (user.role !== "admin") {
+              newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+            }
             newUserData["channelsSubscription_startdate"] = moment.unix(channelsSubscription.current_period_start).format("YYYY-MM-DD HH:mm:ss");
             newUserData["channelsSubscription_enddate"] = moment.unix(channelsSubscription.current_period_end).format("YYYY-MM-DD HH:mm:ss");
             break;
