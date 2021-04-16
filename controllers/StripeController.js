@@ -235,6 +235,9 @@ const StripeController = () => {
           if (channelsSubscriptions.data.length > 0) {
             const channelsSubscription = channelsSubscriptions.data[0];
             newUserData["channelsSubscription"] = true;
+            if (user.role !== "admin") {
+              newUserData["role"] = "channel_admin";
+            }
             newUserData["channelsSubscription_startdate"] = moment.unix(channelsSubscription.current_period_start).format("YYYY-MM-DD HH:mm:ss");
             newUserData["channelsSubscription_enddate"] = moment.unix(channelsSubscription.current_period_end).format("YYYY-MM-DD HH:mm:ss");
             break;
