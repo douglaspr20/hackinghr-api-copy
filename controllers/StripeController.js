@@ -44,22 +44,39 @@ const StripeController = () => {
           limit: 1,
         });
         
+        let subscriptionExists = false;
+
         if (customers.data.length > 0) {
-          sessionData["customer"] = customers.data[0].id;
+          const customer = customers.data[0];
+          sessionData["customer"] = customer.id;
+          if (customer.subscriptions.data.length > 0) {
+            for(let subscription of customer.subscriptions.data){
+              if(prices.indexOf(subscription.items.data[0].price.id) > -1 && subscription.status == "active"){
+                subscriptionExists = true;
+                break;
+              }
+            }
+          }
         } else {
           sessionData["customer_email"] = user.email;
         }
-        
-        const session = await stripe.checkout.sessions.create(sessionData);
-        return res
-          .status(HttpCodes.OK)
-          .json(session)
+        if(!subscriptionExists){
+          const session = await stripe.checkout.sessions.create(sessionData);
+          return res
+            .status(HttpCodes.OK)
+            .json(session)
+            .send();
+        }else{
+          return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "The subscription is already active." })
           .send();
+        }
       } catch (err) {
         console.log(err);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Internal server error" })
+          .json({ msg: err.message })
           .send();
       }
     }
@@ -143,14 +160,14 @@ const StripeController = () => {
           process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
         ]
 
-        for (let item of premiumPrices) {
-          const premiumSubscriptions = await stripe.subscriptions.list({
-            customer: customer.id,
-            price: item,
-            limit: 1,
-          });
-          if (premiumSubscriptions.data.length > 0) {
-            subscription = premiumSubscriptions.data[0];
+        for (let itemPremium of premiumPrices) {
+          if (customer.subscriptions.data.length > 0) {
+            for(let subItemPremium of customer.subscriptions.data){
+              if(subItemPremium.items.data[0].price.id === itemPremium){
+                subscription = subItemPremium;
+                break;
+              }
+            }
             break;
           }
         }
@@ -206,16 +223,16 @@ const StripeController = () => {
             process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
           ];
 
-          for (let item of premiumPrices) {
-            const premiumSubscriptions = await stripe.subscriptions.list({
-              customer: customer.id,
-              price: item,
-              limit: 1,
-            });
-            if (premiumSubscriptions.data.length > 0) {
-              const item = premiumSubscriptions.data[0];
-              newUserData["subscription_startdate"] = moment.unix(item.current_period_start).format("YYYY-MM-DD HH:mm:ss");
-              newUserData["subscription_enddate"] = moment.unix(item.current_period_end).format("YYYY-MM-DD HH:mm:ss");
+          for (let itemPremium of premiumPrices) {
+            if (customerInformation.subscriptions.data.length > 0) {
+              for(let subItemPremium of customerInformation.subscriptions.data){
+                subItemPremium.items.data.map(itemSubscription => {
+                  if(itemSubscription.price.id === itemPremium){
+                    newUserData["subscription_startdate"] = moment.unix(subItemPremium.current_period_start).format("YYYY-MM-DD HH:mm:ss");
+                    newUserData["subscription_enddate"] = moment.unix(subItemPremium.current_period_end).format("YYYY-MM-DD HH:mm:ss");
+                  }
+                });
+              }
               break;
             }
           }
@@ -226,21 +243,21 @@ const StripeController = () => {
           process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_CHANNELS_ID,
           process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_CHANNELS_ID,
         ];
-
+        
         for (let channelsItem of channelsPrices) {
-          const channelsSubscriptions = await stripe.subscriptions.list({
-            customer: customer.id,
-            price: channelsItem,
-            limit: 1,
-          });
-          if (channelsSubscriptions.data.length > 0) {
-            const channelsSubscription = channelsSubscriptions.data[0];
-            newUserData["channelsSubscription"] = true;
-            if (user.role !== "admin") {
-              newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+          if (customerInformation.subscriptions.data.length > 0) {
+            for(let subChannelsItem of customerInformation.subscriptions.data){
+              subChannelsItem.items.data.map(itemSubscription => {
+                if(itemSubscription.price.id === channelsItem){
+                  newUserData["channelsSubscription"] = true;
+                  if (user.role !== "admin") {
+                    newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+                  }
+                  newUserData["channelsSubscription_startdate"] = moment.unix(subChannelsItem.current_period_start).format("YYYY-MM-DD HH:mm:ss");
+                  newUserData["channelsSubscription_enddate"] = moment.unix(subChannelsItem.current_period_end).format("YYYY-MM-DD HH:mm:ss");
+                }
+              });
             }
-            newUserData["channelsSubscription_startdate"] = moment.unix(channelsSubscription.current_period_start).format("YYYY-MM-DD HH:mm:ss");
-            newUserData["channelsSubscription_enddate"] = moment.unix(channelsSubscription.current_period_end).format("YYYY-MM-DD HH:mm:ss");
             break;
           }
         }
