@@ -168,7 +168,6 @@ const StripeController = () => {
                 break;
               }
             }
-            break;
           }
         }
 
@@ -232,8 +231,7 @@ const StripeController = () => {
                     newUserData["subscription_enddate"] = moment.unix(subItemPremium.current_period_end).format("YYYY-MM-DD HH:mm:ss");
                   }
                 });
-              }
-              break;
+              }              
             }
           }
         }
@@ -258,7 +256,6 @@ const StripeController = () => {
                 }
               });
             }
-            break;
           }
         }
 
