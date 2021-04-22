@@ -73,5 +73,24 @@ module.exports = {
     <br />
     The Hacking HR Team
     <br/>
-  `
+  `,
+  CLAIM_EMAIL: (user, event) => `
+    Hi, ${user.firstName},
+    <br/>
+    Were you able to attend our ${event.title} event?
+    <br/>
+    <br/>
+    If so, please go back to the Hacking HR LAB, click on Events and My Past Events, and certify your attendance.
+    <br/>
+    <br/>
+    As a PREMIUM member you can claim a Hacking HR certificate of participation. Use this code when prompted in the system: ${event.code}.
+    <br/>
+    <br/>
+    If the event was conducive to SHRM and/or HRCI recertification credits, you will be able to see them on screen when entering the code above.
+    <br/>
+    <br/>
+    Thank you! We hope to see you in many more events!
+    <br/>
+    Hacking HR Team
+  `,
 };

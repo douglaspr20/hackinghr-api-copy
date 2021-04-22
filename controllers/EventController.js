@@ -9,7 +9,7 @@ const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
-const { Settings } = require("../enum");
+const { Settings, EmailContent } = require("../enum");
 const isEmpty = require("lodash/isEmpty");
 
 const Event = db.Event;
@@ -378,21 +378,7 @@ const EventController = () => {
 
       requests = users.map((user) => {
         mailOptions.to = user.email;
-        mailOptions.html = `
-          Hi ${user.firstName},
-          <br/>
-          Were you able to attend our ${event.title} event?
-          <br/>
-          <br/>
-          If so, please go back to the Hacking HR LAB, click on Events and My Past Events, and certify your attendance.
-          <br/>
-          And if you are a Hacking HR LAB PREMIUM Member, you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits.
-          <br/>
-          <br/>
-          Thank you! We hope to see you in many more events!
-          <br/>
-          Hacking HR Team
-        `;
+        mailOptions.html = EmailContent.CLAIM_EMAIL(user, event);
 
         return smtpService().sendMail(mailOptions);
       });
