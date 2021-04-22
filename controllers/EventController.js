@@ -95,7 +95,11 @@ const EventController = () => {
   };
 
   const sendParticipantsListToOrganizer = async (event) => {
+    console.log('***************************');
+    console.log('************** send email to organizer *************');
+    console.log('***** event = ', event);
     const targetEvent = await Event.findOne({ where: { id: event.id } });
+    console.log('***** targetEvent = ', targetEvent);
     const eventUsers = await Promise.all(
       (targetEvent.users || []).map((user) => {
         return User.findOne({
@@ -105,6 +109,7 @@ const EventController = () => {
         });
       })
     );
+    console.log('***** eventUsers = ', eventUsers);
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,
@@ -114,7 +119,10 @@ const EventController = () => {
         eventUsers
       ),
     };
+    console.log('******* start sending email ******')
+    console.log('***** mailOptions = ', mailOptions);
     await smtpService().sendMail(mailOptions);
+    console.log('******* end sending email ******')
   };
 
   const setOrganizerReminders = (event) => {

@@ -43,10 +43,10 @@ const smtpService = () => {
 
       transporter.sendMail(mailOptions, (err, info) => {
         if (err) {
-          console.log(`smtpService Error: ${err}`);
+          console.log(`********* smtpService Error: ${err}`);
           resolve(false);
         } else {
-          console.log(`smtpService Response: ${info.response}`);
+          console.log(`********** smtpService Response: ${info.response}`);
           resolve(true);
         }
       });
