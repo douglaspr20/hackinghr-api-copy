@@ -11,6 +11,7 @@ const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent } = require("../enum");
 const isEmpty = require("lodash/isEmpty");
+const { convertToLocalTime } = require("../utils/format");
 
 const Event = db.Event;
 const User = db.User;
@@ -24,7 +25,7 @@ const EventController = () => {
     const dateBefore2Hours = moment(event.startDate).subtract(45, "minutes");
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
 
-    cronService().addTask(`${event.title}-24`, interval1, true, async () => {
+    cronService().addTask(`${event.id}-24`, interval1, true, async () => {
       const targetEvent = await Event.findOne({ where: { id: event.id } });
       const eventUsers = await Promise.all(
         (targetEvent.users || []).map((user) => {
@@ -56,7 +57,7 @@ const EventController = () => {
       );
     });
 
-    cronService().addTask(`${event.title}-45`, interval2, true, async () => {
+    cronService().addTask(`${event.id}-45`, interval2, true, async () => {
       const targetEvent = await Event.findOne({ where: { id: event.id } });
       const eventUsers = await Promise.all(
         (targetEvent.users || []).map((user) => {
@@ -84,22 +85,22 @@ const EventController = () => {
   };
 
   const removeEventReminders = (event) => {
-    cronService().stopTask(`${event.title}-24`);
-    cronService().stopTask(`${event.title}-2`);
+    cronService().stopTask(`${event.id}-24`);
+    cronService().stopTask(`${event.id}-45`);
   };
 
   const removeOrganizerReminders = (event) => {
-    cronService().stopTask(`${event.title}-participant-list-reminder-0`);
-    cronService().stopTask(`${event.title}-participant-list-reminder-1`);
-    cronService().stopTask(`${event.title}-participant-list-reminder-2`);
+    cronService().stopTask(`${event.id}-participant-list-reminder-0`);
+    cronService().stopTask(`${event.id}-participant-list-reminder-1`);
+    cronService().stopTask(`${event.id}-participant-list-reminder-2`);
   };
 
   const sendParticipantsListToOrganizer = async (event) => {
-    console.log('***************************');
-    console.log('************** send email to organizer *************');
-    console.log('***** event = ', event);
+    console.log("***************************");
+    console.log("************** send email to organizer *************");
+    console.log("***** event = ", event);
     const targetEvent = await Event.findOne({ where: { id: event.id } });
-    console.log('***** targetEvent = ', targetEvent);
+    console.log("***** targetEvent = ", targetEvent);
     const eventUsers = await Promise.all(
       (targetEvent.users || []).map((user) => {
         return User.findOne({
@@ -109,7 +110,7 @@ const EventController = () => {
         });
       })
     );
-    console.log('***** eventUsers = ', eventUsers);
+    console.log("***** eventUsers = ", eventUsers);
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,
@@ -119,10 +120,10 @@ const EventController = () => {
         eventUsers
       ),
     };
-    console.log('******* start sending email ******')
-    console.log('***** mailOptions = ', mailOptions);
+    console.log("******* start sending email ******");
+    console.log("***** mailOptions = ", mailOptions);
     await smtpService().sendMail(mailOptions);
-    console.log('******* end sending email ******')
+    console.log("******* end sending email ******");
   };
 
   const setOrganizerReminders = (event) => {
@@ -134,7 +135,7 @@ const EventController = () => {
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
       cronService().addTask(
-        `${event.title}-participant-list-reminder-${index}`,
+        `${event.id}-participant-list-reminder-${index}`,
         interval,
         true,
         () => sendParticipantsListToOrganizer(event)
@@ -685,6 +686,29 @@ const EventController = () => {
     }
   };
 
+  const resetEmailReminders = async () => {
+    try {
+      console.log('****** starting ******');
+      const allEvents = await Event.findAll({});
+      console.log('****** allEvents ******', allEvents);
+      const comingEvents = allEvents.filter((event) => {
+        const startTime = convertToLocalTime(event.startDate);
+        return moment().isBefore(startTime);
+      });
+      console.log('****** comingEvents', comingEvents);
+      console.log('****** at first cron tasks ', cronService().listCrons());
+      cronService().stopAllTasks();
+      console.log('****** before cron tasks ', cronService().listCrons());
+      comingEvents.forEach((event) => {
+        setEventReminders(event);
+        setOrganizerReminders(event);
+      })
+      console.log('****** after cron tasks ', cronService().listCrons());
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return {
     create,
     getAllEvents,
@@ -699,6 +723,7 @@ const EventController = () => {
     downloadICS,
     getChannelEvents,
     deleteChannelEvent,
+    resetEmailReminders,
   };
 };
 

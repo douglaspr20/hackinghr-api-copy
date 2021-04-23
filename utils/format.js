@@ -14,6 +14,12 @@ function convertToCertainTime(date, tz) {
   return res;
 }
 
+function convertToLocalTime(date) {
+  const localTimezone = moment.tz.guess();
+
+  return moment.utc(date).tz(localTimezone);
+}
+
 function getEventPeriod(date, date2, timezone) {
   let res = "";
   const startDate = convertToCertainTime(date, timezone);
@@ -38,4 +44,4 @@ function getEventPeriod(date, date2, timezone) {
   return res;
 }
 
-module.exports = { getEventPeriod, convertToCertainTime };
+module.exports = { getEventPeriod, convertToCertainTime, convertToLocalTime };

@@ -35,12 +35,22 @@ const cronService = () => {
       cronJobManager.stop(name);
       cronJobManager.deleteJob(name);
     }
-  }
+  };
+
+  const stopAllTasks = () => {
+    cronJobManager.stopAll();
+  };
+
+  const listCrons = () => {
+    return cronJobManager.listCrons();
+  };
 
   return {
     addTask,
     updateTask,
     stopTask,
+    stopAllTasks,
+    listCrons,
   };
 };
 
