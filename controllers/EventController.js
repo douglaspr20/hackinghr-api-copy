@@ -20,9 +20,9 @@ const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 const EventController = () => {
   const setEventReminders = (event) => {
-    const dateBefore24Hours = moment(event.startDate).subtract(1, "days");
+    const dateBefore24Hours = convertToLocalTime(event.startDate).subtract(1, "days");
     const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
-    const dateBefore2Hours = moment(event.startDate).subtract(45, "minutes");
+    const dateBefore2Hours = convertToLocalTime(event.startDate).subtract(45, "minutes");
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
 
     cronService().addTask(`${event.id}-24`, interval1, true, async () => {
@@ -128,9 +128,9 @@ const EventController = () => {
 
   const setOrganizerReminders = (event) => {
     const dates = [
-      moment(event.startDate).subtract(1, "days"),
-      moment(event.startDate).subtract(2, "hours"),
-      moment(event.startDate).subtract(30, "minutes"),
+      convertToLocalTime(event.startDate).subtract(1, "days"),
+      convertToLocalTime(event.startDate).subtract(2, "hours"),
+      convertToLocalTime(event.startDate).subtract(30, "minutes"),
     ];
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
