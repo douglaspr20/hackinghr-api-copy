@@ -687,7 +687,7 @@ const EventController = () => {
     }
   };
 
-  const resetEmailReminders = async () => {
+  const resetEmailReminders = async (req, res) => {
     try {
       console.log('****** starting ******');
       const allEvents = await Event.findAll({});
@@ -705,8 +705,12 @@ const EventController = () => {
         setOrganizerReminders(event);
       })
       console.log('****** after cron tasks ', cronService().listCrons());
+      return res.status(HttpCodes.OK).json({});
     } catch (err) {
       console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
     }
   };
 
