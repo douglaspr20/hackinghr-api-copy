@@ -56,7 +56,7 @@ const privateRoutes = {
   "PUT /channel/follow/:id": "ChannelController.setFollow",
   "PUT /channel/unfollow/:id": "ChannelController.unsetFollow",
   "PUT /channel/:id": "ChannelController.put",
-  "PUt /event/reset-email-reminders": "EventController.resetEmailReminders",
+  "PUT /event/reset-email-reminders": "EventController.resetEmailReminders",
 };
 
 module.exports = privateRoutes;
