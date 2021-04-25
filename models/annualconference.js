@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
       values: Object.values(ConferenceType),
       defaultValue: ConferenceType.KEYNOTE,
     },
+    categories: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
     startTime: DataTypes.STRING,
     endTime: DataTypes.STRING,
     description: DataTypes.TEXT,
