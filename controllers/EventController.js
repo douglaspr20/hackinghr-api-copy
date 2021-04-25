@@ -25,63 +25,70 @@ const EventController = () => {
     const dateBefore2Hours = convertToLocalTime(event.startDate).subtract(45, "minutes");
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
 
-    cronService().addTask(`${event.id}-24`, interval1, true, async () => {
-      const targetEvent = await Event.findOne({ where: { id: event.id } });
-      const eventUsers = await Promise.all(
-        (targetEvent.users || []).map((user) => {
-          return User.findOne({
-            where: {
-              id: user,
-            },
-          });
-        })
-      );
+    console.log('******** dateBefore24Hours = ', dateBefore24Hours.format('YYYY-MM-DD h:mm a'));
+    console.log('******** current = ', moment().format('YYYY-MM-DD h:mm a'));
 
-      await Promise.all(
-        eventUsers.map((user) => {
-          const targetEventDate = moment(targetEvent.startDate);
-          let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-            to: user.email,
-            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
-            html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-              user,
-              targetEvent,
-              targetEventDate.format("MMM DD"),
-              targetEventDate.format("h:mm a")
-            ),
-          };
+    if (dateBefore24Hours.isBefore(moment())) {
+      cronService().addTask(`${event.id}-24`, interval1, true, async () => {
+        const targetEvent = await Event.findOne({ where: { id: event.id } });
+        const eventUsers = await Promise.all(
+          (targetEvent.users || []).map((user) => {
+            return User.findOne({
+              where: {
+                id: user,
+              },
+            });
+          })
+        );
+  
+        await Promise.all(
+          eventUsers.map((user) => {
+            const targetEventDate = moment(targetEvent.startDate);
+            let mailOptions = {
+              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+              to: user.email,
+              subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
+              html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+                user,
+                targetEvent,
+                targetEventDate.format("MMM DD"),
+                targetEventDate.format("h:mm a")
+              ),
+            };
+  
+            return smtpService().sendMail(mailOptions);
+          })
+        );
+      });
+    }
 
-          return smtpService().sendMail(mailOptions);
-        })
-      );
-    });
-
-    cronService().addTask(`${event.id}-45`, interval2, true, async () => {
-      const targetEvent = await Event.findOne({ where: { id: event.id } });
-      const eventUsers = await Promise.all(
-        (targetEvent.users || []).map((user) => {
-          return User.findOne({
-            where: {
-              id: user,
-            },
-          });
-        })
-      );
-
-      await Promise.all(
-        eventUsers.map((user) => {
-          let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-            to: user.email,
-            subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
-            html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
-          };
-
-          return smtpService().sendMail(mailOptions);
-        })
-      );
-    });
+    if (dateBefore2Hours.isBefore(moment())) {
+      cronService().addTask(`${event.id}-45`, interval2, true, async () => {
+        const targetEvent = await Event.findOne({ where: { id: event.id } });
+        const eventUsers = await Promise.all(
+          (targetEvent.users || []).map((user) => {
+            return User.findOne({
+              where: {
+                id: user,
+              },
+            });
+          })
+        );
+  
+        await Promise.all(
+          eventUsers.map((user) => {
+            let mailOptions = {
+              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+              to: user.email,
+              subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
+              html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
+            };
+  
+            return smtpService().sendMail(mailOptions);
+          })
+        );
+      });
+    }
   };
 
   const removeEventReminders = (event) => {
@@ -135,12 +142,16 @@ const EventController = () => {
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
       console.log('******** email interval ', interval);
-      cronService().addTask(
-        `${event.id}-participant-list-reminder-${index}`,
-        interval,
-        true,
-        () => sendParticipantsListToOrganizer(event)
-      );
+      console.log('******* date ', date.format('MM-DD h:mm a'))
+      console.log('******* current ', moment().format('MM-DD h:mm a'))
+      if (date.isBefore(moment())) {
+        cronService().addTask(
+          `${event.id}-participant-list-reminder-${index}`,
+          interval,
+          true,
+          () => sendParticipantsListToOrganizer(event)
+        );
+      }
     });
   };
 
