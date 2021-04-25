@@ -134,6 +134,7 @@ const EventController = () => {
     ];
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
+      console.log('******** email interval ', interval);
       cronService().addTask(
         `${event.id}-participant-list-reminder-${index}`,
         interval,
