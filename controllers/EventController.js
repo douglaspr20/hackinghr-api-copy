@@ -25,11 +25,7 @@ const EventController = () => {
     const dateBefore2Hours = convertToLocalTime(event.startDate).subtract(45, "minutes");
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
 
-    console.log('******** dateBefore24Hours = ', dateBefore24Hours.format('YYYY-MM-DD h:mm a'));
-    console.log('******** current = ', moment().format('YYYY-MM-DD h:mm a'));
-
     if (dateBefore24Hours.isAfter(moment())) {
-      console.log('****** adding task')
       cronService().addTask(`${event.id}-24`, interval1, true, async () => {
         const targetEvent = await Event.findOne({ where: { id: event.id } });
         const eventUsers = await Promise.all(
@@ -64,7 +60,6 @@ const EventController = () => {
     }
 
     if (dateBefore2Hours.isAfter(moment())) {
-      console.log('****** adding task')
       cronService().addTask(`${event.id}-45`, interval2, true, async () => {
         const targetEvent = await Event.findOne({ where: { id: event.id } });
         const eventUsers = await Promise.all(
@@ -144,8 +139,6 @@ const EventController = () => {
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
       console.log('******** email interval ', interval);
-      console.log('******* date ', date.format('MM-DD h:mm a'))
-      console.log('******* current ', moment().format('MM-DD h:mm a'))
       if (date.isAfter(moment())) {
         console.log('****** adding task')
         cronService().addTask(
