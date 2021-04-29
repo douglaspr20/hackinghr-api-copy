@@ -44,6 +44,9 @@ const CourseClassController = () => {
           where: {
             CourseId: course,
           },
+          order: [
+            ['createdAt', 'ASC'],
+          ],
         });
 
         if (!courseClasses) {
