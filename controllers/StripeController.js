@@ -199,7 +199,7 @@ const StripeController = () => {
     try {
       console.log("********* STRIPE Webhook *************");
       console.log(`********* Type ${type} *************`);
-      if (type === 'customer.subscription.created') {
+      if (type === 'customer.subscription.created' || type === 'customer.subscription.updated') {
         console.log(data.object);
 
         let newUserData = {};
@@ -224,8 +224,9 @@ const StripeController = () => {
           for (let itemPremium of premiumPrices) {
             if (customerInformation.subscriptions.data.length > 0) {
               for(let subItemPremium of customerInformation.subscriptions.data){
+                console.log(subItemPremium);
                 subItemPremium.items.data.map(itemSubscription => {
-                  if(itemSubscription.price.id === itemPremium && subItemPremium.status == "active"){
+                  if(itemSubscription.price.id === itemPremium && subItemPremium.status === "active"){
                     newUserData["memberShip"] = "premium";
                     newUserData["subscription_startdate"] = moment.unix(subItemPremium.current_period_start).format("YYYY-MM-DD HH:mm:ss");
                     newUserData["subscription_enddate"] = moment.unix(subItemPremium.current_period_end).format("YYYY-MM-DD HH:mm:ss");
@@ -242,19 +243,21 @@ const StripeController = () => {
           process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_CHANNELS_ID,
         ];
         
-        for (let channelsItem of channelsPrices) {
-          if (customerInformation.subscriptions.data.length > 0) {
-            for(let subChannelsItem of customerInformation.subscriptions.data){
-              subChannelsItem.items.data.map(itemSubscription => {
-                if(itemSubscription.price.id === channelsItem && subChannelsItem.status == "active"){
-                  newUserData["channelsSubscription"] = true;
-                  if (user.role !== "admin") {
-                    newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+        if (user.channelsSubscription !== true) {
+          for (let channelsItem of channelsPrices) {
+            if (customerInformation.subscriptions.data.length > 0) {
+              for(let subChannelsItem of customerInformation.subscriptions.data){
+                subChannelsItem.items.data.map(itemSubscription => {
+                  if(itemSubscription.price.id === channelsItem && subChannelsItem.status === "active"){
+                    newUserData["channelsSubscription"] = true;
+                    if (user.role !== "admin") {
+                      newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+                    }
+                    newUserData["channelsSubscription_startdate"] = moment.unix(subChannelsItem.current_period_start).format("YYYY-MM-DD HH:mm:ss");
+                    newUserData["channelsSubscription_enddate"] = moment.unix(subChannelsItem.current_period_end).format("YYYY-MM-DD HH:mm:ss");
                   }
-                  newUserData["channelsSubscription_startdate"] = moment.unix(subChannelsItem.current_period_start).format("YYYY-MM-DD HH:mm:ss");
-                  newUserData["channelsSubscription_enddate"] = moment.unix(subChannelsItem.current_period_end).format("YYYY-MM-DD HH:mm:ss");
-                }
-              });
+                });
+              }
             }
           }
         }
