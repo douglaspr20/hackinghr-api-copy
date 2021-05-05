@@ -594,8 +594,8 @@ const EventController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
-      const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
+      const startDate = convertToLocalTime(event.startDate, "YYYY-MM-DD h:mm a");
+      const endDate = convertToLocalTime(event.endDate, "YYYY-MM-DD h:mm a");
       const timezone = TimeZoneList.find(
         (item) => item.value === event.timezone
       );
