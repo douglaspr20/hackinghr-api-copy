@@ -1,7 +1,9 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const Sequelize = require("sequelize");
 const moment = require("moment");
 
+const QueryTypes = Sequelize.QueryTypes;
 const Course = db.Course;
 
 const CourseController = () => {
@@ -155,12 +157,86 @@ const CourseController = () => {
     }
   };
 
+  /**
+   * Method to get instructors by Course
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const getInstructorsByCourse = async (req, res) => {
+    let { course } = req.params;
+
+    if (course) {
+      try {
+        let query = `
+        select i.* from "Instructors" i 
+        inner join "CourseInstructors" ci on i."id" = ci."InstuctorId"
+        where ci."CourseId" = ${course}`;
+        const instructors = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+
+        if (!instructors) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ instructors });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+  };
+
+  /**
+   * Method to get instructors by Course
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const getSponsorsByCourse = async (req, res) => {
+    let { course } = req.params;
+
+    if (course) {
+      try {
+        let query = `
+        select s.* from "Sponsors" s
+        inner join "CourseSponsors" cs on s."id" = cs."SponsorId"
+        where cs."CourseId" = ${course}`;
+        const sponsors = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+
+        if (!sponsors) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ sponsors });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+  };
+
   return {
     getAll,
     get,
     add,
     update,
     remove,
+    getInstructorsByCourse,
+    getSponsorsByCourse,
   };
 };
 
