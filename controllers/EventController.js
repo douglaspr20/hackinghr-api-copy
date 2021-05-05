@@ -596,9 +596,7 @@ const EventController = () => {
 
       const startDate = convertToLocalTime(event.startDate, "YYYY-MM-DD h:mm a");
       const endDate = convertToLocalTime(event.endDate, "YYYY-MM-DD h:mm a");
-      const timezone = TimeZoneList.find(
-        (item) => item.value === event.timezone
-      );
+      const localTimezone = moment.tz.guess();
 
       const calendarInvite = smtpService().generateCalendarInvite(
         startDate,
@@ -610,7 +608,7 @@ const EventController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        timezone.utc[0]
+        localTimezone
       );
 
       let icsContent = calendarInvite.toString();
