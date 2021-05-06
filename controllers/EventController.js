@@ -94,9 +94,9 @@ const EventController = () => {
   };
 
   const removeOrganizerReminders = (event) => {
-    cronService().stopTask(`${event.id}-participant-list-reminder-0`);
-    cronService().stopTask(`${event.id}-participant-list-reminder-1`);
-    cronService().stopTask(`${event.id}-participant-list-reminder-2`);
+    Array.from(Array(5).keys()).forEach(index => {
+      cronService().stopTask(`${event.id}-participant-list-reminder-${index}`);
+    })
   };
 
   const sendParticipantsListToOrganizer = async (event) => {
@@ -132,6 +132,9 @@ const EventController = () => {
 
   const setOrganizerReminders = (event) => {
     const dates = [
+      convertToLocalTime(event.startDate).subtract(1, "week"),
+      convertToLocalTime(event.startDate).subtract(3, "days"),
+      convertToLocalTime(event.startDate).subtract(2, "days"),
       convertToLocalTime(event.startDate).subtract(1, "days"),
       convertToLocalTime(event.startDate).subtract(2, "hours"),
       convertToLocalTime(event.startDate).subtract(30, "minutes"),
