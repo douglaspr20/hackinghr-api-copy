@@ -18,6 +18,7 @@
     "cors": "^2.8.5",
     "cron-job-manager": "^2.1.4",
     "dotenv": "^8.2.0",
+    "exceljs": "^4.2.1",
     "express": "^4.17.1",
     "express-routes-mapper": "^1.0.2",
     "http-codes": "^1.0.0",
