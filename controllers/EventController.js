@@ -127,19 +127,22 @@ const EventController = () => {
         {
           label: "First Name",
           value: "firstName",
+          width: 20,
         },
         {
           label: "Last Name",
           value: "lastName",
+          width: 20,
         },
         {
           label: "Email",
           value: "email",
+          width: 20,
         },
       ],
       eventUsers
     );
-    
+
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,

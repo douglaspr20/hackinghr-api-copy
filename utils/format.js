@@ -63,15 +63,14 @@ async function convertJSONToExcel(sheet, fields, content) {
   // Create page
   const ws1 = workbook.addWorksheet(sheet);
   ws1.addRow(fields.map((item) => item.label));
-  ws1.getColumn(1).width = 100;
-  ws1.getColumn(2).width = 100;
-  ws1.getColumn(3).width = 100;
+  fields.forEach((field, index) => {
+    ws1.getColumn(index + 1).width = field.width;
+  });
 
   content.forEach((item) => {
     const row = fields.map((field) => item[field.value]);
     ws1.addRow(row);
   });
-
 
   const buffer = await workbook.xlsx.writeBuffer();
 
