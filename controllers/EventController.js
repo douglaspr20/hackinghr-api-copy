@@ -11,7 +11,7 @@ const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent } = require("../enum");
 const isEmpty = require("lodash/isEmpty");
-const { convertToLocalTime, convertJSONToCSV } = require("../utils/format");
+const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 
 const Event = db.Event;
 const User = db.User;
@@ -121,6 +121,25 @@ const EventController = () => {
       })
     );
     console.log("***** eventUsers = ", eventUsers);
+    const buffer = await convertJSONToExcel(
+      event.title,
+      [
+        {
+          label: "First Name",
+          value: "firstName",
+        },
+        {
+          label: "Last Name",
+          value: "lastName",
+        },
+        {
+          label: "Email",
+          value: "email",
+        },
+      ],
+      eventUsers
+    );
+    
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,
@@ -128,13 +147,7 @@ const EventController = () => {
       attachments: [
         {
           filename: `${event.title}.xls`,
-          content: convertJSONToCSV(
-            eventUsers.map((user) => ({
-              firstName: user.firstName,
-              lastName: user.lastName,
-              email: user.email,
-            }))
-          ),
+          content: buffer,
         },
       ],
     };
