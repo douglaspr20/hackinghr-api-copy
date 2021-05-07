@@ -11,7 +11,7 @@ const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent } = require("../enum");
 const isEmpty = require("lodash/isEmpty");
-const { convertToLocalTime } = require("../utils/format");
+const { convertToLocalTime, convertJSONToCSV } = require("../utils/format");
 
 const Event = db.Event;
 const User = db.User;
@@ -20,9 +20,15 @@ const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 const EventController = () => {
   const setEventReminders = (event) => {
-    const dateBefore24Hours = convertToLocalTime(event.startDate).subtract(1, "days");
+    const dateBefore24Hours = convertToLocalTime(event.startDate).subtract(
+      1,
+      "days"
+    );
     const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
-    const dateBefore2Hours = convertToLocalTime(event.startDate).subtract(45, "minutes");
+    const dateBefore2Hours = convertToLocalTime(event.startDate).subtract(
+      45,
+      "minutes"
+    );
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
 
     if (dateBefore24Hours.isAfter(moment())) {
@@ -37,7 +43,7 @@ const EventController = () => {
             });
           })
         );
-  
+
         await Promise.all(
           eventUsers.map((user) => {
             const targetEventDate = moment(targetEvent.startDate);
@@ -52,7 +58,7 @@ const EventController = () => {
                 targetEventDate.format("h:mm a")
               ),
             };
-  
+
             return smtpService().sendMail(mailOptions);
           })
         );
@@ -71,7 +77,7 @@ const EventController = () => {
             });
           })
         );
-  
+
         await Promise.all(
           eventUsers.map((user) => {
             let mailOptions = {
@@ -80,7 +86,7 @@ const EventController = () => {
               subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
             };
-  
+
             return smtpService().sendMail(mailOptions);
           })
         );
@@ -94,9 +100,9 @@ const EventController = () => {
   };
 
   const removeOrganizerReminders = (event) => {
-    Array.from(Array(5).keys()).forEach(index => {
+    Array.from(Array(5).keys()).forEach((index) => {
       cronService().stopTask(`${event.id}-participant-list-reminder-${index}`);
-    })
+    });
   };
 
   const sendParticipantsListToOrganizer = async (event) => {
@@ -119,10 +125,18 @@ const EventController = () => {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
       to: event.organizerEmail,
       subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
-      html: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.body(
-        targetEvent,
-        eventUsers
-      ),
+      attachments: [
+        {
+          filename: `${event.title}.xls`,
+          content: convertJSONToCSV(
+            eventUsers.map((user) => ({
+              firstName: user.firstName,
+              lastName: user.lastName,
+              email: user.email,
+            }))
+          ),
+        },
+      ],
     };
     console.log("******* start sending email ******");
     console.log("***** mailOptions = ", mailOptions);
@@ -141,9 +155,9 @@ const EventController = () => {
     ];
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
-      console.log('******** email interval ', interval);
+      console.log("******** email interval ", interval);
       if (date.isAfter(moment())) {
-        console.log('****** adding task')
+        console.log("****** adding task");
         cronService().addTask(
           `${event.id}-participant-list-reminder-${index}`,
           interval,
@@ -597,7 +611,10 @@ const EventController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      const startDate = convertToLocalTime(event.startDate, "YYYY-MM-DD h:mm a");
+      const startDate = convertToLocalTime(
+        event.startDate,
+        "YYYY-MM-DD h:mm a"
+      );
       const endDate = convertToLocalTime(event.endDate, "YYYY-MM-DD h:mm a");
       const localTimezone = moment.tz.guess();
 
@@ -697,22 +714,22 @@ const EventController = () => {
 
   const resetEmailReminders = async (req, res) => {
     try {
-      console.log('****** starting ******');
+      console.log("****** starting ******");
       const allEvents = await Event.findAll({});
-      console.log('****** allEvents ******', allEvents);
+      console.log("****** allEvents ******", allEvents);
       const comingEvents = allEvents.filter((event) => {
         const startTime = convertToLocalTime(event.startDate);
         return moment().isBefore(startTime);
       });
-      console.log('****** comingEvents', comingEvents);
-      console.log('****** at first cron tasks ', cronService().listCrons());
+      console.log("****** comingEvents", comingEvents);
+      console.log("****** at first cron tasks ", cronService().listCrons());
       cronService().stopAllTasks();
-      console.log('****** before cron tasks ', cronService().listCrons());
+      console.log("****** before cron tasks ", cronService().listCrons());
       comingEvents.forEach((event) => {
         setEventReminders(event);
         setOrganizerReminders(event);
-      })
-      console.log('****** after cron tasks ', cronService().listCrons());
+      });
+      console.log("****** after cron tasks ", cronService().listCrons());
       return res.status(HttpCodes.OK).json({});
     } catch (err) {
       console.log(err);

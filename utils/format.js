@@ -1,5 +1,7 @@
 const moment = require("moment-timezone");
 const TimeZoneList = require("../enum/TimeZoneList");
+const { Parser } = require("json2csv");
+const isEmpty = require("lodash/isEmpty");
 
 function convertToCertainTime(date, tz) {
   let res = moment();
@@ -44,4 +46,19 @@ function getEventPeriod(date, date2, timezone) {
   return res;
 }
 
-module.exports = { getEventPeriod, convertToCertainTime, convertToLocalTime };
+function convertJSONToCSV(content) {
+  if (content && !isEmpty(content)) {
+    const fields = Object.keys(content[0]);
+
+    return new Parser({ fields }).parse(content);
+  }
+
+  return null;
+}
+
+module.exports = {
+  getEventPeriod,
+  convertToCertainTime,
+  convertToLocalTime,
+  convertJSONToCSV,
+};
