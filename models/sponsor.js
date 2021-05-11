@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Sponsor.init(
     {
-      imgage: DataTypes.STRING,
+      image: DataTypes.STRING,
       name: DataTypes.STRING,
       description: DataTypes.STRING,
     },

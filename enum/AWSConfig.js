@@ -13,5 +13,7 @@ module.exports = {
     MARKETPLACE_IMAGE_FOLDER: "marketplace",
     CHANNEL_IMAGE_FOLDER: "channel",
     COURSE_IMAGE_FOLDER: "course",
+    SPONSOR_IMAGE_FOLDER: "sponsor",
+    INSTRUCTOR_IMAGE_FOLDER: "instructor",
   },
 };
