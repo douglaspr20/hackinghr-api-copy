@@ -1,7 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const Sequelize = require("sequelize");
-const moment = require("moment");
+const s3Service = require("../services/s3.service");
+const { isValidURL } = require("../utils/profile");
 
 const QueryTypes = Sequelize.QueryTypes;
 const Course = db.Course;
@@ -73,9 +74,16 @@ const CourseController = () => {
    * @param {*} res 
    */
   const add = async (req, res) => {
+    const { imageData } = req.body;
     try {
-      await Course.create({ ...req.body });
-
+      let course = await Course.create({ ...req.body });
+      if (imageData) {
+        let image = await s3Service().getCourseImageUrl("", imageData);
+        await Course.update(
+          { image: image },
+          { where: { id: course.id }, }
+        );
+      }
       return res
         .status(HttpCodes.OK)
         .send();
@@ -99,7 +107,6 @@ const CourseController = () => {
       try {
         let data = {};
         let fields = [
-          "image",
           "title",
           "description",
           "topics",
@@ -109,9 +116,35 @@ const CourseController = () => {
             data = { ...data, [item]: body[item] };
           }
         }
+
+        const course = await Course.findOne({
+          where: {
+            id,
+          },
+        });
+        if (!course) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: course not found." });
+        }
+        if (body.imageData && !isValidURL(body.imageData)) {
+          data.image = await s3Service().getCourseImageUrl(
+            "",
+            body.imageData
+          );
+
+          if (course.image) {
+            await s3Service().deleteUserPicture(course.imageData);
+          }
+        }
+
+        if (data.image && !body.imageData) {
+          await s3Service().deleteUserPicture(course.image);
+        }
+
         await Course.update(data, {
           where: { id }
-        })
+        });
 
         return res
           .status(HttpCodes.OK)
