@@ -18,7 +18,7 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
-      InstuctorId: {
+      InstructorId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {

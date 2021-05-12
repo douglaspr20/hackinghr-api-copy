@@ -6,6 +6,8 @@ const { isValidURL } = require("../utils/profile");
 
 const QueryTypes = Sequelize.QueryTypes;
 const Course = db.Course;
+const CourseInstructor = db.CourseInstructor;
+const CourseSponsor = db.CourseSponsor;
 
 const CourseController = () => {
   /**
@@ -15,11 +17,16 @@ const CourseController = () => {
    */
   const getAll = async (req, res) => {
     try {
-      let courses = await Course.findAll({
-        order: [
-          ['createdAt', 'DESC'],
-        ],
+      let query = `SELECT 
+      c.*, 
+      ARRAY(SELECT ci."InstructorId" FROM "CourseInstructors" ci where ci."CourseId" = c.id) as instructors,
+      ARRAY(SELECT cs."SponsorId" FROM "CourseSponsors" cs where cs."CourseId" = c.id) as sponsors
+      FROM "Courses" c`;
+
+      let courses = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
+
       if (!courses) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -84,6 +91,16 @@ const CourseController = () => {
           { where: { id: course.id }, }
         );
       }
+      if(req.body["instructors"]){
+        req.body["instructors"].map(async (item) => {
+          await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
+        });
+      }
+      if(req.body["sponsors"]){
+        req.body["sponsors"].map(async (item) => {
+          await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
+        });
+      }
       return res
         .status(HttpCodes.OK)
         .send();
@@ -110,6 +127,8 @@ const CourseController = () => {
           "title",
           "description",
           "topics",
+          "instructors",
+          "sponsors",
         ];
         for (let item of fields) {
           if (body[item]) {
@@ -145,6 +164,26 @@ const CourseController = () => {
         await Course.update(data, {
           where: { id }
         });
+
+        if(data["instructors"]){
+          await CourseInstructor.destroy({
+            where: { CourseId: course.id }
+          });
+          
+          data["instructors"].map(async (item) => {
+            await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
+          });
+        }
+
+        if(data["sponsors"]){
+          await CourseSponsor.destroy({
+            where: { CourseId: course.id }
+          });
+          
+          data["sponsors"].map(async (item) => {
+            await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
+          });
+        }
 
         return res
           .status(HttpCodes.OK)
