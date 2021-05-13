@@ -241,7 +241,7 @@ const CourseController = () => {
       try {
         let query = `
         select i.* from "Instructors" i 
-        inner join "CourseInstructors" ci on i."id" = ci."InstuctorId"
+        inner join "CourseInstructors" ci on i."id" = ci."InstructorId"
         where ci."CourseId" = ${course}`;
         const instructors = await db.sequelize.query(query, {
           type: QueryTypes.SELECT,
