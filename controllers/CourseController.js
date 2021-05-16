@@ -1,8 +1,13 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const moment = require("moment");
+const Sequelize = require("sequelize");
+const s3Service = require("../services/s3.service");
+const { isValidURL } = require("../utils/profile");
 
+const QueryTypes = Sequelize.QueryTypes;
 const Course = db.Course;
+const CourseInstructor = db.CourseInstructor;
+const CourseSponsor = db.CourseSponsor;
 
 const CourseController = () => {
   /**
@@ -12,11 +17,16 @@ const CourseController = () => {
    */
   const getAll = async (req, res) => {
     try {
-      let courses = await Course.findAll({
-        order: [
-          ['createdAt', 'DESC'],
-        ],
+      let query = `SELECT 
+      c.*, 
+      ARRAY(SELECT ci."InstructorId" FROM "CourseInstructors" ci where ci."CourseId" = c.id) as instructors,
+      ARRAY(SELECT cs."SponsorId" FROM "CourseSponsors" cs where cs."CourseId" = c.id) as sponsors
+      FROM "Courses" c`;
+
+      let courses = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
+
       if (!courses) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -71,9 +81,26 @@ const CourseController = () => {
    * @param {*} res 
    */
   const add = async (req, res) => {
+    const { imageData } = req.body;
     try {
-      await Course.create({ ...req.body });
-
+      let course = await Course.create({ ...req.body });
+      if (imageData) {
+        let image = await s3Service().getCourseImageUrl("", imageData);
+        await Course.update(
+          { image: image },
+          { where: { id: course.id }, }
+        );
+      }
+      if(req.body["instructors"]){
+        req.body["instructors"].map(async (item) => {
+          await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
+        });
+      }
+      if(req.body["sponsors"]){
+        req.body["sponsors"].map(async (item) => {
+          await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
+        });
+      }
       return res
         .status(HttpCodes.OK)
         .send();
@@ -97,19 +124,66 @@ const CourseController = () => {
       try {
         let data = {};
         let fields = [
-          "image",
           "title",
           "description",
           "topics",
+          "instructors",
+          "sponsors",
         ];
         for (let item of fields) {
           if (body[item]) {
             data = { ...data, [item]: body[item] };
           }
         }
+
+        const course = await Course.findOne({
+          where: {
+            id,
+          },
+        });
+        if (!course) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: course not found." });
+        }
+        if (body.imageData && !isValidURL(body.imageData)) {
+          data.image = await s3Service().getCourseImageUrl(
+            "",
+            body.imageData
+          );
+
+          if (course.image) {
+            await s3Service().deleteUserPicture(course.imageData);
+          }
+        }
+
+        if (data.image && !body.imageData) {
+          await s3Service().deleteUserPicture(course.image);
+        }
+
         await Course.update(data, {
           where: { id }
-        })
+        });
+
+        if(data["instructors"]){
+          await CourseInstructor.destroy({
+            where: { CourseId: course.id }
+          });
+          
+          data["instructors"].map(async (item) => {
+            await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
+          });
+        }
+
+        if(data["sponsors"]){
+          await CourseSponsor.destroy({
+            where: { CourseId: course.id }
+          });
+          
+          data["sponsors"].map(async (item) => {
+            await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
+          });
+        }
 
         return res
           .status(HttpCodes.OK)
@@ -155,12 +229,86 @@ const CourseController = () => {
     }
   };
 
+  /**
+   * Method to get instructors by Course
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const getInstructorsByCourse = async (req, res) => {
+    let { course } = req.params;
+
+    if (course) {
+      try {
+        let query = `
+        select i.* from "Instructors" i 
+        inner join "CourseInstructors" ci on i."id" = ci."InstructorId"
+        where ci."CourseId" = ${course}`;
+        const instructors = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+
+        if (!instructors) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ instructors });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+  };
+
+  /**
+   * Method to get instructors by Course
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const getSponsorsByCourse = async (req, res) => {
+    let { course } = req.params;
+
+    if (course) {
+      try {
+        let query = `
+        select s.* from "Sponsors" s
+        inner join "CourseSponsors" cs on s."id" = cs."SponsorId"
+        where cs."CourseId" = ${course}`;
+        const sponsors = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+
+        if (!sponsors) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ sponsors });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+  };
+
   return {
     getAll,
     get,
     add,
     update,
     remove,
+    getInstructorsByCourse,
+    getSponsorsByCourse,
   };
 };
 

@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("CourseClasses", {
+    await queryInterface.createTable("CourseSponsors", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -18,19 +18,16 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
-      title: {
-        type: Sequelize.STRING,
+      SponsorId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Sponsors',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
       },
-      description: {
-        type: Sequelize.TEXT,
-      },
-      videoUrl: {
-        type: Sequelize.STRING,
-      },
-      duration: {
-        type: Sequelize.STRING,
-      },
-      topics: Sequelize.ARRAY(Sequelize.STRING),
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -42,6 +39,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("CourseClasses");
+    await queryInterface.dropTable("CourseSponsors");
   },
 };

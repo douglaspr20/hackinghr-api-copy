@@ -35,6 +35,23 @@ const adminRoutes = {
   "POST /channel-category": "ChannelCategoryController.create",
   "PUT /channel-category/:id": "ChannelCategoryController.update",
   "DELETE /channel-category/:id": "ChannelCategoryController.remove",
+  "GET /course/:id": "CourseController.get",
+  "POST /course/": "CourseController.add",
+  "PUT /course/:id": "CourseController.update",
+  "DELETE /course/:id": "CourseController.remove",
+  "POST /course-classes/": "CourseClassController.add",
+  "PUT /course-classes/:id": "CourseClassController.update",
+  "DELETE /course-classes/:id": "CourseClassController.remove",
+  "GET /sponsors/": "SponsorController.getAll",
+  "GET /sponsor/:id": "SponsorController.get",
+  "POST /sponsor/": "SponsorController.add",
+  "PUT /sponsor/:id": "SponsorController.update",
+  "DELETE /sponsor/:id": "SponsorController.remove",
+  "GET /instructors/": "InstructorController.getAll",
+  "GET /instructor/:id": "InstructorController.get",
+  "POST /instructor/": "InstructorController.add",
+  "PUT /instructor/:id": "InstructorController.update",
+  "DELETE /instructor/:id": "InstructorController.remove",
 };
 
 module.exports = adminRoutes;

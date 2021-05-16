@@ -1,36 +1,23 @@
-"use strict";
+'use strict';
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("CourseClasses", {
+    await queryInterface.createTable("Instructors", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      CourseId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'Courses',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+      image: {
+        type: Sequelize.STRING,
       },
-      title: {
+      name: {
         type: Sequelize.STRING,
       },
       description: {
         type: Sequelize.TEXT,
       },
-      videoUrl: {
-        type: Sequelize.STRING,
-      },
-      duration: {
-        type: Sequelize.STRING,
-      },
-      topics: Sequelize.ARRAY(Sequelize.STRING),
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -41,7 +28,8 @@ module.exports = {
       },
     });
   },
+
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("CourseClasses");
-  },
+    await queryInterface.dropTable("Instructors");
+  }
 };

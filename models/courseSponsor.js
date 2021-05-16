@@ -11,10 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CourseSponsor.init(
-    {
-      name: DataTypes.STRING,
-      description: DataTypes.STRING,
-    },
+    {},
     {
       sequelize,
       modelName: "CourseSponsor",
