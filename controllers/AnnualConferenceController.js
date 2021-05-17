@@ -1,5 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const { Op } = require("sequelize");
 
 const AnnualConference = db.AnnualConference;
 
@@ -102,16 +103,16 @@ const AnnualConferenceController = () => {
   };
 
   const getAll = async (req, res) => {
-    const filter = req.query;
+    const { startTime, endTime } = req.query;
 
     try {
       let where = {};
 
-      if (filter.categories && !isEmpty(JSON.parse(filter.categories))) {
+      if (startTime && endTime) {
         where = {
-          ...where,
-          categories: {
-            [Op.overlap]: JSON.parse(filter.categories),
+          startTime: {
+            [Op.gte]: startTime,
+            [Op.lte]: endTime,
           },
         };
       }

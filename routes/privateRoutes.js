@@ -61,6 +61,8 @@ const privateRoutes = {
   "GET /courses/": "CourseController.getAll",
   "GET /course/:id": "CourseController.get",
   "GET /course-classes/:course": "CourseClassController.getByCourse",
+  "GET /session/:id": "AnnualConferenceController.get",
+  "GET /session": "AnnualConferenceController.getAll",
 };
 
 module.exports = privateRoutes;
