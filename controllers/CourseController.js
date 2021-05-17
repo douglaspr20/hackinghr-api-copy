@@ -1,6 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const isEmpty = require("lodash/isEmpty");
 const Sequelize = require("sequelize");
+const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 
@@ -15,7 +17,59 @@ const CourseController = () => {
    * @param {*} req 
    * @param {*} res 
    */
-  const getAll = async (req, res) => {
+   const getAll = async (req, res) => {
+    const filter = req.query;
+    try {
+      let where = {};
+      let order = [];
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      if (filter.meta) {
+        where = {
+          ...where,
+          title: {
+            [Op.iLike]: `%${filter.meta}%`,
+          },
+        };
+      }
+
+      if (filter.order) {
+        order = [[ JSON.parse(filter.order)[0], JSON.parse(filter.order)[1] ]];
+      }
+      
+      let courses = await Course.findAll({
+        where,
+        order,
+      });
+      if (!courses) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      return res.status(HttpCodes.OK).json({ courses });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  /**
+   * Method to get all Course objects
+   * @param {*} req 
+   * @param {*} res 
+   */
+  const getAllAdmin = async (req, res) => {
     try {
       let query = `SELECT 
       c.*, 
@@ -303,6 +357,7 @@ const CourseController = () => {
 
   return {
     getAll,
+    getAllAdmin,
     get,
     add,
     update,
