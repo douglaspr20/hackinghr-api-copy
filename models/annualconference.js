@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     startTime: DataTypes.STRING,
     endTime: DataTypes.STRING,
+    timezone: DataTypes.STRING,
     description: DataTypes.TEXT,
     objectives: DataTypes.TEXT,
     speakers: {
