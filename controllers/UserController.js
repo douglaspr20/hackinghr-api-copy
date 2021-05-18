@@ -454,6 +454,30 @@ const UserController = () => {
     }
   };
 
+  const setAttendedToConference = async (req, res) => {
+    const { user } = req;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          attendedToConference: 1,
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -465,6 +489,7 @@ const UserController = () => {
     importUsers,
     getAll,
     generateInvitationEmail,
+    setAttendedToConference,
   };
 };
 

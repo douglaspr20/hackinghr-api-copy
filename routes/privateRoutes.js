@@ -9,6 +9,7 @@ const privateRoutes = {
   "PUT /user/remove-event/": "UserController.removeEvent",
   "POST /user/invite-friend/": "UserController.generateInvitationEmail",
   "GET /user/search": "UserController.searchUser",
+  "PUT /user/attend-conference": "UserController.setAttendedToConference",
   "PUT /event/set-status/:id": "EventController.updateEventStatus",
   "POST /stripe/checkout-session/": "StripeController.createCheckoutSession",
   "GET /stripe/portal-session/": "StripeController.createPortalSession",
