@@ -1,8 +1,9 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const { Op } = require("sequelize");
+const Sequelize = require("sequelize");
 
 const AnnualConference = db.AnnualConference;
+const QueryTypes = Sequelize.QueryTypes;
 
 const AnnualConferenceController = () => {
   const create = async (req, res) => {
@@ -106,22 +107,24 @@ const AnnualConferenceController = () => {
     const { startTime, endTime } = req.query;
 
     try {
-      let where = {};
+      let where = "";
 
       if (startTime && endTime) {
-        where = {
-          startTime: {
-            [Op.gte]: startTime,
-            [Op.lte]: endTime,
-          },
-        };
+        where = `WHERE public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}'`;
       }
 
-      const conferences = await AnnualConference.findAndCountAll({
-        where,
+      const query = `
+        SELECT public."AnnualConferences".*, public."Users".id as userId, public."Users"."firstName", public."Users"."lastName", public."Users".email, public."Users".img, public."Users"."titleProfessions" as usertitle
+        FROM public."AnnualConferences"
+        LEFT JOIN public."Users" ON public."Users".id = ANY (public."AnnualConferences".speakers::int[])
+        ${where}
+      `;
+
+      const sessionList = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
 
-      return res.status(HttpCodes.OK).json({ conferences });
+      return res.status(HttpCodes.OK).json({ conferences: sessionList });
     } catch (error) {
       console.log(error);
       return res
