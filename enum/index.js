@@ -5,6 +5,7 @@ const ReviewStatus = require("./ReviewStatus");
 const EmailContent = require("./EmailContent");
 const LabEmails = require("./Emails") ;
 const Settings = require("./Settings");
+const ConferenceType = require("./ConferenceType");
 
 module.exports = {
   USER_ROLE,
@@ -14,4 +15,5 @@ module.exports = {
   EmailContent,
   LabEmails,
   Settings,
+  ConferenceType,
 };

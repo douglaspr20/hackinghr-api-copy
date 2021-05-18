@@ -12,7 +12,7 @@ const bcryptService = require("../services/bcrypt.service");
 const { getEventPeriod } = require("../utils/format");
 const omit = require("lodash/omit");
 
-const QueryTypes = Sequelize.QueryTypes;
+const { Op, QueryTypes } = Sequelize;
 const User = db.User;
 const Event = db.Event;
 
@@ -176,11 +176,14 @@ const UserController = () => {
       to: user.email,
       subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
       html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
-      contentType: 'text/calendar',
+      contentType: "text/calendar",
     };
-    
+
     let icsContent = calendarInvite.toString();
-    icsContent = icsContent.replace('BEGIN:VEVENT', `METHOD:REQUEST\r\nBEGIN:VEVENT`)
+    icsContent = icsContent.replace(
+      "BEGIN:VEVENT",
+      `METHOD:REQUEST\r\nBEGIN:VEVENT`
+    );
 
     if (calendarInvite) {
       mailOptions["attachments"] = [
@@ -384,17 +387,16 @@ const UserController = () => {
   };
   /**
    * This function generate and send invitation email
-   * @param {*} req 
-   * @param {*} res 
-   * @returns 
+   * @param {*} req
+   * @param {*} res
+   * @returns
    */
   const generateInvitationEmail = async (req, res) => {
     const { user } = req;
     let { email } = req.body;
     try {
+      email = email.split(",");
 
-      email = email.split(',')
-      
       let listPromises = [];
 
       email.map((item) => {
@@ -403,27 +405,83 @@ const UserController = () => {
           to: item.trim(),
           subject: `${user.firstName} thought you’d like to join the best platform for HR pros`,
           html: EmailContent.INVITE_EMAIL(user),
-          contentType: 'text/html',
+          contentType: "text/html",
         };
         listPromises.push(smtpService().sendMail(mailOptions));
       });
 
       await Promise.all(listPromises);
-      
-      return res
-              .status(HttpCodes.OK)
-              .send();
+
+      return res.status(HttpCodes.OK).send();
     } catch (err) {
       console.log(err);
       return res
-              .status(HttpCodes.INTERNAL_SERVER_ERROR)
-              .json({ msg: "Internal server error" });
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const searchUser = async (req, res) => {
+    const { search, limit } = req;
+
+    try {
+      const users = await User.findAll({
+        where: search
+          ? {
+              [Op.or]: [
+                {
+                  firstName: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  lastName: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+              ],
+            }
+          : {},
+        limit: limit || 50,
+      });
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const setAttendedToConference = async (req, res) => {
+    const { user } = req;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          attendedToConference: 1,
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
     }
   };
 
   return {
     getUser,
     updateUser,
+    searchUser,
     upgradePlan,
     addEvent,
     removeEvent,
@@ -431,6 +489,7 @@ const UserController = () => {
     importUsers,
     getAll,
     generateInvitationEmail,
+    setAttendedToConference,
   };
 };
 

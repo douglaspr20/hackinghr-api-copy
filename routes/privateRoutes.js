@@ -8,6 +8,8 @@ const privateRoutes = {
   "PUT /user/add-event/": "UserController.addEvent",
   "PUT /user/remove-event/": "UserController.removeEvent",
   "POST /user/invite-friend/": "UserController.generateInvitationEmail",
+  "GET /user/search": "UserController.searchUser",
+  "PUT /user/attend-conference": "UserController.setAttendedToConference",
   "PUT /event/set-status/:id": "EventController.updateEventStatus",
   "POST /stripe/checkout-session/": "StripeController.createCheckoutSession",
   "GET /stripe/portal-session/": "StripeController.createPortalSession",
@@ -60,6 +62,8 @@ const privateRoutes = {
   "GET /courses/": "CourseController.getAll",
   "GET /course/:id": "CourseController.get",
   "GET /course-classes/:course": "CourseClassController.getByCourse",
+  "GET /session/:id": "AnnualConferenceController.get",
+  "GET /session": "AnnualConferenceController.getAll",
   "GET /course-instructors/:course": "CourseController.getInstructorsByCourse",
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
 };
