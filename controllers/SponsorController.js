@@ -110,6 +110,7 @@ const SponsorController = () => {
           "name",
           "description",
           "topics",
+          "link",
         ];
         for (let item of fields) {
           if (body[item]) {
