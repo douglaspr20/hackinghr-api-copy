@@ -62,6 +62,8 @@ const privateRoutes = {
   "GET /course-classes/:course": "CourseClassController.getByCourse",
   "GET /course-instructors/:course": "CourseController.getInstructorsByCourse",
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
+  "GET /course-classes-user/:course": "CourseClassUserController.getProgressCourseByUser",
+  "POST /course-classes-user/": "CourseClassUserController.setProgress",
 };
 
 module.exports = privateRoutes;
