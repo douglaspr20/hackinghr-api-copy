@@ -503,6 +503,31 @@ const UserController = () => {
     }
   };
 
+  const removeSession = async (req, res) => {
+    const { user } = req;
+    const { id } = req.params;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          sessions: Sequelize.fn("array_remove", Sequelize.col("sessions"), id),
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -516,6 +541,7 @@ const UserController = () => {
     generateInvitationEmail,
     setAttendedToConference,
     addSession,
+    removeSession,
   };
 };
 
