@@ -114,9 +114,9 @@ const AnnualConferenceController = () => {
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Users".id as userId, public."Users"."firstName", public."Users"."lastName", public."Users".email, public."Users".img, public."Users"."titleProfessions" as usertitle
+        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors".image, public."Instructors"."description" as description
         FROM public."AnnualConferences"
-        LEFT JOIN public."Users" ON public."Users".id = ANY (public."AnnualConferences".speakers::int[])
+        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
         ${where}
       `;
 
