@@ -28,7 +28,7 @@ const CourseClassUserController = () => {
         let courseClassUser = await db.sequelize.query(query, {
           type: QueryTypes.SELECT,
         });
-
+        
         if (!courseClassUser) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -56,14 +56,18 @@ const CourseClassUserController = () => {
    */
    const setProgress = async (req, res) => {
     try {
-      let courseClassUser = await CourseClassUser.findAll({ 
+      let courseClassUser = await CourseClassUser.findOne({ 
         where: { CourseClassId: req.body.CourseClassId, UserId: req.user.id }
       });
-      console.log(courseClassUser);
-      if(courseClassUser.length === 0){
+      
+      if(!courseClassUser){
         add({... req.body, UserId: req.user.id});
       }else{
-        update({... req.body, UserId: req.user.id});
+        if(req.body.progressVideo > courseClassUser.progressVideo){
+          update({... req.body, UserId: req.user.id});
+        } else if (req.body.viewed) { 
+          update({... req.body, UserId: req.user.id});
+        }
       }
 
       return res

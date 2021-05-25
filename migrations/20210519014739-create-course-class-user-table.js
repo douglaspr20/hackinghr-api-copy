@@ -1,7 +1,7 @@
 "use strict";
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("CourseClassUser", {
+    await queryInterface.createTable("CourseClassUsers", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -13,7 +13,7 @@ module.exports = {
         allowNull: false,
         defaultValue: false
       },
-      progress_video: Sequelize.STRING,
+      progressVideo: Sequelize.DECIMAL,
       CourseClassId: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -45,6 +45,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("CourseClassUser");
+    await queryInterface.dropTable("CourseClassUsers");
   },
 };
