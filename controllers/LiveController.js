@@ -18,8 +18,8 @@ const LiveController = () => {
 
       if (live.length > 0) {
         return res.status(HttpCodes.OK).json({ live: live[0] });
-      }else{
-        return res.status(HttpCodes.OK).json({ live: {} });
+      } else {
+        return res.status(HttpCodes.OK).json({ live: { title: "Live" } });
       }
     } catch (error) {
       console.log(error);
@@ -28,14 +28,22 @@ const LiveController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+
   /**
-   * Method to add Live object
+   * Method to save Live object
    * @param {*} req 
    * @param {*} res 
    */
-  const add = async (req, res) => {
+  const save = async (req, res) => {
     try {
-      await Live.create({ ...req.body });
+      const live = await Live.findAll({
+        limit: 1
+      });
+      if (live.length > 0) {
+        update(live[0].id, req.body);
+      } else {
+        add(req.body);
+      }
 
       return res
         .status(HttpCodes.OK)
@@ -46,64 +54,47 @@ const LiveController = () => {
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
     }
+  }
+
+  /**
+   * Method to add Live object
+   */
+  const add = async (params) => {
+    try {
+      await Live.create({ ...params });
+    } catch (error) {
+      console.log(error);
+    }
   };
   /**
    * Method to update Live object
-   * @param {*} req 
-   * @param {*} res 
    */
-  const update = async (req, res) => {
-    const { id } = req.params;
-    const { body } = req
-
-    if (id) {
-      try {
-        let data = {};
-        let fields = [
-          "live",
-          "url",
-          "title",
-          "description",
-        ];
-        for (let item of fields) {
-          if (body[item]) {
-            data = { ...data, [item]: body[item] };
-          }
+  const update = async (id, params) => {
+    try {
+      let data = {};
+      let fields = [
+        "live",
+        "url",
+        "title",
+        "description",
+      ];
+      for (let item of fields) {
+        if (params[item]) {
+          data = { ...data, [item]: params[item] };
         }
-        
-        const live = await live.findOne({
-          where: {
-            id,
-          },
-        });
-        if (!live) {
-          return res
-            .status(HttpCodes.BAD_REQUEST)
-            .json({ msg: "Bad Request: sponsor not found." });
-        }
-
-        await Live.update(data, {
-          where: { id }
-        });
-
-        return res
-          .status(HttpCodes.OK)
-          .send();
-      } catch (error) {
-        console.log(error);
-        return res
-          .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Internal server error" });
       }
-    } else {
-      return res
-        .status(HttpCodes.BAD_REQUEST)
-        .json({ msg: "Bad Request: data is wrong" });
+      await Live.update(data, {
+        where: { id }
+      });
+
+    } catch (error) {
+      console.log(error);
     }
   };
 
   return {
     get,
+    save,
     add,
     update,
   };
