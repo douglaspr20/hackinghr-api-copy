@@ -11,29 +11,7 @@ const NotificationController = () => {
 
     if (body.message) {
       try {
-        let notificationInfo = {
-          ...body,
-        };
-
-        const newNotification = await Notification.create(notificationInfo);
-
-        if (!newNotification) {
-          return res
-            .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Internal server error" });
-        }
-
-        const totalCount = await Notification.count();
-
-        if (totalCount > MAX_NUMBER_OF_NOTIFICATION) {
-          const lastElement = await Notification.findAll({
-            offset: 0,
-            limit: 1,
-            order: ["createdAt", "ASC"]
-          });
-          await lastElement.destroy();
-        }
-
+        const newNotification = await createNotification(body);
         return res.status(HttpCodes.OK).json({ notification: newNotification });
       } catch (error) {
         console.log(error);
@@ -55,7 +33,7 @@ const NotificationController = () => {
       const notifications = await Notification.findAll({
         offset: (page - 1) * num,
         limit: num,
-        order: ["createdAt", "DESC"],
+        order: [["createdAt", "DESC"]],
       });
 
       if (!notifications) {
@@ -164,12 +142,30 @@ const NotificationController = () => {
       .json({ msg: "Bad Request: id is wrong" });
   };
 
+  const createNotification = async (notification) => {
+    const newNotification = await Notification.create(notification);
+
+    const totalCount = await Notification.count();
+
+    if (totalCount > MAX_NUMBER_OF_NOTIFICATION) {
+      const lastElement = await Notification.findAll({
+        offset: 0,
+        limit: 1,
+        order: ["createdAt", "ASC"],
+      });
+      await lastElement.destroy();
+    }
+
+    return newNotification;
+  };
+
   return {
     create,
     getAll,
     get,
     update,
     remove,
+    createNotification,
   };
 };
 
