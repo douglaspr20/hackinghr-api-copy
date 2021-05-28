@@ -70,6 +70,7 @@ const privateRoutes = {
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
   "GET /course-classes-user/:course": "CourseClassUserController.getProgressCourseByUser",
   "POST /course-classes-user/": "CourseClassUserController.setProgress",
+  "GET /live/": "LiveController.get",
 };
 
 module.exports = privateRoutes;
