@@ -12,6 +12,8 @@ module.exports = (sequelize, DataTypes) => {
   }
   CourseClassUser.init(
     {
+      viewed: DataTypes.BOOLEAN,
+      progressVideo: DataTypes.DECIMAL,
     },
     {
       sequelize,
