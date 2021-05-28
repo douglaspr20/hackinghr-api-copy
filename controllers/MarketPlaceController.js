@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
+const NotificationController = require("../controllers/NotificationController");
 
 const Marketplace = db.Marketplace;
 const Category = db.Category;
@@ -118,7 +119,20 @@ const MarketplaceController = () => {
         await Marketplace.update({ logoUrl: imageUrl }, {
           where: { id: marketplace.id }
         })
+        marketplace = {
+          ...marketplace,
+          imageUrl,
+        }
       }
+
+      await NotificationController().createNotification({
+        message: `New Company "${marketplace.name}" was created.`,
+        type: "marketplace",
+        meta: {
+          ...marketplace,
+        },
+      });
+
       return res
         .status(HttpCodes.OK)
         .send();

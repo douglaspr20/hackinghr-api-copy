@@ -12,6 +12,7 @@ const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent } = require("../enum");
 const isEmpty = require("lodash/isEmpty");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
+const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
 const User = db.User;
@@ -247,6 +248,15 @@ const EventController = () => {
 
         setEventReminders(event);
         setOrganizerReminders(event);
+
+        await NotificationController().createNotification({
+          message: `New Event "${event.title}" was created.`,
+          type: "event",
+          meta: {
+            link: event.publicLink,
+            id: event.id,
+          },
+        });
 
         return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {
