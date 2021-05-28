@@ -253,8 +253,8 @@ const EventController = () => {
           message: `New Event "${event.title}" was created.`,
           type: "event",
           meta: {
-            link: event.publicLink,
-            id: event.id,
+            ...event,
+            publicLink: `${process.env.DOMAIN_URL}${event.id}`,
           },
         });
 
