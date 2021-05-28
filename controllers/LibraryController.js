@@ -6,6 +6,7 @@ const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const { ReviewStatus, Settings } = require("../enum");
+const NotificationController = require("../controllers/NotificationController");
 
 const Library = db.Library;
 const VisibleLevel = Settings.VISIBLE_LEVEL;
@@ -42,6 +43,14 @@ const LibraryController = () => {
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
+
+        await NotificationController().createNotification({
+          message: `New Content "${newLibrary.title}" was created.`,
+          type: "content",
+          meta: {
+            ...newLibrary,
+          },
+        });
 
         return res.status(HttpCodes.OK).json({ library: newLibrary });
       } catch (error) {

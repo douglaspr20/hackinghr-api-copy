@@ -4,6 +4,7 @@ const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
+const NotificationController = require("../controllers/NotificationController");
 
 const { AWSConfig, Settings } = require("../enum");
 const { S3 } = AWSConfig;
@@ -116,7 +117,20 @@ const PodcastController = () => {
             where: { id: podcast.id },
           }
         );
+        podcast = {
+          ...podcast,
+          imageUrl,
+        }
       }
+
+      await NotificationController().createNotification({
+        message: `New Podcast "${podcast.title}" was created.`,
+        type: "podcast",
+        meta: {
+          ...podcast,
+        },
+      });
+
       return res.status(HttpCodes.OK).send();
     } catch (error) {
       console.log(error);
