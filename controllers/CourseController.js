@@ -17,7 +17,7 @@ const CourseController = () => {
    * @param {*} req 
    * @param {*} res 
    */
-   const getAll = async (req, res) => {
+  const getAll = async (req, res) => {
     const filter = req.query;
     try {
       let where = {};
@@ -42,9 +42,9 @@ const CourseController = () => {
       }
 
       if (filter.order) {
-        order = [[ JSON.parse(filter.order)[0], JSON.parse(filter.order)[1] ]];
+        order = [[JSON.parse(filter.order)[0], JSON.parse(filter.order)[1]]];
       }
-      
+
       let courses = await Course.findAll({
         where,
         order,
@@ -104,7 +104,7 @@ const CourseController = () => {
     const { id } = req.params;
     if (id) {
       try {
-        const course = await Course.findOne({
+        let course = await Course.findOne({
           where: {
             id,
           },
@@ -115,6 +115,25 @@ const CourseController = () => {
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
+
+        let query = `SELECT 
+          (CASE WHEN
+          (SELECT COUNT(1) from "CourseClasses" cc WHERE cc."CourseId" = ${id}) = (select count(1) from "CourseClassUsers" ccu 
+          INNER JOIN "CourseClasses" cc ON ccu."CourseClassId" = cc.id
+          WHERE cc."CourseId" = ${id} AND ccu."UserId" = ${req.user.id} AND ccu.viewed = true)
+          THEN true ELSE false
+          END) as finished,
+          (SELECT MAX(ccu."updatedAt") from "CourseClassUsers" ccu 
+          INNER JOIN "CourseClasses" cc ON ccu."CourseClassId" = cc.id
+          WHERE cc."CourseId" = ${id} AND ccu."UserId" = ${req.user.id} AND ccu.viewed = true) as "finishDate"
+        `;
+        
+        let additionalInfoCourse = await db.sequelize.query(query, {
+          type: QueryTypes.SELECT,
+        });
+        
+        course.dataValues["finished"] = additionalInfoCourse[0].finished;
+        course.dataValues["finishDate"] = additionalInfoCourse[0].finishDate;
 
         return res.status(HttpCodes.OK).json({ course });
       } catch (error) {
@@ -145,12 +164,12 @@ const CourseController = () => {
           { where: { id: course.id }, }
         );
       }
-      if(req.body["instructors"]){
+      if (req.body["instructors"]) {
         req.body["instructors"].map(async (item) => {
           await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
         });
       }
-      if(req.body["sponsors"]){
+      if (req.body["sponsors"]) {
         req.body["sponsors"].map(async (item) => {
           await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
         });
@@ -219,21 +238,21 @@ const CourseController = () => {
           where: { id }
         });
 
-        if(data["instructors"]){
+        if (data["instructors"]) {
           await CourseInstructor.destroy({
             where: { CourseId: course.id }
           });
-          
+
           data["instructors"].map(async (item) => {
             await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
           });
         }
 
-        if(data["sponsors"]){
+        if (data["sponsors"]) {
           await CourseSponsor.destroy({
             where: { CourseId: course.id }
           });
-          
+
           data["sponsors"].map(async (item) => {
             await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
           });
