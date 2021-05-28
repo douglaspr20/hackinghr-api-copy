@@ -30,7 +30,7 @@ const NotificationController = () => {
     const { num, page } = req.query;
 
     try {
-      const notifications = await Notification.findAll({
+      const notifications = await Notification.findAndCountAll({
         offset: (page - 1) * num,
         limit: num,
         order: [["createdAt", "DESC"]],
