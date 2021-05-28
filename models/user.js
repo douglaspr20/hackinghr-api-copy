@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
           allowNull: true,
         },
       });
+      User.hasMany(models.CourseClassUser);
     }
   }
   User.init(
