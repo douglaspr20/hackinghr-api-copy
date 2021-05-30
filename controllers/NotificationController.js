@@ -196,7 +196,17 @@ const NotificationController = () => {
         }
       );
 
-      return res.status(HttpCodes.OK).json({});
+      const totalCount = await Notification.count();
+
+      const readCount = await Notification.count({
+        where: {
+          readers: {
+            [Op.contains]: [user.id],
+          },
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ unread: totalCount - readCount });
     } catch (error) {
       console.log(error);
       return res
