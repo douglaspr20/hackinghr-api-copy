@@ -1,9 +1,11 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const Sequelize = require("sequelize");
 const socketService = require("../services/socket.service");
 const SocketEventType = require("../enum/SocketEventTypes");
 
 const Notification = db.Notification;
+const Op = Sequelize.Op;
 
 const MAX_NUMBER_OF_NOTIFICATION = 1000;
 
@@ -30,6 +32,7 @@ const NotificationController = () => {
 
   const getAll = async (req, res) => {
     const { num, page } = req.query;
+    const { user } = req;
 
     try {
       const notifications = await Notification.findAndCountAll({
@@ -38,13 +41,21 @@ const NotificationController = () => {
         order: [["createdAt", "DESC"]],
       });
 
+      const readCount = await Notification.count({
+        where: {
+          readers: {
+            [Op.contains]: [user.id],
+          },
+        },
+      });
+
       if (!notifications) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Bad Request: Notifications not found" });
       }
 
-      return res.status(HttpCodes.OK).json({ notifications });
+      return res.status(HttpCodes.OK).json({ notifications, readCount });
     } catch (error) {
       console.log(error);
       return res
@@ -163,6 +174,37 @@ const NotificationController = () => {
     return newNotification;
   };
 
+  const setNotificationsRead = async (req, res) => {
+    const { notifications } = req.body;
+    const { user } = req;
+
+    try {
+      await Notification.update(
+        {
+          readers: Sequelize.fn(
+            "array_append",
+            Sequelize.col("readers"),
+            user.id
+          ),
+        },
+        {
+          where: {
+            id: {
+              [Op.in]: notifications,
+            },
+          },
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
@@ -170,6 +212,7 @@ const NotificationController = () => {
     update,
     remove,
     createNotification,
+    setNotificationsRead,
   };
 };
 
