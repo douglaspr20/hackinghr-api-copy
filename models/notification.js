@@ -16,7 +16,11 @@ module.exports = (sequelize, DataTypes) => {
   Notification.init({
     message: DataTypes.STRING,
     type: DataTypes.STRING,
-    meta: DataTypes.JSON
+    meta: DataTypes.JSON,
+    readers: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      defaultValue: [],
+    },
   }, {
     sequelize,
     modelName: 'Notification',

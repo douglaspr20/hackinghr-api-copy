@@ -69,6 +69,7 @@ const privateRoutes = {
   "GET /course-instructors/:course": "CourseController.getInstructorsByCourse",
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
   "GET /notification": "NotificationController.getAll",
+  "PUT /notification/mark-to-read": "NotificationController.setNotificationsRead",
   "GET /course-classes-user/:course": "CourseClassUserController.getProgressCourseByUser",
   "POST /course-classes-user/": "CourseClassUserController.setProgress",
   "GET /live/": "LiveController.get",
