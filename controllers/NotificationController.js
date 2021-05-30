@@ -1,5 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const socketService = require("../services/socket.service");
+const SocketEventType = require("../enum/SocketEventTypes");
 
 const Notification = db.Notification;
 
@@ -155,6 +157,8 @@ const NotificationController = () => {
       });
       await lastElement.destroy();
     }
+
+    socketService().emit(SocketEventType.NEW_EVENT, newNotification);
 
     return newNotification;
   };

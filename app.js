@@ -1,4 +1,6 @@
 const express = require("express");
+const http = require("http");
+const socketIo = require("socket.io");
 const path = require("path");
 const db = require("./models/index.js");
 const mapRoutes = require("express-routes-mapper");
@@ -9,6 +11,8 @@ const authPolicy = require("./policies/auth.policy");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
 const JourneyController = require("./controllers/JourneyController");
+
+const socketService = require("./services/socket.service");
 
 dotenv.config();
 
@@ -66,4 +70,16 @@ app.use("/admin", mappedAdminRoutes);
 
 const port = process.env.PORT || 3001;
 
-app.listen(port, () => console.log(`url-shortener listening on port ${port}!`));
+const server = http.createServer(app);
+
+const io = socketIo(server);
+
+io.on("connection", socket => {
+  socketService().addSocket(socket);
+
+  socket.on("disconnect", () => {
+    socketService().removeSocket(socket);
+  });
+});
+
+server.listen(port, () => console.log(`url-shortener listening on port ${port}!`));
