@@ -72,7 +72,14 @@ const port = process.env.PORT || 3001;
 
 const server = http.createServer(app);
 
-const io = socketIo(server);
+const FEUrl = process.env.DOMAIN_URL || "http://localhost:3000/";
+
+const io = socketIo(server, {
+  cors: {
+    origin: FEUrl.slice(0, FEUrl.length - 1),
+    methods: ["GET", "POST"],
+  }
+});
 
 io.on("connection", socket => {
   socketService().addSocket(socket);
