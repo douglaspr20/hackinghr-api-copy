@@ -79,7 +79,7 @@ const LiveController = () => {
         "description",
       ];
       for (let item of fields) {
-        if (params[item]) {
+        if (params.hasOwnProperty(item)) {
           data = { ...data, [item]: params[item] };
         }
       }
