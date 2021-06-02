@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       contact_email: DataTypes.STRING,
       contact_phone: DataTypes.STRING,
       contact_position: DataTypes.STRING,
+      demoUrl: DataTypes.STRING,
       topics: DataTypes.ARRAY(DataTypes.STRING),
     },
     {
