@@ -102,6 +102,7 @@ const MarketplaceController = () => {
       contact_position,
       logoUrl,
       topics,
+      demoUrl,
     } = req.body;
     try {
       let marketplace = await Marketplace.create({
@@ -113,6 +114,7 @@ const MarketplaceController = () => {
         contact_phone,
         contact_position,
         topics,
+        demoUrl,
       });
       if (logoUrl) {
         let imageUrl = await s3Service().getMarketplaceImageUrl('', logoUrl);
@@ -164,6 +166,7 @@ const MarketplaceController = () => {
           'contact_phone',
           'contact_position',
           'topics',
+          'demoUrl',
         ];
         for (let item of fields) {
           if (body[item]) {
