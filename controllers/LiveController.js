@@ -1,5 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const socketService = require("../services/socket.service");
+const SocketEventType = require("../enum/SocketEventTypes");
 
 const Live = db.Live;
 
@@ -44,6 +46,8 @@ const LiveController = () => {
       } else {
         add(req.body);
       }
+      
+      socketService().emit(SocketEventType.LIVE_CHANGE);
 
       return res
         .status(HttpCodes.OK)
