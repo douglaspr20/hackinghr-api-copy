@@ -249,14 +249,17 @@ const EventController = () => {
         setEventReminders(event);
         setOrganizerReminders(event);
 
-        await NotificationController().createNotification({
-          message: `New Event "${event.title}" was created.`,
-          type: "event",
-          meta: {
-            ...event,
-            publicLink: `${process.env.DOMAIN_URL}${event.id}`,
-          },
-        });
+        const startTime = convertToLocalTime(event.startDate);
+        if (startTime.isAfter(moment())) {
+          await NotificationController().createNotification({
+            message: `New Event "${event.title}" was created.`,
+            type: "event",
+            meta: {
+              ...event,
+              publicLink: `${process.env.DOMAIN_URL}${event.id}`,
+            },
+          });
+        }
 
         return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {
