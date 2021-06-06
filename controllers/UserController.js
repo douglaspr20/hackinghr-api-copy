@@ -528,6 +528,23 @@ const UserController = () => {
     }
   };
 
+  const getSessionUsers = async (req, res) => {
+    try {
+      const users = await User.findAll({
+        where: {
+          attendedToConference: 1,
+        }
+      })
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  }
+
   return {
     getUser,
     updateUser,
@@ -542,6 +559,7 @@ const UserController = () => {
     setAttendedToConference,
     addSession,
     removeSession,
+    getSessionUsers,
   };
 };
 
