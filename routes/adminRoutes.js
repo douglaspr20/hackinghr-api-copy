@@ -28,6 +28,8 @@ const adminRoutes = {
   "PUT /category/:id": "CategoryController.update",
   "DELETE /category/:id": "CategoryController.remove",
   "GET /user/all": "UserController.getAll",
+  "GET /session/users": "UserController.getSessionUsers",
+  "PUT /session/user-remove/:id": "UserController.removeSessionUser",
   "GET /conference/:id/": "ConferenceController.get",
   "POST /conference/": "ConferenceController.create",
   "PUT /conference/:id": "ConferenceController.update",

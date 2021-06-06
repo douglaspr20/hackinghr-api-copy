@@ -533,8 +533,8 @@ const UserController = () => {
       const users = await User.findAll({
         where: {
           attendedToConference: 1,
-        }
-      })
+        },
+      });
 
       return res.status(HttpCodes.OK).json({ users });
     } catch (error) {
@@ -543,7 +543,34 @@ const UserController = () => {
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
     }
-  }
+  };
+
+  const removeSessionUser = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          attendedToConference: 0,
+          sessions: [],
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
 
   return {
     getUser,
@@ -560,6 +587,7 @@ const UserController = () => {
     addSession,
     removeSession,
     getSessionUsers,
+    removeSessionUser,
   };
 };
 
