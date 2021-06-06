@@ -252,7 +252,7 @@ const EventController = () => {
         const startTime = convertToLocalTime(event.startDate);
         if (startTime.isAfter(moment())) {
           await NotificationController().createNotification({
-            message: `New Event "${event.title}" was created.`,
+            message: `New Event "${event.title || eventInfo.title}" was created.`,
             type: "event",
             meta: {
               ...event,

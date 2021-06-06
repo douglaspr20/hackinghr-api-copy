@@ -119,6 +119,8 @@ const PodcastController = () => {
         );
         podcast = {
           ...podcast,
+          id: podcast.id,
+          title: req.body.title,
           imageUrl,
         }
       }

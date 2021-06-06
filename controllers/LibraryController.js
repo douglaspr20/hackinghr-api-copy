@@ -45,7 +45,7 @@ const LibraryController = () => {
         }
 
         await NotificationController().createNotification({
-          message: `New Content "${newLibrary.title}" was created.`,
+          message: `New Content "${newLibrary.title || libraryInfo.title}" was created.`,
           type: "content",
           meta: {
             ...newLibrary,

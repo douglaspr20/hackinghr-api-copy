@@ -123,6 +123,8 @@ const MarketplaceController = () => {
         })
         marketplace = {
           ...marketplace,
+          id: marketplace.id,
+          name,
           imageUrl,
         }
       }
