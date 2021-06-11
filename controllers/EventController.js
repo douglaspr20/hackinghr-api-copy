@@ -9,7 +9,7 @@ const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
-const { Settings, EmailContent } = require("../enum");
+const { Settings, EmailContent, USER_ROLE } = require("../enum");
 const isEmpty = require("lodash/isEmpty");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
@@ -252,7 +252,9 @@ const EventController = () => {
         const startTime = convertToLocalTime(event.startDate);
         if (startTime.isAfter(moment())) {
           await NotificationController().createNotification({
-            message: `New Event "${event.title || eventInfo.title}" was created.`,
+            message: `New Event "${
+              event.title || eventInfo.title
+            }" was created.`,
             type: "event",
             meta: {
               ...event,
@@ -339,13 +341,23 @@ const EventController = () => {
   };
 
   const getAllEvents = async (req, res) => {
+    const { role, email } = req.user;
     try {
-      const events = await Event.findAll({
-        where: {
-          level: {
-            [Op.or]: [VisibleLevel.DEFAULT, VisibleLevel.ALL],
-          },
+      let where = {
+        level: {
+          [Op.or]: [VisibleLevel.DEFAULT, VisibleLevel.ALL],
         },
+      };
+
+      if (role === USER_ROLE.EVENT_ORGANIZER) {
+        where = {
+          ...where,
+          organizerEmail: email,
+        };
+      }
+
+      const events = await Event.findAll({
+        where,
       });
 
       return res.status(HttpCodes.OK).json({ events });
