@@ -34,6 +34,7 @@ const privateRoutes = {
   "GET /mentee/all/": "MentoringController.getMenteeList",
   "PUT /mentoring/match": "MentoringController.setMatch",
   "GET /podcast/": "PodcastController.getAll",
+  "GET /podcast/search": "PodcastController.searchPodcast",
   "POST /podcast/channel": "PodcastController.add",
   "GET /podcast/channel": "PodcastController.getChannelPodcasts",
   "GET /category/:id": "CategoryController.get",

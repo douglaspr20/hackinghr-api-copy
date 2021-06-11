@@ -64,6 +64,58 @@ const PodcastController = () => {
     }
   };
   /**
+   * Method to get all Podcast objects
+   * @param {*} req
+   * @param {*} res
+   */
+  const searchPodcast = async (req, res) => {
+    const filter = req.query;
+    try {
+      let where = {
+        level: {
+          [Op.or]: [VisibleLevel.DEFAULT, VisibleLevel.ALL],
+        },
+      };
+
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      if (filter.meta) {
+        where = {
+          ...where,
+          meta: {
+            [Op.iLike]: `%${filter.meta}%`,
+          },
+        };
+      }
+      
+      let podcasts = await Podcast.findAndCountAll({
+        where,
+        offset: (filter.page - 1) * filter.num,
+        limit: filter.num,
+        order: [["order", "DESC"]],
+      });
+      if (!podcasts) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      return res.status(HttpCodes.OK).json({ podcasts });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+  /**
    * Method to get Podcast object
    * @param {*} req
    * @param {*} res
@@ -314,6 +366,7 @@ const PodcastController = () => {
     remove,
     getChannelPodcasts,
     deleteChannelPodcast,
+    searchPodcast,
   };
 };
 
