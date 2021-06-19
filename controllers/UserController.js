@@ -572,6 +572,64 @@ const UserController = () => {
     }
   };
 
+  const uploadResume = async (req, res, next) => {
+    const { user } = req;
+
+    try {
+      const { resume } = req.files || {};
+
+      if (resume) {
+        const uploadRes = await s3Service().uploadResume(resume, user);
+        const [rows, updatedUser] = await User.update(
+          {
+            resumeFileName: resume.name,
+            resumeUrl: uploadRes.Location,
+          },
+          {
+            where: { id: user.id },
+            returning: true,
+            plain: true,
+          }
+        );
+        res.status(HttpCodes.OK).json({ user: updatedUser });
+      }
+
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "File not found!" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  const deleteResume = async (req, res, next) => {
+    const { user } = req;
+
+    try {
+      if (user.resumeFileName) {
+        await s3Service().deleteResume(user.resumeUrl);
+        const [rows, updatedUser] = await User.update(
+          {
+            resumeFileName: "",
+            resumeUrl: "",
+          },
+          {
+            where: { id: user.id },
+            returning: true,
+            plain: true,
+          }
+        );
+        res.status(HttpCodes.OK).json({ user: updatedUser });
+      }
+
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "File not found!" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -588,6 +646,8 @@ const UserController = () => {
     removeSession,
     getSessionUsers,
     removeSessionUser,
+    uploadResume,
+    deleteResume,
   };
 };
 

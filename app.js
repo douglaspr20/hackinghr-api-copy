@@ -11,6 +11,7 @@ const authPolicy = require("./policies/auth.policy");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
 const JourneyController = require("./controllers/JourneyController");
+const fileUpload = require("express-fileupload");
 
 const socketService = require("./services/socket.service");
 
@@ -60,6 +61,13 @@ app.use(
   })
 );
 
+// parsing file uploaded
+app.use(
+  fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 },
+  })
+);
+
 // secure your private routes with jwt authentication middleware
 // app.all('/private/*', (req, res, next) => auth(req, res, next));
 
@@ -78,10 +86,10 @@ const io = socketIo(server, {
   cors: {
     origin: FEUrl.slice(0, FEUrl.length - 1),
     methods: ["GET", "POST"],
-  }
+  },
 });
 
-io.on("connection", socket => {
+io.on("connection", (socket) => {
   socketService().addSocket(socket);
 
   socket.on("disconnect", () => {
@@ -89,4 +97,6 @@ io.on("connection", socket => {
   });
 });
 
-server.listen(port, () => console.log(`url-shortener listening on port ${port}!`));
+server.listen(port, () =>
+  console.log(`url-shortener listening on port ${port}!`)
+);

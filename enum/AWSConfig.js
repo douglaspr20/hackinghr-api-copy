@@ -15,5 +15,7 @@ module.exports = {
     COURSE_IMAGE_FOLDER: "course",
     SPONSOR_IMAGE_FOLDER: "sponsor",
     INSTRUCTOR_IMAGE_FOLDER: "instructor",
+    // Resume
+    RESUME_BUCKET_NAME: "user-resume-bucket",
   },
 };
