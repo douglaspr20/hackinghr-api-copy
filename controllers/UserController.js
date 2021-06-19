@@ -572,6 +572,25 @@ const UserController = () => {
     }
   };
 
+  const uploadResume = async (req, res, next) => {
+    const { user } = req;
+
+    try {
+      const { resume } = req.files || {};
+
+      if (resume) {
+        const uploadRes = await s3Service().uploadResume(resume, user);
+        res.status(HttpCodes.OK).json({ url: uploadRes.Location });
+      }
+
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "File not found!" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -588,6 +607,7 @@ const UserController = () => {
     removeSession,
     getSessionUsers,
     removeSessionUser,
+    uploadResume,
   };
 };
 

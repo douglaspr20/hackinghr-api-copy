@@ -9,6 +9,10 @@ const userImageBucket = new AWS.S3({
   params: { Bucket: S3.IMAGE_BUCKET_NAME },
 });
 
+const resumeBucket = new AWS.S3({
+  params: { Bucket: S3.RESUME_BUCKET_NAME },
+});
+
 const s3Service = () => {
   const imageUpload = (path, buffer) => {
     const data = {
@@ -88,13 +92,21 @@ const s3Service = () => {
   };
 
   const getLibraryImageUrl = async (prevImg, base64Image) => {
-    const url = await getImageUrl(S3.LIBRARY_IMAGE_FOLDER, prevImg, base64Image);
+    const url = await getImageUrl(
+      S3.LIBRARY_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
 
     return url;
   };
 
   const getPodcastImageUrl = async (prevImg, base64Image) => {
-    const url = await getImageUrl(S3.PODCAST_IMAGE_FOLDER, prevImg, base64Image);
+    const url = await getImageUrl(
+      S3.PODCAST_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
 
     return url;
   };
@@ -106,27 +118,60 @@ const s3Service = () => {
   };
 
   const getMarketplaceImageUrl = async (prevImg, base64Image) => {
-    const url = await getImageUrl(S3.MARKETPLACE_IMAGE_FOLDER, prevImg, base64Image);
+    const url = await getImageUrl(
+      S3.MARKETPLACE_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
 
     return url;
   };
 
   const getChannelImageUrl = async (prevImg, base64Image) => {
-    const url = await getImageUrl(S3.CHANNEL_IMAGE_FOLDER, prevImg, base64Image);
+    const url = await getImageUrl(
+      S3.CHANNEL_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
 
     return url;
-  }
+  };
 
   const getSponsorImageUrl = async (prevImg, base64Image) => {
-    const url = await getImageUrl(S3.SPONSOR_IMAGE_FOLDER, prevImg, base64Image);
+    const url = await getImageUrl(
+      S3.SPONSOR_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
 
     return url;
   };
 
   const getInstructorImageUrl = async (prevImg, base64Image) => {
-    const url = await getImageUrl(S3.INSTRUCTOR_IMAGE_FOLDER, prevImg, base64Image);
+    const url = await getImageUrl(
+      S3.INSTRUCTOR_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
 
     return url;
+  };
+
+  const uploadResume = async (file, user) => {
+    const fileName = `${user.id}_resume`;
+    const { mimetype } = file;
+    const params = {
+      Key: fileName,
+      Body: file.data,
+      ContentType: mimetype,
+      ACL: "public-read",
+    };
+
+    return new Promise((resolve, reject) => {
+      resumeBucket.upload(params, (err, data) =>
+        err === null ? resolve(data) : reject(err)
+      );
+    });
   };
 
   return {
@@ -141,6 +186,7 @@ const s3Service = () => {
     deleteUserPicture,
     getSponsorImageUrl,
     getInstructorImageUrl,
+    uploadResume,
   };
 };
 
