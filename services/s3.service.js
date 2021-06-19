@@ -158,7 +158,9 @@ const s3Service = () => {
   };
 
   const uploadResume = async (file, user) => {
-    const fileName = `${user.id}_resume`;
+    const fileName = `${user.id}_${
+      process.env.S3_RESUME_BUCKET || "local"
+    }_resume`;
     const { mimetype } = file;
     const params = {
       Key: fileName,
@@ -174,6 +176,28 @@ const s3Service = () => {
     });
   };
 
+  const deleteResume = async (url) => {
+    if (url) {
+      const path = url.split("/")[url.split("/").length - 1];
+      const params = {
+        Bucket: S3.RESUME_BUCKET_NAME,
+        Key: path,
+      };
+
+      return new Promise((resolve, reject) => {
+        resumeBucket.deleteObject(params, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve("success");
+          }
+        });
+      });
+    }
+
+    return;
+  };
+
   return {
     getImageUrl,
     getUserImageUrl,
@@ -187,6 +211,7 @@ const s3Service = () => {
     getSponsorImageUrl,
     getInstructorImageUrl,
     uploadResume,
+    deleteResume,
   };
 };
 

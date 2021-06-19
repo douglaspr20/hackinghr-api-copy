@@ -88,6 +88,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
+      resumeFileName: DataTypes.STRING,
+      resumeUrl: DataTypes.STRING,
     },
     {
       sequelize,
