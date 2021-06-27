@@ -1,13 +1,26 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const { isValidURL } = require("../utils/profile");
+const s3Service = require("../services/s3.service");
 
 const PodcastSeries = db.PodcastSeries;
 
 const PodcastSeriesController = () => {
   const create = async (req, res) => {
-    const podcastSeriesInfo = req.body;
+    const reqPodcastSeries = req.body;
 
     try {
+      let podcastSeriesInfo = {
+        ...reqPodcastSeries,
+      };
+
+      if (podcastSeriesInfo.img) {
+        podcastSeriesInfo.img = await s3Service().getPodcastImageUrl(
+          "",
+          podcastSeriesInfo.img
+        );
+      }
+
       const podcastSeries = await PodcastSeries.create(podcastSeriesInfo);
 
       return res.status(HttpCodes.OK).json({ podcastSeries });
@@ -67,10 +80,41 @@ const PodcastSeriesController = () => {
 
   const update = async (req, res) => {
     const { id } = req.params;
-    const podcastSeriesInfo = req.body;
+    const reqPodcastSeries = req.body;
 
     if (id) {
       try {
+        let podcastSeriesInfo = {
+          ...reqPodcastSeries,
+        };
+
+        const prevPodcastSeries = await PodcastSeries.findOne({
+          where: {
+            id,
+          },
+        });
+
+        if (!prevPodcastSeries) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: Podcast Series not found." });
+        }
+
+        if (reqPodcastSeries.img && !isValidURL(reqPodcastSeries.img)) {
+          podcastSeriesInfo.img = await s3Service().getPodcastImageUrl(
+            "",
+            reqPodcastSeries.img
+          );
+
+          if (prevPodcastSeries.img) {
+            await s3Service().deleteUserPicture(prevPodcastSeries.img);
+          }
+        }
+
+        if (prevPodcastSeries.img && !reqPodcastSeries.img) {
+          await s3Service().deleteUserPicture(prevPodcastSeries.img);
+        }
+
         const [numberOfAffectedRows, affectedRows] = await PodcastSeries.update(
           podcastSeriesInfo,
           {

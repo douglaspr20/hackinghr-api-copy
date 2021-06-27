@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
   PodcastSeries.init(
     {
       title: DataTypes.STRING,
+      img: DataTypes.STRING,
       description: DataTypes.TEXT,
       objectives: DataTypes.TEXT,
       duration: DataTypes.STRING,
