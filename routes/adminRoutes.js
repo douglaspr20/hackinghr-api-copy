@@ -59,6 +59,9 @@ const adminRoutes = {
   "PUT /instructor/:id": "InstructorController.update",
   "DELETE /instructor/:id": "InstructorController.remove",
   "POST /live/": "LiveController.save",
+  "POST /podcast-series": "PodcastSeriesController.create",
+  "PUT /podcast-series/:id": "PodcastSeriesController.update",
+  "DELETE /podcast-series/:id": "PodcastSeriesController.remove",
 };
 
 module.exports = adminRoutes;
