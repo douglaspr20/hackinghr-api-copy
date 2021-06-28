@@ -4,6 +4,7 @@ const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
 
 const PodcastSeries = db.PodcastSeries;
+const Podcast = db.Podcast;
 
 const PodcastSeriesController = () => {
   const create = async (req, res) => {
@@ -52,11 +53,23 @@ const PodcastSeriesController = () => {
 
     if (id) {
       try {
-        const podcastSeries = await PodcastSeries.findOne({
+        let podcastSeries = await PodcastSeries.findOne({
           where: {
             id,
           },
         });
+
+        const podcasts = await Promise.all(
+          podcastSeries.podcasts.map((item) => {
+            return Podcast.findOne({
+              where: {
+                id: item,
+              },
+            });
+          })
+        );
+
+        podcastSeries.podcasts = podcasts;
 
         if (!podcastSeries) {
           return res
