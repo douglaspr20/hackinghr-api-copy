@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
       objectives: DataTypes.TEXT,
       duration: DataTypes.STRING,
       podcasts: DataTypes.ARRAY(DataTypes.INTEGER),
+      code: DataTypes.STRING,
+      hrCreditOffered: DataTypes.TEXT,
     },
     {
       sequelize,
