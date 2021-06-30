@@ -80,6 +80,7 @@ const privateRoutes = {
   "GET /live/": "LiveController.get",
   "GET /podcast-series": "PodcastSeriesController.getAll",
   "GET /podcast-series/:id": "PodcastSeriesController.get",
+  "POST /podcast-series/claim": "PodcastSeriesController.claim",
 };
 
 module.exports = privateRoutes;

@@ -2,6 +2,7 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
+const smtpService = require("../services/smtp.service");
 
 const PodcastSeries = db.PodcastSeries;
 const Podcast = db.Podcast;
@@ -178,12 +179,54 @@ const PodcastSeriesController = () => {
       .json({ msg: "Bad Request: Podcast Series id is wrong" });
   };
 
+  const claim = async (req, res) => {
+    const { id } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let podcastSeries = await PodcastSeries.findOne({
+          where: {
+            id,
+          },
+        });
+
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: user.email,
+          subject: `${podcastSeries.title}`,
+          html: `
+            <p>
+            Code: ${podcastSeries.code}
+            </p>
+            <p>
+            HR Credit Offered: ${podcastSeries.hrCreditOffered}
+            </p>
+          `,
+        };
+
+        await smtpService().sendMail(mailOptions);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Podcast Series id is wrong" });
+  };
+
   return {
     create,
     getAll,
     get,
     update,
     remove,
+    claim,
   };
 };
 
