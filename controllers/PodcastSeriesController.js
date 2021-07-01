@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
 const smtpService = require("../services/smtp.service");
+const { LabEmails } = require("../enum");
 
 const PodcastSeries = db.PodcastSeries;
 const Podcast = db.Podcast;
@@ -194,15 +195,8 @@ const PodcastSeriesController = () => {
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: user.email,
-          subject: `${podcastSeries.title}`,
-          html: `
-            <p>
-            Code: ${podcastSeries.code}
-            </p>
-            <p>
-            HR Credit Offered: ${podcastSeries.hrCreditOffered}
-            </p>
-          `,
+          subject: LabEmails.PODCAST_SERIES_CLAIM.subject(),
+          html: LabEmails.PODCAST_SERIES_CLAIM.body(podcastSeries),
         };
 
         await smtpService().sendMail(mailOptions);
