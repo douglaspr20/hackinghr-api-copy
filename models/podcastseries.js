@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       hrCreditOffered: DataTypes.TEXT,
       shrmCode: DataTypes.STRING,
       hrciCode: DataTypes.STRING,
+      categories: DataTypes.ARRAY(DataTypes.STRING),
     },
     {
       sequelize,
