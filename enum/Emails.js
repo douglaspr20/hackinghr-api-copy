@@ -136,14 +136,36 @@ module.exports = {
     `,
   },
   PODCAST_SERIES_CLAIM: {
-    subject: () => `Podcast Series`,
-    body: (podcastSeries) => `
+    subject: (title) =>
+      ` Thank you for participating in the podcast series "${title}"`,
+    body: (user, podcastSeries) => `
       <p>
-        Thank you for joining the Podcast Series:: ${podcastSeries.title}
+        Hi, ${user.firstName}
       </p>
-        Please check the box below to receive your Hacking HR Certificate and the HR Recertification Credits (${podcastSeries.code}). This is the attestation that you watched or listened to the podcasts of this podcast series.
+        Thank you so much for tuning in to Hacking HR’s Podcast Series "${podcastSeries.title}".
       <p>
-        Notice that you can be audited by SHRM or HRCI based on their regulations. You will receive an email confirming your participation in the Podcast Series. The email will contain the Hacking HR Certificate as an attachment and the SHRM and HRCI recertification codes. Please save that email.
+        Did you enjoy the content and the conversation? We hope so! Please share with your network!
+      </p>
+      <p>
+        Please see attached Hacking HR’s certificate of attendance.
+      </p>
+      <p>
+        This podcast series always awards:
+        <br>
+        ${podcastSeries.hrCreditOffered}
+      </p>
+      <p>
+        The Codes are:
+        <br>
+        ${podcastSeries.shrmCode}
+        <br>
+        ${podcastSeries.hrciCode}
+      </p>
+      <p>
+        Thank you so much! We hope you tune in to more podcast series.
+      </p>
+      <p>
+        Hacking HR Team
       </p>
     `,
   },
