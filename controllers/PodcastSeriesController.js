@@ -195,8 +195,8 @@ const PodcastSeriesController = () => {
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: user.email,
-          subject: LabEmails.PODCAST_SERIES_CLAIM.subject(),
-          html: LabEmails.PODCAST_SERIES_CLAIM.body(podcastSeries),
+          subject: LabEmails.PODCAST_SERIES_CLAIM.subject(podcastSeries.title),
+          html: LabEmails.PODCAST_SERIES_CLAIM.body(user, podcastSeries),
         };
 
         await smtpService().sendMail(mailOptions);
