@@ -12,7 +12,7 @@ const reCaptchaService = () => {
     try {
       const res = await new Promise((resolve, reject) => {
         request({ url, json: true }, (error, response, body) => {
-          resolve(response.statusCode === 200);
+          resolve(response && response.statusCode === 200);
         });
       });
 
