@@ -1,5 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const isEmpty = require("lodash/isEmpty");
+const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
 const smtpService = require("../services/smtp.service");
@@ -36,8 +38,21 @@ const PodcastSeriesController = () => {
   };
 
   const getAll = async (req, res) => {
+    const filter = req.query;
+    let where = {};
+
     try {
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          categories: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
       const podcastSeries = await PodcastSeries.findAll({
+        where,
         order: [["title"]],
       });
 
