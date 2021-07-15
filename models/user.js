@@ -44,7 +44,7 @@ module.exports = (sequelize, DataTypes) => {
       completed: DataTypes.BOOLEAN,
       percentOfCompletion: DataTypes.INTEGER,
       abbrName: DataTypes.STRING,
-      
+      img: DataTypes.STRING,
       memberShip: {
         type: DataTypes.STRING,
         defaultValue: "free",
