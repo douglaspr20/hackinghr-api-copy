@@ -196,7 +196,7 @@ const PodcastSeriesController = () => {
   };
 
   const claim = async (req, res) => {
-    const { id } = req.body;
+    const { id, pdf } = req.body;
     const { user } = req;
 
     if (id) {
@@ -212,6 +212,13 @@ const PodcastSeriesController = () => {
           to: user.email,
           subject: LabEmails.PODCAST_SERIES_CLAIM.subject(podcastSeries.title),
           html: LabEmails.PODCAST_SERIES_CLAIM.body(user, podcastSeries),
+          attachments: [
+            {
+              filename: "certificate.pdf",
+              contentType: "application/pdf",
+              content: Buffer.from(pdf.substr(pdf.indexOf(",") + 1), "base64"),
+            },
+          ],
         };
 
         await smtpService().sendMail(mailOptions);

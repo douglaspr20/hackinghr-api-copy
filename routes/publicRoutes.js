@@ -17,6 +17,7 @@ const publicRoutes = {
   "GET /event/ics/:id": "EventController.downloadICS",
   "GET /category": "CategoryController.getAll",
   "GET /channel-category": "ChannelCategoryController.getAll",
+  "GET /env/editor": "UserController.getEditorSignature",
 };
 
 module.exports = publicRoutes;

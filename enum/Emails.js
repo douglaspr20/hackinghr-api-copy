@@ -142,16 +142,17 @@ module.exports = {
       <p>
         Hi, ${user.firstName}
       </p>
-        Thank you so much for tuning in to Hacking HR’s Podcast Series "${podcastSeries.title}".
+        Thank you so much for tuning in to Hacking HR's Podcast Series "${podcastSeries.title}".
       <p>
         Did you enjoy the content and the conversation? We hope so! Please share with your network!
       </p>
       <p>
-        Please see attached Hacking HR’s certificate of attendance.
+        Please see attached Hacking HR's certificate of attendance.
       </p>
       <p>
-        This podcast series always awards:
-        <br>
+        This podcast series awards:
+      </p>
+      <p>
         ${podcastSeries.hrCreditOffered}
       </p>
       <p>

@@ -11,6 +11,8 @@ const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
 const { getEventPeriod } = require("../utils/format");
 const omit = require("lodash/omit");
+const { AWSConfig } = require("../enum");
+const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -346,9 +348,8 @@ const UserController = () => {
           memberShip: "premium",
         };
 
-        userInfo.percentOfCompletion = profileUtils.getProfileCompletion(
-          userInfo
-        );
+        userInfo.percentOfCompletion =
+          profileUtils.getProfileCompletion(userInfo);
         userInfo.completed = userInfo.percentOfCompletion === 100;
         userInfo.abbrName = `${(userInfo.firstName || "")
           .slice(0, 1)
@@ -630,6 +631,21 @@ const UserController = () => {
     }
   };
 
+  const getEditorSignature = async (req, res) => {
+    const EditorConfig = {
+      bucket: AWSConfig.S3.EDITOR_BUCKET_NAME,
+      region: "us-east-2",
+      keyStart: "editor/",
+      acl: "public-read",
+      accessKey: process.env.AWS_ACCESS_KEY_ID,
+      secretKey: process.env.AWS_SECRET_ACCESS_KEY,
+    };
+
+    const s3Hash = FroalaEditor.S3.getHash(EditorConfig);
+
+    return res.status(HttpCodes.OK).json({ s3Hash });
+  };
+
   return {
     getUser,
     updateUser,
@@ -648,6 +664,7 @@ const UserController = () => {
     removeSessionUser,
     uploadResume,
     deleteResume,
+    getEditorSignature,
   };
 };
 
