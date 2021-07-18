@@ -17,5 +17,7 @@ module.exports = {
     INSTRUCTOR_IMAGE_FOLDER: "instructor",
     // Resume
     RESUME_BUCKET_NAME: "user-resume-bucket",
+    // Editor
+    EDITOR_BUCKET_NAME: "lab-user-images",
   },
 };

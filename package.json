@@ -40,6 +40,7 @@
     "sequelize-cli": "^6.2.0",
     "socket.io": "^4.1.2",
     "stripe": "^8.130.0",
+    "wysiwyg-editor-node-sdk": "^4.0.3",
     "xlsx": "^0.16.9"
   }
 }
