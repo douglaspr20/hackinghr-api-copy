@@ -150,8 +150,9 @@ module.exports = {
         Please see attached Hacking HR’s certificate of attendance.
       </p>
       <p>
-        This podcast series always awards:
-        <br>
+        This podcast series awards:
+      </p>
+      <p>
         ${podcastSeries.hrCreditOffered}
       </p>
       <p>
