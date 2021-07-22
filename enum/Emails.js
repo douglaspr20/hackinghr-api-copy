@@ -158,12 +158,38 @@ module.exports = {
       <p>
         The Codes are:
         <br>
-        ${podcastSeries.shrmCode}
+        <strong>SHRM: &nbsp&nbsp</strong>${podcastSeries.shrmCode}
         <br>
-        ${podcastSeries.hrciCode}
+        <strong>HRCI: &nbsp&nbsp</strong>${podcastSeries.hrciCode}
       </p>
       <p>
         Thank you so much! We hope you tune in to more podcast series.
+      </p>
+      <p>
+        Hacking HR Team
+      </p>
+    `,
+  },
+  LIBRARY_CLAIM: {
+    subject: (title) =>
+      ` Thank you for participating in the library "${title}"`,
+    body: (user, library) => `
+      <p>
+        Hi, ${user.firstName}
+      </p>
+        Thank you so much for tuning in to Hacking HR's Library "${library.title}".
+      <p>
+        Did you enjoy the content and the conversation? We hope so! Please share with your network!
+      </p>
+      <p>
+        The Codes are:
+        <br>
+        <strong>SHRM: &nbsp&nbsp</strong>${library.shrmCode}
+        <br>
+        <strong>HRCI: &nbsp&nbsp</strong>${library.hrciCode}
+      </p>
+      <p>
+        Thank you so much! We hope you tune in to more libraries.
       </p>
       <p>
         Hacking HR Team

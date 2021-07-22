@@ -7,6 +7,8 @@ const { Op } = require("sequelize");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const { ReviewStatus, Settings } = require("../enum");
 const NotificationController = require("../controllers/NotificationController");
+const smtpService = require("../services/smtp.service");
+const { LabEmails } = require("../enum");
 
 const Library = db.Library;
 const VisibleLevel = Settings.VISIBLE_LEVEL;
@@ -45,7 +47,9 @@ const LibraryController = () => {
         }
 
         await NotificationController().createNotification({
-          message: `New Content "${newLibrary.title || libraryInfo.title}" was created.`,
+          message: `New Content "${
+            newLibrary.title || libraryInfo.title
+          }" was created.`,
           type: "content",
           meta: {
             ...newLibrary,
@@ -525,6 +529,46 @@ const LibraryController = () => {
     }
   };
 
+  const claim = async (req, res) => {
+    const { id } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let library = await Library.findOne({
+          where: {
+            id,
+          },
+        });
+
+        if (library.showClaim === 1) {
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: user.email,
+            subject: LabEmails.LIBRARY_CLAIM.subject(library.title),
+            html: LabEmails.LIBRARY_CLAIM.body(user, library),
+          };
+
+          await smtpService().sendMail(mailOptions);
+
+          return res.status(HttpCodes.OK).json({});
+        }
+
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request: This library is not allowed to confirm" });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Podcast Series id is wrong" });
+  };
+
   return {
     create,
     share,
@@ -538,6 +582,7 @@ const LibraryController = () => {
     getApproved,
     getChannelLibraries,
     deleteChannelLibrary,
+    claim,
   };
 };
 
