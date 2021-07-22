@@ -158,9 +158,9 @@ module.exports = {
       <p>
         The Codes are:
         <br>
-        ${podcastSeries.shrmCode}
+        <strong>SHRM: &nbsp&nbsp</strong>${podcastSeries.shrmCode}
         <br>
-        ${podcastSeries.hrciCode}
+        <strong>HRCI: &nbsp&nbsp</strong>${podcastSeries.hrciCode}
       </p>
       <p>
         Thank you so much! We hope you tune in to more podcast series.
