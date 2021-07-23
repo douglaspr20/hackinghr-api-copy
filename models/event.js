@@ -56,6 +56,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: VisibleLevel.DEFAULT,
       },
       channel: DataTypes.INTEGER,
+      showClaim: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,
