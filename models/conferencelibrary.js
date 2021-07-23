@@ -37,6 +37,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         defaultValue: "",
       },
+      shrmCode: DataTypes.STRING,
+      hrciCode: DataTypes.STRING,
+      showClaim: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,
