@@ -2,6 +2,8 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
+const smtpService = require("../services/smtp.service");
+const { LabEmails } = require("../enum");
 
 const ConferenceLibrary = db.ConferenceLibrary;
 
@@ -135,14 +137,12 @@ const ConferenceController = () => {
           .json({ msg: "Bad Request: Conference not found." });
       }
 
-      const [
-        numberOfAffectedRows,
-        affectedRows,
-      ] = await ConferenceLibrary.update(conferenceInfo, {
-        where: { id },
-        returning: true,
-        plain: true,
-      });
+      const [numberOfAffectedRows, affectedRows] =
+        await ConferenceLibrary.update(conferenceInfo, {
+          where: { id },
+          returning: true,
+          plain: true,
+        });
 
       return res
         .status(HttpCodes.OK)
@@ -180,12 +180,53 @@ const ConferenceController = () => {
       .json({ msg: "Bad Request: category id is wrong" });
   };
 
+  const claim = async (req, res) => {
+    const { id } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let library = await ConferenceLibrary.findOne({
+          where: {
+            id,
+          },
+        });
+
+        if (library.showClaim === 1) {
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: user.email,
+            subject: LabEmails.LIBRARY_CLAIM.subject(library.title),
+            html: LabEmails.LIBRARY_CLAIM.body(user, library),
+          };
+
+          await smtpService().sendMail(mailOptions);
+
+          return res.status(HttpCodes.OK).json({});
+        }
+
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "Bad Request: This conference library is not allowed to confirm",
+        });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Conference library id is wrong" });
+  };
+
   return {
     create,
     getAll,
     get,
     update,
     remove,
+    claim,
   };
 };
 

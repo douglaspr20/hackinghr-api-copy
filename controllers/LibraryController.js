@@ -566,7 +566,7 @@ const LibraryController = () => {
     }
     return res
       .status(HttpCodes.BAD_REQUEST)
-      .json({ msg: "Bad Request: Podcast Series id is wrong" });
+      .json({ msg: "Bad Request: Library id is wrong" });
   };
 
   return {
