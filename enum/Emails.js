@@ -177,19 +177,19 @@ module.exports = {
       <p>
         Hi, ${user.firstName}
       </p>
-        Thank you so much for tuning in to Hacking HR's Library "${library.title}".
+        Thank you so much for tuning into Hacking HR's Library content: "${library.title}".
       <p>
-        Did you enjoy the content and the conversation? We hope so! Please share with your network!
+        We hope you enjoy the content. PLEASE share with your network!
       </p>
       <p>
-        The Codes are:
+        The HR recertification codes are:
         <br>
-        <strong>SHRM: &nbsp&nbsp</strong>${library.shrmCode}
+        <strong>SHRM: </strong>${library.shrmCode}
         <br>
-        <strong>HRCI: &nbsp&nbsp</strong>${library.hrciCode}
+        <strong>HRCI: </strong>${library.hrciCode}
       </p>
       <p>
-        Thank you so much! We hope you tune in to more libraries.
+        Thank you so much! We hope you continue enjoying the content!
       </p>
       <p>
         Hacking HR Team
