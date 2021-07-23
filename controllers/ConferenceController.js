@@ -2,6 +2,8 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
+const smtpService = require("../services/smtp.service");
+const { LabEmails } = require("../enum");
 
 const ConferenceLibrary = db.ConferenceLibrary;
 
@@ -203,11 +205,9 @@ const ConferenceController = () => {
           return res.status(HttpCodes.OK).json({});
         }
 
-        return res
-          .status(HttpCodes.BAD_REQUEST)
-          .json({
-            msg: "Bad Request: This conference library is not allowed to confirm",
-          });
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "Bad Request: This conference library is not allowed to confirm",
+        });
       } catch (error) {
         console.log(error);
         return res

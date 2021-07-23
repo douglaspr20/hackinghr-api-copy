@@ -82,6 +82,7 @@ const privateRoutes = {
   "GET /podcast-series/:id": "PodcastSeriesController.get",
   "POST /podcast-series/claim": "PodcastSeriesController.claim",
   "POST /library/claim": "LibraryController.claim",
+  "POST /conference/claim": "ConferenceController.claim",
 };
 
 module.exports = privateRoutes;
