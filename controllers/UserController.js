@@ -98,11 +98,17 @@ const UserController = () => {
           .slice(0, 1)
           .toUpperCase()}`;
 
-        const [numberOfAffectedRows, affectedRows] = await User.update(user, {
-          where: { id },
-          returning: true,
-          plain: true,
-        });
+        const [numberOfAffectedRows, affectedRows] = await User.update(
+          {
+            ...user,
+            email: user.email.toLowerCase(),
+          },
+          {
+            where: { id },
+            returning: true,
+            plain: true,
+          }
+        );
 
         return res
           .status(HttpCodes.OK)
