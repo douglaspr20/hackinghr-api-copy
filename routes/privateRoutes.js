@@ -83,6 +83,8 @@ const privateRoutes = {
   "POST /podcast-series/claim": "PodcastSeriesController.claim",
   "POST /library/claim": "LibraryController.claim",
   "POST /conference/claim": "ConferenceController.claim",
+  "POST /event/claim-credit": "EventController.claimCredit",
+  "POST /event/claim-attendance": "EventController.claimAttendance",
 };
 
 module.exports = privateRoutes;
