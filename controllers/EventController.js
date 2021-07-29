@@ -780,6 +780,96 @@ const EventController = () => {
     }
   };
 
+  const claimCredit = async (req, res) => {
+    const { id, pdf } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let event = await Event.findOne({
+          where: {
+            id,
+          },
+        });
+
+        if (event.showClaim === 1) {
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: user.email,
+            subject: LabEmails.EVENT_CLAIM_CREDIT.subject(event.title),
+            html: LabEmails.EVENT_CLAIM_CREDIT.body(user, event),
+            attachments: [
+              {
+                filename: "certificate.pdf",
+                contentType: "application/pdf",
+                content: Buffer.from(
+                  pdf.substr(pdf.indexOf(",") + 1),
+                  "base64"
+                ),
+              },
+            ],
+          };
+
+          await smtpService().sendMail(mailOptions);
+
+          return res.status(HttpCodes.OK).json({});
+        }
+
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "Bad Request: This Event is not allowed to confirm",
+        });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Event id is wrong" });
+  };
+
+  const claimAttendance = async (req, res) => {
+    const { id } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let event = await Event.findOne({
+          where: {
+            id,
+          },
+        });
+
+        if (!event) {
+          return res.status(HttpCodes.BAD_REQUEST).json({
+            msg: "Bad Request: This Event is not existed",
+          });
+        }
+
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: user.email,
+          subject: LabEmails.EVENT_CLAIM_ATTENDANCE.subject(event.title),
+          html: LabEmails.EVENT_CLAIM_ATTENDANCE.body(user, event),
+        };
+
+        await smtpService().sendMail(mailOptions);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Event id is wrong" });
+  };
+
   return {
     create,
     getAllEvents,
@@ -795,6 +885,8 @@ const EventController = () => {
     getChannelEvents,
     deleteChannelEvent,
     resetEmailReminders,
+    claimCredit,
+    claimAttendance,
   };
 };
 

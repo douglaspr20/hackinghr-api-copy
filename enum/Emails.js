@@ -196,4 +196,49 @@ module.exports = {
       </p>
     `,
   },
+  EVENT_CLAIM_CREDIT: {
+    subject: (title) =>
+      `Hacking HR's Event: "${title}" (HR recertification credits included)`,
+    body: (user, event) => `
+      <p>
+        Hi, ${user.firstName}
+      </p>
+        Thank you so much for joining at : "${event.title}".
+      <p>
+        We hope you enjoy the content. PLEASE share with your network!
+      </p>
+      <p>
+        The HR recertification codes are:
+        <br>
+        <strong>SHRM: </strong>${event.shrmCode}
+        <br>
+        <strong>HRCI: </strong>${event.hrciCode}
+      </p>
+      <p>
+        Thank you so much! We hope you continue enjoying the content!
+      </p>
+      <p>
+        Hacking HR Team
+      </p>
+    `,
+  },
+  EVENT_CLAIM_ATTENDANCE: {
+    subject: (title) => `Hacking HR's Event: ${title}`,
+    body: (user, event) => `
+      <p>
+        Hi, ${user.firstName}
+      </p>
+        Thank you so much for joining us at ${event.title} organized by ${event.organizer}.
+      <p>
+      <p>
+        The HR attendance code is: ${event.code}
+      </p>
+      <p>
+        Thank you so much!
+      </p>
+      <p>
+        Hacking HR Team
+      </p>
+    `,
+  },
 };
