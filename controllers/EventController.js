@@ -781,7 +781,7 @@ const EventController = () => {
   };
 
   const claimCredit = async (req, res) => {
-    const { id } = req.body;
+    const { id, pdf } = req.body;
     const { user } = req;
 
     if (id) {
@@ -798,6 +798,16 @@ const EventController = () => {
             to: user.email,
             subject: LabEmails.EVENT_CLAIM_CREDIT.subject(event.title),
             html: LabEmails.EVENT_CLAIM_CREDIT.body(user, event),
+            attachments: [
+              {
+                filename: "certificate.pdf",
+                contentType: "application/pdf",
+                content: Buffer.from(
+                  pdf.substr(pdf.indexOf(",") + 1),
+                  "base64"
+                ),
+              },
+            ],
           };
 
           await smtpService().sendMail(mailOptions);
