@@ -6,7 +6,10 @@ module.exports = {
       Hi, ${user.firstName}
       </p>
       <p>
-      Thank you so much for joining the Hacking HR LAB! 
+      Thank you so much for joining the Hacking HR LAB!
+      </p>
+      <p>
+      Check out all the tools we have available here: <a href="https://www.hackinghrlab.io/join">https://www.hackinghrlab.io/join</a>
       </p>
       <p>
       I have to say: how cool and awesome is to have you in this platform. We built it for you… and you made it! THANK YOU.
