@@ -206,19 +206,30 @@ module.exports = {
       <p>
         Hi, ${user.firstName}
       </p>
-        Thank you so much for joining at : "${event.title}".
+        Thank you so much for joining the ${event.organizer}'s event: "${
+      event.title
+    }".
       <p>
-        We hope you enjoy the content. PLEASE share with your network!
+        We hope you enjoyed the event!
       </p>
       <p>
-        The HR recertification codes are:
-        <br>
-        <strong>SHRM: </strong>${event.shrmCode}
-        <br>
-        <strong>HRCI: </strong>${event.hrciCode}
+        Please see attached Hacking HR's certificate of attendance.
       </p>
+      ${
+        event.showClaim === 1
+          ? `
+            <p>
+              The SHRM/HRCI codes for this event are:
+              <br>
+              <strong>SHRM: </strong>${event.shrmCode}
+              <br>
+              <strong>HRCI: </strong>${event.hrciCode}
+            </p>
+      `
+          : ""
+      }
       <p>
-        Thank you so much! We hope you continue enjoying the content!
+        Thank you so much!
       </p>
       <p>
         Hacking HR Team
