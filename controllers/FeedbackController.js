@@ -6,7 +6,8 @@ const User = db.User;
 
 const FeedbackController = () => {
   const sendMail = async (req, res) => {
-    const { message, userId } = req.body;
+    const { message } = req.body;
+    const { id: userId } = req.token;
 
     if (message && userId) {
       try {
@@ -16,24 +17,25 @@ const FeedbackController = () => {
           },
         });
         const smtpTransort = {
-          service: 'gmail',
+          service: "gmail",
           auth: {
             user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-            pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD
-          }
+            pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+          },
         };
         const mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: process.env.FEEDBACK_EMAIL_CONFIG_RECEIVER,
           subject: process.env.FEEDBACK_EMAIL_CONFIG_SUBJECT,
           html: `
-                <strong>User</strong>: ${user.firstName} ${user.lastName}<br>
-                <strong>e-Mail</strong>: ${user.email}<br>
-                <strong>Feedback message</strong>:<br>
-                ${message}
-                `,
+            <strong>User</strong>: ${user.firstName} ${user.lastName}<br>
+            <strong>e-Mail</strong>: ${user.email}<br>
+            <strong>Feedback message</strong>:<br>
+            ${message}
+          `,
         };
-        const sentResult = await smtpService().sendMail(smtpTransort, mailOptions);
+        const sentResult = await smtpService().sendMail(mailOptions);
+
         if (sentResult) {
           return res
             .status(HttpCodes.OK)

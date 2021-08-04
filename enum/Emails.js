@@ -255,4 +255,32 @@ module.exports = {
       </p>
     `,
   },
+  COURSE_CLAIM: {
+    subject: (title) => ` Thank you for participating in the course "${title}"`,
+    body: (user, course) => `
+      <p>
+        Hi, ${user.firstName}
+      </p>
+        Thank you so much for tuning in to Hacking HR's Course "${course.title}".
+      <p>
+        Did you enjoy the content and the conversation? We hope so! Please share with your network!
+      </p>
+      <p>
+        Please see attached Hacking HR's certificate of attendance.
+      </p>
+      <p>
+        The Codes are:
+        <br>
+        <strong>SHRM: </strong>${course.shrmCode}
+        <br>
+        <strong>HRCI: </strong>${course.hrciCode}
+      </p>
+      <p>
+        Thank you so much! We hope you tune in to more courses.
+      </p>
+      <p>
+        Hacking HR Team
+      </p>
+    `,
+  },
 };

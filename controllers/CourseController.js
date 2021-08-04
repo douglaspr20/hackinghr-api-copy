@@ -5,6 +5,8 @@ const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
+const smtpService = require("../services/smtp.service");
+const { LabEmails } = require("../enum");
 
 const QueryTypes = Sequelize.QueryTypes;
 const Course = db.Course;
@@ -14,8 +16,8 @@ const CourseSponsor = db.CourseSponsor;
 const CourseController = () => {
   /**
    * Method to get all Course objects
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const getAll = async (req, res) => {
     const filter = req.query;
@@ -66,8 +68,8 @@ const CourseController = () => {
 
   /**
    * Method to get all Course objects
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const getAllAdmin = async (req, res) => {
     try {
@@ -97,8 +99,8 @@ const CourseController = () => {
   };
   /**
    * Method to get Course object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const get = async (req, res) => {
     const { id } = req.params;
@@ -127,11 +129,11 @@ const CourseController = () => {
           INNER JOIN "CourseClasses" cc ON ccu."CourseClassId" = cc.id
           WHERE cc."CourseId" = ${id} AND ccu."UserId" = ${req.user.id} AND ccu.viewed = true) as "finishDate"
         `;
-        
+
         let additionalInfoCourse = await db.sequelize.query(query, {
           type: QueryTypes.SELECT,
         });
-        
+
         course.dataValues["finished"] = additionalInfoCourse[0].finished;
         course.dataValues["finishDate"] = additionalInfoCourse[0].finishDate;
 
@@ -150,33 +152,35 @@ const CourseController = () => {
   };
   /**
    * Method to add Course object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const add = async (req, res) => {
     const { imageData } = req.body;
     try {
       let course = await Course.create({ ...req.body });
+
       if (imageData) {
         let image = await s3Service().getCourseImageUrl("", imageData);
-        await Course.update(
-          { image: image },
-          { where: { id: course.id }, }
-        );
+        await Course.update({ image: image }, { where: { id: course.id } });
       }
+
       if (req.body["instructors"]) {
         req.body["instructors"].map(async (item) => {
-          await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
+          await CourseInstructor.create({
+            CourseId: course.id,
+            InstructorId: item,
+          });
         });
       }
+
       if (req.body["sponsors"]) {
         req.body["sponsors"].map(async (item) => {
           await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
         });
       }
-      return res
-        .status(HttpCodes.OK)
-        .send();
+
+      return res.status(HttpCodes.OK).send();
     } catch (error) {
       console.log(error);
       return res
@@ -186,12 +190,12 @@ const CourseController = () => {
   };
   /**
    * Method to update Course object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const update = async (req, res) => {
     const { id } = req.params;
-    const { body } = req
+    const { body } = req;
 
     if (id) {
       try {
@@ -202,6 +206,9 @@ const CourseController = () => {
           "topics",
           "instructors",
           "sponsors",
+          "shrmCode",
+          "hrciCode",
+          "showClaim",
         ];
         for (let item of fields) {
           if (body[item]) {
@@ -214,53 +221,57 @@ const CourseController = () => {
             id,
           },
         });
+
         if (!course) {
           return res
             .status(HttpCodes.BAD_REQUEST)
             .json({ msg: "Bad Request: course not found." });
         }
+
         if (body.imageData && !isValidURL(body.imageData)) {
-          data.image = await s3Service().getCourseImageUrl(
-            "",
-            body.imageData
-          );
+          data.image = await s3Service().getCourseImageUrl("", body.imageData);
 
           if (course.image) {
-            await s3Service().deleteUserPicture(course.imageData);
+            await s3Service().deleteUserPicture(course.image);
           }
         }
 
-        if (data.image && !body.imageData) {
+        if (course.image && !body.imageData) {
           await s3Service().deleteUserPicture(course.image);
+          data.image = "";
         }
 
         await Course.update(data, {
-          where: { id }
+          where: { id },
         });
 
         if (data["instructors"]) {
           await CourseInstructor.destroy({
-            where: { CourseId: course.id }
+            where: { CourseId: course.id },
           });
 
           data["instructors"].map(async (item) => {
-            await CourseInstructor.create({ CourseId: course.id, InstructorId: item });
+            await CourseInstructor.create({
+              CourseId: course.id,
+              InstructorId: item,
+            });
           });
         }
 
         if (data["sponsors"]) {
           await CourseSponsor.destroy({
-            where: { CourseId: course.id }
+            where: { CourseId: course.id },
           });
 
           data["sponsors"].map(async (item) => {
-            await CourseSponsor.create({ CourseId: course.id, SponsorId: item });
+            await CourseSponsor.create({
+              CourseId: course.id,
+              SponsorId: item,
+            });
           });
         }
 
-        return res
-          .status(HttpCodes.OK)
-          .send();
+        return res.status(HttpCodes.OK).send();
       } catch (error) {
         console.log(error);
         return res
@@ -275,8 +286,8 @@ const CourseController = () => {
   };
   /**
    * Method to delete Course object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const remove = async (req, res) => {
     let { id } = req.params;
@@ -284,11 +295,9 @@ const CourseController = () => {
     if (id) {
       try {
         await Course.destroy({
-          where: { id }
+          where: { id },
         });
-        return res
-          .status(HttpCodes.OK)
-          .send();
+        return res.status(HttpCodes.OK).send();
       } catch (error) {
         console.log(error);
         return res
@@ -304,8 +313,8 @@ const CourseController = () => {
 
   /**
    * Method to get instructors by Course
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const getInstructorsByCourse = async (req, res) => {
     let { course } = req.params;
@@ -326,9 +335,7 @@ const CourseController = () => {
             .json({ msg: "Internal server error" });
         }
 
-        return res
-          .status(HttpCodes.OK)
-          .json({ instructors });
+        return res.status(HttpCodes.OK).json({ instructors });
       } catch (error) {
         console.log(error);
         return res
@@ -340,8 +347,8 @@ const CourseController = () => {
 
   /**
    * Method to get instructors by Course
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const getSponsorsByCourse = async (req, res) => {
     let { course } = req.params;
@@ -362,9 +369,7 @@ const CourseController = () => {
             .json({ msg: "Internal server error" });
         }
 
-        return res
-          .status(HttpCodes.OK)
-          .json({ sponsors });
+        return res.status(HttpCodes.OK).json({ sponsors });
       } catch (error) {
         console.log(error);
         return res
@@ -372,6 +377,47 @@ const CourseController = () => {
           .json({ msg: "Internal server error" });
       }
     }
+  };
+
+  const claim = async (req, res) => {
+    const { id, pdf } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let course = await Course.findOne({
+          where: {
+            id,
+          },
+        });
+
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: user.email,
+          subject: LabEmails.COURSE_CLAIM.subject(course.title),
+          html: LabEmails.COURSE_CLAIM.body(user, course),
+          attachments: [
+            {
+              filename: "certificate.pdf",
+              contentType: "application/pdf",
+              content: Buffer.from(pdf.substr(pdf.indexOf(",") + 1), "base64"),
+            },
+          ],
+        };
+
+        await smtpService().sendMail(mailOptions);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Podcast Series id is wrong" });
   };
 
   return {
@@ -383,6 +429,7 @@ const CourseController = () => {
     remove,
     getInstructorsByCourse,
     getSponsorsByCourse,
+    claim,
   };
 };
 
