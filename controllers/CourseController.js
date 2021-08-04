@@ -5,6 +5,8 @@ const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
+const smtpService = require("../services/smtp.service");
+const { LabEmails } = require("../enum");
 
 const QueryTypes = Sequelize.QueryTypes;
 const Course = db.Course;
@@ -377,6 +379,47 @@ const CourseController = () => {
     }
   };
 
+  const claim = async (req, res) => {
+    const { id, pdf } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let course = await Course.findOne({
+          where: {
+            id,
+          },
+        });
+
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: user.email,
+          subject: LabEmails.COURSE_CLAIM.subject(course.title),
+          html: LabEmails.COURSE_CLAIM.body(user, course),
+          attachments: [
+            {
+              filename: "certificate.pdf",
+              contentType: "application/pdf",
+              content: Buffer.from(pdf.substr(pdf.indexOf(",") + 1), "base64"),
+            },
+          ],
+        };
+
+        await smtpService().sendMail(mailOptions);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Podcast Series id is wrong" });
+  };
+
   return {
     getAll,
     getAllAdmin,
@@ -386,6 +429,7 @@ const CourseController = () => {
     remove,
     getInstructorsByCourse,
     getSponsorsByCourse,
+    claim,
   };
 };
 

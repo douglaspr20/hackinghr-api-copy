@@ -66,6 +66,7 @@ const privateRoutes = {
   "PUT /event/reset-email-reminders": "EventController.resetEmailReminders",
   "GET /courses/": "CourseController.getAll",
   "GET /course/:id": "CourseController.get",
+  "POST /course/claim": "CourseController.claim",
   "GET /course-classes/:course": "CourseClassController.getByCourse",
   "GET /session/:id": "AnnualConferenceController.get",
   "GET /session": "AnnualConferenceController.getAll",
