@@ -19,6 +19,12 @@ module.exports = (sequelize, DataTypes) => {
       title: DataTypes.STRING,
       description: DataTypes.STRING,
       topics: DataTypes.ARRAY(DataTypes.STRING),
+      shrmCode: DataTypes.STRING,
+      hrciCode: DataTypes.STRING,
+      showClaim: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,
