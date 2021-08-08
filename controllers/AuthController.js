@@ -40,7 +40,10 @@ const AuthController = () => {
         }
 
         if (bcryptService().comparePassword(password, user.password)) {
-          const token = authService().issue({ id: user.id });
+          const token = authService().issue({
+            id: user.id,
+            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+          });
 
           return res.status(HttpCodes.OK).json({ token, user });
         }
@@ -81,9 +84,8 @@ const AuthController = () => {
           role: UserRoles.USER,
         };
 
-        userInfo.percentOfCompletion = profileUtils.getProfileCompletion(
-          userInfo
-        );
+        userInfo.percentOfCompletion =
+          profileUtils.getProfileCompletion(userInfo);
         userInfo.completed = userInfo.percentOfCompletion === 100;
         userInfo.abbrName = `${(userInfo.firstName || "")
           .slice(0, 1)
@@ -113,7 +115,10 @@ const AuthController = () => {
 
           sendEmailAfterRegister(user);
 
-          const token = authService().issue({ id: user.id });
+          const token = authService().issue({
+            id: user.id,
+            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+          });
 
           return res.status(HttpCodes.OK).json({ token, user });
         }
@@ -153,7 +158,7 @@ const AuthController = () => {
           exp: Math.floor(Date.now() / 1000) + minutes * 60,
           email: email.toLowerCase(),
         });
-        
+
         const mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: email,
@@ -174,9 +179,7 @@ const AuthController = () => {
                   `,
         };
 
-        const sentResult = await smtpService().sendMail(
-          mailOptions
-        );
+        const sentResult = await smtpService().sendMail(mailOptions);
         if (sentResult) {
           return res
             .status(HttpCodes.OK)

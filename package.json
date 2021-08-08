@@ -17,6 +17,7 @@
     "core-js": "^2.6.9",
     "cors": "^2.8.5",
     "cron-job-manager": "^2.1.4",
+    "crypto-js": "^4.1.1",
     "dotenv": "^8.2.0",
     "exceljs": "^4.2.1",
     "express": "^4.17.1",

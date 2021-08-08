@@ -1,6 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const { Settings } = require("../enum");
+const cryptoService = require("../services/crypto.service");
 
 const VisibleLevel = Settings.VISIBLE_LEVEL;
 
@@ -32,7 +33,26 @@ module.exports = (sequelize, DataTypes) => {
       location: DataTypes.ARRAY(DataTypes.STRING),
       description: DataTypes.JSON,
       link: DataTypes.STRING,
-      credit: DataTypes.JSON,
+      credit: {
+        type: DataTypes.JSON,
+        get() {
+          const rawValue = this.getDataValue("credit");
+
+          const shrmCode =
+            rawValue && rawValue.SHRM ? rawValue.SHRM.money || "" : "";
+          const hrciCode =
+            rawValue && rawValue.HRCI ? rawValue.HRCI.money || "" : "";
+
+          return {
+            SHRM: {
+              money: cryptoService().encrypt(shrmCode),
+            },
+            HRCI: {
+              money: cryptoService().encrypt(hrciCode),
+            },
+          };
+        },
+      },
       code: DataTypes.STRING,
       image: DataTypes.STRING,
       image2: DataTypes.STRING,

@@ -1,5 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
+const cryptoService = require("../services/crypto.service");
+
 module.exports = (sequelize, DataTypes) => {
   class ConferenceLibrary extends Model {
     /**
@@ -37,8 +39,22 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         defaultValue: "",
       },
-      shrmCode: DataTypes.STRING,
-      hrciCode: DataTypes.STRING,
+      shrmCode: {
+        type: DataTypes.STRING,
+        get() {
+          const rawValue = this.getDataValue("shrmCode");
+
+          return cryptoService().encrypt(rawValue);
+        },
+      },
+      hrciCode: {
+        type: DataTypes.STRING,
+        get() {
+          const rawValue = this.getDataValue("hrciCode");
+
+          return cryptoService().encrypt(rawValue);
+        },
+      },
       showClaim: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
