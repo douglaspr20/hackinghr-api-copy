@@ -221,9 +221,9 @@ module.exports = {
             <p>
               The SHRM/HRCI codes for this event are:
               <br>
-              <strong>SHRM: </strong>${event.SHRM?.money || ""}
+              <strong>SHRM: </strong>${event.SHRM ? event.SHRM.money || "" : ""}
               <br>
-              <strong>HRCI: </strong>${event.HRCI?.money || ""}
+              <strong>HRCI: </strong>${event.HRCI ? event.HRCI.money || "" : ""}
             </p>
       `
           : ""

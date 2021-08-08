@@ -325,7 +325,12 @@ const UserController = () => {
         type: QueryTypes.SELECT,
       });
 
-      return res.status(HttpCodes.OK).json({ myEvents: results });
+      return res.status(HttpCodes.OK).json({
+        myEvents: results.map((item) => ({
+          ...item,
+          credit: null,
+        })),
+      });
     } catch (error) {
       console.log(error);
       return res

@@ -1,5 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
+const bcryptService = require("../services/bcrypt.service");
+
 module.exports = (sequelize, DataTypes) => {
   class Course extends Model {
     /**
@@ -19,8 +21,22 @@ module.exports = (sequelize, DataTypes) => {
       title: DataTypes.STRING,
       description: DataTypes.TEXT,
       topics: DataTypes.ARRAY(DataTypes.STRING),
-      shrmCode: DataTypes.STRING,
-      hrciCode: DataTypes.STRING,
+      shrmCode: {
+        type: DataTypes.STRING,
+        get() {
+          const rawValue = this.getDataValue("shrmCode");
+
+          return bcryptService().password(rawValue);
+        },
+      },
+      hrciCode: {
+        type: DataTypes.STRING,
+        get() {
+          const rawValue = this.getDataValue("hrciCode");
+
+          return bcryptService().password(rawValue);
+        },
+      },
       showClaim: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
