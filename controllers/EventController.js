@@ -8,6 +8,7 @@ const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
+const cryptoService = require("../services/crypto.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
 const isEmpty = require("lodash/isEmpty");
@@ -793,6 +794,11 @@ const EventController = () => {
         });
 
         if (event.showClaim === 1) {
+          event = {
+            ...event,
+            shrmCode: cryptoService().decrypt(event.credit.SHRM.money),
+            hrciCode: cryptoService().decrypt(event.credit.HRCI.money),
+          };
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
