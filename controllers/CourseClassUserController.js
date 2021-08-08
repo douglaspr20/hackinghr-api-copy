@@ -23,7 +23,7 @@ const CourseClassUserController = () => {
       try {
         const query = `SELECT ccu.* FROM "CourseClassUsers" ccu
         INNER JOIN "CourseClasses" cc on ccu."CourseClassId" = cc.id
-        WHERE cc."CourseId" = ${course}`;
+        WHERE cc."CourseId" = ${course} AND ccu."UserId" = ${req.user.id}`;
 
         let courseClassUser = await db.sequelize.query(query, {
           type: QueryTypes.SELECT,
