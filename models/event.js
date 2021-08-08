@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 const { Settings } = require("../enum");
-const bcryptService = require("../services/bcrypt.service");
+const cryptoService = require("../services/crypto.service");
 
 const VisibleLevel = Settings.VISIBLE_LEVEL;
 
@@ -43,16 +43,12 @@ module.exports = (sequelize, DataTypes) => {
           const hrciCode =
             rawValue && rawValue.HRCI ? rawValue.HRCI.money || "" : "";
 
-          console.log("***** rawValue ", rawValue);
-          console.log("***** shrmCode ", bcryptService().password(shrmCode));
-          console.log("***** hrciCode ", bcryptService().password(hrciCode));
-
           return {
             SHRM: {
-              money: bcryptService().password(shrmCode),
+              money: cryptoService().encrypt(shrmCode),
             },
             HRCI: {
-              money: bcryptService().password(hrciCode),
+              money: cryptoService().encrypt(hrciCode),
             },
           };
         },
