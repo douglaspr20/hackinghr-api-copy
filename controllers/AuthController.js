@@ -42,8 +42,7 @@ const AuthController = () => {
         if (bcryptService().comparePassword(password, user.password)) {
           const token = authService().issue({
             id: user.id,
-            // exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
-            exp: Math.floor(Date.now() / 1000) + 60,
+            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
           });
 
           return res.status(HttpCodes.OK).json({ token, user });
