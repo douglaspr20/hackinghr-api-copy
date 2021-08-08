@@ -17,8 +17,14 @@ module.exports = (sequelize, DataTypes) => {
     {
       image: DataTypes.STRING,
       title: DataTypes.STRING,
-      description: DataTypes.STRING,
+      description: DataTypes.TEXT,
       topics: DataTypes.ARRAY(DataTypes.STRING),
+      shrmCode: DataTypes.STRING,
+      hrciCode: DataTypes.STRING,
+      showClaim: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,
