@@ -1,7 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const moment = require("moment");
+const Sequelize = require("sequelize");
 
+const QueryTypes = Sequelize.QueryTypes;
 const CourseClass = db.CourseClass;
 
 const CourseClassController = () => {
@@ -174,6 +175,16 @@ const CourseClassController = () => {
 
     if (id) {
       try {
+        let query = `
+        DELETE FROM "CourseClassUsers" 
+        WHERE 
+        "CourseClassUsers"."CourseClassId" = ${id}
+        `;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
         await CourseClass.destroy({
           where: { id }
         });

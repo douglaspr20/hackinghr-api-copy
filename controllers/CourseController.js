@@ -294,9 +294,40 @@ const CourseController = () => {
 
     if (id) {
       try {
+
+        let query = `
+        DELETE FROM "CourseClassUsers" 
+        WHERE 
+        "CourseClassUsers"."CourseClassId" IN 
+        (SELECT id FROM "CourseClasses" WHERE "CourseClasses"."CourseId" = ${id})
+        `;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
+        query = `DELETE FROM "CourseClasses" where "CourseClasses"."CourseId" = ${id}`;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
+        query = `DELETE FROM "CourseInstructors" where "CourseInstructors"."CourseId" = ${id}`;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
+        query = `DELETE FROM "CourseSponsors" where "CourseSponsors"."CourseId" = ${id}`;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
         await Course.destroy({
           where: { id },
         });
+
         return res.status(HttpCodes.OK).send();
       } catch (error) {
         console.log(error);
