@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
 const smtpService = require("../services/smtp.service");
+const cryptoService = require("../services/crypto.service");
 const { LabEmails } = require("../enum");
 
 const ConferenceLibrary = db.ConferenceLibrary;
@@ -191,6 +192,12 @@ const ConferenceController = () => {
             id,
           },
         });
+
+        library = {
+          ...library,
+          shrmCode: cryptoService().decrypt(library.shrmCode),
+          hrciCode: cryptoService().decrypt(library.hrciCode),
+        }
 
         if (library.showClaim === 1) {
           let mailOptions = {

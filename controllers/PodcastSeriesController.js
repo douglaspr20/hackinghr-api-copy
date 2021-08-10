@@ -5,6 +5,7 @@ const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
 const smtpService = require("../services/smtp.service");
+const cryptoService = require("../services/crypto.service");
 const { LabEmails } = require("../enum");
 
 const PodcastSeries = db.PodcastSeries;
@@ -206,6 +207,12 @@ const PodcastSeriesController = () => {
             id,
           },
         });
+
+        podcastSeries = {
+          ...podcastSeries,
+          shrmCode: cryptoService().decrypt(podcastSeries.shrmCode),
+          hrciCode: cryptoService().decrypt(podcastSeries.hrciCode),
+        }
 
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,

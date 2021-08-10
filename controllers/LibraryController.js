@@ -8,6 +8,7 @@ const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const { ReviewStatus, Settings } = require("../enum");
 const NotificationController = require("../controllers/NotificationController");
 const smtpService = require("../services/smtp.service");
+const cryptoService = require("../services/crypto.service");
 const { LabEmails } = require("../enum");
 
 const Library = db.Library;
@@ -540,6 +541,12 @@ const LibraryController = () => {
             id,
           },
         });
+
+        library = {
+          ...library,
+          shrmCode: cryptoService().decrypt(library.shrmCode),
+          hrciCode: cryptoService().decrypt(library.hrciCode),
+        }
 
         if (library.showClaim === 1) {
           let mailOptions = {
