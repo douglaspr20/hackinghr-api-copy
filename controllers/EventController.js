@@ -810,17 +810,12 @@ const EventController = () => {
           where: {
             id,
           },
+          raw: true
         });
 
-        event = event.toJSON();
         console.log('****** event ', event)
 
         if (event.showClaim === 1) {
-          event = {
-            ...event,
-            shrmCode: cryptoService().decrypt(event.credit.SHRM.money),
-            hrciCode: cryptoService().decrypt(event.credit.HRCI.money),
-          };
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: user.email,
