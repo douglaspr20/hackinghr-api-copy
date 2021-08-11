@@ -813,6 +813,7 @@ const EventController = () => {
         });
 
         event = event.toJSON();
+        console.log('****** event ', event)
 
         if (event.showClaim === 1) {
           event = {
