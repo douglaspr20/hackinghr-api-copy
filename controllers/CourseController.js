@@ -423,6 +423,7 @@ const CourseController = () => {
           },
         });
 
+        course = course.toJSON();
         course = {
           ...course,
           shrmCode: cryptoService().decrypt(course.shrmCode),

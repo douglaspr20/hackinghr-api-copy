@@ -208,6 +208,7 @@ const PodcastSeriesController = () => {
           },
         });
 
+        podcastSeries = podcastSeries.toJSON();
         podcastSeries = {
           ...podcastSeries,
           shrmCode: cryptoService().decrypt(podcastSeries.shrmCode),

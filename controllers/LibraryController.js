@@ -362,7 +362,7 @@ const LibraryController = () => {
         ...library,
       };
 
-      const prevLibrary = await Library.findOne({
+      let prevLibrary = await Library.findOne({
         where: {
           id,
         },
@@ -373,6 +373,8 @@ const LibraryController = () => {
           .status(HttpCodes.BAD_REQUEST)
           .json({ msg: "Bad Request: library not found." });
       }
+
+      prevLibrary = prevLibrary.toJSON();
 
       if (library.image && !isValidURL(library.image)) {
         libraryInfo.image = await s3Service().getLibraryImageUrl(
@@ -541,6 +543,8 @@ const LibraryController = () => {
             id,
           },
         });
+
+        library = library.toJSON();
 
         library = {
           ...library,

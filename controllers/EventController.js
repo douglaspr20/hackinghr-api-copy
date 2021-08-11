@@ -33,9 +33,12 @@ const EventController = () => {
     );
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
 
+    console.log("////////////////////////////////////////////");
+    console.log("/////// setEventReminders //////");
     if (dateBefore24Hours.isAfter(moment())) {
       cronService().addTask(`${event.id}-24`, interval1, true, async () => {
-        const targetEvent = await Event.findOne({ where: { id: event.id } });
+        let targetEvent = await Event.findOne({ where: { id: event.id } });
+        targetEvent = targetEvent.toJSON();
         const eventUsers = await Promise.all(
           (targetEvent.users || []).map((user) => {
             return User.findOne({
@@ -48,18 +51,21 @@ const EventController = () => {
 
         await Promise.all(
           eventUsers.map((user) => {
+            const _user = user.toJSON();
             const targetEventDate = moment(targetEvent.startDate);
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              to: user.email,
+              to: _user.email,
               subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_24_HOURS.body(
-                user,
+                _user,
                 targetEvent,
                 targetEventDate.format("MMM DD"),
                 targetEventDate.format("h:mm a")
               ),
             };
+
+            console.log("***** mailOptions ", mailOptions);
 
             return smtpService().sendMail(mailOptions);
           })
@@ -69,7 +75,8 @@ const EventController = () => {
 
     if (dateBefore2Hours.isAfter(moment())) {
       cronService().addTask(`${event.id}-45`, interval2, true, async () => {
-        const targetEvent = await Event.findOne({ where: { id: event.id } });
+        let targetEvent = await Event.findOne({ where: { id: event.id } });
+        targetEvent = targetEvent.toJSON();
         const eventUsers = await Promise.all(
           (targetEvent.users || []).map((user) => {
             return User.findOne({
@@ -82,13 +89,18 @@ const EventController = () => {
 
         await Promise.all(
           eventUsers.map((user) => {
+            const _user = user.toJSON();
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              to: user.email,
+              to: _user.email,
               subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
-              html: LabEmails.EVENT_REMINDER_45_MINUTES.body(user, targetEvent),
+              html: LabEmails.EVENT_REMINDER_45_MINUTES.body(
+                _user,
+                targetEvent
+              ),
             };
 
+            console.log("***** mailOptions ", mailOptions);
             return smtpService().sendMail(mailOptions);
           })
         );
@@ -111,7 +123,8 @@ const EventController = () => {
     console.log("***************************");
     console.log("************** send email to organizer *************");
     console.log("***** event = ", event);
-    const targetEvent = await Event.findOne({ where: { id: event.id } });
+    let targetEvent = await Event.findOne({ where: { id: event.id } });
+    targetEvent = targetEvent.toJSON();
     console.log("***** targetEvent = ", targetEvent);
     const eventUsers = await Promise.all(
       (targetEvent.users || []).map((user) => {
@@ -142,7 +155,7 @@ const EventController = () => {
           width: 20,
         },
       ],
-      eventUsers
+      eventUsers.map((user) => user.toJSON())
     );
 
     let mailOptions = {
@@ -171,6 +184,8 @@ const EventController = () => {
       convertToLocalTime(event.startDate).subtract(2, "hours"),
       convertToLocalTime(event.startDate).subtract(30, "minutes"),
     ];
+    console.log("/////////////////////////////////////////////////////");
+    console.log("//////// setOrganizerReminders ///////");
     dates.forEach((date, index) => {
       const interval = `10 ${date.minutes()} ${date.hours()} ${date.date()} ${date.month()} *`;
       console.log("******** email interval ", interval);
@@ -287,7 +302,7 @@ const EventController = () => {
         ...event,
       };
 
-      const prevEvent = await Event.findOne({
+      let prevEvent = await Event.findOne({
         where: {
           id,
         },
@@ -298,6 +313,8 @@ const EventController = () => {
           .status(HttpCodes.BAD_REQUEST)
           .json({ msg: "Bad Request: event not found." });
       }
+
+      prevEvent = prevEvent.toJSON();
 
       if (event.image && !isValidURL(event.image)) {
         eventInfo.image = await s3Service().getEventImageUrl("", event.image);
@@ -408,7 +425,8 @@ const EventController = () => {
 
     if (eventId && userId) {
       try {
-        const prevEvent = await Event.findOne({ where: { id: eventId } });
+        let prevEvent = await Event.findOne({ where: { id: eventId } });
+        prevEvent = prevEvent.toJSON();
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
             status: { ...prevEvent.status, [userId]: status },
@@ -757,7 +775,8 @@ const EventController = () => {
   const resetEmailReminders = async (req, res) => {
     try {
       console.log("****** starting ******");
-      const allEvents = await Event.findAll({});
+      let allEvents = await Event.findAll({});
+      allEvents = allEvents.map((event) => event.toJSON());
       console.log("****** allEvents ******", allEvents);
       const comingEvents = allEvents.filter((event) => {
         const startTime = convertToLocalTime(event.startDate);
@@ -792,6 +811,8 @@ const EventController = () => {
             id,
           },
         });
+
+        event = event.toJSON();
 
         if (event.showClaim === 1) {
           event = {
@@ -853,6 +874,8 @@ const EventController = () => {
             msg: "Bad Request: This Event is not existed",
           });
         }
+
+        event = event.toJSON();
 
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,

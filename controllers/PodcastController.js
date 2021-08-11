@@ -231,7 +231,7 @@ const PodcastController = () => {
             data = { ...data, [item]: body[item] };
           }
         }
-        const podcast = await Podcast.findOne({
+        let podcast = await Podcast.findOne({
           where: {
             id,
           },
@@ -241,19 +241,21 @@ const PodcastController = () => {
             .status(HttpCodes.BAD_REQUEST)
             .json({ msg: "Bad Request: podcast not found." });
         }
+
+        podcast = podcast.toJSON();
         if (body.imageData && !isValidURL(body.imageData)) {
           data.imageUrl = await s3Service().getPodcastImageUrl(
             "",
             body.imageData
           );
 
-          if (podcast.imageData) {
-            await s3Service().deleteUserPicture(podcast.imageData);
+          if (podcast.imageUrl) {
+            await s3Service().deleteUserPicture(podcast.imageUrl);
           }
         }
 
-        if (podcast.imageData && !body.imageData) {
-          await s3Service().deleteUserPicture(podcast.imageData);
+        if (podcast.imageUrl && !body.imageData) {
+          await s3Service().deleteUserPicture(podcast.imageUrl);
         }
 
         console.log('***** data ', data);

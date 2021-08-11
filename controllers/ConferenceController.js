@@ -193,6 +193,8 @@ const ConferenceController = () => {
           },
         });
 
+        library = library.toJSON();
+
         library = {
           ...library,
           shrmCode: cryptoService().decrypt(library.shrmCode),

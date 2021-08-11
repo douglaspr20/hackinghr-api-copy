@@ -61,6 +61,7 @@ function convertJSONToCSV(content) {
 
 async function convertJSONToExcel(sheet, fields, content) {
   // Create page
+  console.log('***** content', content);
   const ws1 = workbook.addWorksheet(sheet);
   ws1.addRow(fields.map((item) => item.label));
   fields.forEach((field, index) => {
