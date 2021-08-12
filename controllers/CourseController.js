@@ -210,6 +210,7 @@ const CourseController = () => {
           "shrmCode",
           "hrciCode",
           "showClaim",
+          "hrCreditOffered",
         ];
         for (let item of fields) {
           if (body[item]) {
@@ -295,7 +296,6 @@ const CourseController = () => {
 
     if (id) {
       try {
-
         let query = `
         DELETE FROM "CourseClassUsers" 
         WHERE 
@@ -428,7 +428,7 @@ const CourseController = () => {
           ...course,
           shrmCode: cryptoService().decrypt(course.shrmCode),
           hrciCode: cryptoService().decrypt(course.hrciCode),
-        }
+        };
 
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
