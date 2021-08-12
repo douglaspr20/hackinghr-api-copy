@@ -13,10 +13,6 @@ module.exports = {
         type: Sequelize.TEXT,
         defaultValue: "",
       }),
-      queryInterface.addColumn("Courses", "categories", {
-        type: Sequelize.ARRAY(Sequelize.STRING),
-        defaultValue: [],
-      }),
     ]);
   },
 
