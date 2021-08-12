@@ -52,12 +52,26 @@ const CourseController = () => {
         where,
         order,
       });
+
       if (!courses) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
       }
 
+      let query = `
+        SELECT SUM(duration::int), "CourseId" FROM "CourseClasses" GROUP BY "CourseClasses"."CourseId"
+      `;
+      let classList = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+      courses = courses.map((crs) => crs.toJSON());
+
+      courses.forEach((course) => {
+        const temp = classList.find((cls) => cls.CourseId === course.id);
+
+        course.duration = temp ? temp.sum : 0;
+      });
       return res.status(HttpCodes.OK).json({ courses });
     } catch (error) {
       console.log(error);
