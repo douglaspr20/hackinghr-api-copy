@@ -41,6 +41,8 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      hrCreditOffered: DataTypes.TEXT,
+      categories: DataTypes.ARRAY(DataTypes.STRING),
     },
     {
       sequelize,
