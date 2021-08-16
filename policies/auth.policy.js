@@ -141,6 +141,11 @@ const validate = async (req, res, next) => {
   return authService().verify(tokenToVerify, async (err, thisToken) => {
     if (err) return res.status(401).json({ err });
     const user = await User.findOne({ where: { id: thisToken.id } });
+
+    if (!user) {
+      return res.status(401).json({ msg: "No Authorization was found" });
+    }
+
     req.token = thisToken;
     req.user = user;
     return next();
