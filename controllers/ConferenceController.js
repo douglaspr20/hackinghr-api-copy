@@ -233,7 +233,7 @@ const ConferenceController = () => {
     const { id: libraryId, mark } = req.body;
     const { id: userId } = req.token;
 
-    if (id) {
+    if (libraryId) {
       try {
         let prevLibrary = await ConferenceLibrary.findOne({ where: { id: libraryId } });
         prevLibrary = prevLibrary.toJSON();
@@ -243,7 +243,7 @@ const ConferenceController = () => {
               viewed: { ...prevLibrary.viewed, [userId]: mark },
             },
             {
-              where: { id },
+              where: { id: libraryId },
               returning: true,
               plain: true,
             }
