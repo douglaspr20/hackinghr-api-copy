@@ -199,7 +199,7 @@ const ConferenceController = () => {
           ...library,
           shrmCode: cryptoService().decrypt(library.shrmCode),
           hrciCode: cryptoService().decrypt(library.hrciCode),
-        }
+        };
 
         if (library.showClaim === 1) {
           let mailOptions = {
@@ -229,6 +229,41 @@ const ConferenceController = () => {
       .json({ msg: "Bad Request: Conference library id is wrong" });
   };
 
+  const markAsViewed = async (req, res) => {
+    const { id: libraryId, mark } = req.body;
+    const { id: userId } = req.token;
+
+    if (libraryId) {
+      try {
+        let prevLibrary = await ConferenceLibrary.findOne({ where: { id: libraryId } });
+        prevLibrary = prevLibrary.toJSON();
+        const [numberOfAffectedRows, affectedRows] =
+          await ConferenceLibrary.update(
+            {
+              viewed: { ...prevLibrary.viewed, [userId]: mark },
+            },
+            {
+              where: { id: libraryId },
+              returning: true,
+              plain: true,
+            }
+          );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Conference library id is wrong" });
+  };
+
   return {
     create,
     getAll,
@@ -236,6 +271,7 @@ const ConferenceController = () => {
     update,
     remove,
     claim,
+    markAsViewed,
   };
 };
 
