@@ -244,6 +244,41 @@ const PodcastSeriesController = () => {
       .json({ msg: "Bad Request: Podcast Series id is wrong" });
   };
 
+  const markAsViewed = async (req, res) => {
+    const { id: podcastseriesId, mark } = req.body;
+    const { id: userId } = req.token;
+
+    if (podcastseriesId) {
+      try {
+        let prevSeries = await PodcastSeries.findOne({ where: { id: podcastseriesId } });
+        prevSeries = prevSeries.toJSON();
+        const [numberOfAffectedRows, affectedRows] =
+          await PodcastSeries.update(
+            {
+              viewed: { ...prevSeries.viewed, [userId]: mark },
+            },
+            {
+              where: { id: podcastseriesId },
+              returning: true,
+              plain: true,
+            }
+          );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Conference library id is wrong" });
+  };
+
   return {
     create,
     getAll,
@@ -251,6 +286,7 @@ const PodcastSeriesController = () => {
     update,
     remove,
     claim,
+    markAsViewed,
   };
 };
 

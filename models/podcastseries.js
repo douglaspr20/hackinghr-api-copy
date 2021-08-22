@@ -40,6 +40,10 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       categories: DataTypes.ARRAY(DataTypes.STRING),
+      viewed: {
+        type: DataTypes.JSON,
+        defaultValue: {},
+      },
     },
     {
       sequelize,
