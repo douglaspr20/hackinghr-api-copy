@@ -87,6 +87,7 @@ const privateRoutes = {
   "POST /event/claim-credit": "EventController.claimCredit",
   "POST /event/claim-attendance": "EventController.claimAttendance",
   "PUT /conference/viewed": "ConferenceController.markAsViewed",
+  "PUT /podcast-series/viewed": "PodcastSeriesController.markAsViewed",
 };
 
 module.exports = privateRoutes;
