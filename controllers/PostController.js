@@ -6,6 +6,7 @@ const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 
 const Post = db.Post;
+const User = db.User;
 
 const PostController = () => {
   /**
@@ -44,6 +45,12 @@ const PostController = () => {
       let posts = await Post.findAll({
         where,
         order,
+        include: [
+          {
+            all: true,
+            nested: true,
+          },
+        ],
       });
 
       if (!posts) {
@@ -104,7 +111,7 @@ const PostController = () => {
     const { imageData } = req.body;
     try {
       let data = { ...req.body };
-      if(data.text){
+      if (data.text) {
         data.text = data.text.html;
       }
       data.UserId = req.user.id;
@@ -112,7 +119,7 @@ const PostController = () => {
 
       if (imageData) {
         let image = await s3Service().getPostImageUrl("", imageData);
-        await Post.update({ image: image }, { where: { id: post.id } });
+        await Post.update({ imageUrl: image }, { where: { id: post.id } });
       }
 
       return res.status(HttpCodes.OK).send();

@@ -88,6 +88,11 @@ const privateRoutes = {
   "POST /event/claim-attendance": "EventController.claimAttendance",
   "PUT /conference/viewed": "ConferenceController.markAsViewed",
   "PUT /podcast-series/viewed": "PodcastSeriesController.markAsViewed",
+  "GET /post/": "PostController.getAll",
+  "POST /post/": "PostController.add",
+  "POST /postLike/": "PostLikeController.add",
+  "DELETE /postLike/:id": "PostLikeController.remove",
+  "POST /postComment/": "PostCommentController.add",
 };
 
 module.exports = privateRoutes;
