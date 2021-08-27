@@ -116,7 +116,7 @@ const MentoringController = () => {
         }
 
         let query = `
-        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."blockMatchAsMentor" as blockMatchAsMentor, public."Mentorings"."connectedMembers" as connectedMembers
+        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as "mentorAbout", public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as "isMentor", public."Mentorings"."blockMatchAsMentor" as "blockMatchAsMentor", public."Mentorings"."connectedMembers" as "connectedMembers"
           FROM public."Mentorings" 
           JOIN public."Users" ON public."Mentorings".user = public."Users".id 
           WHERE public."Mentorings"."isMentor" = 1 
@@ -161,7 +161,7 @@ const MentoringController = () => {
         }
 
         let query = `
-        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as mentorAbout, public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as isMentor, public."Mentorings"."blockMatchAsMentee" as blockMatchAsMentee, public."Mentorings"."connectedMembers" as connectedMembers
+        SELECT COUNT(*) OVER() AS total, public."Users".*, public."Mentorings"."id" as mid, public."Mentorings"."title" as title, public."Mentorings"."about" as "mentorAbout", public."Mentorings"."areas" as areas, public."Mentorings"."isMentor" as "isMentor", public."Mentorings"."blockMatchAsMentee" as "blockMatchAsMentee", public."Mentorings"."connectedMembers" as "connectedMembers"
           FROM public."Mentorings" 
           JOIN public."Users" ON public."Mentorings".user = public."Users".id 
           WHERE public."Mentorings"."isMentor" = 0 
