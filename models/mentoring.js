@@ -28,6 +28,14 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: [],
       },
       user: DataTypes.INTEGER,
+      blockMatchAsMentor: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      blockMatchAsMentee: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,
