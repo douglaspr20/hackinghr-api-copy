@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.STRING),
         defaultValue: [],
       },
-      categories: {
+      comments: {
         type: DataTypes.ARRAY(DataTypes.JSON),
         defaultValue: [],
       },
