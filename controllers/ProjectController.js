@@ -41,7 +41,7 @@ const ProjectController = () => {
 
       const projects = await Project.findAll({
         where,
-        order: [["datePosted"]],
+        order: [["datePosted", "DESC"]],
       });
 
       return res.status(HttpCodes.OK).json({ projects });
