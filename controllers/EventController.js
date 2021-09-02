@@ -652,10 +652,6 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
-  const getEventDescription = (rawData) => {
-    return rawData ? rawData.blocks.map((item) => item.text).join(`/n`) : "";
-  };
-
   const downloadICS = async (req, res) => {
     const { id } = req.params;
 
@@ -682,7 +678,7 @@ const EventController = () => {
         startDate,
         endDate,
         event.title,
-        getEventDescription(event.description),
+        "",
         "",
         // event.location,
         `${process.env.DOMAIN_URL}${event.id}`,
@@ -810,10 +806,10 @@ const EventController = () => {
           where: {
             id,
           },
-          raw: true
+          raw: true,
         });
 
-        console.log('****** event ', event)
+        console.log("****** event ", event);
 
         if (event.showClaim === 1) {
           let mailOptions = {
