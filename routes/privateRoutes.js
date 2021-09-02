@@ -89,6 +89,7 @@ const privateRoutes = {
   "PUT /conference/viewed": "ConferenceController.markAsViewed",
   "PUT /podcast-series/viewed": "PodcastSeriesController.markAsViewed",
   "GET /post/": "PostController.getAll",
+  "GET /post/search": "PostController.searchPost",
   "POST /post/": "PostController.add",
   "POST /postLike/": "PostLikeController.add",
   "DELETE /postLike/:id": "PostLikeController.remove",

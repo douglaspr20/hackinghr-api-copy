@@ -1,7 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const isEmpty = require("lodash/isEmpty");
-const { Op } = require("sequelize");
+const { literal, Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 
@@ -45,12 +45,6 @@ const PostController = () => {
       let posts = await Post.findAll({
         where,
         order,
-        include: [
-          {
-            all: true,
-            nested: true,
-          },
-        ],
       });
 
       if (!posts) {
@@ -67,7 +61,71 @@ const PostController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+  /**
+   * Method to get all Podcast objects
+   * @param {*} req
+   * @param {*} res
+   */
+  const searchPost = async (req, res) => {
+    const filter = req.query;
+    try {
+      let where = {};
 
+      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(filter.topics),
+          },
+        };
+      }
+
+      if (filter.text) {
+        where = {
+          ...where,
+          text: {
+            [Op.iLike]: `%${filter.text}%`,
+          },
+        };
+      }
+
+      let posts = await Post.findAndCountAll({
+        where,
+        offset: (filter.page - 1) * filter.num,
+        limit: filter.num,
+        order: [["createdAt", "DESC"]],
+        include: User,
+        attributes: {
+          include: [
+            [
+              literal(`(
+                    SELECT 
+                    CASE WHEN count(1) > 0 
+                      THEN TRUE
+                      ELSE FALSE
+                    END
+                    FROM "PostLikes" pl 
+                    WHERE pl."PostId" = "Post"."id" AND pl."UserId" = ${req.user.id}
+                  )`),
+              "like",
+            ],
+          ],
+        },
+      });
+      if (!posts) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      return res.status(HttpCodes.OK).json({ posts });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
   /**
    * Method to get Post object
    * @param {*} req
@@ -225,6 +283,7 @@ const PostController = () => {
     add,
     update,
     remove,
+    searchPost,
   };
 };
 
