@@ -139,6 +139,23 @@ const PostController = () => {
           where: {
             id,
           },
+          include: User,
+          attributes: {
+            include: [
+              [
+                literal(`(
+                    SELECT 
+                    CASE WHEN count(1) > 0 
+                      THEN TRUE
+                      ELSE FALSE
+                    END
+                    FROM "PostLikes" pl 
+                    WHERE pl."PostId" = "Post"."id" AND pl."UserId" = ${req.user.id}
+                  )`),
+                "like",
+              ],
+            ],
+          },
         });
 
         if (!post) {
@@ -200,14 +217,18 @@ const PostController = () => {
     if (id) {
       try {
         let data = {};
-        let fields = ["text", "videoUrl", "topics", "UserId"];
+        let fields = ["text", "videoUrl", "topics"];
         for (let item of fields) {
           if (body[item]) {
-            data = { ...data, [item]: body[item] };
+            if (item === "text") {
+              data = { ...data, [item]: body[item].html };
+            } else {
+              data = { ...data, [item]: body[item] };
+            }
           }
         }
 
-        const post = await Post.findOne({
+        let post = await Post.findOne({
           where: {
             id,
           },
@@ -232,11 +253,17 @@ const PostController = () => {
           data.imageUrl = "";
         }
 
-        await Post.update(data, {
+        post = await Post.update(data, {
           where: { id },
         });
 
-        return res.status(HttpCodes.OK).send();
+        post = await Post.findOne({
+          where: {
+            id,
+          },
+        });
+
+        return res.status(HttpCodes.OK).send({ post });
       } catch (error) {
         console.log(error);
         return res
