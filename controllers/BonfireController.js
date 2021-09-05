@@ -41,7 +41,7 @@ const BonfireController = () => {
 
       const bonfires = await Bonfire.findAll({
         where,
-        order: [["startTime", "DESC"]],
+        order: [["startTime"]],
       });
 
       return res.status(HttpCodes.OK).json({ bonfires });
