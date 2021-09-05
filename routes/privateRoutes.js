@@ -91,8 +91,9 @@ const privateRoutes = {
   "POST /project": "ProjectController.create",
   "GET /project": "ProjectController.getAll",
   "GET /project/:id": "ProjectController.get",
-  "PUT /project": "ProjectController.update",
-  "DELETE /project/:id": "ProjectController.remove",
+  "POST /bonfire": "BonfireController.create",
+  "GET /bonfire": "BonfireController.getAll",
+  "GET /bonfire/:id": "BonfireController.get",
 };
 
 module.exports = privateRoutes;

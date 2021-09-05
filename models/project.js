@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
   Project.init(
     {
       title: DataTypes.STRING,
-      description: DataTypes.STRING,
+      description: DataTypes.TEXT,
       datePosted: DataTypes.STRING,
       categories: {
         type: DataTypes.ARRAY(DataTypes.STRING),
