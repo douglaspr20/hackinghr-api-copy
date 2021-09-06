@@ -696,7 +696,7 @@ const EventController = () => {
       res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename=${event.title}.ics`
+        `attachment; filename=${encodeURIComponent(event.title)}.ics`
       );
       res.setHeader("Content-Length", icsContent.length);
       return res.end(icsContent);
