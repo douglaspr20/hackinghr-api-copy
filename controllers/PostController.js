@@ -17,35 +17,7 @@ const PostController = () => {
   const getAll = async (req, res) => {
     const filter = req.query;
     try {
-      let where = {};
-      let order = [];
-
-      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
-        where = {
-          ...where,
-          topics: {
-            [Op.overlap]: JSON.parse(filter.topics),
-          },
-        };
-      }
-
-      if (filter.meta) {
-        where = {
-          ...where,
-          title: {
-            [Op.iLike]: `%${filter.meta}%`,
-          },
-        };
-      }
-
-      if (filter.order) {
-        order = [[JSON.parse(filter.order)[0], JSON.parse(filter.order)[1]]];
-      }
-
-      let posts = await Post.findAll({
-        where,
-        order,
-      });
+      let posts = await Post.findAll();
 
       if (!posts) {
         return res
@@ -260,6 +232,23 @@ const PostController = () => {
         post = await Post.findOne({
           where: {
             id,
+          },
+          include: User,
+          attributes: {
+            include: [
+              [
+                literal(`(
+                    SELECT 
+                    CASE WHEN count(1) > 0 
+                      THEN TRUE
+                      ELSE FALSE
+                    END
+                    FROM "PostLikes" pl 
+                    WHERE pl."PostId" = "Post"."id" AND pl."UserId" = ${req.user.id}
+                  )`),
+                "like",
+              ],
+            ],
           },
         });
 

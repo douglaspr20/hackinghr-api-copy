@@ -34,7 +34,7 @@ const PostLikeController = () => {
     if (id) {
       try {
         await PostLike.destroy({
-          where: { id },
+          where: { PostId: id, UserId: req.user.id },
         });
 
         return res.status(HttpCodes.OK).send();
