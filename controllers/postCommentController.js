@@ -1,4 +1,5 @@
 const db = require("../models");
+const { literal } = require("sequelize");
 const HttpCodes = require("http-codes");
 
 const PostComment = db.PostComment;
@@ -42,13 +43,51 @@ const PostCommentController = () => {
         };
       }
 
+      let attributes = {
+        include: [
+          [
+            literal(`(
+                    SELECT UserFN."img"
+                    FROM "Users" as UserFN
+                    WHERE
+                      UserFN.id = "PostComment"."UserId"
+                )`),
+            "userImg",
+          ],
+          [
+            literal(`(
+                    SELECT UserFN."firstName"
+                    FROM "Users" as UserFN
+                    WHERE
+                      UserFN.id = "PostComment"."UserId"
+                )`),
+            "userFirstName",
+          ],
+          [
+            literal(`(
+                    SELECT UserFN."lastName"
+                    FROM "Users" as UserFN
+                    WHERE
+                      UserFN.id = "PostComment"."UserId"
+                )`),
+            "userLastName",
+          ],
+        ],
+      };
+
+      let include = [
+        {
+          model: PostComment,
+          attributes,
+        },
+      ];
+
       let comments = await PostComment.findAndCountAll({
         where,
         limit: filter.num,
         order: [["createdAt", "DESC"]],
-        include: [
-          { model: User },
-        ],
+        attributes,
+        include,
       });
       if (!comments) {
         return res
@@ -65,9 +104,42 @@ const PostCommentController = () => {
     }
   };
 
+  /**
+   * Method to delete PostComment object
+   * @param {*} req
+   * @param {*} res
+   */
+  const remove = async (req, res) => {
+    let { id } = req.params;
+
+    if (id) {
+      try {
+        await PostComment.destroy({
+          where: { PostCommentId: id },
+        });
+
+        await PostComment.destroy({
+          where: { id },
+        });
+
+        return res.status(HttpCodes.OK).send();
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
   return {
-    add,
     getAll,
+    add,
+    remove,
   };
 };
 
