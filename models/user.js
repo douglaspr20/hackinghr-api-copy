@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
       User.hasMany(models.CourseClassUser);
+      User.hasMany(models.Post);
+      User.hasMany(models.PostLike);
+      User.hasMany(models.PostComment);
+      User.hasMany(models.PostFollow);
     }
   }
   User.init(

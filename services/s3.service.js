@@ -157,6 +157,16 @@ const s3Service = () => {
     return url;
   };
 
+  const getPostImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(
+      S3.POST_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
+
+    return url;
+  };
+
   const uploadResume = async (file, user) => {
     const fileName = `${user.id}_${
       process.env.S3_RESUME_BUCKET || "local"
@@ -210,6 +220,7 @@ const s3Service = () => {
     deleteUserPicture,
     getSponsorImageUrl,
     getInstructorImageUrl,
+    getPostImageUrl,
     uploadResume,
     deleteResume,
   };
