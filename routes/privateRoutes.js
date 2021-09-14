@@ -93,6 +93,7 @@ const privateRoutes = {
   "GET /posts/search": "PostController.searchPost",
   "POST /post/": "PostController.add",
   "PUT /post/:id": "PostController.update",
+  "DELETE /post/:id": "PostController.remove",
   "POST /postLike/": "PostLikeController.add",
   "DELETE /postLike/:id": "PostLikeController.remove",
   "GET /postComment/": "PostCommentController.getAll",
