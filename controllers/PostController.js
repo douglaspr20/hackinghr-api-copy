@@ -83,6 +83,18 @@ const PostController = () => {
                   )`),
               "like",
             ],
+            [
+              literal(`(
+                    SELECT 
+                    CASE WHEN count(1) > 0 
+                      THEN TRUE
+                      ELSE FALSE
+                    END
+                    FROM "PostFollows" pf 
+                    WHERE pf."PostId" = "Post"."id" AND pf."UserId" = ${req.user.id}
+                  )`),
+              "follow",
+            ],
           ],
         },
       });

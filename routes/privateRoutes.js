@@ -96,6 +96,8 @@ const privateRoutes = {
   "DELETE /post/:id": "PostController.remove",
   "POST /postLike/": "PostLikeController.add",
   "DELETE /postLike/:id": "PostLikeController.remove",
+  "POST /postFollow/": "PostFollowController.add",
+  "DELETE /postFollow/:id": "PostFollowController.remove",
   "GET /postComment/": "PostCommentController.getAll",
   "POST /postComment/": "PostCommentController.add",
   "DELETE /postComment/:id": "PostCommentController.remove",
