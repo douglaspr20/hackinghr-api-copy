@@ -139,10 +139,6 @@ const SponsorController = () => {
           }
         }
 
-        if (data.image && !body.imageData) {
-          await s3Service().deleteUserPicture(sponsor.image);
-        }
-
         await Sponsor.update(data, {
           where: { id }
         });
