@@ -205,9 +205,7 @@ const PodcastController = () => {
 
     if (id) {
       try {
-        let data = {
-          imageUrl: body.imageData,
-        };
+        let data = {};
         let fields = [
           "title",
           "description",
@@ -252,10 +250,6 @@ const PodcastController = () => {
           if (podcast.imageUrl) {
             await s3Service().deleteUserPicture(podcast.imageUrl);
           }
-        }
-
-        if (podcast.imageUrl && !body.imageData) {
-          await s3Service().deleteUserPicture(podcast.imageUrl);
         }
 
         console.log('***** data ', data);
