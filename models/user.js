@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.PostLike);
       User.hasMany(models.PostComment);
       User.hasMany(models.PostFollow);
+      User.hasMany(models.Notification);
     }
   }
   User.init(
