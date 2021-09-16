@@ -1,10 +1,12 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const Sequelize = require("sequelize");
 const isEmpty = require("lodash/isEmpty");
 const { literal, Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 
+const QueryTypes = Sequelize.QueryTypes;
 const Post = db.Post;
 const User = db.User;
 
@@ -80,6 +82,18 @@ const PostController = () => {
                     WHERE pl."PostId" = "Post"."id" AND pl."UserId" = ${req.user.id}
                   )`),
               "like",
+            ],
+            [
+              literal(`(
+                    SELECT 
+                    CASE WHEN count(1) > 0 
+                      THEN TRUE
+                      ELSE FALSE
+                    END
+                    FROM "PostFollows" pf 
+                    WHERE pf."PostId" = "Post"."id" AND pf."UserId" = ${req.user.id}
+                  )`),
+              "follow",
             ],
           ],
         },
@@ -275,6 +289,32 @@ const PostController = () => {
 
     if (id) {
       try {
+        let query = `
+        DELETE FROM "PostComments" 
+        WHERE 
+        "PostComments"."PostId" = ${id}
+        `;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
+        query = `DELETE FROM "PostFollows" 
+        WHERE 
+        "PostFollows"."PostId" = ${id}`;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
+        query = `DELETE FROM "PostLikes" 
+        WHERE 
+        "PostLikes"."PostId" = ${id}`;
+
+        await db.sequelize.query(query, {
+          type: QueryTypes.DELETE,
+        });
+
         await Post.destroy({
           where: { id },
         });
