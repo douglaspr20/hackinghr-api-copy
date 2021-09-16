@@ -1,9 +1,10 @@
 const db = require("../models");
 const { literal } = require("sequelize");
 const HttpCodes = require("http-codes");
+const NotificationController = require("../controllers/NotificationController");
 
 const PostComment = db.PostComment;
-const User = db.User;
+const PostFollow = db.PostFollow;
 
 const PostCommentController = () => {
   /**
@@ -15,7 +16,21 @@ const PostCommentController = () => {
     try {
       let data = { ...req.body };
       data.UserId = req.user.id;
-      await PostComment.create(data);
+      const postComment = await PostComment.create(data);
+
+      const follow = await PostFollow.findAll({
+        where: { PostId: data.PostId, UserId: req.user.id },
+      });
+
+      if (follow.length > 0) {
+        await NotificationController().createNotification({
+          message: `New Comment "${postComment.comment}" was created.`,
+          type: "comment",
+          meta: {
+            ...postComment,
+          },
+        });
+      }
 
       return res.status(HttpCodes.OK).send();
     } catch (error) {
