@@ -95,6 +95,24 @@ const PostController = () => {
                   )`),
               "follow",
             ],
+            [
+              literal(`(
+                    SELECT 
+                    count(1)
+                    FROM "PostLikes" pl 
+                    WHERE pl."PostId" = "Post"."id"
+                  )`),
+              "likes",
+            ],
+            [
+              literal(`(
+                    SELECT 
+                    count(1)
+                    FROM "PostComments" pc
+                    WHERE pc."PostId" = "Post"."id"
+                  )`),
+              "comments",
+            ],
           ],
         },
       });
@@ -139,6 +157,36 @@ const PostController = () => {
                     WHERE pl."PostId" = "Post"."id" AND pl."UserId" = ${req.user.id}
                   )`),
                 "like",
+              ],
+              [
+                literal(`(
+                      SELECT 
+                      CASE WHEN count(1) > 0 
+                        THEN TRUE
+                        ELSE FALSE
+                      END
+                      FROM "PostFollows" pf 
+                      WHERE pf."PostId" = "Post"."id" AND pf."UserId" = ${req.user.id}
+                    )`),
+                "follow",
+              ],
+              [
+                literal(`(
+                      SELECT 
+                      count(1)
+                      FROM "PostLikes" pl 
+                      WHERE pl."PostId" = "Post"."id"
+                    )`),
+                "likes",
+              ],
+              [
+                literal(`(
+                      SELECT 
+                      count(1)
+                      FROM "PostComments" pc
+                      WHERE pc."PostId" = "Post"."id"
+                    )`),
+                "comments",
               ],
             ],
           },
