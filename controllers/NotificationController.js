@@ -39,12 +39,26 @@ const NotificationController = () => {
         offset: (page - 1) * num,
         limit: num,
         order: [["createdAt", "DESC"]],
+        where: {
+          UserId: {
+            [Op.or]: {
+              [Op.eq]: null,
+              [Op.eq]: req.user.id,
+            },
+          },
+        },
       });
 
       const readCount = await Notification.count({
         where: {
           readers: {
             [Op.contains]: [user.id],
+          },
+          UserId: {
+            [Op.or]: {
+              [Op.eq]: null,
+              [Op.eq]: req.user.id,
+            },
           },
         },
       });

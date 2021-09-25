@@ -29,6 +29,7 @@ const PostCommentController = () => {
           meta: {
             ...postComment,
           },
+          UserId: req.user.id,
         });
       }
 
