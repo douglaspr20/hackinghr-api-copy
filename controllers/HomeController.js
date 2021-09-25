@@ -19,7 +19,7 @@ const HomeController = () => {
 
     try {
       let order = [ [fn('RANDOM')] ];
-      let limit = 3;
+      let limit = 1;
       let where = {
         libraries: {
           approvalStatus: 'approved',
