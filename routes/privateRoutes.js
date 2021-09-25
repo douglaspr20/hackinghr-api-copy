@@ -101,6 +101,12 @@ const privateRoutes = {
   "GET /postComment/": "PostCommentController.getAll",
   "POST /postComment/": "PostCommentController.add",
   "DELETE /postComment/:id": "PostCommentController.remove",
+  "POST /project": "ProjectController.create",
+  "GET /project": "ProjectController.getAll",
+  "GET /project/:id": "ProjectController.get",
+  "POST /bonfire": "BonfireController.create",
+  "GET /bonfire": "BonfireController.getAll",
+  "GET /bonfire/:id": "BonfireController.get",
 };
 
 module.exports = privateRoutes;

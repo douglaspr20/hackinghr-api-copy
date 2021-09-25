@@ -133,11 +133,9 @@ const PostCommentController = () => {
         await PostComment.destroy({
           where: { PostCommentId: id },
         });
-
         await PostComment.destroy({
           where: { id },
         });
-
         return res.status(HttpCodes.OK).send();
       } catch (error) {
         console.log(error);

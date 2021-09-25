@@ -139,10 +139,6 @@ const InstructorController = () => {
           }
         }
 
-        if (data.image && !body.imageData) {
-          await s3Service().deleteUserPicture(instructor.image);
-        }
-
         await Instructor.update(data, {
           where: { id }
         });
