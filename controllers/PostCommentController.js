@@ -59,52 +59,85 @@ const PostCommentController = () => {
         };
       }
 
-      let attributes = {
-        include: [
-          [
-            literal(`(
+      let comments = await PostComment.findAndCountAll({
+        where,
+        limit: filter.num,
+        order: [["createdAt", "DESC"]],
+        attributes: {
+          include: [
+            [
+              literal(`(
                     SELECT UserFN."img"
                     FROM "Users" as UserFN
                     WHERE
                       UserFN.id = "PostComment"."UserId"
                 )`),
-            "userImg",
-          ],
-          [
-            literal(`(
+              "userImg",
+            ],
+            [
+              literal(`(
                     SELECT UserFN."firstName"
                     FROM "Users" as UserFN
                     WHERE
                       UserFN.id = "PostComment"."UserId"
                 )`),
-            "userFirstName",
-          ],
-          [
-            literal(`(
+              "userFirstName",
+            ],
+            [
+              literal(`(
                     SELECT UserFN."lastName"
                     FROM "Users" as UserFN
                     WHERE
                       UserFN.id = "PostComment"."UserId"
                 )`),
-            "userLastName",
+              "userLastName",
+            ],
           ],
-        ],
-      };
-
-      let include = [
-        {
-          model: PostComment,
-          attributes,
         },
-      ];
-
-      let comments = await PostComment.findAndCountAll({
-        where,
-        limit: filter.num,
-        order: [["createdAt", "DESC"]],
-        attributes,
-        include,
       });
+
+      let requests = comments.rows.map((pc) =>
+        PostComment.findAll({
+          where: { PostCommentId: pc.dataValues.id, PostId: filter.postId },
+          order: [["createdAt", "DESC"]],
+          attributes: {
+            include: [
+              [
+                literal(`(
+                    SELECT UserFN."img"
+                    FROM "Users" as UserFN
+                    WHERE
+                      UserFN.id = "PostComment"."UserId"
+                )`),
+                "userImg",
+              ],
+              [
+                literal(`(
+                    SELECT UserFN."firstName"
+                    FROM "Users" as UserFN
+                    WHERE
+                      UserFN.id = "PostComment"."UserId"
+                )`),
+                "userFirstName",
+              ],
+              [
+                literal(`(
+                    SELECT UserFN."lastName"
+                    FROM "Users" as UserFN
+                    WHERE
+                      UserFN.id = "PostComment"."UserId"
+                )`),
+                "userLastName",
+              ],
+            ],
+          },
+        })
+      );
+      let results = await Promise.all(requests);
+      results.map((item, index) => {
+        comments.rows[index].dataValues["PostComments"] = item;
+      });
+
       if (!comments) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
