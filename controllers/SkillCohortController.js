@@ -59,15 +59,15 @@ const SkillCohortController = () => {
     }
 
     const getAll = async (req, res) => {
-        const filter = req.query
+        const { filter } = req.query
         let where = {}
 
         try {
-            if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+            if (filter && !isEmpty(JSON.parse(filter))) {
                 where = {
                     ...where,
                     categories: {
-                        [Op.overlap]: JSON.parse(filter.topics)
+                        [Op.overlap]: JSON.parse(filter)
                     },
                 }
             }
