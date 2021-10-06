@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
     description: DataTypes.STRING,
     objectives: DataTypes.STRING,
     image: DataTypes.STRING,
+    categories: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
     currentWeekNumber: DataTypes.INTEGER,
     startDate: DataTypes.DATE,
     endDate: DataTypes.DATE
