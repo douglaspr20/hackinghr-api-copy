@@ -208,6 +208,16 @@ const s3Service = () => {
     return;
   };
 
+  const getSkillCohortImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(
+      S3.SKILL_COHORT_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
+
+    return url;
+  };
+
   return {
     getImageUrl,
     getUserImageUrl,
@@ -221,6 +231,7 @@ const s3Service = () => {
     getSponsorImageUrl,
     getInstructorImageUrl,
     getPostImageUrl,
+    getSkillCohortImageUrl,
     uploadResume,
     deleteResume,
   };

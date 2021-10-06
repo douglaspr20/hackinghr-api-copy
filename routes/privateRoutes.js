@@ -107,6 +107,8 @@ const privateRoutes = {
   "POST /bonfire": "BonfireController.create",
   "GET /bonfire": "BonfireController.getAll",
   "GET /bonfire/:id": "BonfireController.get",
+  "GET /skill-cohort": "SkillCohortController.getAll",
+  "GET /skill-cohort/:id": "SkillCohortController.get"
 };
 
 module.exports = privateRoutes;

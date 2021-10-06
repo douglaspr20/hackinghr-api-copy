@@ -66,6 +66,9 @@ const adminRoutes = {
   "DELETE /project/:id": "ProjectController.remove",
   "PUT /bonfire/:id": "BonfireController.update",
   "DELETE /bonfire/:id": "BonfireController.remove",
+  "POST /skill-cohort": "SkillCohortController.create",
+  "DELETE /skill-cohort/:id": "SkillCohortController.remove",
+  "PUT /skill-cohort/:id": "SkillCohortController.update"
 };
 
 module.exports = adminRoutes;
