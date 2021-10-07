@@ -81,6 +81,9 @@ const AuthController = () => {
           password: bcryptService().password(body.password),
           firstName: body.firstName,
           lastName: body.lastName,
+          recentJobLevel: body.recentJobLevel,
+          recentWorkArea: body.recentWorkArea,
+          sizeOfOrganization: body.sizeOfOrganization,
           role: UserRoles.USER,
         };
 
