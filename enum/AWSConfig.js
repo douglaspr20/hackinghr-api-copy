@@ -16,6 +16,7 @@ module.exports = {
     SPONSOR_IMAGE_FOLDER: "sponsor",
     INSTRUCTOR_IMAGE_FOLDER: "instructor",
     POST_IMAGE_FOLDER: "post",
+    SKILL_COHORT_IMAGE_FOLDER: "skill-cohort",
     // Resume
     RESUME_BUCKET_NAME: "user-resume-bucket",
     // Editor
