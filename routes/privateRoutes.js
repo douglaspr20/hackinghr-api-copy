@@ -48,6 +48,7 @@ const privateRoutes = {
   "GET /journey-items/:id": "JourneyItemController.getItemsByJourney",
   "PUT /journey-items/:id": "JourneyItemController.update",
   "GET /conference/": "ConferenceController.getAll",
+  "GET /conference/:id": "ConferenceController.get",
   "POST /channel/": "ChannelController.create",
   "GET /channel/": "ChannelController.getAll",
   "GET /channel/:id": "ChannelController.get",
