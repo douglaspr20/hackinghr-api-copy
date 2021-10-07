@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       location: DataTypes.ARRAY(DataTypes.STRING),
       description: DataTypes.JSON,
       link: DataTypes.STRING,
+      registrationLink: DataTypes.STRING,
       credit: {
         type: DataTypes.JSON,
         get() {
