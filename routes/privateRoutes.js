@@ -108,7 +108,9 @@ const privateRoutes = {
   "GET /bonfire": "BonfireController.getAll",
   "GET /bonfire/:id": "BonfireController.get",
   "GET /skill-cohort": "SkillCohortController.getAll",
-  "GET /skill-cohort/:id": "SkillCohortController.get"
+  "GET /skill-cohort/:id": "SkillCohortController.get",
+  "GET /skill-cohort/:skillCohortId/resources": "SkillCohortResourcesController.getAll",
+  "GET /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.get"
 };
 
 module.exports = privateRoutes;
