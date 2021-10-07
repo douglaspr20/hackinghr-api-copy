@@ -15,6 +15,9 @@ const getProfileCompletion = (user) => {
     "languages",
     "timezone",
     "isOpenReceivingEmail",
+    "recentJobLevel",
+    "recentWorkArea",
+    "sizeOfOrganization",
   ];
   const length = fields.length;
   let countOfCompleted = fields.reduce((res, item) => {

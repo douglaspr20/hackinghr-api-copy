@@ -95,6 +95,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       resumeFileName: DataTypes.STRING,
       resumeUrl: DataTypes.STRING,
+      recentJobLevel: DataTypes.STRING,
+      recentWorkArea: DataTypes.ARRAY(DataTypes.STRING),
+      sizeOfOrganization: DataTypes.STRING,
     },
     {
       sequelize,
