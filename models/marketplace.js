@@ -8,7 +8,9 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Marketplace.belongsTo(models.MarketplaceCategories, { foreignKey: 'MarketplaceCategoryId' });
+      Marketplace.belongsTo(models.MarketplaceCategories, {
+        foreignKey: "MarketplaceCategoryId",
+      });
     }
   }
   Marketplace.init(
@@ -23,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
       contact_position: DataTypes.STRING,
       demoUrl: DataTypes.STRING,
       topics: DataTypes.ARRAY(DataTypes.STRING),
+      twitter: DataTypes.STRING,
+      facebook: DataTypes.STRING,
+      linkedin: DataTypes.STRING,
+      instagram: DataTypes.STRING,
     },
     {
       sequelize,
