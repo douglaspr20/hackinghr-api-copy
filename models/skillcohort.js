@@ -11,11 +11,12 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      SkillCohort.hasMany(models.SkillCohortResources)
     }
   };
   SkillCohort.init({
     title: DataTypes.STRING,
-    description: DataTypes.STRING,
+    description: DataTypes.TEXT,
     objectives: DataTypes.STRING,
     image: DataTypes.STRING,
     categories: {
