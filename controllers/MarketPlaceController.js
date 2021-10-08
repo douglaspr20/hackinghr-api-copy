@@ -169,6 +169,10 @@ const MarketplaceController = () => {
           'contact_position',
           'topics',
           'demoUrl',
+          'twitter',
+          'facebook',
+          'linkedin',
+          'instagram',
         ];
         for (let item of fields) {
           if (body[item]) {
