@@ -221,6 +221,47 @@ const NotificationController = () => {
     }
   };
 
+  const setNotificationsUnRead = async (req, res) => {
+    const { notifications } = req.body;
+    const { user } = req;
+
+    try {
+      await Notification.update(
+        {
+          readers: Sequelize.fn(
+            "array_remove",
+            Sequelize.col("readers"),
+            user.id
+          ),
+        },
+        {
+          where: {
+            id: {
+              [Op.in]: notifications,
+            },
+          },
+        }
+      );
+
+      const totalCount = await Notification.count();
+
+      const readCount = await Notification.count({
+        where: {
+          readers: {
+            [Op.contains]: [user.id],
+          },
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ unread: totalCount - readCount });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
@@ -229,6 +270,7 @@ const NotificationController = () => {
     remove,
     createNotification,
     setNotificationsRead,
+    setNotificationsUnRead,
   };
 };
 

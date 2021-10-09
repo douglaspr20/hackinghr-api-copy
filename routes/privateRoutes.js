@@ -76,6 +76,8 @@ const privateRoutes = {
   "GET /notification": "NotificationController.getAll",
   "PUT /notification/mark-to-read":
     "NotificationController.setNotificationsRead",
+  "PUT /notification/mark-to-un-read":
+    "NotificationController.setNotificationsUnRead",
   "GET /course-classes-user/:course":
     "CourseClassUserController.getProgressCourseByUser",
   "POST /course-classes-user/": "CourseClassUserController.setProgress",
