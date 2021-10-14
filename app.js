@@ -12,7 +12,13 @@ const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
 const JourneyController = require("./controllers/JourneyController");
 const fileUpload = require("express-fileupload");
+const SkillCohortResourcesController = require("./controllers/SkillCohortResourcesController")
+const SkillCohortParticipantController = require("./controllers/SkillCohortParticipantController")
+const NotificationController = require("./controllers/NotificationController");
+const SkillCohortGroupingsController = require("./controllers/SkillCohortGroupingsController");
+const { EmailContent } = require('./enum')
 
+const smtpService = require("./services/smtp.service");
 const socketService = require("./services/socket.service");
 
 dotenv.config();
@@ -46,6 +52,52 @@ cron.schedule("* 0 * * *", () => {
   console.log("running a task every 1 day.");
   JourneyController().createNewItems();
 });
+
+// cron job that notifies a cohort participants that a resource for the day is available through notification and email 
+// cron.schedule('0 0 * * *', async () => {
+//   console.log("running a task every 12 midnight.");
+//   const skillCohortResources = await SkillCohortResourcesController().getResourcesToBeReleasedToday()
+//   const participants = await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(skillCohortResources)
+  
+//   const notifications = skillCohortResources.map((resource, indx) => {
+//     const participantIds = participants[indx].map((participant) => {
+//       return participant.UserId
+//     })
+
+//     return NotificationController().createNotification({
+//       message: `New Resource was created`,
+//       type: "resource",
+//       meta: resource,
+//       onlyFor: participantIds
+//     })
+//   })
+
+//   await Promise.all(notifications)
+
+//   const emailToBeSent = participants.map((participant) => {
+//     return participant.map(p => {
+//       const mailOptions = {
+//         from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+//         to: p.User.email,
+//         subject: `New Resource`,
+//         html: EmailContent.NEW_RESOURCE_EMAIL(p.User),
+//         contentType: "text/html",
+//       }
+      
+//       return smtpService().sendMail(mailOptions)
+//     })
+//   })
+
+//   await Promise.all(emailToBeSent.flat())
+// }, {
+//   timezone: "America/Los_Angeles"
+// })
+
+// async function display() {
+//   await SkillCohortGroupingsController().createSkillCohortGroups()
+// }
+
+// display()
 
 // allow cross origin requests
 // configure to only allow requests from certain origins

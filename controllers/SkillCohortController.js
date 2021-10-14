@@ -4,6 +4,7 @@ const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
+const moment = require('moment-timezone') 
 
 const SkillCohort = db.SkillCohort
 
@@ -60,7 +61,12 @@ const SkillCohortController = () => {
 
     const getAll = async (req, res) => {
         const { filter } = req.query
-        let where = {}
+        const dateToday = moment().tz("America/Los_Angeles").startOf('day').format('YYYY-MM-DD HH:mm:ssZ')
+        let where = {
+            endDate: {
+                [Op.gte]: dateToday
+            }
+        }
 
         try {
             if (filter && !isEmpty(JSON.parse(filter))) {
@@ -160,7 +166,28 @@ const SkillCohortController = () => {
         }
 
         return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Bad Request: Skill Cohort id is wrong."})
-    } 
+    }
+
+    const getAllActiveSkillCohorts = async () => {
+        try {
+            const dateToday = moment().tz("America/Los_Angeles").startOf('day').format('YYYY-MM-DD HH:mm:ssZ')
+            const allSkillCohorts = await SkillCohort.findAll({
+                where: {
+                    startDate: {
+                        [Op.lte]: dateToday,
+                    },
+                    endDate: {
+                        [Op.gte]: dateToday
+                    }
+                }
+            })
+
+            return allSkillCohorts
+        } catch (error) {
+            console.log(error)
+            return null
+        }
+    }
 
     return {
         create,
@@ -168,6 +195,7 @@ const SkillCohortController = () => {
         get,
         remove,
         update,
+        getAllActiveSkillCohorts
     }
 }
 

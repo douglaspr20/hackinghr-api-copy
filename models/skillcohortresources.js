@@ -11,9 +11,17 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      SkillCohortResources.hasMany(models.SkillCohortResourceResponse)
+      SkillCohortResources.hasMany(models.SkillCohortResponseAssessment)
+      SkillCohortResources.hasMany(models.SkillCohortResponseRating)
     }
   };
   SkillCohortResources.init({
+    title: DataTypes.STRING,
+    description: DataTypes.STRING,
+    level: DataTypes.ENUM('basic', 'intermediate', 'advance'),
+    type: DataTypes.ENUM('video', 'article', 'podcast'),
+    duration: DataTypes.STRING,
     resourceLink: DataTypes.STRING,
     releaseDate: DataTypes.DATE
   }, {

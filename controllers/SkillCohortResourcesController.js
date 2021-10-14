@@ -1,6 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
+const moment = require('moment-timezone') 
 
 const SkillCohortResources = db.SkillCohortResources
 
@@ -9,7 +10,7 @@ const SkillCohortResourcesController = () => {
         const { body } = req
 
         try {
-            const skillCohortResource = await SkillCohortResources.create({...body})
+            const skillCohortResource = await SkillCohortResources.create({ ...body })
             
             return res.status(HttpCodes.OK).json({ skillCohortResource })
         } catch(error) {
@@ -22,7 +23,7 @@ const SkillCohortResourcesController = () => {
     }
 
     const getAll = async (req, res) => {
-        const { startDate } = req.query
+        const { filter } = req.query
         const { skillCohortId } = req.params
 
         let where = {
@@ -30,14 +31,14 @@ const SkillCohortResourcesController = () => {
         }
 
         try {
-            if (startDate) {
+            if (filter) {
                 where = {
                     ...where,
                     releaseDate: {
-                        [Op.gte]: startDate
+                        [Op.lte]: moment(filter).tz("America/Los_Angeles").format('YYYY-MM-DD HH:mm:ssZ')
                     }
                 }
-            }
+        }
             
             const skillCohortResources = await SkillCohortResources.findAll({
                 where,
@@ -122,12 +123,23 @@ const SkillCohortResourcesController = () => {
         }
     }
 
+    const getResourcesToBeReleasedToday = async () => {
+        const dateToday = moment().tz("America/Los_Angeles").format('YYYY-MM-DD')
+
+        return await SkillCohortResources.findAll({
+            where: {
+                releaseDate: dateToday
+            },
+        })
+    }
+
     return {
         create,
         getAll,
         get,
         remove,
-        update
+        update,
+        getResourcesToBeReleasedToday
     }
 }
 

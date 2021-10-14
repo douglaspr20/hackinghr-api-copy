@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Notification extends Model {
+  class SkillCohortGrouping extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,23 +11,15 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      SkillCohortGrouping.hasMany(models.SkillCohortGroupingMember)
     }
   };
-  Notification.init({
-    message: DataTypes.STRING,
-    type: DataTypes.STRING,
-    meta: DataTypes.JSON,
-    readers: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: [],
-    },
-    onlyFor: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: []
-    }
+  SkillCohortGrouping.init({
+    groupNumber: DataTypes.NUMBER,
+    currentWeekNumber: DataTypes.NUMBER
   }, {
     sequelize,
-    modelName: 'Notification',
+    modelName: 'SkillCohortGrouping',
   });
-  return Notification;
+  return SkillCohortGrouping;
 };
