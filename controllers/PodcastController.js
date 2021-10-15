@@ -44,7 +44,7 @@ const PodcastController = () => {
           },
         };
       }
-      
+
       let podcast = await Podcast.findAll({
         where,
         order: [["order", "DESC"]],
@@ -94,7 +94,7 @@ const PodcastController = () => {
           },
         };
       }
-      
+
       let podcasts = await Podcast.findAndCountAll({
         where,
         offset: (filter.page - 1) * filter.num,
@@ -174,7 +174,7 @@ const PodcastController = () => {
           id: podcast.id,
           title: req.body.title,
           imageUrl,
-        }
+        };
       }
 
       await NotificationController().createNotification({
@@ -252,7 +252,7 @@ const PodcastController = () => {
           }
         }
 
-        console.log('***** data ', data);
+        console.log("***** data ", data);
 
         await Podcast.update(data, {
           where: { id },
@@ -354,6 +354,40 @@ const PodcastController = () => {
     }
   };
 
+  const markAsViewed = async (req, res) => {
+    const { id: podcastId, mark } = req.body;
+    const { id: userId } = req.token;
+
+    if (podcastId) {
+      try {
+        let prev = await Podcast.findOne({ where: { id: podcastId } });
+        prev = prev.toJSON();
+        const [numberOfAffectedRows, affectedRows] = await Podcast.update(
+          {
+            viewed: { ...prev.viewed, [userId]: mark },
+          },
+          {
+            where: { id: podcastId },
+            returning: true,
+            plain: true,
+          }
+        );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Podcast id is wrong" });
+  };
+
   return {
     getAll,
     get,
@@ -363,6 +397,7 @@ const PodcastController = () => {
     getChannelPodcasts,
     deleteChannelPodcast,
     searchPodcast,
+    markAsViewed,
   };
 };
 
