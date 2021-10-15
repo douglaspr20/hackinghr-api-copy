@@ -20,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
   };
   SkillCohortParticipant.init({
     hasAccess: DataTypes.BOOLEAN,
+    numberOfCommentStrike: DataTypes.INTEGER,
+    numberOfAssessmentStrike: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'SkillCohortParticipant',

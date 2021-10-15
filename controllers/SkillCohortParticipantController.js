@@ -130,6 +130,7 @@ const SkillCohortParticipantController = () => {
     const getAllParticipantsByListOfSkillCohortResources = async (skillCohortResources) => {
         const participants = skillCohortResources.map((resource) => {
             const id = resource.SkillCohortId
+
             return SkillCohortParticipant.findAll({
                 where: {
                     SkillCohortId: id,
@@ -150,10 +151,79 @@ const SkillCohortParticipantController = () => {
                     hasAccess: "TRUE"
                 },
                 include: db.User,
+                raw: true,
+                nest: true
             })
         }) || []
 
         return Promise.all(participants)
+    }
+
+    const incrementCommentStrike = async (participant, SkillCohortId) => {
+
+        try {
+            await SkillCohortParticipant.increment({
+                numberOfCommentStrike: +1
+            },
+            {
+                where: {
+                    SkillCohortId,
+                    id: participant.id
+                }
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const incrementAssessmentStrike = async (participant, SkillCohortId) => {
+
+        try {
+            await SkillCohortParticipant.increment({
+                numberOfAssessmentStrike: +1
+            },
+            {
+                where: {
+                    SkillCohortId,
+                    id: participant.id
+                }
+            })
+        } catch(error) {
+            console.log(error)
+        }
+    }
+
+    const removeParticipantAccess = async (participant, SkillCohortId) => {
+
+        try {
+            await SkillCohortParticipant.update({
+                hasAccess: "FALSE",
+            }, 
+            {
+                where: {
+                    SkillCohortId,
+                    id: participant.id,
+                }
+            })
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const resetCounter = async () => {
+        try {
+            SkillCohortParticipant.update({
+                numberOfCommentStrike: 0,
+                numberOfAssessmentStrike: 0
+            },
+            {
+                where: {
+                    hasAccess: "TRUE"
+                }
+            })
+        } catch(error) {
+            console.log(error)
+        }
     }
 
     return {
@@ -162,7 +232,11 @@ const SkillCohortParticipantController = () => {
         getAll,
         getAllParticipantsByListOfSkillCohortResources,
         getParticipantInAllCohortById,
-        getAllParticipantsByListOfSkillCohort
+        getAllParticipantsByListOfSkillCohort,
+        incrementCommentStrike,
+        removeParticipantAccess,
+        resetCounter,
+        incrementAssessmentStrike
     }
 }
 

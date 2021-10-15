@@ -4,6 +4,8 @@ const { Op } = require("sequelize");
 const moment = require('moment-timezone') 
 
 const SkillCohortResources = db.SkillCohortResources
+const SkillCohort = db.SkillCohort
+const SkillCohortParticipant = db.SkillCohortParticipant
 
 const SkillCohortResourcesController = () => {
     const create = async (req, res) => {
@@ -133,13 +135,40 @@ const SkillCohortResourcesController = () => {
         })
     }
 
+    const getYesterdayResourcesByCohortIds = async () => {
+        const yesterdayDate = moment().tz("America/Los_Angeles").startOf('day').subtract(1, 'day').format("YYYY-MM-DD HH:mm:ssZ")
+        const dateToday = moment().tz("America/Los_Angeles").startOf('day').format('YYYY-MM-DD HH:mm:ssZ')
+
+        const allResources = await SkillCohortResources.findAll({
+            where: {
+                releaseDate: yesterdayDate,
+            },
+            include: {
+                model: SkillCohort,
+                where: {
+                    startDate: {
+                        [Op.lte]: dateToday,
+                    },
+                    endDate: {
+                        [Op.gte]: dateToday
+                    }
+                },
+            },
+            raw: true,
+            nest: true
+        })
+
+        return allResources
+    }
+
     return {
         create,
         getAll,
         get,
         remove,
         update,
-        getResourcesToBeReleasedToday
+        getResourcesToBeReleasedToday,
+        getYesterdayResourcesByCohortIds
     }
 }
 

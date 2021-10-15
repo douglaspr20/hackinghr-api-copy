@@ -17,8 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   SkillCohortGroupingMember.init({
-    numberOfCommentStrike: DataTypes.NUMBER,
-    numberOfAssessmentStrike: DataTypes.NUMBER
+
   }, {
     sequelize,
     modelName: 'SkillCohortGroupingMember',

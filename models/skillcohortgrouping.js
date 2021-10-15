@@ -16,7 +16,9 @@ module.exports = (sequelize, DataTypes) => {
   };
   SkillCohortGrouping.init({
     groupNumber: DataTypes.NUMBER,
-    currentWeekNumber: DataTypes.NUMBER
+    currentWeekNumber: DataTypes.NUMBER,
+    meetingLink: DataTypes.STRING,
+    meetingDateTime: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'SkillCohortGrouping',

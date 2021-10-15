@@ -2,6 +2,7 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op, Sequelize } = require("sequelize");
 const moment = require('moment-timezone') 
+const { uniqBy } = require('lodash')
 
 const SkillCohortResourceResponse = db.SkillCohortResourceResponse
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment
@@ -84,6 +85,8 @@ const SkillCohortResourceResponseController = () => {
                 ...allSkillCohortResourceResponses,
             ]
 
+            allSkillCohortResourceResponses = uniqBy(allSkillCohortResourceResponses, 'id')
+
             console.log(allSkillCohortResourceResponses)
             return res.status(HttpCodes.OK).json({ allSkillCohortResourceResponses })
         } catch(error) {
@@ -131,11 +134,35 @@ const SkillCohortResourceResponseController = () => {
         }
     }
 
+    const checkIfParticipantHasRespondedToTheResource = async (skillCohort, participant) => {
+        const SkillCohortResourceId = skillCohort.SkillCohortResources.id
+        const SkillCohortParticipantId = participant.id
+
+        try {
+            const resourceResponse = await SkillCohortResourceResponse.findOne({
+                where: {
+                    SkillCohortResourceId,
+                    SkillCohortParticipantId
+                }
+            })
+
+            if (!resourceResponse) {
+                return false
+            }
+
+            return true
+        } catch(error) {
+            console.log(error)
+            return false
+        }
+    }
+
     return {
         create,
         get,
         getAllExceptCurrentUser,
-        update
+        update,
+        checkIfParticipantHasRespondedToTheResource
     }
 }
 

@@ -7,6 +7,8 @@ const s3Service = require("../services/s3.service");
 const moment = require('moment-timezone') 
 
 const SkillCohort = db.SkillCohort
+const SkillCohortResources = db.SkillCohortResources
+const SkillCohortParticipant = db.SkillCohortParticipant
 
 const SkillCohortController = () => {
     const create = async (req, res) => {
@@ -168,9 +170,10 @@ const SkillCohortController = () => {
         return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Bad Request: Skill Cohort id is wrong."})
     }
 
-    const getAllActiveSkillCohorts = async () => {
+    const getAllActiveSkillCohortsWithResource = async (passedDate) => {
         try {
             const dateToday = moment().tz("America/Los_Angeles").startOf('day').format('YYYY-MM-DD HH:mm:ssZ')
+
             const allSkillCohorts = await SkillCohort.findAll({
                 where: {
                     startDate: {
@@ -179,7 +182,40 @@ const SkillCohortController = () => {
                     endDate: {
                         [Op.gte]: dateToday
                     }
-                }
+                },
+                include: {
+                    model: SkillCohortResources,
+                    where: {
+                        releaseDate: passedDate,
+                    },
+                    required: true
+                },
+                raw: true,
+                nest: true
+            })
+
+            return allSkillCohorts
+        } catch (error) {
+            console.log(error)
+            return null
+        }
+    }
+
+    const getAllActiveSkillCohorts = async () => {
+        try {
+            const dateToday = moment().tz("America/Los_Angeles").startOf('day').format('YYYY-MM-DD HH:mm:ssZ')
+
+            const allSkillCohorts = await SkillCohort.findAll({
+                where: {
+                    startDate: {
+                        [Op.lte]: dateToday,
+                    },
+                    endDate: {
+                        [Op.gte]: dateToday
+                    }
+                },
+                raw: true,
+                nest: true
             })
 
             return allSkillCohorts
@@ -195,6 +231,7 @@ const SkillCohortController = () => {
         get,
         remove,
         update,
+        getAllActiveSkillCohortsWithResource,
         getAllActiveSkillCohorts
     }
 }

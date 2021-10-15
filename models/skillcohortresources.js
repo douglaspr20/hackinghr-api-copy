@@ -14,6 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       SkillCohortResources.hasMany(models.SkillCohortResourceResponse)
       SkillCohortResources.hasMany(models.SkillCohortResponseAssessment)
       SkillCohortResources.hasMany(models.SkillCohortResponseRating)
+      SkillCohortResources.belongsTo(models.SkillCohort, { foreignKey: "SkillCohortId" })
     }
   };
   SkillCohortResources.init({

@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const { Op, Sequelize } = require("sequelize");
 const moment = require('moment-timezone')
 const qs = require('query-string')
+const { flatten, isEmpty } = require('lodash')
 
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment
 
@@ -36,7 +37,7 @@ const SkillCohortResourceResponseAssessmentController = () => {
                     SkillCohortResourceId,
                     SkillCohortParticipantId,
                     SkillCohortResourceResponseId: {
-                        [Op.in]: parsedIds.ids
+                        [Op.in]: flatten([parsedIds.ids])
                     }
                 }
             })
@@ -76,10 +77,34 @@ const SkillCohortResourceResponseAssessmentController = () => {
         }
     }
 
+    const checkIfParticipantHasAssessedOtherComments = async (skillCohort, participant) => {
+        const SkillCohortResourceId = skillCohort.SkillCohortResources.id
+        const SkillCohortParticipantId = participant.id
+
+        try {
+            const allAssessments = await SkillCohortResponseAssessment.findAll({
+                where: {
+                    SkillCohortResourceId,
+                    SkillCohortParticipantId
+                }
+            })
+
+            if (isEmpty(allAssessments) || allAssessments.length < 3) {
+                return false
+            }
+
+            return true
+        } catch(error) {
+            console.log(error)
+            return false
+        }
+    }
+
     return {
         create,
         getAllAssessmentByIds,
-        upsertAssessment
+        upsertAssessment,
+        checkIfParticipantHasAssessedOtherComments
     }
 }
 
