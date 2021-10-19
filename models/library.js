@@ -69,6 +69,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      duration: DataTypes.STRING,
+      viewed: {
+        type: DataTypes.JSON,
+        defaultValue: {},
+      },
     },
     {
       sequelize,
