@@ -1,9 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const { Op, Sequelize } = require("sequelize");
-const moment = require("moment-timezone");
-const qs = require("query-string");
-const { flatten, isEmpty } = require("lodash");
+const { Op } = require("sequelize");
 
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
 
@@ -44,8 +41,6 @@ const SkillCohortResourceResponseAssessmentController = () => {
       resourceId: SkillCohortResourceId,
       participantId: SkillCohortParticipantId,
     } = req.params;
-    const { ids } = req.query;
-    const parsedIds = qs.parse(`ids=${ids}`, { arrayFormat: "comma" });
 
     try {
       const allSkillCohortResourceResponseAssessments =
@@ -54,7 +49,7 @@ const SkillCohortResourceResponseAssessmentController = () => {
             SkillCohortResourceId,
             SkillCohortParticipantId,
             SkillCohortResourceResponseId: {
-              [Op.in]: flatten([parsedIds.ids]),
+              [Op.in]: Object.values(req.query),
             },
           },
         });
