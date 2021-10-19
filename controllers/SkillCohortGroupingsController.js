@@ -11,9 +11,9 @@ const SkillCohortGrouping = db.SkillCohortGrouping;
 const SkillCohortGroupingMember = db.SkillCohortGroupingMember;
 
 const SkillCohortGroupingsController = () => {
-  /**
-   * Create skill cohort groups
-   */
+	/**
+	 * Create skill cohort groups
+	 */
 	const createSkillCohortGroups = async () => {
 		try {
 			const allSkillCohorts = await SkillCohortController().getAllActiveSkillCohorts();
@@ -88,11 +88,11 @@ const SkillCohortGroupingsController = () => {
 		}
 	};
 
-  /**
-   * Get all skill cohort groups
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get all skill cohort groups
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const getAll = async (req, res) => {
 		const { cohortId: SkillCohortId, currentWeekNumber } = req.params;
 
@@ -118,11 +118,11 @@ const SkillCohortGroupingsController = () => {
 		}
 	};
 
-  /**
-   * Get a skill cohort group
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get a skill cohort group
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const get = async (req, res) => {
 		const { groupId } = req.params;
 
@@ -150,11 +150,11 @@ const SkillCohortGroupingsController = () => {
 		}
 	};
 
-  /**
-   * Update a skill cohort
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Update a skill cohort
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const update = async (req, res) => {
 		const { body } = req;
 		const { groupId } = req.params;
