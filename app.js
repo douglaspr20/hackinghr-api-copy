@@ -12,18 +12,18 @@ const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
 const JourneyController = require("./controllers/JourneyController");
 const fileUpload = require("express-fileupload");
-const SkillCohortResourcesController = require("./controllers/SkillCohortResourcesController")
-const SkillCohortParticipantController = require("./controllers/SkillCohortParticipantController")
+const SkillCohortResourcesController = require("./controllers/SkillCohortResourcesController");
+const SkillCohortParticipantController = require("./controllers/SkillCohortParticipantController");
 const NotificationController = require("./controllers/NotificationController");
 const SkillCohortGroupingsController = require("./controllers/SkillCohortGroupingsController");
-const SkillCohortController = require('./controllers/SkillCohortController')
-const SkillCohortResourceResponseController = require('./controllers/SkillCohortResourceResponseController')
-const SkillCohortResourceResponseAssessmentController = require('./controllers/SkillCohortResourceResponseAssessmentController')
+const SkillCohortController = require("./controllers/SkillCohortController");
+const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
+const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 
-const moment = require('moment-timezone')
+const moment = require("moment-timezone");
 
-const { compact } = require('lodash')
-const { EmailContent } = require('./enum')
+const { compact } = require("lodash");
+const { EmailContent } = require("./enum");
 
 const smtpService = require("./services/smtp.service");
 const socketService = require("./services/socket.service");
@@ -61,110 +61,167 @@ cron.schedule("* 0 * * *", () => {
 });
 
 // cron job that resets the assessment and comment strike to 0
-cron.schedule("3 0 * * mon", async () => {
-  await SkillCohortParticipantController().resetCounter()
-},{
-  timezone: "America/Los_Angeles"
-})
+cron.schedule(
+  "3 0 * * mon",
+  async () => {
+    await SkillCohortParticipantController().resetCounter();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
 
 // Creating a cron job which runs every day. Checks if participants have responded to a resource and kick them if they havent
-cron.schedule("0 0 0 * * *", async () => {
-  let cohortCtr = 0
+cron.schedule(
+  "0 0 0 * * *",
+  async () => {
+    let cohortCtr = 0;
 
-  const yesterdayDate = moment().tz("America/Los_Angeles").startOf('day').subtract(1, 'day').format("YYYY-MM-DD HH:mm:ssZ")
-  const allActiveSkillCohortsWithYesterdayResource = await SkillCohortController().getAllActiveSkillCohortsWithResource(yesterdayDate)
+    const yesterdayDate = moment()
+      .tz("America/Los_Angeles")
+      .startOf("day")
+      .subtract(1, "day")
+      .format("YYYY-MM-DD HH:mm:ssZ");
+    const allActiveSkillCohortsWithYesterdayResource =
+      await SkillCohortController().getAllActiveSkillCohortsWithResource(
+        yesterdayDate
+      );
 
-  const jaggedParticipants = await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(allActiveSkillCohortsWithYesterdayResource)
+    const jaggedParticipants =
+      await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
+        allActiveSkillCohortsWithYesterdayResource
+      );
 
-  jaggedParticipants.map((participants) => {
-    participants.map(async (participant) => {
-      const skillCohort = allActiveSkillCohortsWithYesterdayResource[cohortCtr]
+    jaggedParticipants.map((participants) => {
+      participants.map(async (participant) => {
+        const skillCohort =
+          allActiveSkillCohortsWithYesterdayResource[cohortCtr];
 
-      const hasResponded = await SkillCohortResourceResponseController().checkIfParticipantHasRespondedToTheResource(skillCohort, participant)
+        const hasResponded =
+          await SkillCohortResourceResponseController().checkIfParticipantHasRespondedToTheResource(
+            skillCohort,
+            participant
+          );
 
-      if (!hasResponded) {
-        if (participant.numberOfCommentStrike === 1) {
-          await SkillCohortParticipantController().removeParticipantAccess(participant, skillCohort.id)
-        } else {
-          await SkillCohortParticipantController().incrementCommentStrike(participant, skillCohort.id)
+        if (!hasResponded) {
+          if (participant.numberOfCommentStrike === 1) {
+            await SkillCohortParticipantController().removeParticipantAccess(
+              participant,
+              skillCohort.id
+            );
+          } else {
+            await SkillCohortParticipantController().incrementCommentStrike(
+              participant,
+              skillCohort.id
+            );
+          }
         }
-      }
-    })
-    cohortCtr++
-  })
+      });
+      cohortCtr++;
+    });
 
-  const dayBeforeYesterday = moment().tz("America/Los_Angeles").startOf('day').subtract(2, 'day').format("YYYY-MM-DD HH:mm:ssZ")
-  const allActiveSkillCohortsWithDayBeforeYesterdayResource = await SkillCohortController().getAllActiveSkillCohortsWithResource(dayBeforeYesterday)
+    const dayBeforeYesterday = moment()
+      .tz("America/Los_Angeles")
+      .startOf("day")
+      .subtract(2, "day")
+      .format("YYYY-MM-DD HH:mm:ssZ");
+    const allActiveSkillCohortsWithDayBeforeYesterdayResource =
+      await SkillCohortController().getAllActiveSkillCohortsWithResource(
+        dayBeforeYesterday
+      );
 
-  cohortCtr = 0
+    cohortCtr = 0;
 
-  jaggedParticipants.map((participants) => {
-    participants.map(async (participant) => {
-      const skillCohort = allActiveSkillCohortsWithDayBeforeYesterdayResource[cohortCtr]
+    jaggedParticipants.map((participants) => {
+      participants.map(async (participant) => {
+        const skillCohort =
+          allActiveSkillCohortsWithDayBeforeYesterdayResource[cohortCtr];
 
-      const hasAssessed = await SkillCohortResourceResponseAssessmentController().checkIfParticipantHasAssessedOtherComments(skillCohort, participant)
+        const hasAssessed =
+          await SkillCohortResourceResponseAssessmentController().checkIfParticipantHasAssessedOtherComments(
+            skillCohort,
+            participant
+          );
 
-      if (!hasAssessed) {
-        if (participant.numberOfAssessmentStrike === 1) {
-          await SkillCohortParticipantController().removeParticipantAccess(participant, skillCohort.id)
-        } else {
-          await SkillCohortParticipantController().incrementAssessmentStrike(participant, skillCohort.id)
+        if (!hasAssessed) {
+          if (participant.numberOfAssessmentStrike === 1) {
+            await SkillCohortParticipantController().removeParticipantAccess(
+              participant,
+              skillCohort.id
+            );
+          } else {
+            await SkillCohortParticipantController().incrementAssessmentStrike(
+              participant,
+              skillCohort.id
+            );
+          }
         }
-      }
-    })
-    cohortCtr++
-  })
+      });
+      cohortCtr++;
+    });
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
 
-}, {
-  timezone: "America/Los_Angeles"
-})
+// cron job that notifies a cohort participants that a resource for the day is available through notification and email
+cron.schedule(
+  "5 0 * * *",
+  async () => {
+    console.log("running a task every 12 midnight.");
+    const skillCohortResources =
+      await SkillCohortResourcesController().getResourcesToBeReleasedToday();
+    const participants =
+      await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(
+        skillCohortResources
+      );
 
-// cron job that notifies a cohort participants that a resource for the day is available through notification and email 
-cron.schedule('5 0 * * *', async () => {
-  console.log("running a task every 12 midnight.");
-  const skillCohortResources = await SkillCohortResourcesController().getResourcesToBeReleasedToday()
-  const participants = await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(skillCohortResources)
-  
-  const notifications = skillCohortResources.map((resource, indx) => {
-    const participantIds = participants[indx].map((participant) => {
-      return participant.UserId
-    })
+    const notifications = skillCohortResources.map((resource, indx) => {
+      const participantIds = participants[indx].map((participant) => {
+        return participant.UserId;
+      });
 
-    return NotificationController().createNotification({
-      message: `New Resource was created`,
-      type: "resource",
-      meta: resource,
-      onlyFor: participantIds
-    })
-  })
+      return NotificationController().createNotification({
+        message: `New Resource was created`,
+        type: "resource",
+        meta: resource,
+        onlyFor: participantIds,
+      });
+    });
 
-  await Promise.all(notifications)
+    await Promise.all(notifications);
 
-  const emailToBeSent = participants.map((participant) => {
-    return participant.map(p => {
-      const mailOptions = {
-        from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        to: p.User.email,
-        subject: `New Resource`,
-        html: EmailContent.NEW_RESOURCE_EMAIL(p.User),
-        contentType: "text/html",
-      }
-      
-      return smtpService().sendMail(mailOptions)
-    })
-  })
+    const emailToBeSent = participants.map((participant) => {
+      return participant.map((p) => {
+        const mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: p.User.email,
+          subject: `New Resource`,
+          html: EmailContent.NEW_RESOURCE_EMAIL(p.User),
+          contentType: "text/html",
+        };
 
-  await Promise.all(emailToBeSent.flat())
-}, {
-  timezone: "America/Los_Angeles"
-})
+        return smtpService().sendMail(mailOptions);
+      });
+    });
 
-cron.schedule("10 0 * * mon", async () => {
-  await SkillCohortGroupingsController().createSkillCohortGroups()
-},{
-  timezone: "America/Los_Angeles"
-})
+    await Promise.all(emailToBeSent.flat());
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
 
+cron.schedule(
+  "10 0 * * mon",
+  async () => {
+    await SkillCohortGroupingsController().createSkillCohortGroups();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
 
 // allow cross origin requests
 // configure to only allow requests from certain origins
