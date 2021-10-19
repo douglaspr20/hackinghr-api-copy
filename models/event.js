@@ -81,6 +81,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      startAndEndTimes: {
+        type: DataTypes.ARRAY(DataTypes.JSON),
+        defaultValue: []
+      }
     },
     {
       sequelize,
