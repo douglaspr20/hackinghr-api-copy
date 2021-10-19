@@ -16,51 +16,81 @@ const SkillCohortGroupingsController = () => {
 	 */
 	const createSkillCohortGroups = async () => {
 		try {
-			const allSkillCohorts = await SkillCohortController().getAllActiveSkillCohorts();
+			const allSkillCohorts =
+				await SkillCohortController().getAllActiveSkillCohorts();
 			const jaggedListOfSkillCohortParticipants =
-				await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(allSkillCohorts);
+				await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
+					allSkillCohorts,
+				);
 
-			const groupedSkillCohortParticipants = jaggedListOfSkillCohortParticipants.map(
-				(listOfSkillCohortParticipants) => {
-					const length = listOfSkillCohortParticipants.length;
+			const groupedSkillCohortParticipants =
+				jaggedListOfSkillCohortParticipants.map(
+					(listOfSkillCohortParticipants) => {
+						const length = listOfSkillCohortParticipants.length;
 
-					if (length > 0) {
-						const remainder = length % 5;
-						const shuffledListOfSkillCohortParticipants = shuffle(listOfSkillCohortParticipants);
+						if (length > 0) {
+							const remainder = length % 5;
+							const shuffledListOfSkillCohortParticipants =
+								shuffle(listOfSkillCohortParticipants);
 
-						if (remainder >= 3) {
-							return chunk(shuffledListOfSkillCohortParticipants, 3);
-						} else {
-							const remainderSkillCohortParticipant = shuffledListOfSkillCohortParticipants.slice(
-								length - remainder,
-								length,
-							);
-							const splicedListOfSkillCohortParticipants = shuffledListOfSkillCohortParticipants.splice(
-								0,
-								length - remainder,
-							);
-							const chunkedListOfSkillCohortParticipants = chunk(splicedListOfSkillCohortParticipants, 5);
-
-							if (!isEmpty(chunkedListOfSkillCohortParticipants)) {
-								chunkedListOfSkillCohortParticipants[0].push(...remainderSkillCohortParticipant);
+							if (remainder >= 3) {
+								return chunk(
+									shuffledListOfSkillCohortParticipants,
+									3,
+								);
 							} else {
-								chunkedListOfSkillCohortParticipants.push(remainderSkillCohortParticipant);
+								const remainderSkillCohortParticipant =
+									shuffledListOfSkillCohortParticipants.slice(
+										length - remainder,
+										length,
+									);
+								const splicedListOfSkillCohortParticipants =
+									shuffledListOfSkillCohortParticipants.splice(
+										0,
+										length - remainder,
+									);
+								const chunkedListOfSkillCohortParticipants =
+									chunk(
+										splicedListOfSkillCohortParticipants,
+										5,
+									);
+
+								if (
+									!isEmpty(
+										chunkedListOfSkillCohortParticipants,
+									)
+								) {
+									chunkedListOfSkillCohortParticipants[0].push(
+										...remainderSkillCohortParticipant,
+									);
+								} else {
+									chunkedListOfSkillCohortParticipants.push(
+										remainderSkillCohortParticipant,
+									);
+								}
+
+								return chunkedListOfSkillCohortParticipants;
 							}
-
-							return chunkedListOfSkillCohortParticipants;
 						}
-					}
-				},
-			);
+					},
+				);
 
-			const compactGroupedSkillCohortParticipants = compact(groupedSkillCohortParticipants);
+			const compactGroupedSkillCohortParticipants = compact(
+				groupedSkillCohortParticipants,
+			);
 			const dateToday = moment().tz('Americas/Los_Angeles');
 
 			compactGroupedSkillCohortParticipants.map((jaggedParticipants) => {
-				const SkillCohortId = jaggedParticipants[0][0].dataValues.SkillCohortId;
-				const skillCohort = allSkillCohorts.find((skillCohort) => skillCohort.id === SkillCohortId);
-				const startDate = moment(skillCohort.dataValues.startDate).tz('America/Los_Angeles');
-				const currentWeekNumber = dateToday.diff(startDate, 'weeks') + 1;
+				const SkillCohortId =
+					jaggedParticipants[0][0].dataValues.SkillCohortId;
+				const skillCohort = allSkillCohorts.find(
+					(skillCohort) => skillCohort.id === SkillCohortId,
+				);
+				const startDate = moment(skillCohort.dataValues.startDate).tz(
+					'America/Los_Angeles',
+				);
+				const currentWeekNumber =
+					dateToday.diff(startDate, 'weeks') + 1;
 
 				jaggedParticipants.map(async (listOfParticipants, y) => {
 					const skillCohortGroup = await SkillCohortGrouping.create({
@@ -172,13 +202,16 @@ const SkillCohortGroupingsController = () => {
 				});
 			}
 
-			const [numberOfAffectedRows, affectedRows] = await SkillCohortGrouping.update(body, {
-				where: {
-					id: groupId,
-				},
-			});
+			const [numberOfAffectedRows, affectedRows] =
+				await SkillCohortGrouping.update(body, {
+					where: {
+						id: groupId,
+					},
+				});
 
-			return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows });
+			return res
+				.status(HttpCodes.OK)
+				.json({ numberOfAffectedRows, affectedRows });
 		} catch (error) {
 			console.error(error);
 			return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({

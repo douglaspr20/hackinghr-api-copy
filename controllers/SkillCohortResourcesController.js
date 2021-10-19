@@ -7,16 +7,18 @@ const SkillCohortResources = db.SkillCohortResources;
 const SkillCohort = db.SkillCohort;
 
 const SkillCohortResourcesController = () => {
-  /**
-   * Create resources
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Create resources
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const create = async (req, res) => {
 		const { body } = req;
 
 		try {
-			const skillCohortResource = await SkillCohortResources.create({ ...body });
+			const skillCohortResource = await SkillCohortResources.create({
+				...body,
+			});
 
 			return res.status(HttpCodes.OK).json({ skillCohortResource });
 		} catch (error) {
@@ -28,11 +30,11 @@ const SkillCohortResourcesController = () => {
 		}
 	};
 
-  /**
-   * Get all resources
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get all resources
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const getAll = async (req, res) => {
 		const { filter } = req.query;
 		const { skillCohortId } = req.params;
@@ -46,7 +48,9 @@ const SkillCohortResourcesController = () => {
 				where = {
 					...where,
 					releaseDate: {
-						[Op.lte]: moment(filter).tz('America/Los_Angeles').format('YYYY-MM-DD HH:mm:ssZ'),
+						[Op.lte]: moment(filter)
+							.tz('America/Los_Angeles')
+							.format('YYYY-MM-DD HH:mm:ssZ'),
 					},
 				};
 			}
@@ -66,11 +70,11 @@ const SkillCohortResourcesController = () => {
 		}
 	};
 
-  /**
-   * Get resource
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get resource
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const get = async (req, res) => {
 		const { resourceId } = req.params;
 
@@ -83,24 +87,26 @@ const SkillCohortResourcesController = () => {
 				});
 
 				if (!skillCohortResource) {
-					return res
-						.status(HttpCodes.BAD_REQUEST)
-						.json({ msg: 'Bad Request: Skill Cohort Resource not found.' });
+					return res.status(HttpCodes.BAD_REQUEST).json({
+						msg: 'Bad Request: Skill Cohort Resource not found.',
+					});
 				}
 
 				return res.status(HttpCodes.OK).json({ skillCohortResource });
 			} catch (error) {
 				console.log(error);
-				return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Internal server error.' });
+				return res
+					.status(HttpCodes.INTERNAL_SERVER_ERROR)
+					.json({ msg: 'Internal server error.' });
 			}
 		}
 	};
 
-  /**
-   * Remove a resource
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Remove a resource
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const remove = async (req, res) => {
 		const { resourceId } = req.params;
 
@@ -114,43 +120,54 @@ const SkillCohortResourcesController = () => {
 				return res.status(HttpCodes.OK).json({});
 			} catch (error) {
 				console.log(error);
-				return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Internal server error' });
+				return res
+					.status(HttpCodes.INTERNAL_SERVER_ERROR)
+					.json({ msg: 'Internal server error' });
 			}
 		}
 
-		return res.status(HttpCodes.BAD_REQUEST).json({ msg: 'Bad Request: Skill Cohort id is wrong.' });
+		return res
+			.status(HttpCodes.BAD_REQUEST)
+			.json({ msg: 'Bad Request: Skill Cohort id is wrong.' });
 	};
 
-  /**
-   * Update a resource
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Update a resource
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const update = async (req, res) => {
 		const { resourceId } = req.params;
 		const reqSkillCohortResource = req.body;
 
 		if (resourceId) {
 			try {
-				const [numberOfAffectedRows, affectedRows] = await SkillCohortResources.update(reqSkillCohortResource, {
-					where: { id: resourceId },
-					returning: true,
-					plain: true,
-				});
+				const [numberOfAffectedRows, affectedRows] =
+					await SkillCohortResources.update(reqSkillCohortResource, {
+						where: { id: resourceId },
+						returning: true,
+						plain: true,
+					});
 
-				return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows });
+				return res
+					.status(HttpCodes.OK)
+					.json({ numberOfAffectedRows, affectedRows });
 			} catch (error) {
 				console.log(error);
-				return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Internal server error' });
+				return res
+					.status(HttpCodes.INTERNAL_SERVER_ERROR)
+					.json({ msg: 'Internal server error' });
 			}
 		}
 	};
 
-  /**
-   * Get resources released today
-   */
+	/**
+	 * Get resources released today
+	 */
 	const getResourcesToBeReleasedToday = async () => {
-		const dateToday = moment().tz('America/Los_Angeles').format('YYYY-MM-DD');
+		const dateToday = moment()
+			.tz('America/Los_Angeles')
+			.format('YYYY-MM-DD');
 
 		return await SkillCohortResources.findAll({
 			where: {
@@ -159,16 +176,19 @@ const SkillCohortResourcesController = () => {
 		});
 	};
 
-  /**
-   * Get yesterday's released resource by id's
-   */
+	/**
+	 * Get yesterday's released resource by id's
+	 */
 	const getYesterdayResourcesByCohortIds = async () => {
 		const yesterdayDate = moment()
 			.tz('America/Los_Angeles')
 			.startOf('day')
 			.subtract(1, 'day')
 			.format('YYYY-MM-DD HH:mm:ssZ');
-		const dateToday = moment().tz('America/Los_Angeles').startOf('day').format('YYYY-MM-DD HH:mm:ssZ');
+		const dateToday = moment()
+			.tz('America/Los_Angeles')
+			.startOf('day')
+			.format('YYYY-MM-DD HH:mm:ssZ');
 
 		const allResources = await SkillCohortResources.findAll({
 			where: {

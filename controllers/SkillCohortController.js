@@ -8,14 +8,13 @@ const moment = require('moment-timezone');
 
 const SkillCohort = db.SkillCohort;
 const SkillCohortResources = db.SkillCohortResources;
-const SkillCohortParticipant = db.SkillCohortParticipant;
 
 const SkillCohortController = () => {
-  /**
-   * Method to create skill cohorts
-   * @param {*} req 
-   * @param {*} res  
-   */
+	/**
+	 * Method to create skill cohorts
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const create = async (req, res) => {
 		const { body } = req;
 
@@ -25,7 +24,11 @@ const SkillCohortController = () => {
 			};
 
 			if (skillCohortInfo.image) {
-				skillCohortInfo.image = await s3Service().getSkillCohortImageUrl('', skillCohortInfo.image);
+				skillCohortInfo.image =
+					await s3Service().getSkillCohortImageUrl(
+						'',
+						skillCohortInfo.image,
+					);
 			}
 
 			const skillCohort = await SkillCohort.create(skillCohortInfo);
@@ -40,11 +43,11 @@ const SkillCohortController = () => {
 		}
 	};
 
-  /**
-   * Method to get a skill cohort
-   * @param {*} req 
-   * @param {*} res  
-   */
+	/**
+	 * Method to get a skill cohort
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const get = async (req, res) => {
 		const { id } = req.params;
 
@@ -57,25 +60,32 @@ const SkillCohortController = () => {
 				});
 
 				if (!skillCohort) {
-					return res.status(HttpCodes.BAD_REQUEST).json({ msg: 'Bad Request: Skill Cohort not found.' });
+					return res
+						.status(HttpCodes.BAD_REQUEST)
+						.json({ msg: 'Bad Request: Skill Cohort not found.' });
 				}
 
 				return res.status(HttpCodes.OK).json({ skillCohort });
 			} catch (error) {
 				console.log(error);
-				return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Internal server error.' });
+				return res
+					.status(HttpCodes.INTERNAL_SERVER_ERROR)
+					.json({ msg: 'Internal server error.' });
 			}
 		}
 	};
 
-  /**
-   * Method to get all skill cohorts
-   * @param {*} req 
-   * @param {*} res  
-   */
+	/**
+	 * Method to get all skill cohorts
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const getAll = async (req, res) => {
 		const { filter } = req.query;
-		const dateToday = moment().tz('America/Los_Angeles').startOf('day').format('YYYY-MM-DD HH:mm:ssZ');
+		const dateToday = moment()
+			.tz('America/Los_Angeles')
+			.startOf('day')
+			.format('YYYY-MM-DD HH:mm:ssZ');
 		let where = {
 			endDate: {
 				[Op.gte]: dateToday,
@@ -107,11 +117,11 @@ const SkillCohortController = () => {
 		}
 	};
 
-  /**
-   * Method to update a skill cohort
-   * @param {*} req 
-   * @param {*} res  
-   */
+	/**
+	 * Method to update a skill cohort
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const update = async (req, res) => {
 		const { id } = req.params;
 		const reqSkillCohort = req.body;
@@ -129,40 +139,55 @@ const SkillCohortController = () => {
 				});
 
 				if (!fetchedSkillCohort) {
-					return res.status(HttpCodes.BAD_GATEWAY).json({ msg: 'Bad Request: Skill Cohort not found.' });
+					return res
+						.status(HttpCodes.BAD_GATEWAY)
+						.json({ msg: 'Bad Request: Skill Cohort not found.' });
 				}
 
 				if (reqSkillCohort.image && !isValidURL(reqSkillCohort.image)) {
-					skillCohortInfo.image = await s3Service().getSkillCohortImageUrl('', reqSkillCohort.image);
+					skillCohortInfo.image =
+						await s3Service().getSkillCohortImageUrl(
+							'',
+							reqSkillCohort.image,
+						);
 
 					if (fetchedSkillCohort.image) {
-						await s3Service().deleteUserPicture(fetchedSkillCohort.image);
+						await s3Service().deleteUserPicture(
+							fetchedSkillCohort.image,
+						);
 					}
 				}
 
 				if (fetchedSkillCohort.image && !reqSkillCohort.image) {
-					await s3Service().deleteUserPicture(fetchedSkillCohort.image);
+					await s3Service().deleteUserPicture(
+						fetchedSkillCohort.image,
+					);
 				}
 
-				const [numberOfAffectedRows, affectedRows] = await SkillCohort.update(skillCohortInfo, {
-					where: { id },
-					returning: true,
-					plain: true,
-				});
+				const [numberOfAffectedRows, affectedRows] =
+					await SkillCohort.update(skillCohortInfo, {
+						where: { id },
+						returning: true,
+						plain: true,
+					});
 
-				return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows });
+				return res
+					.status(HttpCodes.OK)
+					.json({ numberOfAffectedRows, affectedRows });
 			} catch (error) {
 				console.log(error);
-				return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Internal server error' });
+				return res
+					.status(HttpCodes.INTERNAL_SERVER_ERROR)
+					.json({ msg: 'Internal server error' });
 			}
 		}
 	};
 
-  /**
-   * Method to remove a skill cohort
-   * @param {*} req 
-   * @param {*} res  
-   */
+	/**
+	 * Method to remove a skill cohort
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const remove = async (req, res) => {
 		const { id } = req.params;
 
@@ -177,20 +202,27 @@ const SkillCohortController = () => {
 				return res.status(HttpCodes.OK).json({});
 			} catch (error) {
 				console.log(error);
-				return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({ msg: 'Internal server error' });
+				return res
+					.status(HttpCodes.INTERNAL_SERVER_ERROR)
+					.json({ msg: 'Internal server error' });
 			}
 		}
 
-		return res.status(HttpCodes.BAD_REQUEST).json({ msg: 'Bad Request: Skill Cohort id is wrong.' });
+		return res
+			.status(HttpCodes.BAD_REQUEST)
+			.json({ msg: 'Bad Request: Skill Cohort id is wrong.' });
 	};
 
-  /**
-   * Method to get all active skill cohort with the associated skill cohort resource
-   * @param {DATETIME} passedDate  
-   */
+	/**
+	 * Method to get all active skill cohort with the associated skill cohort resource
+	 * @param {DATETIME} passedDate
+	 */
 	const getAllActiveSkillCohortsWithResource = async (passedDate) => {
 		try {
-			const dateToday = moment().tz('America/Los_Angeles').startOf('day').format('YYYY-MM-DD HH:mm:ssZ');
+			const dateToday = moment()
+				.tz('America/Los_Angeles')
+				.startOf('day')
+				.format('YYYY-MM-DD HH:mm:ssZ');
 
 			const allSkillCohorts = await SkillCohort.findAll({
 				where: {
@@ -219,12 +251,15 @@ const SkillCohortController = () => {
 		}
 	};
 
-  /**
-   * Get all active skill cohort 
-   */
+	/**
+	 * Get all active skill cohort
+	 */
 	const getAllActiveSkillCohorts = async () => {
 		try {
-			const dateToday = moment().tz('America/Los_Angeles').startOf('day').format('YYYY-MM-DD HH:mm:ssZ');
+			const dateToday = moment()
+				.tz('America/Los_Angeles')
+				.startOf('day')
+				.format('YYYY-MM-DD HH:mm:ssZ');
 
 			const allSkillCohorts = await SkillCohort.findAll({
 				where: {

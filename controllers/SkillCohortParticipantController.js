@@ -7,17 +7,20 @@ const SkillCohortParticipant = db.SkillCohortParticipant;
 const SkillCohort = db.SkillCohort;
 
 const SkillCohortParticipantController = () => {
-  /**
-   * Create a skill cohort participant
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Create a skill cohort participant
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const create = async (req, res) => {
 		const { SkillCohortId, UserId } = req.body;
 		const { user } = req;
 
 		try {
-			const skillCohortParticipant = await SkillCohortParticipant.create({ SkillCohortId, UserId });
+			const skillCohortParticipant = await SkillCohortParticipant.create({
+				SkillCohortId,
+				UserId,
+			});
 			const skillCohort = await SkillCohort.findOne({
 				where: {
 					id: SkillCohortId,
@@ -35,7 +38,9 @@ const SkillCohortParticipantController = () => {
 
 				await smtpService().sendMail(mailOptions);
 
-				return res.status(HttpCodes.OK).json({ skillCohortParticipant });
+				return res
+					.status(HttpCodes.OK)
+					.json({ skillCohortParticipant });
 			}
 
 			return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -51,26 +56,28 @@ const SkillCohortParticipantController = () => {
 		}
 	};
 
-  /**
-   * Get a skill cohort participant
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get a skill cohort participant
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const get = async (req, res) => {
 		const { skillCohortId, userId } = req.params;
 
 		try {
-			const skillCohortParticipant = await SkillCohortParticipant.findOne({
-				where: {
-					SkillCohortId: skillCohortId,
-					UserId: userId,
+			const skillCohortParticipant = await SkillCohortParticipant.findOne(
+				{
+					where: {
+						SkillCohortId: skillCohortId,
+						UserId: userId,
+					},
 				},
-			});
+			);
 
 			if (!skillCohortParticipant) {
-				return res
-					.status(HttpCodes.BAD_REQUEST)
-					.json({ msg: 'Bad Request: Skill Cohort Participant not found.' });
+				return res.status(HttpCodes.BAD_REQUEST).json({
+					msg: 'Bad Request: Skill Cohort Participant not found.',
+				});
 			}
 
 			return res.status(HttpCodes.OK).json({ skillCohortParticipant });
@@ -82,11 +89,11 @@ const SkillCohortParticipantController = () => {
 		}
 	};
 
-  /**
-   * Get all skill cohort participants
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get all skill cohort participants
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const getAll = async (req, res) => {
 		const { skillCohortId } = req.params;
 
@@ -98,12 +105,15 @@ const SkillCohortParticipantController = () => {
 				};
 			}
 
-			const allSkillCohortParticipants = await SkillCohortParticipant.findAll({
-				where,
-				include: db.User,
-			});
+			const allSkillCohortParticipants =
+				await SkillCohortParticipant.findAll({
+					where,
+					include: db.User,
+				});
 
-			return res.status(HttpCodes.OK).json({ allSkillCohortParticipants });
+			return res
+				.status(HttpCodes.OK)
+				.json({ allSkillCohortParticipants });
 		} catch (error) {
 			console.log(error);
 			return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -113,11 +123,11 @@ const SkillCohortParticipantController = () => {
 		}
 	};
 
-  /**
-   * Get all participants in a skill cohort
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get all participants in a skill cohort
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const getParticipantInAllCohortById = async (req, res) => {
 		const { userId } = req.params;
 
@@ -130,12 +140,15 @@ const SkillCohortParticipantController = () => {
 				};
 			}
 
-			const allSkillCohortParticipants = await SkillCohortParticipant.findAll({
-				where,
-				include: db.User,
-			});
+			const allSkillCohortParticipants =
+				await SkillCohortParticipant.findAll({
+					where,
+					include: db.User,
+				});
 
-			return res.status(HttpCodes.OK).json({ allSkillCohortParticipants });
+			return res
+				.status(HttpCodes.OK)
+				.json({ allSkillCohortParticipants });
 		} catch (error) {
 			console.log(error);
 			return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -145,11 +158,13 @@ const SkillCohortParticipantController = () => {
 		}
 	};
 
-  /**
-   * Get each of all skill cohort participants by the given skill cohort resources
-   * @param {*} skillCohortResources 
-   */
-	const getAllParticipantsByListOfSkillCohortResources = async (skillCohortResources) => {
+	/**
+	 * Get each of all skill cohort participants by the given skill cohort resources
+	 * @param {*} skillCohortResources
+	 */
+	const getAllParticipantsByListOfSkillCohortResources = async (
+		skillCohortResources,
+	) => {
 		const participants = skillCohortResources.map((resource) => {
 			const id = resource.SkillCohortId;
 
@@ -165,10 +180,10 @@ const SkillCohortParticipantController = () => {
 		return Promise.all(participants);
 	};
 
-  /**
-   * Get all participants by the list of skill cohort
-   * @param {*} allSkillCohorts 
-   */
+	/**
+	 * Get all participants by the list of skill cohort
+	 * @param {*} allSkillCohorts
+	 */
 	const getAllParticipantsByListOfSkillCohort = async (allSkillCohorts) => {
 		const participants =
 			allSkillCohorts.map((skillCohort) => {
@@ -186,11 +201,11 @@ const SkillCohortParticipantController = () => {
 		return Promise.all(participants);
 	};
 
-  /**
-   * Increment comment strike
-   * @param {*} participant 
-   * @param {*} SkillCohortId 
-   */
+	/**
+	 * Increment comment strike
+	 * @param {*} participant
+	 * @param {*} SkillCohortId
+	 */
 	const incrementCommentStrike = async (participant, SkillCohortId) => {
 		try {
 			await SkillCohortParticipant.increment(
@@ -209,11 +224,11 @@ const SkillCohortParticipantController = () => {
 		}
 	};
 
-  /**
-   * Increment assessment strike
-   * @param {*} participant 
-   * @param {*} SkillCohortId 
-   */
+	/**
+	 * Increment assessment strike
+	 * @param {*} participant
+	 * @param {*} SkillCohortId
+	 */
 	const incrementAssessmentStrike = async (participant, SkillCohortId) => {
 		try {
 			await SkillCohortParticipant.increment(
@@ -232,11 +247,11 @@ const SkillCohortParticipantController = () => {
 		}
 	};
 
-  /**
-   * Remove participant access 
-   * @param {*} participant 
-   * @param {*} SkillCohortId 
-   */
+	/**
+	 * Remove participant access
+	 * @param {*} participant
+	 * @param {*} SkillCohortId
+	 */
 	const removeParticipantAccess = async (participant, SkillCohortId) => {
 		try {
 			await SkillCohortParticipant.update(
@@ -255,9 +270,9 @@ const SkillCohortParticipantController = () => {
 		}
 	};
 
-  /**
-   * Reset strike counters
-   */
+	/**
+	 * Reset strike counters
+	 */
 	const resetCounter = async () => {
 		try {
 			SkillCohortParticipant.update(

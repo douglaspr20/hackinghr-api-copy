@@ -8,20 +8,23 @@ const { flatten, isEmpty } = require('lodash');
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
 
 const SkillCohortResourceResponseAssessmentController = () => {
-  /**
-   * Create skill cohort assessment
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Create skill cohort assessment
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const create = async (req, res) => {
 		const { body } = req;
 
 		try {
-			const skillCohortResourceResponseAssessment = await SkillCohortResponseAssessment.create({
-				...body,
-			});
+			const skillCohortResourceResponseAssessment =
+				await SkillCohortResponseAssessment.create({
+					...body,
+				});
 
-			return res.status(HttpCodes.OK).json({ skillCohortResourceResponseAssessment });
+			return res
+				.status(HttpCodes.OK)
+				.json({ skillCohortResourceResponseAssessment });
 		} catch (error) {
 			console.log(error);
 			return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -31,28 +34,34 @@ const SkillCohortResourceResponseAssessmentController = () => {
 		}
 	};
 
-  /**
-   * Get all skill cohort assessment 
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Get all skill cohort assessment
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const getAllAssessmentByIds = async (req, res) => {
-		const { resourceId: SkillCohortResourceId, participantId: SkillCohortParticipantId } = req.params;
+		const {
+			resourceId: SkillCohortResourceId,
+			participantId: SkillCohortParticipantId,
+		} = req.params;
 		const { ids } = req.query;
 		const parsedIds = qs.parse(`ids=${ids}`, { arrayFormat: 'comma' });
 
 		try {
-			const allSkillCohortResourceResponseAssessments = await SkillCohortResponseAssessment.findAll({
-				where: {
-					SkillCohortResourceId,
-					SkillCohortParticipantId,
-					SkillCohortResourceResponseId: {
-						[Op.in]: flatten([parsedIds.ids]),
+			const allSkillCohortResourceResponseAssessments =
+				await SkillCohortResponseAssessment.findAll({
+					where: {
+						SkillCohortResourceId,
+						SkillCohortParticipantId,
+						SkillCohortResourceResponseId: {
+							[Op.in]: flatten([parsedIds.ids]),
+						},
 					},
-				},
-			});
+				});
 
-			return res.status(HttpCodes.OK).json({ allSkillCohortResourceResponseAssessments });
+			return res
+				.status(HttpCodes.OK)
+				.json({ allSkillCohortResourceResponseAssessments });
 		} catch (error) {
 			console.log(error);
 			return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -62,30 +71,33 @@ const SkillCohortResourceResponseAssessmentController = () => {
 		}
 	};
 
-  /**
-   * Update or insert an assessment
-   * @param {*} req 
-   * @param {*} res 
-   */
+	/**
+	 * Update or insert an assessment
+	 * @param {*} req
+	 * @param {*} res
+	 */
 	const upsertAssessment = async (req, res) => {
 		const { body } = req;
 
 		try {
-			const [skillCohortResourceResponseAssessment, isCreated] = await SkillCohortResponseAssessment.upsert(
-				body.payload,
-				{
+			const [skillCohortResourceResponseAssessment, isCreated] =
+				await SkillCohortResponseAssessment.upsert(body.payload, {
 					returning: true,
-				},
-			);
+				});
 
-			const allSkillCohortResourceResponseAssessments = await SkillCohortResponseAssessment.findAll({
-				where: {
-					SkillCohortResourceId: skillCohortResourceResponseAssessment.SkillCohortResourceId,
-					SkillCohortParticipantId: skillCohortResourceResponseAssessment.SkillCohortParticipantId,
-				},
-			});
+			const allSkillCohortResourceResponseAssessments =
+				await SkillCohortResponseAssessment.findAll({
+					where: {
+						SkillCohortResourceId:
+							skillCohortResourceResponseAssessment.SkillCohortResourceId,
+						SkillCohortParticipantId:
+							skillCohortResourceResponseAssessment.SkillCohortParticipantId,
+					},
+				});
 
-			return res.status(HttpCodes.OK).json({ allSkillCohortResourceResponseAssessments });
+			return res
+				.status(HttpCodes.OK)
+				.json({ allSkillCohortResourceResponseAssessments });
 		} catch (error) {
 			console.log(error);
 			return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -95,12 +107,15 @@ const SkillCohortResourceResponseAssessmentController = () => {
 		}
 	};
 
-  /**
-   * Check if participant has assessed other comments
-   * @param {*} skillCohort 
-   * @param {*} participant 
-   */
-	const checkIfParticipantHasAssessedOtherComments = async (skillCohort, participant) => {
+	/**
+	 * Check if participant has assessed other comments
+	 * @param {*} skillCohort
+	 * @param {*} participant
+	 */
+	const checkIfParticipantHasAssessedOtherComments = async (
+		skillCohort,
+		participant,
+	) => {
 		const SkillCohortResourceId = skillCohort.SkillCohortResources.id;
 		const SkillCohortParticipantId = participant.id;
 
