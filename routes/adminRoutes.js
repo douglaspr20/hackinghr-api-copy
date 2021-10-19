@@ -71,7 +71,10 @@ const adminRoutes = {
   "PUT /skill-cohort/:id": "SkillCohortController.update",
   "POST /skill-cohort/resource": "SkillCohortResourcesController.create",
   "DELETE /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.remove",
-  "PUT /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.update"
+  "PUT /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.update",
+  "GET /skill-cohort/:cohortId/groupings/:currentWeekNumber": "SkillCohortGroupingsController.getAll",
+  "GET /skill-cohort/grouping/:groupId": "SkillCohortGroupingsController.get",
+  "PUT /skill-cohort/grouping/:groupId": "SkillCohortGroupingsController.update"
 };
 
 module.exports = adminRoutes;

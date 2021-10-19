@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ARRAY(DataTypes.INTEGER),
       defaultValue: [],
     },
+    onlyFor: {
+      type: DataTypes.ARRAY(DataTypes.INTEGER),
+      defaultValue: []
+    }
   }, {
     sequelize,
     modelName: 'Notification',

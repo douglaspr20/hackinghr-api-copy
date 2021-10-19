@@ -116,7 +116,20 @@ const privateRoutes = {
   "GET /skill-cohort": "SkillCohortController.getAll",
   "GET /skill-cohort/:id": "SkillCohortController.get",
   "GET /skill-cohort/:skillCohortId/resources": "SkillCohortResourcesController.getAll",
-  "GET /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.get"
+  "GET /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.get",
+  "POST /skill-cohort/participant": "SkillCohortParticipantController.create",
+  "GET /skill-cohort/:skillCohortId/participant/:userId": "SkillCohortParticipantController.get",
+  "GET /skill-cohort/:skillCohortId/participants/": "SkillCohortParticipantController.getAll",
+  "GET /skill-cohort/participant/:userId": "SkillCohortParticipantController.getParticipantInAllCohortById",
+  "POST /skill-cohort/resource/:resourceId/response": "SkillCohortResourceResponseController.create",
+  "PUT /skill-cohort/response/:responseId": "SkillCohortResourceResponseController.update",
+  "GET /skill-cohort/resource/:resourceId/participant/:participantId/response": "SkillCohortResourceResponseController.get",
+  "GET /skill-cohort/resource/:resourceId/responses/:participantId": "SkillCohortResourceResponseController.getAllExceptCurrentUser",
+  "POST /skill-cohort/response/assessment": "SkillCohortResourceResponseAssessmentController.create",
+  "GET /skill-cohort/resource/:resourceId/participant/:participantId/assessments": "SkillCohortResourceResponseAssessmentController.getAllAssessmentByIds",
+  "POST /skill-cohort/resource/assessment/upsert": "SkillCohortResourceResponseAssessmentController.upsertAssessment",
+  "POST /skill-cohort/response/rating": "SkillCohortResponseRatingController.upsert",
+  "GET /skill-cohort/resource/:resourceId/participant/:participantId/ratings": "SkillCohortResponseRatingController.getAllByIds"
 };
 
 module.exports = privateRoutes;
