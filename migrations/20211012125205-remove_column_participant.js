@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -8,17 +8,14 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-     await queryInterface.removeColumn('SkillCohortParticipants', 'numberOfAssessmentStrike')
-     await queryInterface.removeColumn('SkillCohortParticipants', 'numberOfCommentStrike')
-
-     await queryInterface.addColumn(
-      'SkillCohortResources',
-      'title',
-      {
-        type: Sequelize.STRING,
-        allowNull: false,
-      }
-    )
+    await queryInterface.removeColumn(
+      "SkillCohortParticipants",
+      "numberOfAssessmentStrike"
+    );
+    await queryInterface.removeColumn(
+      "SkillCohortParticipants",
+      "numberOfCommentStrike"
+    );
   },
 
   down: async (queryInterface, Sequelize) => {
@@ -28,26 +25,24 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-     await queryInterface.addColumn(
-      'SkillCohortParticipants',
-      'numberOfAssessmentStrike',
+    await queryInterface.addColumn(
+      "SkillCohortParticipants",
+      "numberOfAssessmentStrike",
       {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
       }
-    )
+    );
 
-     await queryInterface.addColumn(
-      'SkillCohortParticipants',
-      'numberOfCommentStrike',
+    await queryInterface.addColumn(
+      "SkillCohortParticipants",
+      "numberOfCommentStrike",
       {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0
+        defaultValue: 0,
       }
-    )
-
-    await queryInterface.removeColumn('SkillCohortResources', 'title')
-  }
+    );
+  },
 };
