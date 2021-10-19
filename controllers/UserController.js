@@ -158,7 +158,12 @@ const UserController = () => {
   };
 
   const getEventDescription = (rawData) => {
-    return rawData ? rawData.blocks.map((item) => item.text).join(`/n`) : "";
+    if (rawData) {
+      if (rawData.blocks) {
+        return rawData.blocks.map((item) => item.text).join(`/n`);
+      }
+    }
+    return "";
   };
 
   const generateAttendEmail = async (user, event) => {
