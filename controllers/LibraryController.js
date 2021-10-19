@@ -580,6 +580,40 @@ const LibraryController = () => {
       .json({ msg: "Bad Request: Library id is wrong" });
   };
 
+  const markAsViewed = async (req, res) => {
+    const { id: libraryId, mark } = req.body;
+    const { id: userId } = req.token;
+
+    if (libraryId) {
+      try {
+        let prev = await Library.findOne({ where: { id: libraryId } });
+        prev = prev.toJSON();
+        const [numberOfAffectedRows, affectedRows] = await Library.update(
+          {
+            viewed: { ...prev.viewed, [userId]: mark },
+          },
+          {
+            where: { id: libraryId },
+            returning: true,
+            plain: true,
+          }
+        );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Library id is wrong" });
+  };
+
   return {
     create,
     share,
@@ -594,6 +628,7 @@ const LibraryController = () => {
     getChannelLibraries,
     deleteChannelLibrary,
     claim,
+    markAsViewed,
   };
 };
 
