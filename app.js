@@ -67,12 +67,6 @@ cron.schedule("3 0 * * mon", async () => {
   timezone: "America/Los_Angeles"
 })
 
-async function display() {
-  
-}
-
-display()
-
 // Creating a cron job which runs every day. Checks if participants have responded to a resource and kick them if they havent
 cron.schedule("0 0 0 * * *", async () => {
   let cohortCtr = 0
