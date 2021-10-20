@@ -654,6 +654,7 @@ const EventController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
+    const { day } = req.query
 
     try {
       const event = await Event.findOne({
@@ -667,11 +668,21 @@ const EventController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      const startDate = convertToLocalTime(
-        event.startDate,
+      let date = moment(event.startDate).add(day, 'day').format("YYYY-MM-DD")
+
+      const startTime = moment(event.startAndEndTimes[day].startTime).format("HH:mm:ss")
+      let startDate = moment(`${date}  ${startTime}`)
+
+      const endTime = moment(event.startAndEndTimes[day].endTime).format("HH:mm:ss")
+      let endDate = moment(`${date}  ${endTime}`)
+
+      startDate = convertToLocalTime(
+        startDate,
         "YYYY-MM-DD h:mm a"
       );
-      const endDate = convertToLocalTime(event.endDate, "YYYY-MM-DD h:mm a");
+
+      endDate = convertToLocalTime(endDate, "YYYY-MM-DD h:mm a");
+
       const localTimezone = moment.tz.guess();
 
       const calendarInvite = smtpService().generateCalendarInvite(
