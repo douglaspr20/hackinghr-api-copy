@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       ticket: {
         type: DataTypes.STRING,
         defaultValue: "free",
-        values: ["free", "priced"],
+        values: ["free", "premium"],
       },
       type: DataTypes.ARRAY(DataTypes.STRING),
       location: DataTypes.ARRAY(DataTypes.STRING),
