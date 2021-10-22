@@ -36,6 +36,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: [],
       },
       link: DataTypes.STRING,
+      recertification_credits: DataTypes.STRING,
     },
     {
       sequelize,

@@ -17,6 +17,7 @@ const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
 const Event = db.Event;
+const AnnualConference = db.AnnualConference;
 
 const UserController = () => {
   const getUser = async (req, res) => {
@@ -500,6 +501,29 @@ const UserController = () => {
     const { id } = req.params;
 
     try {
+      const query = `
+      SELECT public."AnnualConferences"."startTime" FROM public."Users" 
+      LEFT JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[]) 
+      WHERE public."Users"."id" = ${user.id}
+    `;
+
+      const userSessions = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      const sessionToSchedule = await AnnualConference.findOne({
+        where: { id },
+        attributes: ["startTime"],
+      });
+
+      for (const session of userSessions) {
+        if (session.startTime === sessionToSchedule.dataValues.startTime) {
+          return res.status(HttpCodes.BAD_REQUEST).json({
+            msg: "You already have a conference scheduled at the same time and date",
+          });
+        }
+      }
+
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
