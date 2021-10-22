@@ -172,15 +172,17 @@ cron.schedule(
     console.log("running a task every 12 midnight.");
     const skillCohortResources =
       await SkillCohortResourcesController().getResourcesToBeReleasedToday();
-    const participants =
+    const jaggedListOfParticipants =
       await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(
         skillCohortResources
       );
 
     const notifications = skillCohortResources.map((resource, indx) => {
-      const participantIds = participants[indx].map((participant) => {
-        return participant.UserId;
-      });
+      const participantIds = jaggedListOfParticipants[indx].map(
+        (participants) => {
+          return participants.UserId;
+        }
+      );
 
       return NotificationController().createNotification({
         message: `New Resource was created`,
@@ -192,13 +194,21 @@ cron.schedule(
 
     await Promise.all(notifications);
 
-    const emailToBeSent = participants.map((participant) => {
-      return participant.map((p) => {
+    const emailToBeSent = jaggedListOfParticipants.map((participants) => {
+      return participants.map((participant) => {
+        const cohort = participant.SkillCohort;
+        const resource = skillCohortResources.find((resource) => {
+          return resource.SkillCohortId === cohort.id;
+        });
+
+        const user = participant.User;
+
+        console.log(cohort);
         const mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          to: p.User.email,
+          to: participant.User.email,
           subject: `New Resource`,
-          html: EmailContent.NEW_RESOURCE_EMAIL(p.User),
+          html: EmailContent.NEW_RESOURCE_EMAIL(user, resource),
           contentType: "text/html",
         };
 

@@ -165,7 +165,11 @@ const SkillCohortResourcesController = () => {
    * Get resources released today
    */
   const getResourcesToBeReleasedToday = async () => {
-    const dateToday = moment().tz("America/Los_Angeles").format("YYYY-MM-DD");
+    const dateToday = moment()
+      .tz("America/Los_Angeles")
+      .startOf("day")
+      .utc()
+      .format("YYYY-MM-DD HH:mm:ssZ");
 
     return await SkillCohortResources.findAll({
       where: {
@@ -210,6 +214,21 @@ const SkillCohortResourcesController = () => {
     return allResources;
   };
 
+  const batchWrite = async (req, res) => {
+    const { skillCohortResources } = req.body;
+    console.log(skillCohortResources, "shesh");
+    try {
+      const allSkillCohortResources =
+        SkillCohortResources.bulkCreate(skillCohortResources);
+
+      return res.status(HttpCodes.OK).json({ allSkillCohortResources });
+    } catch (error) {
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
@@ -218,6 +237,7 @@ const SkillCohortResourcesController = () => {
     update,
     getResourcesToBeReleasedToday,
     getYesterdayResourcesByCohortIds,
+    batchWrite,
   };
 };
 

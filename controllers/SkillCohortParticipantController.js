@@ -163,7 +163,14 @@ const SkillCohortParticipantController = () => {
           SkillCohortId: id,
           hasAccess: "TRUE",
         },
-        include: db.User,
+        include: [
+          {
+            model: db.User,
+          },
+          {
+            model: db.SkillCohort,
+          },
+        ],
       });
     });
 
