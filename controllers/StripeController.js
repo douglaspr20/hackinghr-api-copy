@@ -283,7 +283,7 @@ const StripeController = () => {
           where: { email: customerInformation.email.toLowerCase() },
         });
       }
-      return res.status(HttpCodes.OK);
+      return res.status(HttpCodes.OK).send();
     } catch (err) {
       console.log(err);
       return res
