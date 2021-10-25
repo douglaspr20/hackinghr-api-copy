@@ -15,6 +15,7 @@ const publicRoutes = {
   "GET /marketPlace-categories/": "MarketplaceCategoriesController.getAll",
   "GET /event/:id/": "EventController.getEvent",
   "GET /event/ics/:id": "EventController.downloadICS",
+  "GET /global-conference/ics/:id": "AnnualConferenceController.downloadICS",
   "GET /category": "CategoryController.getAll",
   "GET /channel-category": "ChannelCategoryController.getAll",
   "GET /env/editor": "UserController.getEditorSignature",

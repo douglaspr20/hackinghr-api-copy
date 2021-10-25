@@ -474,11 +474,10 @@ const UserController = () => {
 
   const setAttendedToConference = async (req, res) => {
     const { user } = req;
-
     try {
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
-          attendedToConference: 1,
+          attendedToConference: user.attendedToConference === 0 ? 1 : 0,
         },
         {
           where: { id: user.id },
@@ -519,7 +518,7 @@ const UserController = () => {
       for (const session of userSessions) {
         if (session.startTime === sessionToSchedule.dataValues.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
-            msg: "You already have a conference scheduled at the same time and date",
+            msg: "You already have another session scheduled at the same time and date",
           });
         }
       }
