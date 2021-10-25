@@ -186,7 +186,7 @@ const UserController = () => {
     );
 
     const mailOptions = {
-      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      from: process.env.SEND_IN_BLUE_SMTP_USER,
       to: user.email,
       subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
       html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
@@ -213,7 +213,7 @@ const UserController = () => {
     console.log("**** mailOptions ", mailOptions);
     let sentResult = null;
     try {
-      sentResult = await smtpService().sendMail(mailOptions);
+      sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
     } catch (err) {
       console.log(err);
     }
