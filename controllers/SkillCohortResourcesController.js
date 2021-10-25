@@ -50,6 +50,8 @@ const SkillCohortResourcesController = () => {
           releaseDate: {
             [Op.lte]: moment(filter)
               .tz("America/Los_Angeles")
+              .startOf("day")
+              .utc()
               .format("YYYY-MM-DD HH:mm:ssZ"),
           },
         };
@@ -185,11 +187,13 @@ const SkillCohortResourcesController = () => {
     const yesterdayDate = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .subtract(1, "day")
       .format("YYYY-MM-DD HH:mm:ssZ");
     const dateToday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .format("YYYY-MM-DD HH:mm:ssZ");
 
     const allResources = await SkillCohortResources.findAll({

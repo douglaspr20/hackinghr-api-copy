@@ -80,8 +80,10 @@ cron.schedule(
     const yesterdayDate = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .subtract(1, "day")
       .format("YYYY-MM-DD HH:mm:ssZ");
+
     const allActiveSkillCohortsWithYesterdayResource =
       await SkillCohortController().getAllActiveSkillCohortsWithResource(
         yesterdayDate
@@ -123,8 +125,10 @@ cron.schedule(
     const dayBeforeYesterday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .subtract(2, "day")
       .format("YYYY-MM-DD HH:mm:ssZ");
+
     const allActiveSkillCohortsWithDayBeforeYesterdayResource =
       await SkillCohortController().getAllActiveSkillCohortsWithResource(
         dayBeforeYesterday
@@ -172,6 +176,7 @@ cron.schedule(
     console.log("running a task every 12 midnight.");
     const skillCohortResources =
       await SkillCohortResourcesController().getResourcesToBeReleasedToday();
+
     const jaggedListOfParticipants =
       await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(
         skillCohortResources

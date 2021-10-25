@@ -71,16 +71,20 @@ const SkillCohortGroupingsController = () => {
       const compactGroupedSkillCohortParticipants = compact(
         groupedSkillCohortParticipants
       );
-      const dateToday = moment().tz("Americas/Los_Angeles");
+
+      const dateToday = moment().tz("America/Los_Angeles").startOf("day").utc();
 
       compactGroupedSkillCohortParticipants.map((jaggedParticipants) => {
-        const SkillCohortId = jaggedParticipants[0][0].dataValues.SkillCohortId;
+        const SkillCohortId = jaggedParticipants[0][0]?.SkillCohortId || null;
         const skillCohort = allSkillCohorts.find(
           (skillCohort) => skillCohort.id === SkillCohortId
         );
-        const startDate = moment(skillCohort.dataValues.startDate).tz(
-          "America/Los_Angeles"
-        );
+
+        const startDate = moment(skillCohort.startDate)
+          .tz("America/Los_Angeles")
+          .startOf("day")
+          .utc();
+
         const currentWeekNumber = dateToday.diff(startDate, "weeks") + 1;
 
         jaggedParticipants.map(async (listOfParticipants, y) => {
@@ -91,8 +95,8 @@ const SkillCohortGroupingsController = () => {
           });
 
           listOfParticipants.map(async (participant) => {
-            const ParticipantId = participant.dataValues.id;
-            const UserId = participant.dataValues.UserId;
+            const ParticipantId = participant.id;
+            const UserId = participant.UserId;
 
             await SkillCohortGroupingMember.create({
               UserId,

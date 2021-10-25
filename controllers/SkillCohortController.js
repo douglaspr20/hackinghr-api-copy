@@ -84,6 +84,7 @@ const SkillCohortController = () => {
     const dateToday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .format("YYYY-MM-DD HH:mm:ssZ");
     let where = {
       endDate: {
@@ -218,6 +219,7 @@ const SkillCohortController = () => {
       const dateToday = moment()
         .tz("America/Los_Angeles")
         .startOf("day")
+        .utc()
         .format("YYYY-MM-DD HH:mm:ssZ");
 
       const allSkillCohorts = await SkillCohort.findAll({
@@ -255,6 +257,7 @@ const SkillCohortController = () => {
       const dateToday = moment()
         .tz("America/Los_Angeles")
         .startOf("day")
+        .utc()
         .format("YYYY-MM-DD HH:mm:ssZ");
 
       const allSkillCohorts = await SkillCohort.findAll({
