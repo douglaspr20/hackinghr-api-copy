@@ -229,7 +229,7 @@ cron.schedule(
 );
 
 cron.schedule(
-  "10 0 * * mon",
+  "10 0 * * tue",
   async () => {
     await SkillCohortGroupingsController().createSkillCohortGroups();
   },
