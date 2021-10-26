@@ -238,7 +238,8 @@ cron.schedule(
 );
 
 cron.schedule(
-  "16 2 * * 2", // 3AM Wednesday
+  // "16 2 * * 2", // 3AM Wednesday
+  "*/2 * * * *",
   async () => {
     console.log("****************Grouping****************");
     await SkillCohortGroupingsController().createSkillCohortGroups();
