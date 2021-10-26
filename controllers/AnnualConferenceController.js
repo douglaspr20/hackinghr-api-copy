@@ -106,20 +106,18 @@ const AnnualConferenceController = () => {
 
   const getAll = async (req, res) => {
     const { startTime, endTime } = req.query;
-
     try {
       let where = "";
 
       if (startTime && endTime) {
+        console.log(startTime);
         where = `WHERE public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}'`;
       }
 
       const query = `
         SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
         FROM public."AnnualConferences"
-        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
-        ${where}
-      `;
+        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
 
       const sessionList = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
@@ -134,21 +132,23 @@ const AnnualConferenceController = () => {
     }
   };
 
-  const getSessionsAddedByUser = async (req, res) => {
+  const getSessionsUser = async (req, res) => {
     const { userId } = req.query;
+
+    console.log(userId);
 
     try {
       const query = `
-    SELECT public."AnnualConferences".* FROM public."Users" 
-    LEFT JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[]) 
-    WHERE public."Users"."id" = ${userId}
-  `;
+      SELECT public."AnnualConferences".* FROM public."Users"
+      LEFT JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[])
+      WHERE public."Users"."id" = ${userId}
+    `;
 
       const sessionList = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
       });
 
-      return res.status(HttpCodes.OK).json({ conferences: sessionList });
+      return res.status(HttpCodes.OK).json({ sessionsUser: sessionList });
     } catch (error) {
       console.log(error);
       return res
@@ -199,7 +199,7 @@ const AnnualConferenceController = () => {
 
       let startDate = moment(annualConference.startTime).format("YYYY-MM-DD");
 
-      let endDate = moment(annualConference.endDate).format("YYYY-MM-DD");
+      let endDate = moment(annualConference.endTime).format("YYYY-MM-DD");
 
       const startTime = moment(annualConference.startTime).format("HH:mm:ss");
 
@@ -252,7 +252,7 @@ const AnnualConferenceController = () => {
   return {
     create,
     getAll,
-    getSessionsAddedByUser,
+    getSessionsUser,
     get,
     update,
     remove,
