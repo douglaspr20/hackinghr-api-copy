@@ -8,7 +8,7 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.addColumn("AnnualConferences", "meta", "meta", {
+    await queryInterface.addColumn("AnnualConferences", "meta", {
       type: Sequelize.TEXT,
       defaultValue: "",
     });

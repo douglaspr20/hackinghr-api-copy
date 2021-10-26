@@ -135,8 +135,6 @@ const AnnualConferenceController = () => {
   const getSessionsUser = async (req, res) => {
     const { userId } = req.query;
 
-    console.log(userId);
-
     try {
       const query = `
       SELECT public."AnnualConferences".* FROM public."Users"
