@@ -62,7 +62,7 @@ cron.schedule("* 0 * * *", () => {
 
 // cron job that resets the assessment and comment strike to 0
 cron.schedule(
-  "3 0 * * mon",
+  "0 0 * * 1", // 12AM every monday
   async () => {
     await SkillCohortParticipantController().resetCounter();
   },
@@ -73,7 +73,7 @@ cron.schedule(
 
 // Creating a cron job which runs every day. Checks if participants have responded to a resource and kick them if they havent
 cron.schedule(
-  "0 0 0 * * *",
+  "0 1 * * *", // 1AM every day
   async () => {
     let cohortCtr = 0;
 
@@ -171,7 +171,7 @@ cron.schedule(
 
 // cron job that notifies a cohort participants that a resource for the day is available through notification and email
 cron.schedule(
-  "5 0 * * *",
+  "0 2 * * *", // 2AM everyday
   async () => {
     console.log("running a task every 12 midnight.");
     const skillCohortResources =
@@ -229,7 +229,7 @@ cron.schedule(
 );
 
 cron.schedule(
-  "10 0 * * tue",
+  "0 3 * * 3", // 3AM Wednesday
   async () => {
     await SkillCohortGroupingsController().createSkillCohortGroups();
   },
