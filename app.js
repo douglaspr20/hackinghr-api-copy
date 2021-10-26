@@ -64,6 +64,10 @@ cron.schedule("* 0 * * *", () => {
 cron.schedule(
   "0 0 * * 1", // 12AM every monday
   async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Reset Counter****************");
     await SkillCohortParticipantController().resetCounter();
   },
   {
@@ -75,6 +79,10 @@ cron.schedule(
 cron.schedule(
   "0 1 * * *", // 1AM every day
   async () => {
+    console.log("****************Running task at 1AM everyday****************");
+    console.log(
+      "****************Checking comments and assessments****************"
+    );
     let cohortCtr = 0;
 
     const yesterdayDate = moment()
@@ -174,6 +182,7 @@ cron.schedule(
   "0 2 * * *", // 2AM everyday
   async () => {
     console.log("running a task every 12 midnight.");
+    console.log("****************Notification****************");
     const skillCohortResources =
       await SkillCohortResourcesController().getResourcesToBeReleasedToday();
 
@@ -229,8 +238,9 @@ cron.schedule(
 );
 
 cron.schedule(
-  "0 2 * * 2", // 3AM Wednesday
+  "13 0 * * 2", // 3AM Wednesday
   async () => {
+    console.log("****************Grouping****************");
     await SkillCohortGroupingsController().createSkillCohortGroups();
   },
   {
