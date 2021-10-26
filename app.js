@@ -179,8 +179,8 @@ cron.schedule(
 
 // cron job that notifies a cohort participants that a resource for the day is available through notification and email
 cron.schedule(
-  // "0 2 * * *", // 2AM everyday
-  "*/3 * * * *",
+  "0 2 * * *", // 2AM everyday
+  // '*/2 * * * *',
   async () => {
     console.log("running a task every 2 AM.");
     console.log("****************Notification****************");
