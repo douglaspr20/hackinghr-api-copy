@@ -3,6 +3,31 @@ const ical = require("ical-generator");
 const { EmailContent } = require("../enum");
 
 const smtpService = () => {
+  const sendMailUsingSendInBlue = async (mailOptions) => {
+    return await new Promise((resolve, reject) => {
+      const transporter = nodemailer.createTransport({
+        port: process.env.SEND_IN_BLUE_SMTP_PORT,
+        host: process.env.SEND_IN_BLUE_SMTP_HOST,
+        secure: process.env.SMTP_SECURE,
+        auth: {
+          user: process.env.SEND_IN_BLUE_SMTP_USER,
+          pass: process.env.SEND_IN_BLUE_SMTP_PASSWORD,
+        },
+        debug: false,
+      });
+
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.log(`********* smtpService Error: ${err}`);
+          resolve(false);
+        } else {
+          console.log(`********** smtpService Response: ${info.response}`);
+          resolve(true);
+        }
+      });
+    });
+  };
+
   const sendMail = async (mailOptions) => {
     return await new Promise((resolve, reject) => {
       /**
@@ -24,9 +49,9 @@ const smtpService = () => {
         secure: process.env.SMTP_SECURE,
         auth: {
           user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
-          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD
+          pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
         },
-        debug: false
+        debug: false,
       });
 
       /**
@@ -110,6 +135,7 @@ const smtpService = () => {
     sendMail,
     generateCalendarInvite,
     sendMatchEvent,
+    sendMailUsingSendInBlue,
   };
 };
 
