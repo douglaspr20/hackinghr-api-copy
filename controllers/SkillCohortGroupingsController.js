@@ -73,7 +73,6 @@ const SkillCohortGroupingsController = () => {
       );
 
       const dateToday = moment().tz("America/Los_Angeles").startOf("day").utc();
-      console.log("date today", dateToday.format("YYYY-MM-DD HH:mm:ssZ"));
 
       compactGroupedSkillCohortParticipants.map((jaggedParticipants) => {
         const SkillCohortId = jaggedParticipants[0][0]?.SkillCohortId || null;
