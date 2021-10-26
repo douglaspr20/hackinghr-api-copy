@@ -1,6 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const UserRoles = require("../enum").USER_ROLE;
+const smtpService = require("../services/smtp.service");
+const { LabEmails } = require("../enum");
 
 const Stripe = require("stripe");
 const stripe = Stripe(process.env.STRIPE_SK_KEY);
@@ -282,8 +284,16 @@ const StripeController = () => {
         await User.update(newUserData, {
           where: { email: customerInformation.email.toLowerCase() },
         });
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_USER,
+          to: user.email,
+          subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+          html: LabEmails.USER_BECOME_PREMIUM.body(user),
+        };
+        await smtpService().sendMailUsingSendInBlue(mailOptions);
       }
-      return res.status(HttpCodes.OK);
+      return res.status(HttpCodes.OK).send();
     } catch (err) {
       console.log(err);
       return res

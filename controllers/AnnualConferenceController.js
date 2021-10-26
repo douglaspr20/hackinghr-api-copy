@@ -58,14 +58,12 @@ const AnnualConferenceController = () => {
           .json({ msg: "Bad Request: Conference not found." });
       }
 
-      const [
-        numberOfAffectedRows,
-        affectedRows,
-      ] = await AnnualConference.update(conferenceInfo, {
-        where: { id },
-        returning: true,
-        plain: true,
-      });
+      const [numberOfAffectedRows, affectedRows] =
+        await AnnualConference.update(conferenceInfo, {
+          where: { id },
+          returning: true,
+          plain: true,
+        });
 
       return res
         .status(HttpCodes.OK)
@@ -114,7 +112,7 @@ const AnnualConferenceController = () => {
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors".image, public."Instructors"."description" as description
+        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
         FROM public."AnnualConferences"
         LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
         ${where}

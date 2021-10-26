@@ -1,10 +1,8 @@
-'use strict';
+"use strict";
 
 const ConferenceType = require("../enum");
 
-const {
-  Model
-} = require('sequelize');
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class AnnualConference extends Model {
     /**
@@ -15,31 +13,35 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
-  };
-  AnnualConference.init({
-    title: DataTypes.STRING,
-    type: {
-      type: DataTypes.STRING,
-      values: Object.values(ConferenceType),
-      defaultValue: ConferenceType.KEYNOTE,
+  }
+  AnnualConference.init(
+    {
+      title: DataTypes.STRING,
+      type: {
+        type: DataTypes.STRING,
+        values: Object.values(ConferenceType),
+        defaultValue: ConferenceType.KEYNOTE,
+      },
+      categories: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      startTime: DataTypes.STRING,
+      endTime: DataTypes.STRING,
+      timezone: DataTypes.STRING,
+      description: DataTypes.TEXT,
+      objectives: DataTypes.TEXT,
+      speakers: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
+      link: DataTypes.STRING,
+      recertification_credits: DataTypes.STRING,
     },
-    categories: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
-    },
-    startTime: DataTypes.STRING,
-    endTime: DataTypes.STRING,
-    timezone: DataTypes.STRING,
-    description: DataTypes.TEXT,
-    objectives: DataTypes.TEXT,
-    speakers: {
-      type: DataTypes.ARRAY(DataTypes.INTEGER),
-      defaultValue: [],
-    },
-    link: DataTypes.STRING,
-  }, {
-    sequelize,
-    modelName: 'AnnualConference',
-  });
+    {
+      sequelize,
+      modelName: "AnnualConference",
+    }
+  );
   return AnnualConference;
 };
