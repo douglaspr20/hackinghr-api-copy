@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
+    "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -36,6 +37,7 @@
     "path": "^0.12.7",
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",
+    "query-string": "^7.0.1",
     "request": "^2.88.2",
     "sequelize": "^6.3.5",
     "sequelize-cli": "^6.2.0",
@@ -43,5 +45,8 @@
     "stripe": "^8.130.0",
     "wysiwyg-editor-node-sdk": "^4.0.3",
     "xlsx": "^0.16.9"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.14"
   }
 }

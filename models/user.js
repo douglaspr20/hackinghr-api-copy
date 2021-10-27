@@ -23,6 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.PostComment);
       User.hasMany(models.PostFollow);
       User.hasMany(models.Notification);
+      User.hasMany(models.SkillCohortParticipant)
+      User.hasMany(models.SkillCohortGroupingMember)
     }
   }
   User.init(

@@ -65,3 +65,6 @@ typings/
 
 # sqlite database
 db/database.sqlite
+
+#vscode prettier
+.vscode
