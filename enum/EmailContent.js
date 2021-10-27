@@ -37,9 +37,10 @@ module.exports = {
     Thank you for registering for ${event.title} organized by ${event.organizer}
     <br/>
     <br/>
-    We look forward to seeing you on ${getEventPeriod(
+    We look forward to seeing you on: <br> ${getEventPeriod(
       event.startDate,
       event.endDate,
+      event.startAndEndTimes,
       event.timezone
     )}. 
     </p>

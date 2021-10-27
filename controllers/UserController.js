@@ -9,7 +9,7 @@ const TimeZoneList = require('../enum/TimeZoneList');
 const { readExcelFile, progressLog } = require('../utils/excel');
 const { USER_ROLE, EmailContent } = require('../enum');
 const bcryptService = require('../services/bcrypt.service');
-const { getEventPeriod } = require('../utils/format');
+const { getEventPeriod, convertToUTCTime } = require('../utils/format');
 const omit = require('lodash/omit');
 const { AWSConfig } = require('../enum');
 const FroalaEditor = require('wysiwyg-editor-node-sdk/lib/froalaEditor');
@@ -173,18 +173,16 @@ const UserController = () => {
 			(item) => item.value === event.timezone,
 		);
 
-    console.log(timezone)
-
 		const calendarInvite = event.startAndEndTimes.map((time, index) => {
       let date = moment(event.startDate)
       .add(index, "day")
       .format("YYYY-MM-DD");
 
       const startTime = moment(time.startTime).format("HH:mm:ss")
-      const startDate = moment(`${date} ${startTime}`, "YYYY-MM-DD HH:mm:ss")
+      const startDate = convertToUTCTime(moment(`${date} ${startTime}`), timezone)
 
       const endTime = moment(time.endTime).format("HH:mm:ss")
-      const endDate = moment(`${date} ${endTime}`, "YYYY-MM-DD HH:mm:ss")
+      const endDate = convertToUTCTime(moment(`${date} ${endTime}`), timezone)
 
 			return smtpService().generateCalendarInvite(
 				startDate,

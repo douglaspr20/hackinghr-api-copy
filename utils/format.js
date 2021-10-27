@@ -25,26 +25,51 @@ function convertToLocalTime(date) {
   return moment.utc(date).tz(localTimezone);
 }
 
-function getEventPeriod(date, date2, timezone) {
+function convertToUTCTime(date, tz) {
+  let res = moment(date).format("YYYY-MM-DD h:mm a");
+
+  const timezone = TimeZoneList.find((item) => item.value === tz.value);
+
+  if (timezone) {
+    res = moment.tz(res, "YYYY-MM-DD h:mm a", timezone.utc[0]).utc().format();
+  } else {
+    const localTimezone = moment.tz.guess();
+    res = moment.tz(res, "YYYY-MM-DD h:mm a", localTimezone).format();
+  }
+
+  return res;
+}
+
+function getEventPeriod(date, date2, startAndEndTimes, timezone) {
   let res = "";
   const startDate = convertToCertainTime(date, timezone);
   const endDate = convertToCertainTime(date2, timezone);
   let tz = TimeZoneList.find((item) => item.value === timezone);
   tz = (tz || {}).abbr || "";
 
-  if (
-    startDate.year() === endDate.year() &&
-    startDate.month() === endDate.month() &&
-    startDate.date() === endDate.date()
-  ) {
-    res = `${startDate.format("MMM DD")}, from ${startDate.format(
-      "h:mm a"
-    )} to ${endDate.format("h:mm a")}, ${tz}`;
-  } else {
-    res = `${startDate.format("YYYY-MM-DD h:mm a")} - ${endDate.format(
-      "YYYY-MM-DD h:mm a"
-    )} ${tz}`;
-  }
+  return startAndEndTimes.map((time, index) => {
+    let startTime = moment(time.startTime).format("HH:mm:ss");
+    let endTime = moment(time.endTime).format("HH:mm:ss");
+
+    const date = moment(startDate)
+      .add(index, "day")
+      .format("YYYY-MM-DD");
+
+    startTime = convertToUTCTime(
+      moment(`${date} ${startTime}`),
+      timezone
+    );
+    endTime = convertToUTCTime(
+      moment(`${date} ${endTime}`),
+      timezone
+    );
+
+    return (
+      `
+        <br> ${moment(date).format('LL')} | ${moment(startTime).format("HH:mm")} - ${moment(endTime).format("HH:mm")} ${tz}
+      `
+    )
+  })
 
   return res;
 }
@@ -82,6 +107,7 @@ module.exports = {
   getEventPeriod,
   convertToCertainTime,
   convertToLocalTime,
+  convertToUTCTime,
   convertJSONToCSV,
   convertJSONToExcel,
 };
