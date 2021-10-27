@@ -198,7 +198,7 @@ const UserController = () => {
     });
 
     const mailOptions = {
-      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
       to: user.email,
       subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
       html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
