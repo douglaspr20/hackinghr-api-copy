@@ -209,8 +209,6 @@ const UserController = () => {
       return calendar.toString();
     });
 
-    console.log(icsContent, "touch");
-
     icsContent = icsContent.map((content) => {
       content = content.replace(
         "BEGIN:VEVENT",
@@ -236,7 +234,7 @@ const UserController = () => {
 
     let sentResult = null;
     try {
-      sentResult = await smtpService().sendMail(mailOptions);
+      sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
     } catch (err) {
       console.log(err);
     }
@@ -527,6 +525,28 @@ const UserController = () => {
     const { id } = req.params;
 
     try {
+      const query = `
+      SELECT public."AnnualConferences"."startTime" FROM public."Users" 
+      LEFT JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[]) 
+      WHERE public."Users"."id" = ${user.id}
+    `;
+
+      const userSessions = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      const sessionToSchedule = await AnnualConference.findOne({
+        where: { id },
+        attributes: ["startTime"],
+      });
+
+      for (const session of userSessions) {
+        if (session.startTime === sessionToSchedule.dataValues.startTime) {
+          return res.status(HttpCodes.BAD_REQUEST).json({
+            msg: "You already have a conference scheduled at the same time and date",
+          });
+        }
+      }
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
