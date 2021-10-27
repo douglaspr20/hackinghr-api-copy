@@ -40,38 +40,24 @@ function convertToUTCTime(date, tz) {
   return res;
 }
 
-function getEventPeriod(date, date2, startAndEndTimes, timezone) {
-  let res = "";
-  const startDate = convertToCertainTime(date, timezone);
-  const endDate = convertToCertainTime(date2, timezone);
+function getEventPeriod(date, startAndEndTimes, timezone) {
   let tz = TimeZoneList.find((item) => item.value === timezone);
   tz = (tz || {}).abbr || "";
 
   return startAndEndTimes.map((time, index) => {
-    let startTime = moment(time.startTime).format("HH:mm:ss");
-    let endTime = moment(time.endTime).format("HH:mm:ss");
-
-    const date = moment(startDate)
-      .add(index, "day")
-      .format("YYYY-MM-DD");
-
-    startTime = convertToUTCTime(
-      moment(`${date} ${startTime}`),
-      timezone
+    const startTime = convertToCertainTime(time.startTime, timezone).format(
+      "YYYY-MM-DD HH:mm:ss"
     );
-    endTime = convertToUTCTime(
-      moment(`${date} ${endTime}`),
-      timezone
+    const endTime = convertToCertainTime(time.endTime, timezone).format(
+      "YYYY-MM-DD HH:mm:ss"
     );
 
-    return (
-      `
-        <br> ${moment(date).format('LL')} | ${moment(startTime).format("HH:mm")} - ${moment(endTime).format("HH:mm")} ${tz}
-      `
-    )
-  })
-
-  return res;
+    return `
+        <br> ${moment(date).format("LL")} | ${moment(startTime).format(
+      "HH:mm"
+    )} - ${moment(endTime).format("HH:mm")} ${tz}
+      `;
+  });
 }
 
 function convertJSONToCSV(content) {
@@ -86,7 +72,7 @@ function convertJSONToCSV(content) {
 
 async function convertJSONToExcel(sheet, fields, content) {
   // Create page
-  console.log('***** content', content);
+  console.log("***** content", content);
   const ws1 = workbook.addWorksheet(sheet);
   ws1.addRow(fields.map((item) => item.label));
   fields.forEach((field, index) => {

@@ -187,8 +187,8 @@ const UserController = () => {
 
       const endTime = moment(time.endTime).format("HH:mm:ss");
       let endDate = convertToUTCTime(moment(`${date} ${endTime}`), timezone);
-      endDate = convertToLocalTime(endDate)
-      
+      endDate = convertToLocalTime(endDate);
+
       return smtpService().generateCalendarInvite(
         startDate,
         endDate,

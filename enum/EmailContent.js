@@ -39,13 +39,14 @@ module.exports = {
     <br/>
     We look forward to seeing you on: <br> ${getEventPeriod(
       event.startDate,
-      event.endDate,
       event.startAndEndTimes,
       event.timezone
     )}. 
     </p>
     <p>
-    Please connect in this link at the time of the event: <a target="_blank" href="${event.link || ""}">${event.link || ""}</a>
+    Please connect in this link at the time of the event: <a target="_blank" href="${
+      event.link || ""
+    }">${event.link || ""}</a>
     </p>
     <p>
     Please remember to go back to the Hacking HR LAB the day after the event and certify that you attended. If you are a PREMIUM MEMBER you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits.
@@ -105,5 +106,5 @@ module.exports = {
       <br />
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
       Hacking HR Team
-  `
+  `,
 };
