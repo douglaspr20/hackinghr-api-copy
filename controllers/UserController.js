@@ -176,7 +176,7 @@ const UserController = () => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
-    console.log("1", tz)
+
     const calendarInvite = event.startAndEndTimes.map((time, index) => {
       let startTime = convertToCertainTime(time.startTime, timezone);
       let endTime = convertToCertainTime(time.endTime, timezone);
