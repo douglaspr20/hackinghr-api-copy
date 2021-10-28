@@ -11,7 +11,6 @@ function convertToCertainTime(date, tz) {
   const timezone = TimeZoneList.find((item) => item.value === tz);
   if (timezone) {
     res = moment.utc(date).tz(timezone.utc[0]);
-    console.log(res, "timetones");
   } else {
     res = moment(date);
   }
