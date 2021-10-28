@@ -66,18 +66,18 @@ function getEventPeriod(date, startAndEndTimes, timezone) {
       moment(time.endTime).utcOffset(tz.offset, true),
       timezone
     );
-    console.log(time.startTime, time.endTime);
     console.log(startTime, endTime);
     console.log(moment(startTime).format("HH:mm"));
     console.log(moment(endTime).format("HH:mm"));
+    console.log(`
+    <br> ${moment(date).format("LL")} | ${moment(startTime).format(
+      "HH:mm"
+    )} - ${moment(endTime).format("HH:mm")} ${tz.abbr}
+  `);
     return `
-        <br> ${moment(date).utcOffset(tz.offset, true).format("LL")} | ${moment(
-      startTime
-    )
-      .utcOffset(tz.offset, true)
-      .format("HH:mm")} - ${moment(endTime)
-      .utcOffset(tz.offset, true)
-      .format("HH:mm")} ${tz.abbr}
+        <br> ${moment(date).format("LL")} | ${moment(startTime).format(
+      "HH:mm"
+    )} - ${moment(endTime).format("HH:mm")} ${tz.abbr}
       `;
   });
 }
