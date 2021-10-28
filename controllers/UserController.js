@@ -181,13 +181,15 @@ const UserController = () => {
       let endTime = convertToCertainTime(time.endTime, timezone);
 
       startTime = convertToUserTimezone(
-        moment(startTime).utcOffset(timezone.offset, true),
+        moment(startTime).utcOffset(timezone.offset, true).utc(),
         userTimezone
       );
       endTime = convertToUserTimezone(
-        moment(endTime).utcOffset(timezone.offset, true),
+        moment(endTime).utcOffset(timezone.offset, true).utc(),
         userTimezone
       );
+
+      console.log("moment", moment());
 
       console.log("calendar", startTime, endTime);
       return smtpService().generateCalendarInvite(
