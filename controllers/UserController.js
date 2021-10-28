@@ -177,15 +177,15 @@ const UserController = () => {
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
     const calendarInvite = event.startAndEndTimes.map((time, index) => {
-      // let startTime = convertToCertainTime(time.startTime, timezone);
-      // let endTime = convertToCertainTime(time.endTime, timezone);
+      let startTime = convertToCertainTime(time.startTime, timezone);
+      let endTime = convertToCertainTime(time.endTime, timezone);
 
-      let startTime = convertToUserTimezone(
-        moment(time.startTime).utcOffset(timezone.offset, true),
+      startTime = convertToUserTimezone(
+        moment(startTime).utcOffset(timezone.offset, true),
         userTimezone
       );
-      let endTime = convertToUserTimezone(
-        moment(time.endTime).utcOffset(timezone.offset, true),
+      endTime = convertToUserTimezone(
+        moment(endTime).utcOffset(timezone.offset, true),
         userTimezone
       );
 
