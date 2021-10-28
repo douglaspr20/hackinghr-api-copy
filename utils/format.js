@@ -60,11 +60,6 @@ function getEventPeriod(date, startAndEndTimes, timezone) {
     const startTime = moment.tz(time.startTime, tz.utc[0]);
     const endTime = moment.tz(time.endTime, tz.utc[0]);
 
-    console.log(`
-    <br> ${moment(date).format("LL")} | ${moment(startTime).format(
-      "HH:mm"
-    )} - ${moment(endTime).format("HH:mm")} ${tz.abbr}
-  `);
     return `
         <br> ${moment(date).format("LL")} | ${moment(startTime).format(
       "HH:mm"
@@ -85,7 +80,6 @@ function convertJSONToCSV(content) {
 
 async function convertJSONToExcel(sheet, fields, content) {
   // Create page
-  console.log("***** content", content);
   const ws1 = workbook.addWorksheet(sheet);
   ws1.addRow(fields.map((item) => item.label));
   fields.forEach((field, index) => {

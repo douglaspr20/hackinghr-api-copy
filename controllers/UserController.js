@@ -245,7 +245,7 @@ const UserController = () => {
     let event = req.body;
     const { id } = req.token;
     const { user: prevUser } = req;
-    console.log("folding chair", req.body);
+
     try {
       const [rows, user] = await User.update(
         {
