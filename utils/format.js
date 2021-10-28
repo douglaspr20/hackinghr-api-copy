@@ -58,6 +58,9 @@ function getEventPeriod(date, startAndEndTimes, timezone) {
   let tz = TimeZoneList.find((item) => item.value === timezone);
   console.log("2", startAndEndTimes);
   return startAndEndTimes.map((time, index) => {
+    console.log(moment(date).utcOffset(tz.offset).format("LL"));
+    console.log(moment(time.startTime).utcOffset(tz.offset).format("HH:mm"));
+    console.log(moment(time.endTime).utcOffset(tz.offset).format("HH:mm"));
     return `
         <br> ${moment(date).utcOffset(tz.offset).format("LL")} | ${moment(
       time.startTime
