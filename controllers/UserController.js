@@ -189,6 +189,7 @@ const UserController = () => {
         userTimezone
       );
 
+      console.log("calendar", startTime, endTime);
       return smtpService().generateCalendarInvite(
         startTime,
         endTime,
