@@ -59,9 +59,13 @@ function getEventPeriod(date, startAndEndTimes, timezone) {
   console.log("2", startAndEndTimes);
   return startAndEndTimes.map((time, index) => {
     return `
-        <br> ${moment(date).format("LL")} | ${moment(time.startTime).format(
-      "HH:mm"
-    )} - ${moment(time.endTime).format("HH:mm")} ${tz.abbr}
+        <br> ${moment(date).utcOffset(tz.offset).format("LL")} | ${moment(
+      time.startTime
+    )
+      .utcOffset(tz.offset)
+      .format("HH:mm")} - ${moment(time.endTime)
+      .utcOffset(tz.offset)
+      .format("HH:mm")} ${tz.abbr}
       `;
   });
 }
