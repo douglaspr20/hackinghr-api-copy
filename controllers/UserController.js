@@ -180,18 +180,18 @@ const UserController = () => {
       // let startTime = convertToCertainTime(time.startTime, timezone);
       // let endTime = convertToCertainTime(time.endTime, timezone);
 
-      // startTime = convertToUserTimezone(
-      //   moment(startTime).utcOffset(timezone.offset, true),
-      //   tz
-      // );
-      // endTime = convertToUserTimezone(
-      //   moment(endTime).utcOffset(timezone.offset, true),
-      //   tz
-      // );
+      let startTime = convertToUserTimezone(
+        moment(time.startTime).utcOffset(timezone.offset, true),
+        userTimezone
+      );
+      let endTime = convertToUserTimezone(
+        moment(time.endTime).utcOffset(timezone.offset, true),
+        userTimezone
+      );
 
       return smtpService().generateCalendarInvite(
-        time.startTime,
-        time.endTime,
+        startTime,
+        endTime,
         event.title,
         getEventDescription(event.description),
         "",
@@ -199,7 +199,7 @@ const UserController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        timezone.utc[0]
+        userTimezone.utc[0]
       );
     });
 
