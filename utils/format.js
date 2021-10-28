@@ -9,9 +9,9 @@ const workbook = new Excel.Workbook();
 function convertToCertainTime(date, tz) {
   let res = moment();
   const timezone = TimeZoneList.find((item) => item.value === tz);
-
   if (timezone) {
     res = moment.utc(date).tz(timezone.utc[0]);
+    console.log(res, "timetones");
   } else {
     res = moment(date);
   }
@@ -70,7 +70,6 @@ function getEventPeriod(date, startAndEndTimes, timezone) {
     console.log(startTime, endTime);
     console.log(moment(startTime).format("HH:mm"));
     console.log(moment(endTime).format("HH:mm"));
-    console.log(tz.offset);
     return `
         <br> ${moment(date).format("LL")} | ${moment(startTime).format(
       "HH:mm"
