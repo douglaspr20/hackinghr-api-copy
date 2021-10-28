@@ -57,13 +57,18 @@ function getEventPeriod(date, startAndEndTimes, timezone) {
   let tz = TimeZoneList.find((item) => item.value === timezone);
 
   return startAndEndTimes.map((time, index) => {
-    // const startTime = convertToCertainTime(time.startTime, timezone);
-    // const endTime = convertToCertainTime(time.endTime, timezone);
+    const startTime = convertToCertainTime(time.startTime, timezone);
+    const endTime = convertToCertainTime(time.endTime, timezone);
 
-    return `
-        <br> ${moment(date).format("LL")} | ${moment(time.startTime).format(
+    console.log(`
+    <br> ${moment(date).format("LL")} | ${moment(startTime).format(
       "HH:mm"
-    )} - ${moment(time.endTime).format("HH:mm")} ${tz.abbr}
+    )} - ${moment(endTime).format("HH:mm")} ${tz.abbr}
+  `);
+    return `
+        <br> ${moment(date).format("LL")} | ${moment(startTime).format(
+      "HH:mm"
+    )} - ${moment(endTime).format("HH:mm")} ${tz.abbr}
       `;
   });
 }
