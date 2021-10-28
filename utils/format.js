@@ -19,6 +19,20 @@ function convertToCertainTime(date, tz) {
   return res;
 }
 
+function convertToUserTimezone(date, tz) {
+  let res = moment();
+
+  const timezone = TimeZoneList.find((item) => item.utc.includes(tz));
+
+  if (timezone) {
+    res = moment(date).tz(timezone.utc[0]);
+  } else {
+    res = moment(date);
+  }
+
+  return res;
+}
+
 function convertToLocalTime(date) {
   const localTimezone = moment.tz.guess();
 
@@ -42,20 +56,12 @@ function convertToUTCTime(date, tz) {
 
 function getEventPeriod(date, startAndEndTimes, timezone) {
   let tz = TimeZoneList.find((item) => item.value === timezone);
-  tz = (tz || {}).abbr || "";
 
   return startAndEndTimes.map((time, index) => {
-    const startTime = convertToCertainTime(time.startTime, timezone).format(
-      "YYYY-MM-DD HH:mm:ss"
-    );
-    const endTime = convertToCertainTime(time.endTime, timezone).format(
-      "YYYY-MM-DD HH:mm:ss"
-    );
-
     return `
-        <br> ${moment(date).format("LL")} | ${moment(startTime).format(
+        <br> ${moment(date).format("LL")} | ${moment(time.startTime).format(
       "HH:mm"
-    )} - ${moment(endTime).format("HH:mm")} ${tz}
+    )} - ${moment(time.endTime).format("HH:mm")} ${tz.abbr}
       `;
   });
 }
@@ -96,4 +102,5 @@ module.exports = {
   convertToUTCTime,
   convertJSONToCSV,
   convertJSONToExcel,
+  convertToUserTimezone,
 };

@@ -11,8 +11,8 @@ const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
 const {
   getEventPeriod,
-  convertToUTCTime,
-  convertToLocalTime,
+  convertToUserTimezone,
+  convertToCertainTime,
 } = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
@@ -172,26 +172,26 @@ const UserController = () => {
     return "";
   };
 
-  const generateAttendEmail = async (user, event) => {
+  const generateAttendEmail = async (user, tz, event) => {
+    const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
     const calendarInvite = event.startAndEndTimes.map((time, index) => {
-      let date = moment(event.startDate).add(index, "day").format("YYYY-MM-DD");
+      let startTime = convertToCertainTime(time.startTime, timezone);
+      let endTime = convertToCertainTime(time.endTime, timezone);
 
-      const startTime = moment(time.startTime).format("HH:mm:ss");
-      let startDate = convertToUTCTime(
-        moment(`${date} ${startTime}`),
-        timezone
+      startTime = convertToUserTimezone(
+        moment(startTime).utcOffset(timezone.offset, true),
+        tz
       );
-      startDate = convertToLocalTime(startDate);
-
-      const endTime = moment(time.endTime).format("HH:mm:ss");
-      let endDate = convertToUTCTime(moment(`${date} ${endTime}`), timezone);
-      endDate = convertToLocalTime(endDate);
+      endTime = convertToUserTimezone(
+        moment(endTime).utcOffset(timezone.offset, true),
+        tz
+      );
 
       return smtpService().generateCalendarInvite(
-        startDate,
-        endDate,
+        startTime,
+        endTime,
         event.title,
         getEventDescription(event.description),
         "",
@@ -199,7 +199,7 @@ const UserController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        timezone.utc[0]
+        userTimezone.utc[0]
       );
     });
 
@@ -252,7 +252,7 @@ const UserController = () => {
     let event = req.body;
     const { id } = req.token;
     const { user: prevUser } = req;
-
+    console.log("folding chair", req.body);
     try {
       const [rows, user] = await User.update(
         {
@@ -287,7 +287,7 @@ const UserController = () => {
         }
       );
 
-      generateAttendEmail(user, affectedRows);
+      generateAttendEmail(user, event.userTimezone, affectedRows);
 
       return res
         .status(HttpCodes.OK)
