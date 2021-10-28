@@ -176,23 +176,22 @@ const UserController = () => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
-
     const calendarInvite = event.startAndEndTimes.map((time, index) => {
-      let startTime = convertToCertainTime(time.startTime, timezone);
-      let endTime = convertToCertainTime(time.endTime, timezone);
+      // let startTime = convertToCertainTime(time.startTime, timezone);
+      // let endTime = convertToCertainTime(time.endTime, timezone);
 
-      startTime = convertToUserTimezone(
-        moment(startTime).utcOffset(timezone.offset, true),
-        tz
-      );
-      endTime = convertToUserTimezone(
-        moment(endTime).utcOffset(timezone.offset, true),
-        tz
-      );
+      // startTime = convertToUserTimezone(
+      //   moment(startTime).utcOffset(timezone.offset, true),
+      //   tz
+      // );
+      // endTime = convertToUserTimezone(
+      //   moment(endTime).utcOffset(timezone.offset, true),
+      //   tz
+      // );
 
       return smtpService().generateCalendarInvite(
-        startTime,
-        endTime,
+        time.startTime,
+        time.endTime,
         event.title,
         getEventDescription(event.description),
         "",
@@ -200,7 +199,7 @@ const UserController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        userTimezone.utc[0]
+        timezone.utc[0]
       );
     });
 
