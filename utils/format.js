@@ -9,9 +9,22 @@ const workbook = new Excel.Workbook();
 function convertToCertainTime(date, tz) {
   let res = moment();
   const timezone = TimeZoneList.find((item) => item.value === tz);
-
   if (timezone) {
     res = moment.utc(date).tz(timezone.utc[0]);
+  } else {
+    res = moment(date);
+  }
+
+  return res;
+}
+
+function convertToUserTimezone(date, tz) {
+  let res = moment();
+
+  const timezone = TimeZoneList.find((item) => item.utc.includes(tz));
+
+  if (timezone) {
+    res = moment(date).tz(timezone.utc[0]);
   } else {
     res = moment(date);
   }
@@ -25,28 +38,34 @@ function convertToLocalTime(date) {
   return moment.utc(date).tz(localTimezone);
 }
 
-function getEventPeriod(date, date2, timezone) {
-  let res = "";
-  const startDate = convertToCertainTime(date, timezone);
-  const endDate = convertToCertainTime(date2, timezone);
-  let tz = TimeZoneList.find((item) => item.value === timezone);
-  tz = (tz || {}).abbr || "";
+function convertToUTCTime(date, tz) {
+  let res = moment(date).format("YYYY-MM-DD h:mm a");
 
-  if (
-    startDate.year() === endDate.year() &&
-    startDate.month() === endDate.month() &&
-    startDate.date() === endDate.date()
-  ) {
-    res = `${startDate.format("MMM DD")}, from ${startDate.format(
-      "h:mm a"
-    )} to ${endDate.format("h:mm a")}, ${tz}`;
+  const timezone = TimeZoneList.find((item) => item.value === tz);
+
+  if (timezone) {
+    res = moment.tz(res, "YYYY-MM-DD h:mm a", timezone.utc[0]).utc().format();
   } else {
-    res = `${startDate.format("YYYY-MM-DD h:mm a")} - ${endDate.format(
-      "YYYY-MM-DD h:mm a"
-    )} ${tz}`;
+    const localTimezone = moment.tz.guess();
+    res = moment.tz(res, "YYYY-MM-DD h:mm a", localTimezone).format();
   }
 
   return res;
+}
+
+function getEventPeriod(date, startAndEndTimes, timezone) {
+  let tz = TimeZoneList.find((item) => item.value === timezone);
+
+  return startAndEndTimes.map((time, index) => {
+    const startTime = moment.tz(time.startTime, tz.utc[0]);
+    const endTime = moment.tz(time.endTime, tz.utc[0]);
+
+    return `
+        <br> ${moment(date).format("LL")} | ${moment(startTime).format(
+      "HH:mm"
+    )} - ${moment(endTime).format("HH:mm")} ${tz.abbr}
+      `;
+  });
 }
 
 function convertJSONToCSV(content) {
@@ -61,7 +80,6 @@ function convertJSONToCSV(content) {
 
 async function convertJSONToExcel(sheet, fields, content) {
   // Create page
-  console.log('***** content', content);
   const ws1 = workbook.addWorksheet(sheet);
   ws1.addRow(fields.map((item) => item.label));
   fields.forEach((field, index) => {
@@ -82,6 +100,8 @@ module.exports = {
   getEventPeriod,
   convertToCertainTime,
   convertToLocalTime,
+  convertToUTCTime,
   convertJSONToCSV,
   convertJSONToExcel,
+  convertToUserTimezone,
 };
