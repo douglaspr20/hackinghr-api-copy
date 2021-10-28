@@ -194,7 +194,7 @@ const UserController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        timezone.utc[0]
+        userTimezone.utc[0]
       );
     });
 
