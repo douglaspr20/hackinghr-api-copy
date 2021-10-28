@@ -42,7 +42,7 @@ function convertToLocalTime(date) {
 function convertToUTCTime(date, tz) {
   let res = moment(date).format("YYYY-MM-DD h:mm a");
 
-  const timezone = TimeZoneList.find((item) => item.value === tz.value);
+  const timezone = TimeZoneList.find((item) => item.value === tz);
 
   if (timezone) {
     res = moment.tz(res, "YYYY-MM-DD h:mm a", timezone.utc[0]).utc().format();
@@ -56,19 +56,20 @@ function convertToUTCTime(date, tz) {
 
 function getEventPeriod(date, startAndEndTimes, timezone) {
   let tz = TimeZoneList.find((item) => item.value === timezone);
-  console.log("2", startAndEndTimes);
+
   return startAndEndTimes.map((time, index) => {
-    let startTime = convertToCertainTime(
+    let startTime = convertToUTCTime(
       moment(time.startTime).utcOffset(tz.offset, true),
       timezone
     );
-    let endTime = convertToCertainTime(
+    let endTime = convertToUTCTime(
       moment(time.endTime).utcOffset(tz.offset, true),
       timezone
     );
-    console.log(startTime, endTime);
-    console.log(moment(startTime).format("HH:mm"));
-    console.log(moment(endTime).format("HH:mm"));
+
+    startTime = convertToCertainTime(startTime, timezone);
+    endTime = convertToCertainTime(endTime, timezone);
+    console.log(moment(startTime), moment(endTime));
     console.log(`
     <br> ${moment(date).format("LL")} | ${moment(startTime).format(
       "HH:mm"
