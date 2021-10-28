@@ -56,7 +56,7 @@ function convertToUTCTime(date, tz) {
 
 function getEventPeriod(date, startAndEndTimes, timezone) {
   let tz = TimeZoneList.find((item) => item.value === timezone);
-
+  console.log("2", startAndEndTimes);
   return startAndEndTimes.map((time, index) => {
     return `
         <br> ${moment(date).format("LL")} | ${moment(time.startTime).format(
