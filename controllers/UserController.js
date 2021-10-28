@@ -13,6 +13,7 @@ const {
   getEventPeriod,
   convertToUserTimezone,
   convertToCertainTime,
+  convertToUTCTime,
 } = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
@@ -177,15 +178,16 @@ const UserController = () => {
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
     const calendarInvite = event.startAndEndTimes.map((time, index) => {
-      // let startTime = convertToCertainTime(time.startTime, timezone);
-      // let endTime = convertToCertainTime(time.endTime, timezone);
+      console.log(time.startTime, time.endTime);
+      let startTime = convertToCertainTime(time.startTime, timezone);
+      let endTime = convertToCertainTime(time.endTime, timezone);
 
-      // startTime = convertToUserTimezone(startTime, userTimezone);
-      // endTime = convertToUserTimezone(endTime, userTimezone);
+      startTime = convertToUserTimezone(startTime, userTimezone);
+      endTime = convertToUserTimezone(endTime, userTimezone);
 
       return smtpService().generateCalendarInvite(
-        time.startTime,
-        time.endTime,
+        startTime,
+        endTime,
         event.title,
         getEventDescription(event.description),
         "",
