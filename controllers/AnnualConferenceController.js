@@ -2,6 +2,7 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const Sequelize = require("sequelize");
 const moment = require("moment-timezone");
+const { Op } = require("sequelize");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 
@@ -105,17 +106,23 @@ const AnnualConferenceController = () => {
   };
 
   const getAll = async (req, res) => {
-    const { startTime, endTime } = req.query;
+    const { startTime, endTime, meta } = req.query;
     try {
       let where = "";
 
       if (startTime && endTime) {
-        console.log(startTime);
-        where = `WHERE public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}'`;
+        where = `WHERE (public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}')`;
+      }
+
+      if (meta) {
+        where += `AND (public."AnnualConferences"."title" LIKE '%${meta}%' OR public."AnnualConferences"."description" LIKE '%${meta}%' 
+        OR public."AnnualConferences"."type" LIKE '%${meta}%' OR public."Instructors"."name" LIKE '%${meta}%' 
+        OR public."Instructors"."description" LIKE '%${meta}%' OR public."AnnualConferences".categories::text LIKE '%${meta}%' )`;
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+        public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
         FROM public."AnnualConferences"
         LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
 
