@@ -145,7 +145,7 @@ const AnnualConferenceController = () => {
     try {
       const query = `
       SELECT public."AnnualConferences".* FROM public."Users"
-      LEFT JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[])
+      INNER JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[])
       WHERE public."Users"."id" = ${userId}
     `;
 
