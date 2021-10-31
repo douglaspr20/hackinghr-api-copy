@@ -296,8 +296,7 @@ const EventController = () => {
   const updateEvent = async (req, res) => {
     const { id } = req.params;
     const event = req.body;
-
-    console.log(event);
+    
     try {
       let eventInfo = {
         ...event,
