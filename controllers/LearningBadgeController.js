@@ -1,10 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const Sequelize = require("sequelize");
-const isEmpty = require("lodash/isEmpty");
-const { literal, Op } = require("sequelize");
-const s3Service = require("../services/s3.service");
-const { isValidURL } = require("../utils/profile");
 
 const QueryTypes = Sequelize.QueryTypes;
 
@@ -21,7 +17,9 @@ const LearningBadgeController = () => {
             u.email,
             u."firstName",
             u."lastName",
-            SUM(main_data.duration) / 1000 as hours
+            u."titleProfessions",
+            u."img",
+            SUM(main_data.duration) / 60 as hours
         from
             (
             select
@@ -75,7 +73,9 @@ const LearningBadgeController = () => {
         group by
             u.email,
             u."firstName",
-            u."lastName"
+            u."lastName",
+            u."titleProfessions",
+            u."img"
         order by
             hours desc
       `;
