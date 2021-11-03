@@ -122,7 +122,7 @@ const SkillCohortResourceResponseAssessmentController = () => {
         },
       });
 
-      if (isEmpty(allAssessments) || allAssessments.length < 2) {
+      if (isEmpty(allAssessments) || allAssessments.length < 3) {
         return false;
       }
 
