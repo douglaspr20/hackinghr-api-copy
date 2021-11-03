@@ -5,6 +5,8 @@ const moment = require("moment-timezone");
 
 const SkillCohortResources = db.SkillCohortResources;
 const SkillCohort = db.SkillCohort;
+const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
+const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
 
 const SkillCohortResourcesController = () => {
   /**
@@ -36,7 +38,7 @@ const SkillCohortResourcesController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { filter } = req.query;
+    const { date, num, page } = req.query;
     const { skillCohortId } = req.params;
 
     let where = {
@@ -44,11 +46,11 @@ const SkillCohortResourcesController = () => {
     };
 
     try {
-      if (filter) {
+      if (date) {
         where = {
           ...where,
           releaseDate: {
-            [Op.lte]: moment(filter)
+            [Op.lte]: moment(date)
               .tz("America/Los_Angeles")
               .startOf("day")
               .utc()
@@ -57,8 +59,19 @@ const SkillCohortResourcesController = () => {
         };
       }
 
-      const skillCohortResources = await SkillCohortResources.findAll({
+      const skillCohortResources = await SkillCohortResources.findAndCountAll({
         where,
+        include: [
+          {
+            model: SkillCohortResourceResponse,
+          },
+          {
+            model: SkillCohortResponseAssessment,
+          },
+        ],
+        distinct: true,
+        offset: (+page - 1) * +num,
+        limit: +num * page + 1,
         order: [["releaseDate"]],
       });
 
