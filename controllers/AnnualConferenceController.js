@@ -214,9 +214,13 @@ const AnnualConferenceController = () => {
 
       let formatEndDate = moment(`${endDate}  ${endTime}`);
 
-      startDate = convertToLocalTime(formatStartDate, "YYYY-MM-DD h:mm a");
+      startDate = convertToLocalTime(
+        moment(formatStartDate).tz(timezone.utc[0]).utcOffset(offset, true)
+      ).format("YYYY-MM-DD HH:mm:ss");
 
-      endDate = convertToLocalTime(formatEndDate, "YYYY-MM-DD h:mm a");
+      endDate = convertToLocalTime(
+        moment(formatEndDate).tz(timezone.utc[0]).utcOffset(offset, true)
+      ).format("YYYY-MM-DD HH:mm:ss");
 
       const localTimezone = moment.tz.guess();
 
