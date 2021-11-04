@@ -83,8 +83,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       startAndEndTimes: {
         type: DataTypes.ARRAY(DataTypes.JSON),
-        defaultValue: []
-      }
+        defaultValue: [],
+      },
+      isAnnualConference: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,

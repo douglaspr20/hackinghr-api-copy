@@ -11,7 +11,12 @@ const LearningBadgeController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
+    const filter = req.query;
     try {
+      let limit = ``;
+      if (filter.page) {
+        limit = `LIMIT ${filter.num} OFFSET ${(filter.page - 1) * filter.num}`;
+      }
       let query = `
       select
             u.email,
@@ -78,8 +83,15 @@ const LearningBadgeController = () => {
             u."img"
         order by
             hours desc
+        
+        ${limit}
       `;
+
       const learningBadges = await db.sequelize.query(query, {
+        replacements: {
+          page: filter.page,
+          size: filter.num,
+        },
         type: QueryTypes.SELECT,
       });
 
