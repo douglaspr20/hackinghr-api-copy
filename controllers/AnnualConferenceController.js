@@ -4,6 +4,7 @@ const Sequelize = require("sequelize");
 const moment = require("moment-timezone");
 const { Op } = require("sequelize");
 const { convertToLocalTime } = require("../utils/format");
+const TimeZoneList = require("../enum/TimeZoneList");
 const smtpService = require("../services/smtp.service");
 
 const AnnualConference = db.AnnualConference;
@@ -213,6 +214,11 @@ const AnnualConferenceController = () => {
       let formatStartDate = moment(`${startDate}  ${startTime}`);
 
       let formatEndDate = moment(`${endDate}  ${endTime}`);
+
+      const timezone = TimeZoneList.find(
+        (item) => item.value === annualConference.timezone
+      );
+      const offset = timezone.offset;
 
       startDate = convertToLocalTime(
         moment(formatStartDate).tz(timezone.utc[0]).utcOffset(offset, true)
