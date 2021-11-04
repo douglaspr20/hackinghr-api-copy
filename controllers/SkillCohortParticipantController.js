@@ -29,14 +29,14 @@ const SkillCohortParticipantController = () => {
 
       if (skillCohort) {
         const mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
           subject: `Confirmation`,
           html: EmailContent.JOIN_COHORT_EMAIL(user, skillCohort),
           contentType: "text/html",
         };
 
-        await smtpService().sendMail(mailOptions);
+        await smtpService().sendMailUsingSendInBlue(mailOptions);
 
         return res.status(HttpCodes.OK).json({ skillCohortParticipant });
       }
