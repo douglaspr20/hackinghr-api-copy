@@ -33,7 +33,6 @@ const SkillCohortParticipantController = () => {
           to: user.email,
           subject: `Confirmation`,
           html: EmailContent.JOIN_COHORT_EMAIL(user, skillCohort),
-          contentType: "text/html",
         };
 
         await smtpService().sendMailUsingSendInBlue(mailOptions);
