@@ -19,8 +19,6 @@ const BonfireController = () => {
         ...reqBonfire,
       };
 
-      const bonfire = await Bonfire.create(bonfireInfo);
-
       const users = await User.findAll(
         {
           where: {
@@ -33,6 +31,23 @@ const BonfireController = () => {
         { order: Sequelize.literal("rand()"), limit: 20 }
       );
 
+      const invitedUsers = users.map((user) => {
+        return user.dataValues.id;
+      });
+
+      bonfireInfo = {
+        ...bonfireInfo,
+        invitedUsers,
+      };
+
+      const bonfire = await Bonfire.create(bonfireInfo);
+
+      const { dataValues: bonfireCreatorInfo } = await User.findOne({
+        where: {
+          id: bonfireInfo.bonfireCreator,
+        },
+      });
+
       await Promise.all(
         users.map((user) => {
           const _user = user.toJSON();
@@ -40,10 +55,11 @@ const BonfireController = () => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_USER,
             to: _user.email,
-            subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(bonfire),
-            html: LabEmails.EVENT_REMINDER_24_HOURS.body(
+            subject: LabEmails.BONFIRE_INVITATION.subject,
+            html: LabEmails.BONFIRE_INVITATION.body(
               _user,
               bonfire,
+              bonfireCreatorInfo,
               targetBonfireDate.format("MMM DD"),
               targetBonfireDate.format("h:mm a")
             ),

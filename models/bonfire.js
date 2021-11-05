@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Bonfire extends Model {
     /**
@@ -12,20 +10,28 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
-  };
-  Bonfire.init({
-    title: DataTypes.STRING,
-    description: DataTypes.TEXT,
-    startTime: DataTypes.STRING,
-    endTime: DataTypes.STRING,
-    categories: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      defaultValue: [],
+  }
+  Bonfire.init(
+    {
+      title: DataTypes.STRING,
+      description: DataTypes.TEXT,
+      startTime: DataTypes.STRING,
+      endTime: DataTypes.STRING,
+      categories: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      link: DataTypes.STRING,
+      bonfireCreator: DataTypes.INTEGER,
+      invitedUsers: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
     },
-    link: DataTypes.STRING,
-  }, {
-    sequelize,
-    modelName: 'Bonfire',
-  });
+    {
+      sequelize,
+      modelName: "Bonfire",
+    }
+  );
   return Bonfire;
 };

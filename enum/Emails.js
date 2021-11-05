@@ -283,4 +283,42 @@ module.exports = {
       </p>
     `,
   },
+  BONFIRE_INVITATION: {
+    subject: `You have been invited to a bonfire! A networking experience as part of the 
+    Hacking HR 2022 Global Online Conference`,
+    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+      <p>
+      Hi, ${user.firstName}
+      </p>
+      <p>
+      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}, 
+      created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email}).
+      </p>
+      <p>
+      Bonfires are networking opportunities as part of the Hacking HR 2022 Global Online 
+      Conference. Participants of the conference can create bonfires and we select a 
+      group of other participants to join. Like a “professional blind date”! 
+      </p>
+      <p>
+      This bonfire is about “${bonfire.description}” and you were invited because you have 
+      interests that align with the topic of this conversation! 
+      </p>
+      <p>
+      We hope you can join. 
+      </p>
+      <p>
+      This is the link to connect: <a target="_blank" href="${bonfire.link}">${bonfire.link}</a>
+      </p>
+      <p>
+      Attached a calendar invite including all details, just in case! 
+      </p>
+      <p>
+      Happy networking! 
+      </p>
+      <br />
+      <br />
+      Hacking HR Team
+      <br/>
+    `,
+  },
 };
