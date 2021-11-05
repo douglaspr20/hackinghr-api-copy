@@ -29,7 +29,7 @@ const LearningBadgeController = () => {
             (
             select
                 'podcastseries' as element,
-                cast(coalesce(ps.duration, '0') as float) as duration,
+                cast(coalesce(ps."durationLearningBadges", '0') as float) as duration,
                 ps.id,
                 psd.key,
                 psd.value

@@ -223,6 +223,7 @@ const PodcastController = () => {
           "topics",
           "contentType",
           "meta",
+          "duration",
         ];
         for (let item of fields) {
           if (body[item]) {
