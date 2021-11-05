@@ -69,6 +69,8 @@ const adminRoutes = {
   "POST /skill-cohort": "SkillCohortController.create",
   "DELETE /skill-cohort/:id": "SkillCohortController.remove",
   "PUT /skill-cohort/:id": "SkillCohortController.update",
+  "GET /skill-cohort/:skillCohortId/resources":
+    "SkillCohortResourcesController.getAll",
   "POST /skill-cohort/resource": "SkillCohortResourcesController.create",
   "POST /skill-cohort/resources": "SkillCohortResourcesController.batchWrite",
   "DELETE /skill-cohort/resource/:resourceId":

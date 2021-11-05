@@ -38,7 +38,7 @@ const SkillCohortResourcesController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { date, num, page } = req.query;
+    const { date } = req.query;
     const { skillCohortId } = req.params;
 
     let where = {
@@ -59,7 +59,51 @@ const SkillCohortResourcesController = () => {
         };
       }
 
-      const skillCohortResources = await SkillCohortResources.findAndCountAll({
+      const skillCohortResources = await SkillCohortResources.findAll({
+        where,
+        include: [
+          {
+            model: SkillCohortResourceResponse,
+          },
+          {
+            model: SkillCohortResponseAssessment,
+          },
+        ],
+        order: [["releaseDate"]],
+      });
+
+      return res.status(HttpCodes.OK).json({ skillCohortResources });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal Server error",
+        error,
+      });
+    }
+  };
+
+  const getAllAndCount = async (req, res) => {
+    const { date, page, num } = req.query;
+    const { skillCohortId } = req.params;
+
+    let where = {
+      SkillCohortId: skillCohortId,
+    };
+
+    try {
+      if (date) {
+        where = {
+          ...where,
+          releaseDate: {
+            [Op.lt]: moment(date)
+              .tz("America/Los_Angeles")
+              .startOf("day")
+              .format("YYYY-MM-DD HH:mm:ssZ"),
+          },
+        };
+      }
+
+      let skillCohortResources = await SkillCohortResources.findAndCountAll({
         where,
         include: [
           {
@@ -71,8 +115,8 @@ const SkillCohortResourcesController = () => {
         ],
         distinct: true,
         offset: (+page - 1) * +num,
-        limit: +num * page + 1,
-        order: [["releaseDate"]],
+        limit: +num * +page,
+        order: [["releaseDate", "DESC"]],
       });
 
       return res.status(HttpCodes.OK).json({ skillCohortResources });
@@ -99,6 +143,42 @@ const SkillCohortResourcesController = () => {
           where: {
             id: resourceId,
           },
+        });
+
+        if (!skillCohortResource) {
+          return res.status(HttpCodes.BAD_REQUEST).json({
+            msg: "Bad Request: Skill Cohort Resource not found.",
+          });
+        }
+
+        return res.status(HttpCodes.OK).json({ skillCohortResource });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error." });
+      }
+    }
+  };
+
+  const getTodaysResource = async (req, res) => {
+    const { SkillCohortId } = req.params;
+
+    if (SkillCohortId) {
+      try {
+        const skillCohortResource = await SkillCohortResources.findOne({
+          where: {
+            SkillCohortId,
+            releaseDate: moment()
+              .tz("America/Los_Angeles")
+              .startOf("day")
+              .format("YYYY-MM-DD HH:mm:ssZ"),
+          },
+          include: [
+            {
+              model: SkillCohortResourceResponse,
+            },
+          ],
         });
 
         if (!skillCohortResource) {
@@ -255,6 +335,8 @@ const SkillCohortResourcesController = () => {
     getResourcesToBeReleasedToday,
     getYesterdayResourcesByCohortIds,
     batchWrite,
+    getAllAndCount,
+    getTodaysResource,
   };
 };
 

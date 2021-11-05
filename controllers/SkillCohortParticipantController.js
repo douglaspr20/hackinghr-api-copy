@@ -92,13 +92,13 @@ const SkillCohortParticipantController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { skillCohortId } = req.params;
+    const { SkillCohortId } = req.params;
 
     let where = {};
     try {
-      if (skillCohortId) {
+      if (SkillCohortId) {
         where = {
-          SkillCohortId: skillCohortId,
+          SkillCohortId,
         };
       }
 
