@@ -4,7 +4,6 @@ const Sequelize = require("sequelize");
 const moment = require("moment-timezone");
 const { Op } = require("sequelize");
 const { convertToLocalTime } = require("../utils/format");
-const TimeZoneList = require("../enum/TimeZoneList");
 const smtpService = require("../services/smtp.service");
 
 const AnnualConference = db.AnnualConference;
@@ -122,7 +121,7 @@ const AnnualConferenceController = () => {
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+        SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
         public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
         FROM public."AnnualConferences"
         LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
@@ -145,8 +144,11 @@ const AnnualConferenceController = () => {
 
     try {
       const query = `
-      SELECT public."AnnualConferences".* FROM public."Users"
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+      FROM public."Users"
       INNER JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[])
+      INNER JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
       WHERE public."Users"."id" = ${userId}
     `;
 
@@ -214,11 +216,6 @@ const AnnualConferenceController = () => {
       let formatStartDate = moment(`${startDate}  ${startTime}`);
 
       let formatEndDate = moment(`${endDate}  ${endTime}`);
-
-      const timezone = TimeZoneList.find(
-        (item) => item.value === annualConference.timezone
-      );
-      const offset = timezone.offset;
 
       startDate = convertToLocalTime(
         moment(formatStartDate).tz(timezone.utc[0]).utcOffset(offset, true)
