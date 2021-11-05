@@ -283,4 +283,99 @@ module.exports = {
       </p>
     `,
   },
+  JOIN_COHORT_EMAIL: {
+    subject: (cohort) => `
+    Welcome to Cohort ${cohort.title} as part of HACKING HR's ProjectX
+    `,
+    body: (user, cohort, startDate) => `
+    <p>
+      Hi ${user.firstName},
+    </p>
+    <p>
+      Welcome to Hacking HR's ProjectX!
+    </p>  
+    <p>
+      We are so excited to have you join the cohort ${cohort.title} starting on ${startDate}!
+    </p>
+    <p>
+      We created this tool with one idea in mind: to help you learn or improve your knowledge in ${cohort.title} through daily resources, personal reflections and assessment of your fellow cohort participants’ reflections! 
+    </p>
+    <p>
+    This program is intense, but light touch: we will provide a daily resource that should last less than 15-20 minutes to read, listen or watch. Then you provide your personal reflection about what you learned and you plan to apply the lessons learned. Finally, you will look at some of the reflections provided by other participants’ and provide your feedback. 
+    </p>
+    <p>
+    This program lasts 66 days. There will be a few meetings with a small and selected group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. 
+    </p>
+    <p>
+    The program relies on daily consistency and discipline. Instead of bugging you with heavy daily resources and long programs that lasts for hours and months, we only ask you for 20 minutes or less on a daily basis for 66 days. That’s it! 
+    </p>
+    <p>
+      Enjoy the program. Happy learning. And please do not hesitate to reach out if you have any questions: enrique@hackinghr.io
+    </p>
+    <p>
+      Thank you! 
+    </p>
+    <p>
+      Enrique Rubio <br>
+      Founder <br>
+      Hacking HR <br>
+    </p>
+    `,
+  },
+  DAILY_RESOURCE: {
+    subject: (resource) => `
+      Today's Resource is: ${resource.title}
+    `,
+    body: (user, cohort, resource) => `
+    <p>
+      Hi ${user.firstName},
+    </p>
+    <p>
+      Today’s resource as part of the Cohort ${cohort.title} is: <br>
+      - ${resource.title} <br>
+      - Type: ${resource.type} <br>
+      - Link: ${resource.resourceLink} <br>
+      - Estimated duration: ${resource.duration} <br>
+    </p>
+    <p>
+      Please remember to: <br>
+      -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
+      -	Assess the responses provided by other cohort participants
+    </p>
+    <p>
+      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+    </p>
+    <p>
+      Thank you! 
+    </p>
+    <p>
+      Hacking HR LAB
+    </p>
+    `,
+  },
+  KICK_OUT: {
+    subject: () => `
+      You have missed two mandatory activities – you can’t join this cohort anymore
+    `,
+    body: (user) => `
+    <p>
+      Hi ${user.firstName}
+    </p>
+    <p>
+      Unfortunately you have missed two mandatory activities this week. We understand that life and work happen and perhaps other priorities came up and you had to reallocate your time. It’s ok. 
+    </p>
+    <p>
+      We hope you can join a future cohort on the same skill or any other similar skill. 
+    </p>
+    <p>
+      You won’t be able to join this cohort’s dashboard anymore and you will not receive any more information about it. 
+    </p>
+    <p>
+      Thank you for your understanding. 
+    </p>
+    <p>
+      Hacking HR LAB
+    </p>
+    `,
+  },
 };

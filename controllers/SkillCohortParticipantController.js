@@ -1,7 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const smtpService = require("../services/smtp.service");
-const { EmailContent } = require("../enum");
+const { LabEmails } = require("../enum");
+const moment = require("moment");
 
 const SkillCohortParticipant = db.SkillCohortParticipant;
 const SkillCohort = db.SkillCohort;
@@ -28,11 +29,12 @@ const SkillCohortParticipantController = () => {
       });
 
       if (skillCohort) {
+        const startDate = moment(skillCohort.startDate).format("LL");
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
-          subject: `Confirmation`,
-          html: EmailContent.JOIN_COHORT_EMAIL(user, skillCohort),
+          subject: LabEmails.JOIN_COHORT_EMAIL.subject(skillCohort),
+          html: LabEmails.JOIN_COHORT_EMAIL.body(user, skillCohort, startDate),
         };
 
         await smtpService().sendMailUsingSendInBlue(mailOptions);
@@ -261,6 +263,16 @@ const SkillCohortParticipantController = () => {
           },
         }
       );
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_USER,
+        to: participant.User.email,
+        subject: LabEmails.KICK_OUT.subject(),
+        html: LabEmails.KICK_OUT.body(participant.User),
+        contentType: "text/html",
+      };
+
+      return smtpService().sendMailUsingSendInBlue(mailOptions);
     } catch (error) {
       console.log(error);
     }

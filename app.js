@@ -22,8 +22,7 @@ const SkillCohortResourceResponseAssessmentController = require("./controllers/S
 
 const moment = require("moment-timezone");
 
-const { compact } = require("lodash");
-const { EmailContent } = require("./enum");
+const { LabEmails } = require("./enum");
 
 const smtpService = require("./services/smtp.service");
 const socketService = require("./services/socket.service");
@@ -220,8 +219,8 @@ cron.schedule(
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_USER,
           to: participant.User.email,
-          subject: `New Resource`,
-          html: EmailContent.NEW_RESOURCE_EMAIL(user, resource),
+          subject: LabEmails.DAILY_RESOURCE.subject(resource),
+          html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
           contentType: "text/html",
         };
 

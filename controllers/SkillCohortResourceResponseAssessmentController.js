@@ -1,6 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
+const { isEmpty } = require("lodash");
 
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
 
