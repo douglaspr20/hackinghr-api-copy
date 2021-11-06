@@ -9,12 +9,7 @@ const TimeZoneList = require("../enum/TimeZoneList");
 const { readExcelFile, progressLog } = require("../utils/excel");
 const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
-const {
-  getEventPeriod,
-  convertToUserTimezone,
-  convertToCertainTime,
-  convertToUTCTime,
-} = require("../utils/format");
+const { getEventPeriod } = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");

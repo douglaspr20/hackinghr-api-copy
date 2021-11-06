@@ -26,6 +26,11 @@ const BonfireController = () => {
             [Op.and]: [
               { percentOfCompletion: 100 },
               { attendedToConference: 1 },
+              {
+                id: {
+                  [Op.ne]: bonfireInfo.bonfireCreator,
+                },
+              },
             ],
           },
         },
@@ -48,6 +53,40 @@ const BonfireController = () => {
           id: bonfireInfo.bonfireCreator,
         },
       });
+
+      await Promise.all(
+        invitedUsers.map((idUser) => {
+          return User.update(
+            {
+              bonfires: Sequelize.fn(
+                "array_append",
+                Sequelize.col("bonfires"),
+                bonfire.id
+              ),
+            },
+            {
+              where: { id: idUser },
+              returning: true,
+              plain: true,
+            }
+          );
+        })
+      );
+
+      await User.update(
+        {
+          bonfires: Sequelize.fn(
+            "array_append",
+            Sequelize.col("bonfires"),
+            bonfire.id
+          ),
+        },
+        {
+          where: { id: bonfireInfo.bonfireCreator },
+          returning: true,
+          plain: true,
+        }
+      );
 
       await Promise.all(
         users.map((user) => {
