@@ -75,6 +75,7 @@ const privateRoutes = {
   "GET /session/:id": "AnnualConferenceController.get",
   "GET /session": "AnnualConferenceController.getAll",
   "GET /sessions-user": "AnnualConferenceController.getSessionsUser",
+  "GET /session/participants": "AnnualConferenceController.getParticipants",
   "GET /course-instructors/:course": "CourseController.getInstructorsByCourse",
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
   "GET /notification": "NotificationController.getAll",

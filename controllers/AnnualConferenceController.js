@@ -163,6 +163,33 @@ const AnnualConferenceController = () => {
     }
   };
 
+  const getParticipants = async (req, res) => {
+    const { filter } = req.body;
+    try {
+      let where = {
+        level: {
+          [Op.and]: [
+            { attendedToConference: 1 },
+            { topicsOfInterest: { [Op.overlap]: JSON.parse(filter.topics) } },
+          ],
+        },
+      };
+
+      let participants = await Users.findAndCountAll({
+        where,
+        offset: (filter.page - 1) * filter.num,
+        limit: filter.num,
+        order: [["order", "DESC"]],
+      });
+      return res.status(HttpCodes.OK).json({ participants });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const remove = async (req, res) => {
     const { id } = req.params;
 
@@ -268,6 +295,7 @@ const AnnualConferenceController = () => {
     create,
     getAll,
     getSessionsUser,
+    getParticipants,
     get,
     update,
     remove,
