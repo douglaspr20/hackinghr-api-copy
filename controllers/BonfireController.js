@@ -6,6 +6,7 @@ const isEmpty = require("lodash/isEmpty");
 const { LabEmails } = require("../enum");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
+const TimeZoneList = require("../enum/TimeZoneList");
 
 const Bonfire = db.Bonfire;
 const User = db.User;
@@ -50,8 +51,14 @@ const BonfireController = () => {
 
       await Promise.all(
         users.map((user) => {
+          const timezone = TimeZoneList.find(
+            (timezone) => timezone.text === user.timezone
+          );
+          const offset = timezone.offset;
           const _user = user.toJSON();
-          const targetBonfireDate = moment(bonfire.startDate);
+          const targetBonfireDate = moment(bonfire.startDate)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_USER,
             to: _user.email,
@@ -84,7 +91,7 @@ const BonfireController = () => {
     const filter = req.query;
     let where = {
       endTime: {
-        [Op.gte]: moment().format(),
+        [Op.gte]: moment().utc().format(),
       },
     };
 
