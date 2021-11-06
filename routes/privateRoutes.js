@@ -145,6 +145,7 @@ const privateRoutes = {
     "SkillCohortResponseRatingController.upsert",
   "GET /skill-cohort/resource/:resourceId/participant/:participantId/ratings":
     "SkillCohortResponseRatingController.getAllByIds",
+  "GET /learning-badges/": "LearningBadgeController.getAll",
 };
 
 module.exports = privateRoutes;
