@@ -285,7 +285,7 @@ module.exports = {
   },
   JOIN_COHORT_EMAIL: {
     subject: (cohort) => `
-    Welcome to Cohort ${cohort.title} as part of HACKING HR's ProjectX
+    Welcome to Cohort ${cohort.title} as part of Hacking HR's ProjectX
     `,
     body: (user, cohort, startDate) => `
     <p>
@@ -304,7 +304,7 @@ module.exports = {
     This program is intense, but light touch: we will provide a daily resource that should last less than 15-20 minutes to read, listen or watch. Then you provide your personal reflection about what you learned and you plan to apply the lessons learned. Finally, you will look at some of the reflections provided by other participants’ and provide your feedback. 
     </p>
     <p>
-    This program lasts 66 days. There will be a few meetings with a small and selected group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. 
+    This cohort lasts 66 days. The program includes a weekly meeting with a small group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. 
     </p>
     <p>
     The program relies on daily consistency and discipline. Instead of bugging you with heavy daily resources and long programs that lasts for hours and months, we only ask you for 20 minutes or less on a daily basis for 66 days. That’s it! 
@@ -331,19 +331,19 @@ module.exports = {
       Hi ${user.firstName},
     </p>
     <p>
-      Today’s resource as part of the Cohort ${cohort.title} is: <br>
+      Today’s resource as part of the Cohort ${cohort.title} is: <br> <br>
       - ${resource.title} <br>
       - Type: ${resource.type} <br>
       - Link: ${resource.resourceLink} <br>
-      - Estimated duration: ${resource.duration} <br>
+      - Estimated duration: ${resource.duration} minutes <br>
     </p>
     <p>
-      Please remember to: <br>
+      Please remember to: <br> <br>
       -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
       -	Assess the responses provided by other cohort participants
     </p>
     <p>
-      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+    Please remember that to stay enrolled in this cohort you must provide your daily reflection and daily assessment on other cohort participants' reflections. You are allowed only to miss two reflections or two assessments in any given week.
     </p>
     <p>
       Thank you! 
