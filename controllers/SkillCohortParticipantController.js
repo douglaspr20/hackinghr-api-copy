@@ -265,7 +265,7 @@ const SkillCohortParticipantController = () => {
       );
 
       const mailOptions = {
-        from: process.env.SEND_IN_BLUE_SMTP_USER,
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: participant.User.email,
         subject: LabEmails.KICK_OUT.subject(),
         html: LabEmails.KICK_OUT.body(participant.User),
@@ -299,6 +299,64 @@ const SkillCohortParticipantController = () => {
     }
   };
 
+  /**
+   * Withdraw participation
+   * @param {*} req
+   * @param {*} res
+   */
+  const withdrawParticipation = async (req, res) => {
+    const { SkillCohortParticipantId } = req.params;
+
+    try {
+      const participant = await SkillCohortParticipant.findOne({
+        where: {
+          id: SkillCohortParticipantId,
+        },
+        include: [
+          {
+            model: db.User,
+          },
+          {
+            model: db.SkillCohort,
+          },
+        ],
+      });
+
+      if (!participant) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "User not found.",
+          error,
+        });
+      }
+
+      await SkillCohortParticipant.destroy({
+        where: {
+          id: participant.id,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: participant.User.email,
+        subject: LabEmails.WITHDRAW_PARTICIPATION.subject(
+          participant.SkillCohort
+        ),
+        html: LabEmails.WITHDRAW_PARTICIPATION.body(participant.User),
+        contentType: "text/html",
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
   return {
     create,
     get,
@@ -310,6 +368,7 @@ const SkillCohortParticipantController = () => {
     removeParticipantAccess,
     resetCounter,
     incrementAssessmentStrike,
+    withdrawParticipation,
   };
 };
 

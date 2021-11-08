@@ -8,6 +8,7 @@ const moment = require("moment-timezone");
 
 const SkillCohort = db.SkillCohort;
 const SkillCohortResources = db.SkillCohortResources;
+const SkillCohortParticipant = db.SkillCohortParticipant;
 
 const SkillCohortController = () => {
   /**
@@ -75,19 +76,20 @@ const SkillCohortController = () => {
   };
 
   /**
-   * Method to get all skill cohorts
+   * Method to get all upcoming skill cohorts
    * @param {*} req
    * @param {*} res
    */
-  const getAll = async (req, res) => {
+  const getAllActiveUserSide = async (req, res) => {
     const { filter } = req.query;
     const dateToday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
       .utc()
       .format("YYYY-MM-DD HH:mm:ssZ");
+
     let where = {
-      endDate: {
+      startDate: {
         [Op.gte]: dateToday,
       },
     };
@@ -104,10 +106,85 @@ const SkillCohortController = () => {
 
       const skillCohorts = await SkillCohort.findAll({
         where,
-        order: [["title"]],
+        order: [["startDate", "ASC"]],
       });
 
       return res.status(HttpCodes.OK).json({ skillCohorts });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal Server error",
+        error,
+      });
+    }
+  };
+
+  /**
+   * Method to get all skill cohorts
+   * @param {*} req
+   * @param {*} res
+   */
+  const getAll = async (req, res) => {
+    const { filter } = req.query;
+    const dateToday = moment()
+      .tz("America/Los_Angeles")
+      .startOf("day")
+      .utc()
+      .format("YYYY-MM-DD HH:mm:ssZ");
+
+    try {
+      const skillCohorts = await SkillCohort.findAll({
+        order: [["startDate", "ASC"]],
+      });
+
+      return res.status(HttpCodes.OK).json({ skillCohorts });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal Server error",
+        error,
+      });
+    }
+  };
+
+  /**
+   * Get all participated cohort
+   * @param {*} req
+   * @param {*} res
+   */
+  const getAllOfMyCohort = async (req, res) => {
+    const { UserId } = req.params;
+
+    const dateToday = moment()
+      .tz("America/Los_Angeles")
+      .startOf("day")
+      .utc()
+      .format("YYYY-MM-DD HH:mm:ssZ");
+
+    try {
+      const allParticipated = await SkillCohortParticipant.findAll({
+        where: {
+          UserId,
+        },
+        include: {
+          model: SkillCohort,
+          where: {
+            endDate: {
+              [Op.gt]: dateToday,
+            },
+          },
+          order: [["startDate", "ASC"]],
+          required: true,
+        },
+        raw: true,
+        nest: true,
+      });
+
+      const allOfMySkillCohorts = allParticipated.map((participated) => {
+        return participated.SkillCohort;
+      });
+
+      return res.status(HttpCodes.OK).json({ allOfMySkillCohorts });
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -282,12 +359,14 @@ const SkillCohortController = () => {
 
   return {
     create,
-    getAll,
+    getAllActiveUserSide,
     get,
     remove,
     update,
     getAllActiveSkillCohortsWithResource,
     getAllActiveSkillCohorts,
+    getAllOfMyCohort,
+    getAll,
   };
 };
 

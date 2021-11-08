@@ -378,4 +378,21 @@ module.exports = {
     </p>
     `,
   },
+  WITHDRAW_PARTICIPATION: {
+    subject: (cohort) =>
+      `You have withdrawn from Hacking HR's ProjectX: ${cohort.title}`,
+    body: (user) => `
+    <p>
+      Hi ${user.firstName}, <br>
+    </p>
+    <p>
+      We are sorry to see you withdraw from the cohort. We hope everything is well! <br>
+      Don't worry, though, if you can't join this time. We have many more cohorts and skills coming up! <br>
+      Thank you so much! <br>
+    </p>
+    <p>
+      Hacking HR Team
+    </p>
+    `,
+  },
 };
