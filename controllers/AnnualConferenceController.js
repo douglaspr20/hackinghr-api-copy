@@ -8,6 +8,7 @@ const TimeZoneList = require("../enum/TimeZoneList");
 const smtpService = require("../services/smtp.service");
 
 const AnnualConference = db.AnnualConference;
+const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
 
 const AnnualConferenceController = () => {
@@ -164,23 +165,21 @@ const AnnualConferenceController = () => {
   };
 
   const getParticipants = async (req, res) => {
-    const { filter } = req.body;
+    const { filters, num, page } = req.query;
     try {
       let where = {
-        level: {
-          [Op.and]: [
-            { attendedToConference: 1 },
-            { topicsOfInterest: { [Op.overlap]: JSON.parse(filter.topics) } },
-          ],
-        },
+        [Op.and]: [
+          { attendedToConference: 1 },
+          { topicsOfInterest: { [Op.overlap]: JSON.parse(filters).topics } },
+        ],
       };
 
-      let participants = await Users.findAndCountAll({
+      let participants = await User.findAndCountAll({
         where,
-        offset: (filter.page - 1) * filter.num,
-        limit: filter.num,
-        order: [["order", "DESC"]],
+        offset: (page - 1) * num,
+        limit: +num,
       });
+
       return res.status(HttpCodes.OK).json({ participants });
     } catch (error) {
       console.log(error);
