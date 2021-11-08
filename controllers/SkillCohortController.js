@@ -90,7 +90,7 @@ const SkillCohortController = () => {
 
     let where = {
       startDate: {
-        [Op.gte]: dateToday,
+        [Op.gt]: dateToday,
       },
     };
 
@@ -125,13 +125,6 @@ const SkillCohortController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { filter } = req.query;
-    const dateToday = moment()
-      .tz("America/Los_Angeles")
-      .startOf("day")
-      .utc()
-      .format("YYYY-MM-DD HH:mm:ssZ");
-
     try {
       const skillCohorts = await SkillCohort.findAll({
         order: [["startDate", "ASC"]],
