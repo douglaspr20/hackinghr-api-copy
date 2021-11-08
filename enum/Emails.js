@@ -387,8 +387,12 @@ module.exports = {
     </p>
     <p>
       We are sorry to see you withdraw from the cohort. We hope everything is well! <br>
-      Don't worry, though, if you can't join this time. We have many more cohorts and skills coming up! <br>
-      Thank you so much! <br>
+    </p>
+    <p>
+    Don't worry, though, if you can't join this time. We have many more cohorts and skills coming up! <br>
+    </p>
+    <p>
+    Thank you so much! <br>
     </p>
     <p>
       Hacking HR Team

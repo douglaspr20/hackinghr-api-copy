@@ -88,6 +88,8 @@ const SkillCohortController = () => {
       .utc()
       .format("YYYY-MM-DD HH:mm:ssZ");
 
+    const user = req.user;
+
     let where = {
       startDate: {
         [Op.gt]: dateToday,
@@ -104,9 +106,31 @@ const SkillCohortController = () => {
         };
       }
 
-      const skillCohorts = await SkillCohort.findAll({
+      let skillCohorts = await SkillCohort.findAll({
         where,
         order: [["startDate", "ASC"]],
+      });
+
+      let participatedCohorts = await SkillCohortParticipant.findAll({
+        where: {
+          UserId: user.id,
+        },
+        include: {
+          model: SkillCohort,
+          required: true,
+        },
+        raw: true,
+        nest: true,
+      });
+
+      participatedCohorts = participatedCohorts.map((participated) => {
+        return participated.SkillCohort;
+      });
+
+      skillCohorts = skillCohorts.filter((cohort) => {
+        return !participatedCohorts.some((participatedCohort) => {
+          return participatedCohort.id === cohort.id;
+        });
       });
 
       return res.status(HttpCodes.OK).json({ skillCohorts });
