@@ -4,15 +4,21 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const Sequelize = require("sequelize");
 const smtpService = require("../services/smtp.service");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { readExcelFile, progressLog } = require("../utils/excel");
 const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
-const { getEventPeriod } = require("../utils/format");
+const {
+  getEventPeriod,
+  convertToUserTimezone,
+  convertToCertainTime,
+  convertToUTCTime,
+} = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
+const { isEmpty } = require("lodash");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -167,23 +173,28 @@ const UserController = () => {
     return "";
   };
 
-  const generateAttendEmail = async (user, event) => {
-    const startDate = moment(event.startDate, "YYYY-MM-DD h:mm a");
-    const endDate = moment(event.endDate, "YYYY-MM-DD h:mm a");
+  const generateAttendEmail = async (user, tz, event) => {
+    const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
-    const calendarInvite = smtpService().generateCalendarInvite(
-      startDate,
-      endDate,
-      event.title,
-      getEventDescription(event.description),
-      "",
-      // event.location,
-      `${process.env.DOMAIN_URL}${event.id}`,
-      event.organizer,
-      process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-      timezone.utc[0]
-    );
+    const calendarInvite = event.startAndEndTimes.map((time, index) => {
+      let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
+      let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
+
+      console.log(startTime, endTime);
+      return smtpService().generateCalendarInvite(
+        startTime,
+        endTime,
+        event.title,
+        getEventDescription(event.description),
+        "",
+        // event.location,
+        `${process.env.DOMAIN_URL}${event.id}`,
+        event.organizer,
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        userTimezone.utc[0]
+      );
+    });
 
     const mailOptions = {
       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
@@ -193,24 +204,33 @@ const UserController = () => {
       contentType: "text/calendar",
     };
 
-    let icsContent = calendarInvite.toString();
-    icsContent = icsContent.replace(
-      "BEGIN:VEVENT",
-      `METHOD:REQUEST\r\nBEGIN:VEVENT`
-    );
+    let icsContent = calendarInvite.map((calendar) => {
+      return calendar.toString();
+    });
 
-    if (calendarInvite) {
-      mailOptions["attachments"] = [
-        {
-          filename: "invite.ics",
-          content: icsContent,
+    icsContent = icsContent.map((content) => {
+      content = content.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
+
+      return content;
+    });
+
+    if (!isEmpty(calendarInvite)) {
+      mailOptions["attachments"] = calendarInvite.map((calendar, index) => {
+        return {
+          filename:
+            event.startAndEndTimes.length > 1
+              ? `Day-${index + 1}-invite.ics`
+              : "invite.ics",
+          content: icsContent[index],
           contentType: "application/ics; charset=UTF-8; method=REQUEST",
           contentDisposition: "inline",
-        },
-      ];
+        };
+      });
     }
 
-    console.log("**** mailOptions ", mailOptions);
     let sentResult = null;
     try {
       sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
@@ -234,7 +254,10 @@ const UserController = () => {
             Sequelize.col("events"),
             event.id
           ),
-          attended: { ...prevUser.attended, [event.id]: moment().format() },
+          attended: {
+            ...prevUser.attended,
+            [event.id]: moment().format(),
+          },
         },
         {
           where: { id },
@@ -257,7 +280,7 @@ const UserController = () => {
         }
       );
 
-      generateAttendEmail(user, affectedRows);
+      generateAttendEmail(user, event.userTimezone, affectedRows);
 
       return res
         .status(HttpCodes.OK)
@@ -474,11 +497,10 @@ const UserController = () => {
 
   const setAttendedToConference = async (req, res) => {
     const { user } = req;
-
     try {
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
-          attendedToConference: 1,
+          attendedToConference: user.attendedToConference === 0 ? 1 : 0,
         },
         {
           where: { id: user.id },
@@ -519,11 +541,10 @@ const UserController = () => {
       for (const session of userSessions) {
         if (session.startTime === sessionToSchedule.dataValues.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
-            msg: "You already have a conference scheduled at the same time and date",
+            msg: "You already have another session scheduled at the same time and date",
           });
         }
       }
-
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),

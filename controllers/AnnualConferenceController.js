@@ -1,6 +1,10 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const Sequelize = require("sequelize");
+const moment = require("moment-timezone");
+const { Op } = require("sequelize");
+const { convertToLocalTime } = require("../utils/format");
+const smtpService = require("../services/smtp.service");
 
 const AnnualConference = db.AnnualConference;
 const QueryTypes = Sequelize.QueryTypes;
@@ -102,27 +106,57 @@ const AnnualConferenceController = () => {
   };
 
   const getAll = async (req, res) => {
-    const { startTime, endTime } = req.query;
-
+    const { startTime, endTime, meta } = req.query;
     try {
       let where = "";
 
       if (startTime && endTime) {
-        where = `WHERE public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}'`;
+        where = `WHERE (public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}')`;
+      }
+
+      if (meta) {
+        where += `AND (public."AnnualConferences"."title" LIKE '%${meta}%' OR public."AnnualConferences"."description" LIKE '%${meta}%' 
+        OR public."AnnualConferences"."type" LIKE '%${meta}%' OR public."Instructors"."name" LIKE '%${meta}%' 
+        OR public."Instructors"."description" LIKE '%${meta}%' OR public."AnnualConferences".categories::text LIKE '%${meta}%' )`;
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+        SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+        public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
         FROM public."AnnualConferences"
-        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
-        ${where}
-      `;
+        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
 
       const sessionList = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
       });
 
       return res.status(HttpCodes.OK).json({ conferences: sessionList });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const getSessionsUser = async (req, res) => {
+    const { userId } = req.query;
+
+    try {
+      const query = `
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+      FROM public."Users"
+      INNER JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[])
+      INNER JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
+      WHERE public."Users"."id" = ${userId}
+    `;
+
+      const sessionList = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      return res.status(HttpCodes.OK).json({ sessionsUser: sessionList });
     } catch (error) {
       console.log(error);
       return res
@@ -156,12 +190,85 @@ const AnnualConferenceController = () => {
       .json({ msg: "Bad Request: id is wrong" });
   };
 
+  const downloadICS = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const annualConference = await AnnualConference.findOne({
+        where: { id },
+      });
+
+      if (!annualConference) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      let startDate = moment(annualConference.startTime).format("YYYY-MM-DD");
+
+      let endDate = moment(annualConference.endTime).format("YYYY-MM-DD");
+
+      const startTime = moment(annualConference.startTime).format("HH:mm:ss");
+
+      const endTime = moment(annualConference.endTime).format("HH:mm:ss");
+
+      let formatStartDate = moment(`${startDate}  ${startTime}`);
+
+      let formatEndDate = moment(`${endDate}  ${endTime}`);
+
+      startDate = convertToLocalTime(
+        moment(formatStartDate).tz(timezone.utc[0]).utcOffset(offset, true)
+      ).format("YYYY-MM-DD HH:mm:ss");
+
+      endDate = convertToLocalTime(
+        moment(formatEndDate).tz(timezone.utc[0]).utcOffset(offset, true)
+      ).format("YYYY-MM-DD HH:mm:ss");
+
+      const localTimezone = moment.tz.guess();
+
+      const calendarInvite = smtpService().generateCalendarInvite(
+        startDate,
+        endDate,
+        annualConference.title,
+        annualConference.description,
+        "https://www.hackinghrlab.io/global-conference",
+        // event.location,
+        `${process.env.DOMAIN_URL}${annualConference.id}`,
+        "hacking Lab HR",
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        localTimezone
+      );
+
+      let icsContent = calendarInvite.toString();
+      icsContent = icsContent.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
+
+      res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${encodeURIComponent(annualConference.title)}.ics`
+      );
+      res.setHeader("Content-Length", icsContent.length);
+      return res.end(icsContent);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
+    getSessionsUser,
     get,
     update,
     remove,
+    downloadICS,
   };
 };
 

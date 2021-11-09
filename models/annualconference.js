@@ -31,6 +31,10 @@ module.exports = (sequelize, DataTypes) => {
       timezone: DataTypes.STRING,
       description: DataTypes.TEXT,
       objectives: DataTypes.TEXT,
+      meta: {
+        type: DataTypes.TEXT,
+        defaultValue: "",
+      },
       speakers: {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],

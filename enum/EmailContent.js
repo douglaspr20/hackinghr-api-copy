@@ -37,9 +37,9 @@ module.exports = {
     Thank you for registering for ${event.title} organized by ${event.organizer}
     <br/>
     <br/>
-    We look forward to seeing you on ${getEventPeriod(
+    We look forward to seeing you on: <br> ${getEventPeriod(
       event.startDate,
-      event.endDate,
+      event.startAndEndTimes,
       event.timezone
     )}. 
     </p>
@@ -102,4 +102,13 @@ module.exports = {
       Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
       Hacking HR Team
   `,
+<<<<<<< HEAD
+=======
+  NEW_RESOURCE_EMAIL: (user) => `
+      Hi, ${user.firstName},
+      <br />
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      Hacking HR Team
+  `,
+>>>>>>> ecae199c591808cef57a71c66b37b4dc7ce7c2ef
 };
