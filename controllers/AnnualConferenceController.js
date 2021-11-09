@@ -1,8 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const Sequelize = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const moment = require("moment-timezone");
-const { Op } = require("sequelize");
 const { convertToLocalTime } = require("../utils/format");
 const TimeZoneList = require("../enum/TimeZoneList");
 const smtpService = require("../services/smtp.service");
@@ -174,11 +173,12 @@ const AnnualConferenceController = () => {
         ],
       };
 
-      let participants = await User.findAndCountAll({
-        where,
-        offset: (page - 1) * num,
-        limit: +num,
-      });
+      let participants = await User.findAll(
+        {
+          where,
+        },
+        { order: Sequelize.literal("rand()"), limit: 50 }
+      );
 
       return res.status(HttpCodes.OK).json({ participants });
     } catch (error) {
