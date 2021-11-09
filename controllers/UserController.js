@@ -14,6 +14,7 @@ const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
+const { LabEmails } = require("../enum");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -645,13 +646,18 @@ const UserController = () => {
         type: QueryTypes.SELECT,
       });
 
-      const bonfireToJoin = await Bonfire.findOne({
+      const { dataValues: bonfireToJoin } = await Bonfire.findOne({
         where: { id },
-        attributes: ["startTime"],
+      });
+
+      const { dataValues: bonfireCreator } = await User.findOne({
+        where: {
+          id: bonfireToJoin.bonfireCreator,
+        },
       });
 
       for (const bonfire of userBonfires) {
-        if (bonfire.startTime === bonfireToJoin.dataValues.startTime) {
+        if (bonfire.startTime === bonfireToJoin.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
             msg: "You already have join another bonfire at the same time and date",
           });
@@ -666,6 +672,34 @@ const UserController = () => {
           returning: true,
           plain: true,
         }
+      );
+
+      await Promise.resolve(
+        (() => {
+          const timezone = TimeZoneList.find(
+            (timezone) => timezone.text === affectedRows.dataValues.timezone
+          );
+
+          const offset = timezone.offset;
+          const targetBonfireDate = moment(bonfireToJoin.startDate)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            to: affectedRows.dataValues.email,
+            subject: LabEmails.BONFIRE_JOINING.subject,
+            html: LabEmails.BONFIRE_JOINING.body(
+              affectedRows.dataValues,
+              bonfireToJoin,
+              bonfireCreator,
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a")
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
       );
 
       return res.status(HttpCodes.OK).json({ user: affectedRows });

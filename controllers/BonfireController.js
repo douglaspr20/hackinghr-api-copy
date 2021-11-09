@@ -88,6 +88,33 @@ const BonfireController = () => {
         }
       );
 
+      await Promise.resolve(
+        (() => {
+          const timezone = TimeZoneList.find(
+            (timezone) => timezone.text === bonfireCreatorInfo.timezone
+          );
+
+          const offset = timezone.offset;
+          const targetBonfireDate = moment(bonfire.startDate)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            to: bonfireCreatorInfo.email,
+            subject: LabEmails.BONFIRE_CREATOR.subject,
+            html: LabEmails.BONFIRE_CREATOR.body(
+              bonfireCreatorInfo,
+              bonfire,
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a")
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
       await Promise.all(
         users.map((user) => {
           const timezone = TimeZoneList.find(
