@@ -727,6 +727,21 @@ const UserController = () => {
         }
       );
 
+      await Bonfire.update(
+        {
+          sessions: Sequelize.fn(
+            "array_remove",
+            Sequelize.col("sessions"),
+            affectedRows.dataValues.id
+          ),
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
       console.log(err);

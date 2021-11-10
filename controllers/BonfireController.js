@@ -99,7 +99,7 @@ const BonfireController = () => {
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: bonfireCreatorInfo.email,
             subject: LabEmails.BONFIRE_CREATOR.subject,
             html: LabEmails.BONFIRE_CREATOR.body(
@@ -111,7 +111,7 @@ const BonfireController = () => {
           };
           console.log("***** mailOptions ", mailOptions);
 
-          return smtpService().sendMailUsingSendInBlue(mailOptions);
+          return smtpService().sendMail(mailOptions);
         })()
       );
 
@@ -126,7 +126,7 @@ const BonfireController = () => {
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
             to: _user.email,
             subject: LabEmails.BONFIRE_INVITATION.subject,
             html: LabEmails.BONFIRE_INVITATION.body(
@@ -140,7 +140,7 @@ const BonfireController = () => {
 
           console.log("***** mailOptions ", mailOptions);
 
-          return smtpService().sendMailUsingSendInBlue(mailOptions);
+          return smtpService().sendMail(mailOptions);
         })
       );
 
