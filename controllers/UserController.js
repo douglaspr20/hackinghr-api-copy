@@ -679,7 +679,7 @@ const UserController = () => {
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.text === affectedRows.dataValues.timezone
+            (timezone) => timezone.value === affectedRows.dataValues.timezone
           );
 
           const offset = timezone.offset;
