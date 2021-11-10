@@ -1,12 +1,12 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const Sequelize = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const moment = require("moment-timezone");
-const { Op } = require("sequelize");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 
 const AnnualConference = db.AnnualConference;
+const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
 
 const AnnualConferenceController = () => {
@@ -165,6 +165,32 @@ const AnnualConferenceController = () => {
     }
   };
 
+  const getParticipants = async (req, res) => {
+    const { filters, num, page } = req.query;
+    try {
+      let where = {
+        [Op.and]: [
+          { attendedToConference: 1 },
+          { topicsOfInterest: { [Op.overlap]: JSON.parse(filters).topics } },
+        ],
+      };
+
+      let participants = await User.findAll(
+        {
+          where,
+        },
+        { order: Sequelize.literal("rand()"), limit: 50 }
+      );
+
+      return res.status(HttpCodes.OK).json({ participants });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const remove = async (req, res) => {
     const { id } = req.params;
 
@@ -265,6 +291,7 @@ const AnnualConferenceController = () => {
     create,
     getAll,
     getSessionsUser,
+    getParticipants,
     get,
     update,
     remove,
