@@ -46,12 +46,6 @@ const NotificationController = () => {
           readers: {
             [Op.contains]: [user.id],
           },
-          UserId: {
-            [Op.or]: {
-              [Op.eq]: null,
-              [Op.eq]: req.user.id,
-            },
-          },
         },
       });
 
