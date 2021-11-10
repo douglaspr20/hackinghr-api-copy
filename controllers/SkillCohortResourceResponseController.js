@@ -1,7 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op, Sequelize } = require("sequelize");
-const moment = require("moment-timezone");
 const { uniqBy } = require("lodash");
 
 const SkillCohortResourceResponse = db.SkillCohortResourceResponse;

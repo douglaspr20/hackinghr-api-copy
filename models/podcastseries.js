@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
       description: DataTypes.TEXT,
       objectives: DataTypes.TEXT,
       duration: DataTypes.STRING,
+      durationLearningBadges: DataTypes.STRING,
       podcasts: DataTypes.ARRAY(DataTypes.INTEGER),
       code: DataTypes.STRING,
       hrCreditOffered: DataTypes.TEXT,

@@ -286,7 +286,7 @@ const StripeController = () => {
         });
 
         const mailOptions = {
-          from: process.env.SEND_IN_BLUE_SMTP_USER,
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
           subject: LabEmails.USER_BECOME_PREMIUM.subject(),
           html: LabEmails.USER_BECOME_PREMIUM.body(user),

@@ -121,7 +121,7 @@ const AnnualConferenceController = () => {
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Instructors".id as userId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+        SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
         public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
         FROM public."AnnualConferences"
         LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
@@ -144,8 +144,11 @@ const AnnualConferenceController = () => {
 
     try {
       const query = `
-      SELECT public."AnnualConferences".* FROM public."Users"
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+      FROM public."Users"
       INNER JOIN public."AnnualConferences" ON public."AnnualConferences".id = ANY (public."Users".sessions::int[])
+      INNER JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
       WHERE public."Users"."id" = ${userId}
     `;
 
@@ -214,9 +217,13 @@ const AnnualConferenceController = () => {
 
       let formatEndDate = moment(`${endDate}  ${endTime}`);
 
-      startDate = convertToLocalTime(formatStartDate, "YYYY-MM-DD h:mm a");
+      startDate = convertToLocalTime(
+        moment(formatStartDate).tz(timezone.utc[0]).utcOffset(offset, true)
+      ).format("YYYY-MM-DD HH:mm:ss");
 
-      endDate = convertToLocalTime(formatEndDate, "YYYY-MM-DD h:mm a");
+      endDate = convertToLocalTime(
+        moment(formatEndDate).tz(timezone.utc[0]).utcOffset(offset, true)
+      ).format("YYYY-MM-DD HH:mm:ss");
 
       const localTimezone = moment.tz.guess();
 
@@ -224,8 +231,8 @@ const AnnualConferenceController = () => {
         startDate,
         endDate,
         annualConference.title,
-        "",
-        "",
+        annualConference.description,
+        "https://www.hackinghrlab.io/global-conference",
         // event.location,
         `${process.env.DOMAIN_URL}${annualConference.id}`,
         "hacking Lab HR",

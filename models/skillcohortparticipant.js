@@ -10,6 +10,9 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       SkillCohortParticipant.belongsTo(models.User, { foreignKey: "UserId" });
+      SkillCohortParticipant.belongsTo(models.SkillCohort, {
+        foreignKey: "SkillCohortId",
+      });
       SkillCohortParticipant.hasMany(models.SkillCohortGroupingMember);
       SkillCohortParticipant.hasMany(models.SkillCohortResourceResponse);
       SkillCohortParticipant.hasMany(models.SkillCohortResponseAssessment);
