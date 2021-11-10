@@ -674,7 +674,7 @@ const UserController = () => {
         }
       );
 
-      console.log(affectedRows);
+      console.log(affectedRows.dataValues);
 
       await Promise.resolve(
         (() => {
