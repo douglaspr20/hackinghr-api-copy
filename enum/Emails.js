@@ -376,7 +376,7 @@ module.exports = {
     </p>
     <p>
     Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}, 
-    created by ${bonfireCreator.firstName} ${bonfire.lastName} (${bonfireCreator.email})!
+    created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email})!
     </p>
     <p>
     Bonfires are networking opportunities as part of the Hacking HR 2022 Global Online 
