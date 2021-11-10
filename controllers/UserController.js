@@ -674,6 +674,8 @@ const UserController = () => {
         }
       );
 
+      console.log(affectedRows);
+
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
