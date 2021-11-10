@@ -283,6 +283,127 @@ module.exports = {
       </p>
     `,
   },
+  BONFIRE_INVITATION: {
+    subject: `You have been invited to a bonfire! A networking experience as part of the 
+    Hacking HR 2022 Global Online Conference`,
+    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+      <p>
+      Hi, ${user.firstName}
+      </p>
+      <p>
+      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}, 
+      created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email}).
+      </p>
+      <p>
+      Bonfires are networking opportunities as part of the Hacking HR 2022 Global Online 
+      Conference. Participants of the conference can create bonfires and we select a 
+      group of other participants to join. Like a “professional blind date”! 
+      </p>
+      <p>
+      This bonfire is about “${bonfire.description}” and you were invited because you have 
+      interests that align with the topic of this conversation! 
+      </p>
+      <p>
+      We hope you can join. 
+      </p>
+      <p>
+      This is the link to connect: <a target="_blank" href="${bonfire.link}">${bonfire.link}</a>
+      </p>
+      <p>
+      Attached a calendar invite including all details, just in case! 
+      </p>
+      <p>
+      Happy networking! 
+      </p>
+      <br />
+      <br />
+      Hacking HR Team
+      <br/>
+    `,
+  },
+  BONFIRE_CREATOR: {
+    subject: `Thank you creating a Bonfire as part of the networking experience at the 
+    Hacking HR 2022 Global Online Conference`,
+    body: (bonfireCreator, bonfire, startDate, startTime) => `
+    <p>
+    Hi, ${bonfireCreator.firstName}
+    </p>
+    <p>
+    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime}
+    </p>
+    <p>
+    You are so AWESOME!!! THANK YOU!
+    </p>
+    <p>
+    We created Bonfires as a cool and valuable way for networking as part of the 
+    Hacking HR 2022 Global Online Conference. We are thankful with you for creating 
+    this space for meaningful conversation and networking.
+    </p>
+    <p>
+    Based on areas of interest, we have selected 20 conference participants to join your
+    bonfire and sent them the invitations via email. We hope they join! But please feel 
+    free to promote as well in your network.
+    </p>
+    <p>
+    Also, we added the bonfire in the “Bonfire” list in the <a href="https://www.hackinghrlab.io/global-conference">Conference application</a> 
+    so that anyone can find it and join!
+    </p>
+    <p>
+    One last thing: as the creator of the Bonfire you have a wonderful opportunity to 
+    shape the conversation to be meaningful and valuable for those who join you. We 
+    count on you to facilitate a wonderful space that is safe, respectful and tolerant, 
+    and partisan political conversations or sales pitches are not allowed and 
+    immediately stopped.
+    </p>
+    <p>Thank you so much!!!</p>
+    <p>
+    Happy networking! 
+    </p>
+    <br />
+    <br />
+    <p>Enrique Rubio</p>
+    <p>Founder</p>
+    <p>Hacking HR</p>
+    <br/>
+    `,
+  },
+  BONFIRE_JOINING: {
+    subject: `Thank you for joining a Bonfire as part of the networking experience at the 
+    Hacking HR 2022 Global Online Conference`,
+    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+    <p>
+    Hi ${user.firstName}
+    </p>
+    <p>
+    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}, 
+    created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email})!
+    </p>
+    <p>
+    Bonfires are networking opportunities as part of the Hacking HR 2022 Global Online 
+    Conference. Participants of the conference can create bonfires and we select a 
+    group of other participants to join. Like a “professional blind date”! 
+    </p>
+    <p>
+    This bonfire is about “${bonfire.description}” and you were invited because you have 
+    interests that align with the topic of this conversation!
+    </p>
+    <p>
+    This is the link to connect: ${bonfire.link}
+    </p>
+    <p>
+    Attached a calendar invite including all details, just in case!
+    </p>
+    <br>
+    <br>
+    <p>
+    Happy networking!
+    </p>
+    <br>
+    <p>
+    Hacking HR LAB
+    </p>
+    `,
+  },
   JOIN_COHORT_EMAIL: {
     subject: (cohort) => `
     Welcome to Cohort ${cohort.title} as part of Hacking HR's ProjectX

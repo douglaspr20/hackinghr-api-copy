@@ -23,8 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.PostComment);
       User.hasMany(models.PostFollow);
       User.hasMany(models.Notification);
-      User.hasMany(models.SkillCohortParticipant)
-      User.hasMany(models.SkillCohortGroupingMember)
+      User.hasMany(models.SkillCohortParticipant);
+      User.hasMany(models.SkillCohortGroupingMember);
     }
   }
   User.init(
@@ -100,6 +100,10 @@ module.exports = (sequelize, DataTypes) => {
       recentJobLevel: DataTypes.STRING,
       recentWorkArea: DataTypes.ARRAY(DataTypes.STRING),
       sizeOfOrganization: DataTypes.STRING,
+      bonfires: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
     },
     {
       sequelize,

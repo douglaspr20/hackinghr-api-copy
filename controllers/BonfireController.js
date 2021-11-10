@@ -1,9 +1,15 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const { Op } = require("sequelize");
+const moment = require("moment-timezone");
+const { Op, Sequelize } = require("sequelize");
 const isEmpty = require("lodash/isEmpty");
+const { LabEmails } = require("../enum");
+const { convertToLocalTime } = require("../utils/format");
+const smtpService = require("../services/smtp.service");
+const TimeZoneList = require("../enum/TimeZoneList");
 
 const Bonfire = db.Bonfire;
+const User = db.User;
 
 const BonfireController = () => {
   const create = async (req, res) => {
@@ -14,7 +20,129 @@ const BonfireController = () => {
         ...reqBonfire,
       };
 
+      const users = await User.findAll(
+        {
+          where: {
+            [Op.and]: [
+              { percentOfCompletion: 100 },
+              { attendedToConference: 1 },
+              {
+                id: {
+                  [Op.ne]: bonfireInfo.bonfireCreator,
+                },
+              },
+            ],
+          },
+        },
+        { order: Sequelize.literal("rand()"), limit: 20 }
+      );
+
+      const invitedUsers = users.map((user) => {
+        return user.dataValues.id;
+      });
+
+      bonfireInfo = {
+        ...bonfireInfo,
+        invitedUsers,
+      };
+
       const bonfire = await Bonfire.create(bonfireInfo);
+
+      const { dataValues: bonfireCreatorInfo } = await User.findOne({
+        where: {
+          id: bonfireInfo.bonfireCreator,
+        },
+      });
+
+      await Promise.all(
+        invitedUsers.map((idUser) => {
+          return User.update(
+            {
+              bonfires: Sequelize.fn(
+                "array_append",
+                Sequelize.col("bonfires"),
+                bonfire.id
+              ),
+            },
+            {
+              where: { id: idUser },
+              returning: true,
+              plain: true,
+            }
+          );
+        })
+      );
+
+      await User.update(
+        {
+          bonfires: Sequelize.fn(
+            "array_append",
+            Sequelize.col("bonfires"),
+            bonfire.id
+          ),
+        },
+        {
+          where: { id: bonfireInfo.bonfireCreator },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      await Promise.resolve(
+        (() => {
+          const timezone = TimeZoneList.find(
+            (timezone) => timezone.value === bonfireCreatorInfo.timezone
+          );
+
+          const offset = timezone.offset;
+          const targetBonfireDate = moment(bonfire.startDate)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: bonfireCreatorInfo.email,
+            subject: LabEmails.BONFIRE_CREATOR.subject,
+            html: LabEmails.BONFIRE_CREATOR.body(
+              bonfireCreatorInfo,
+              bonfire,
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a")
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMail(mailOptions);
+        })()
+      );
+
+      await Promise.all(
+        users.map((user) => {
+          const timezone = TimeZoneList.find(
+            (timezone) => timezone.value === user.timezone
+          );
+          const offset = timezone.offset;
+          const _user = user.toJSON();
+          const targetBonfireDate = moment(bonfire.startDate)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+          let mailOptions = {
+            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            to: _user.email,
+            subject: LabEmails.BONFIRE_INVITATION.subject,
+            html: LabEmails.BONFIRE_INVITATION.body(
+              _user,
+              bonfire,
+              bonfireCreatorInfo,
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a")
+            ),
+          };
+
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMail(mailOptions);
+        })
+      );
 
       return res.status(HttpCodes.OK).json({ bonfire });
     } catch (error) {
@@ -27,7 +155,11 @@ const BonfireController = () => {
 
   const getAll = async (req, res) => {
     const filter = req.query;
-    let where = {};
+    let where = {
+      endTime: {
+        [Op.gte]: moment().utc().format(),
+      },
+    };
 
     try {
       if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
@@ -152,12 +284,80 @@ const BonfireController = () => {
     }
   };
 
+  const downloadICS = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const bonfire = await Bonfire.findOne({
+        where: { id },
+      });
+
+      if (!bonfire) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
+
+      let endDate = moment(bonfire.endTime).format("YYYY-MM-DD");
+
+      const startTime = moment(bonfire.startTime).format("HH:mm:ss");
+
+      const endTime = moment(bonfire.endTime).format("HH:mm:ss");
+
+      let formatStartDate = moment(`${startDate}  ${startTime}`);
+
+      let formatEndDate = moment(`${endDate}  ${endTime}`);
+
+      startDate = convertToLocalTime(formatStartDate, "YYYY-MM-DD h:mm a");
+
+      endDate = convertToLocalTime(formatEndDate, "YYYY-MM-DD h:mm a");
+
+      const localTimezone = moment.tz.guess();
+
+      const calendarInvite = smtpService().generateCalendarInvite(
+        startDate,
+        endDate,
+        bonfire.title,
+        bonfire.description,
+        "https://www.hackinghrlab.io/global-conference",
+        // event.location,
+        `${process.env.DOMAIN_URL}${bonfire.id}`,
+        "hacking Lab HR",
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        localTimezone
+      );
+
+      let icsContent = calendarInvite.toString();
+      icsContent = icsContent.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
+
+      res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${encodeURIComponent(bonfire.title)}.ics`
+      );
+      res.setHeader("Content-Length", icsContent.length);
+      return res.end(icsContent);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
     get,
     update,
     remove,
+    downloadICS,
   };
 };
 

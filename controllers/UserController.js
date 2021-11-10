@@ -9,21 +9,18 @@ const TimeZoneList = require("../enum/TimeZoneList");
 const { readExcelFile, progressLog } = require("../utils/excel");
 const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
-const {
-  getEventPeriod,
-  convertToUserTimezone,
-  convertToCertainTime,
-  convertToUTCTime,
-} = require("../utils/format");
+const { getEventPeriod } = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
+const { LabEmails } = require("../enum");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
 const Event = db.Event;
 const AnnualConference = db.AnnualConference;
+const Bonfire = db.Bonfire;
 
 const UserController = () => {
   const getUser = async (req, res) => {
@@ -634,6 +631,126 @@ const UserController = () => {
     }
   };
 
+  const addBonfire = async (req, res) => {
+    const { user } = req;
+    const { id } = req.params;
+
+    try {
+      const query = `
+      SELECT public."Bonfires"."startTime" FROM public."Users" 
+      LEFT JOIN public."Bonfires" ON public."Bonfires".id = ANY (public."Users".bonfires::int[]) 
+      WHERE public."Users"."id" = ${user.id}
+    `;
+
+      const userBonfires = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      const { dataValues: bonfireToJoin } = await Bonfire.findOne({
+        where: { id },
+      });
+
+      const { dataValues: bonfireCreator } = await User.findOne({
+        where: {
+          id: bonfireToJoin.bonfireCreator,
+        },
+      });
+
+      for (const bonfire of userBonfires) {
+        if (bonfire.startTime === bonfireToJoin.startTime) {
+          return res.status(HttpCodes.BAD_REQUEST).json({
+            msg: "You already have join another bonfire at the same time and date",
+          });
+        }
+      }
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          bonfires: Sequelize.fn("array_append", Sequelize.col("bonfires"), id),
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      await Promise.resolve(
+        (() => {
+          const timezone = TimeZoneList.find(
+            (timezone) => timezone.value === affectedRows.dataValues.timezone
+          );
+
+          const offset = timezone.offset;
+          const targetBonfireDate = moment(bonfireToJoin.startDate)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            to: affectedRows.dataValues.email,
+            subject: LabEmails.BONFIRE_JOINING.subject,
+            html: LabEmails.BONFIRE_JOINING.body(
+              affectedRows.dataValues,
+              bonfireToJoin,
+              bonfireCreator,
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a")
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const removeBonfire = async (req, res) => {
+    const { user } = req;
+    const { id } = req.params;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          bonfires: Sequelize.fn("array_remove", Sequelize.col("bonfires"), id),
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      await Bonfire.update(
+        {
+          uninvitedJoinedUsers: Sequelize.fn(
+            "array_remove",
+            Sequelize.col("uninvitedJoinedUsers"),
+            affectedRows.dataValues.id
+          ),
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const uploadResume = async (req, res, next) => {
     const { user } = req;
 
@@ -723,6 +840,8 @@ const UserController = () => {
     removeSession,
     getSessionUsers,
     removeSessionUser,
+    addBonfire,
+    removeBonfire,
     uploadResume,
     deleteResume,
     getEditorSignature,
