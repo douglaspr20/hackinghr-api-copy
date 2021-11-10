@@ -91,7 +91,7 @@ const BonfireController = () => {
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.text === bonfireCreatorInfo.timezone
+            (timezone) => timezone.value === bonfireCreatorInfo.timezone
           );
 
           const offset = timezone.offset;
@@ -118,7 +118,7 @@ const BonfireController = () => {
       await Promise.all(
         users.map((user) => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.text === user.timezone
+            (timezone) => timezone.value === user.timezone
           );
           const offset = timezone.offset;
           const _user = user.toJSON();
