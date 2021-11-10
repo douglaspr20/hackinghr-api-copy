@@ -1,7 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const smtpService = require("../services/smtp.service");
-const { EmailContent } = require("../enum");
+const { LabEmails } = require("../enum");
+const moment = require("moment");
 
 const SkillCohortParticipant = db.SkillCohortParticipant;
 const SkillCohort = db.SkillCohort;
@@ -28,15 +29,15 @@ const SkillCohortParticipantController = () => {
       });
 
       if (skillCohort) {
+        const startDate = moment(skillCohort.startDate).format("LL");
         const mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
-          subject: `Confirmation`,
-          html: EmailContent.JOIN_COHORT_EMAIL(user, skillCohort),
-          contentType: "text/html",
+          subject: LabEmails.JOIN_COHORT_EMAIL.subject(skillCohort),
+          html: LabEmails.JOIN_COHORT_EMAIL.body(user, skillCohort, startDate),
         };
 
-        await smtpService().sendMail(mailOptions);
+        await smtpService().sendMailUsingSendInBlue(mailOptions);
 
         return res.status(HttpCodes.OK).json({ skillCohortParticipant });
       }
@@ -91,13 +92,13 @@ const SkillCohortParticipantController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { skillCohortId } = req.params;
+    const { SkillCohortId } = req.params;
 
     let where = {};
     try {
-      if (skillCohortId) {
+      if (SkillCohortId) {
         where = {
-          SkillCohortId: skillCohortId,
+          SkillCohortId,
         };
       }
 
@@ -163,7 +164,14 @@ const SkillCohortParticipantController = () => {
           SkillCohortId: id,
           hasAccess: "TRUE",
         },
-        include: db.User,
+        include: [
+          {
+            model: db.User,
+          },
+          {
+            model: db.SkillCohort,
+          },
+        ],
       });
     });
 
@@ -255,6 +263,16 @@ const SkillCohortParticipantController = () => {
           },
         }
       );
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: participant.User.email,
+        subject: LabEmails.KICK_OUT.subject(),
+        html: LabEmails.KICK_OUT.body(participant.User),
+        contentType: "text/html",
+      };
+
+      return smtpService().sendMailUsingSendInBlue(mailOptions);
     } catch (error) {
       console.log(error);
     }
@@ -281,6 +299,64 @@ const SkillCohortParticipantController = () => {
     }
   };
 
+  /**
+   * Withdraw participation
+   * @param {*} req
+   * @param {*} res
+   */
+  const withdrawParticipation = async (req, res) => {
+    const { SkillCohortParticipantId } = req.params;
+
+    try {
+      const participant = await SkillCohortParticipant.findOne({
+        where: {
+          id: SkillCohortParticipantId,
+        },
+        include: [
+          {
+            model: db.User,
+          },
+          {
+            model: db.SkillCohort,
+          },
+        ],
+      });
+
+      if (!participant) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "User not found.",
+          error,
+        });
+      }
+
+      await SkillCohortParticipant.destroy({
+        where: {
+          id: participant.id,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: participant.User.email,
+        subject: LabEmails.WITHDRAW_PARTICIPATION.subject(
+          participant.SkillCohort
+        ),
+        html: LabEmails.WITHDRAW_PARTICIPATION.body(participant.User),
+        contentType: "text/html",
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
   return {
     create,
     get,
@@ -292,6 +368,7 @@ const SkillCohortParticipantController = () => {
     removeParticipantAccess,
     resetCounter,
     incrementAssessmentStrike,
+    withdrawParticipation,
   };
 };
 

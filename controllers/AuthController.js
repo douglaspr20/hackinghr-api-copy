@@ -13,7 +13,7 @@ const User = db.User;
 const AuthController = () => {
   const sendEmailAfterRegister = async (user) => {
     const mailOptions = {
-      from: process.env.SEND_IN_BLUE_SMTP_USER,
+      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
       to: user.email,
       subject: LabEmails.NEW_USER_SIGNUP.subject(),
       html: LabEmails.NEW_USER_SIGNUP.body(user),

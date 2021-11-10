@@ -67,14 +67,22 @@ const adminRoutes = {
   "PUT /bonfire/:id": "BonfireController.update",
   "DELETE /bonfire/:id": "BonfireController.remove",
   "POST /skill-cohort": "SkillCohortController.create",
+  "GET /skill-cohort": "SkillCohortController.getAll",
   "DELETE /skill-cohort/:id": "SkillCohortController.remove",
   "PUT /skill-cohort/:id": "SkillCohortController.update",
+  "GET /skill-cohort/:skillCohortId/resources":
+    "SkillCohortResourcesController.getAll",
   "POST /skill-cohort/resource": "SkillCohortResourcesController.create",
-  "DELETE /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.remove",
-  "PUT /skill-cohort/resource/:resourceId": "SkillCohortResourcesController.update",
-  "GET /skill-cohort/:cohortId/groupings/:currentWeekNumber": "SkillCohortGroupingsController.getAll",
+  "POST /skill-cohort/resources": "SkillCohortResourcesController.batchWrite",
+  "DELETE /skill-cohort/resource/:resourceId":
+    "SkillCohortResourcesController.remove",
+  "PUT /skill-cohort/resource/:resourceId":
+    "SkillCohortResourcesController.update",
+  "GET /skill-cohort/:cohortId/groupings/:currentWeekNumber":
+    "SkillCohortGroupingsController.getAll",
   "GET /skill-cohort/grouping/:groupId": "SkillCohortGroupingsController.get",
-  "PUT /skill-cohort/grouping/:groupId": "SkillCohortGroupingsController.update"
+  "PUT /skill-cohort/grouping/:groupId":
+    "SkillCohortGroupingsController.update",
 };
 
 module.exports = adminRoutes;

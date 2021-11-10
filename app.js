@@ -22,8 +22,7 @@ const SkillCohortResourceResponseAssessmentController = require("./controllers/S
 
 const moment = require("moment-timezone");
 
-const { compact } = require("lodash");
-const { EmailContent } = require("./enum");
+const { LabEmails } = require("./enum");
 
 const smtpService = require("./services/smtp.service");
 const socketService = require("./services/socket.service");
@@ -62,8 +61,12 @@ cron.schedule("* 0 * * *", () => {
 
 // cron job that resets the assessment and comment strike to 0
 cron.schedule(
-  "3 0 * * mon",
+  "0 0 * * 1", // 12AM every monday
   async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Reset Counter****************");
     await SkillCohortParticipantController().resetCounter();
   },
   {
@@ -73,15 +76,21 @@ cron.schedule(
 
 // Creating a cron job which runs every day. Checks if participants have responded to a resource and kick them if they havent
 cron.schedule(
-  "0 0 0 * * *",
+  "0 1 * * *", // 1AM every day
   async () => {
+    console.log("****************Running task at 1AM everyday****************");
+    console.log(
+      "****************Checking comments and assessments****************"
+    );
     let cohortCtr = 0;
 
     const yesterdayDate = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .subtract(1, "day")
       .format("YYYY-MM-DD HH:mm:ssZ");
+
     const allActiveSkillCohortsWithYesterdayResource =
       await SkillCohortController().getAllActiveSkillCohortsWithResource(
         yesterdayDate
@@ -104,7 +113,7 @@ cron.schedule(
           );
 
         if (!hasResponded) {
-          if (participant.numberOfCommentStrike === 1) {
+          if (participant.numberOfCommentStrike >= 1) {
             await SkillCohortParticipantController().removeParticipantAccess(
               participant,
               skillCohort.id
@@ -123,8 +132,10 @@ cron.schedule(
     const dayBeforeYesterday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .subtract(2, "day")
       .format("YYYY-MM-DD HH:mm:ssZ");
+
     const allActiveSkillCohortsWithDayBeforeYesterdayResource =
       await SkillCohortController().getAllActiveSkillCohortsWithResource(
         dayBeforeYesterday
@@ -144,7 +155,7 @@ cron.schedule(
           );
 
         if (!hasAssessed) {
-          if (participant.numberOfAssessmentStrike === 1) {
+          if (participant.numberOfAssessmentStrike >= 1) {
             await SkillCohortParticipantController().removeParticipantAccess(
               participant,
               skillCohort.id
@@ -167,20 +178,24 @@ cron.schedule(
 
 // cron job that notifies a cohort participants that a resource for the day is available through notification and email
 cron.schedule(
-  "5 0 * * *",
+  "0 2 * * *", // 2AM everyday
   async () => {
-    console.log("running a task every 12 midnight.");
+    console.log("running a task every 2 AM.");
+    console.log("****************Notification****************");
     const skillCohortResources =
       await SkillCohortResourcesController().getResourcesToBeReleasedToday();
-    const participants =
+
+    const jaggedListOfParticipants =
       await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(
         skillCohortResources
       );
 
     const notifications = skillCohortResources.map((resource, indx) => {
-      const participantIds = participants[indx].map((participant) => {
-        return participant.UserId;
-      });
+      const participantIds = jaggedListOfParticipants[indx].map(
+        (participants) => {
+          return participants.UserId;
+        }
+      );
 
       return NotificationController().createNotification({
         message: `New Resource was created`,
@@ -192,17 +207,24 @@ cron.schedule(
 
     await Promise.all(notifications);
 
-    const emailToBeSent = participants.map((participant) => {
-      return participant.map((p) => {
+    const emailToBeSent = jaggedListOfParticipants.map((participants) => {
+      return participants.map((participant) => {
+        const cohort = participant.SkillCohort;
+        const resource = skillCohortResources.find((resource) => {
+          return resource.SkillCohortId === cohort.id;
+        });
+
+        const user = participant.User;
+
         const mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          to: p.User.email,
-          subject: `New Resource`,
-          html: EmailContent.NEW_RESOURCE_EMAIL(p.User),
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: participant.User.email,
+          subject: LabEmails.DAILY_RESOURCE.subject(resource),
+          html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
           contentType: "text/html",
         };
 
-        return smtpService().sendMail(mailOptions);
+        return smtpService().sendMailUsingSendInBlue(mailOptions);
       });
     });
 
@@ -214,8 +236,9 @@ cron.schedule(
 );
 
 cron.schedule(
-  "10 0 * * mon",
+  "0 3 * * 1", // 3AM Monday
   async () => {
+    console.log("****************Grouping****************");
     await SkillCohortGroupingsController().createSkillCohortGroups();
   },
   {

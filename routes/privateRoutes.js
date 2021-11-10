@@ -114,19 +114,25 @@ const privateRoutes = {
   "POST /bonfire": "BonfireController.create",
   "GET /bonfire": "BonfireController.getAll",
   "GET /bonfire/:id": "BonfireController.get",
-  "GET /skill-cohort": "SkillCohortController.getAll",
+  "GET /skill-cohort": "SkillCohortController.getAllActiveUserSide",
+  "GET /skill-cohort/my-cohort/:UserId":
+    "SkillCohortController.getAllOfMyCohort",
   "GET /skill-cohort/:id": "SkillCohortController.get",
   "GET /skill-cohort/:skillCohortId/resources":
-    "SkillCohortResourcesController.getAll",
+    "SkillCohortResourcesController.getAllAndCount",
   "GET /skill-cohort/resource/:resourceId":
     "SkillCohortResourcesController.get",
+  "GET /skill-cohort/:SkillCohortId/resource/":
+    "SkillCohortResourcesController.getTodaysResource",
   "POST /skill-cohort/participant": "SkillCohortParticipantController.create",
   "GET /skill-cohort/:skillCohortId/participant/:userId":
     "SkillCohortParticipantController.get",
-  "GET /skill-cohort/:skillCohortId/participants/":
+  "GET /skill-cohort/:SkillCohortId/participants/":
     "SkillCohortParticipantController.getAll",
   "GET /skill-cohort/participant/:userId":
     "SkillCohortParticipantController.getParticipantInAllCohortById",
+  "DELETE /skill-cohort/participant/:SkillCohortParticipantId":
+    "SkillCohortParticipantController.withdrawParticipation",
   "POST /skill-cohort/resource/:resourceId/response":
     "SkillCohortResourceResponseController.create",
   "PUT /skill-cohort/response/:responseId":
@@ -145,7 +151,6 @@ const privateRoutes = {
     "SkillCohortResponseRatingController.upsert",
   "GET /skill-cohort/resource/:resourceId/participant/:participantId/ratings":
     "SkillCohortResponseRatingController.getAllByIds",
-  "GET /learning-badges/": "LearningBadgeController.getAll",
 };
 
 module.exports = privateRoutes;

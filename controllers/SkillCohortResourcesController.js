@@ -5,6 +5,8 @@ const moment = require("moment-timezone");
 
 const SkillCohortResources = db.SkillCohortResources;
 const SkillCohort = db.SkillCohort;
+const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
+const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
 
 const SkillCohortResourcesController = () => {
   /**
@@ -36,7 +38,7 @@ const SkillCohortResourcesController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { filter } = req.query;
+    const { date } = req.query;
     const { skillCohortId } = req.params;
 
     let where = {
@@ -44,12 +46,14 @@ const SkillCohortResourcesController = () => {
     };
 
     try {
-      if (filter) {
+      if (date) {
         where = {
           ...where,
           releaseDate: {
-            [Op.lte]: moment(filter)
+            [Op.lte]: moment(date)
               .tz("America/Los_Angeles")
+              .startOf("day")
+              .utc()
               .format("YYYY-MM-DD HH:mm:ssZ"),
           },
         };
@@ -57,7 +61,62 @@ const SkillCohortResourcesController = () => {
 
       const skillCohortResources = await SkillCohortResources.findAll({
         where,
+        include: [
+          {
+            model: SkillCohortResourceResponse,
+          },
+          {
+            model: SkillCohortResponseAssessment,
+          },
+        ],
         order: [["releaseDate"]],
+      });
+
+      return res.status(HttpCodes.OK).json({ skillCohortResources });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal Server error",
+        error,
+      });
+    }
+  };
+
+  const getAllAndCount = async (req, res) => {
+    const { date, page, num } = req.query;
+    const { skillCohortId } = req.params;
+
+    let where = {
+      SkillCohortId: skillCohortId,
+    };
+
+    try {
+      if (date) {
+        where = {
+          ...where,
+          releaseDate: {
+            [Op.lt]: moment(date)
+              .tz("America/Los_Angeles")
+              .startOf("day")
+              .format("YYYY-MM-DD HH:mm:ssZ"),
+          },
+        };
+      }
+
+      let skillCohortResources = await SkillCohortResources.findAndCountAll({
+        where,
+        include: [
+          {
+            model: SkillCohortResourceResponse,
+          },
+          {
+            model: SkillCohortResponseAssessment,
+          },
+        ],
+        distinct: true,
+        offset: (+page - 1) * +num,
+        limit: +num * +page,
+        order: [["releaseDate", "DESC"]],
       });
 
       return res.status(HttpCodes.OK).json({ skillCohortResources });
@@ -84,6 +143,42 @@ const SkillCohortResourcesController = () => {
           where: {
             id: resourceId,
           },
+        });
+
+        if (!skillCohortResource) {
+          return res.status(HttpCodes.BAD_REQUEST).json({
+            msg: "Bad Request: Skill Cohort Resource not found.",
+          });
+        }
+
+        return res.status(HttpCodes.OK).json({ skillCohortResource });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error." });
+      }
+    }
+  };
+
+  const getTodaysResource = async (req, res) => {
+    const { SkillCohortId } = req.params;
+
+    if (SkillCohortId) {
+      try {
+        const skillCohortResource = await SkillCohortResources.findOne({
+          where: {
+            SkillCohortId,
+            releaseDate: moment()
+              .tz("America/Los_Angeles")
+              .startOf("day")
+              .format("YYYY-MM-DD HH:mm:ssZ"),
+          },
+          include: [
+            {
+              model: SkillCohortResourceResponse,
+            },
+          ],
         });
 
         if (!skillCohortResource) {
@@ -165,7 +260,11 @@ const SkillCohortResourcesController = () => {
    * Get resources released today
    */
   const getResourcesToBeReleasedToday = async () => {
-    const dateToday = moment().tz("America/Los_Angeles").format("YYYY-MM-DD");
+    const dateToday = moment()
+      .tz("America/Los_Angeles")
+      .startOf("day")
+      .utc()
+      .format("YYYY-MM-DD HH:mm:ssZ");
 
     return await SkillCohortResources.findAll({
       where: {
@@ -181,11 +280,13 @@ const SkillCohortResourcesController = () => {
     const yesterdayDate = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .subtract(1, "day")
       .format("YYYY-MM-DD HH:mm:ssZ");
     const dateToday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
+      .utc()
       .format("YYYY-MM-DD HH:mm:ssZ");
 
     const allResources = await SkillCohortResources.findAll({
@@ -210,6 +311,21 @@ const SkillCohortResourcesController = () => {
     return allResources;
   };
 
+  const batchWrite = async (req, res) => {
+    const { skillCohortResources } = req.body;
+    console.log(skillCohortResources, "shesh");
+    try {
+      const allSkillCohortResources =
+        SkillCohortResources.bulkCreate(skillCohortResources);
+
+      return res.status(HttpCodes.OK).json({ allSkillCohortResources });
+    } catch (error) {
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
@@ -218,6 +334,9 @@ const SkillCohortResourcesController = () => {
     update,
     getResourcesToBeReleasedToday,
     getYesterdayResourcesByCohortIds,
+    batchWrite,
+    getAllAndCount,
+    getTodaysResource,
   };
 };
 
