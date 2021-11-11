@@ -33,7 +33,7 @@ const SkillCohortParticipantController = () => {
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
-          subject: LabEmails.JOIN_COHORT_EMAIL.subject(skillCohort),
+          subject: LabEmails.JOIN_COHORT_EMAIL.subject(skillCohort, startDate),
           html: LabEmails.JOIN_COHORT_EMAIL.body(user, skillCohort, startDate),
         };
 

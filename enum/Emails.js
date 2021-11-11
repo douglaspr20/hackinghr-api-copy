@@ -405,8 +405,8 @@ module.exports = {
     `,
   },
   JOIN_COHORT_EMAIL: {
-    subject: (cohort) => `
-    Welcome to Cohort ${cohort.title} as part of Hacking HR's ProjectX
+    subject: (cohort, startDate) => `
+    Welcome to Hacking HR's ProjectX Cohort: ${cohort.title} (Starting on ${startDate})
     `,
     body: (user, cohort, startDate) => `
     <p>
