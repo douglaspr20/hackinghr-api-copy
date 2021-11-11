@@ -317,19 +317,30 @@ module.exports = {
       </p>
       <br />
       <br />
-      Hacking HR Team
+      Hacking HR LAB
       <br/>
+      <p>
+      P.S.: Bonfires <b>ARE NOT</b> tools for sales or marketing pitches. If this happens during 
+      your bonfire and the bonfire organizer is selling anything, marketing a product or 
+      service, or using you for any purpose other than networking, please report it to us 
+      (enrique@hackinghr.io). We will take immediate action.
+      </p>
     `,
   },
   BONFIRE_CREATOR: {
     subject: `Thank you creating a Bonfire as part of the networking experience at the 
     Hacking HR 2022 Global Online Conference`,
-    body: (bonfireCreator, bonfire, startDate, startTime) => `
+    body: (bonfireCreator, bonfire, startDate, startTime, timezone) => `
     <p>
     Hi, ${bonfireCreator.firstName}
     </p>
     <p>
-    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime}
+    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime} (${timezone})
+    </p>
+    <p>
+    <b>Quick note before moving on: time zones are always a headache for 
+    everyone. PLEASE make sure that you entered the proper time zone when 
+    creating your Bonfire. Thank you!.</b>
     </p>
     <p>
     You are so AWESOME!!! THANK YOU!
@@ -359,12 +370,12 @@ module.exports = {
     <p>
     Happy networking! 
     </p>
-    <br />
-    <br />
+    <br>
+    <br>
     <p>Enrique Rubio</p>
     <p>Founder</p>
     <p>Hacking HR</p>
-    <br/>
+    <br>
     `,
   },
   BONFIRE_JOINING: {
@@ -401,6 +412,13 @@ module.exports = {
     <br>
     <p>
     Hacking HR LAB
+    </p>
+    <br>
+    <p>
+    P.S.: Bonfires <b>ARE NOT</b> tools for sales or marketing pitches. If this happens during 
+    your bonfire and the bonfire organizer is selling anything, marketing a product or 
+    service, or using you for any purpose other than networking, please report it to us 
+    (enrique@hackinghr.io). We will take immediate actio
     </p>
     `,
   },

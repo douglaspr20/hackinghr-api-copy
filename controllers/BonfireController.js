@@ -91,34 +91,35 @@ const BonfireController = () => {
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.value === bonfireCreatorInfo.timezone
+            (timezone) =>
+              timezone.value === bonfireCreatorInfo.timezone ||
+              timezone.text === bonfireCreatorInfo.timezone
           );
 
-          const offset = timezone.offset;
-          const targetBonfireDate = moment(bonfire.startDate)
-            .tz(timezone.utc[0])
-            .utcOffset(offset, true);
           let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
             to: bonfireCreatorInfo.email,
             subject: LabEmails.BONFIRE_CREATOR.subject,
             html: LabEmails.BONFIRE_CREATOR.body(
               bonfireCreatorInfo,
               bonfire,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a")
+              moment(bonfireInfo.startTime).format("MMM DD"),
+              moment(bonfireInfo.endTime).format("h:mm a"),
+              timezone.value
             ),
           };
           console.log("***** mailOptions ", mailOptions);
 
-          return smtpService().sendMail(mailOptions);
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
         })()
       );
 
       await Promise.all(
         users.map((user) => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.value === user.timezone
+            (timezone) =>
+              timezone.value === user.timezone ||
+              timezone.text === user.timezone
           );
           const offset = timezone.offset;
           const _user = user.toJSON();
