@@ -216,15 +216,26 @@ cron.schedule(
 
         const user = participant.User;
 
-        const mailOptions = {
+        // TODO: Enable after sendinblue solve problem
+        /*const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: participant.User.email,
+          subject: LabEmails.DAILY_RESOURCE.subject(resource),
+          html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
+          contentType: "text/html",
+        };*/
+
+        // return smtpService().sendMailUsingSendInBlue(mailOptions);
+
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: participant.User.email,
           subject: LabEmails.DAILY_RESOURCE.subject(resource),
           html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
           contentType: "text/html",
         };
 
-        return smtpService().sendMailUsingSendInBlue(mailOptions);
+        return smtpService().sendMail(mailOptions);
       });
     });
 

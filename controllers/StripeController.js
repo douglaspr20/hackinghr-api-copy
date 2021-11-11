@@ -218,7 +218,7 @@ const StripeController = () => {
             if (customerInformation.subscriptions.data.length > 0) {
               for (let subItemPremium of customerInformation.subscriptions
                 .data) {
-                subItemPremium.items.data.map((itemSubscription) => {
+                subItemPremium.items.data.map(async (itemSubscription) => {
                   console.log(
                     `***** PREMIUM -- Price: ${itemSubscription.price.id} / ${itemPremium} - status: ${subItemPremium.status} ******`
                   );
@@ -233,6 +233,23 @@ const StripeController = () => {
                     newUserData["subscription_enddate"] = moment
                       .unix(subItemPremium.current_period_end)
                       .format("YYYY-MM-DD HH:mm:ss");
+
+                    // TODO: Enable after sendinblue solve problem
+                    /*const mailOptions = {
+                      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                      to: user.email,
+                      subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+                      html: LabEmails.USER_BECOME_PREMIUM.body(user),
+                    };*/
+                    //await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+                    const mailOptions = {
+                      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+                      to: user.email,
+                      subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+                      html: LabEmails.USER_BECOME_PREMIUM.body(user),
+                    };
+                    await smtpService().sendMail(mailOptions);
                   }
                 });
               }
@@ -284,14 +301,6 @@ const StripeController = () => {
         await User.update(newUserData, {
           where: { email: customerInformation.email.toLowerCase() },
         });
-
-        const mailOptions = {
-          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-          to: user.email,
-          subject: LabEmails.USER_BECOME_PREMIUM.subject(),
-          html: LabEmails.USER_BECOME_PREMIUM.body(user),
-        };
-        await smtpService().sendMailUsingSendInBlue(mailOptions);
       }
       return res.status(HttpCodes.OK).send();
     } catch (err) {
