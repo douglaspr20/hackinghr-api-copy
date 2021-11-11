@@ -192,17 +192,9 @@ const UserController = () => {
         userTimezone.utc[0]
       );
     });
-    // TODO: Enable after sendinblue solve problem
-    /*const mailOptions = {
-      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-      to: user.email,
-      subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
-      html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
-      contentType: "text/calendar",
-    };*/
 
     const mailOptions = {
-      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
       to: user.email,
       subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
       html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
@@ -238,9 +230,7 @@ const UserController = () => {
 
     let sentResult = null;
     try {
-      // TODO: Enable after sendinblue solve problem
-      // sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
-      sentResult = await smtpService().sendMail(mailOptions);
+      sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
     } catch (err) {
       console.log(err);
     }
@@ -694,22 +684,9 @@ const UserController = () => {
           const targetBonfireDate = moment(bonfireToJoin.startDate)
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
-          // TODO: Enable after sendinblue solve problem
-          /*let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
-            to: affectedRows.dataValues.email,
-            subject: LabEmails.BONFIRE_JOINING.subject,
-            html: LabEmails.BONFIRE_JOINING.body(
-              affectedRows.dataValues,
-              bonfireToJoin,
-              bonfireCreator,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a")
-            ),
-          };*/
 
           let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
             to: affectedRows.dataValues.email,
             subject: LabEmails.BONFIRE_JOINING.subject,
             html: LabEmails.BONFIRE_JOINING.body(
@@ -722,9 +699,7 @@ const UserController = () => {
           };
           console.log("***** mailOptions ", mailOptions);
 
-          // TODO: Enable after sendinblue solve problem
-          // return smtpService().sendMailUsingSendInBlue(mailOptions);
-          return smtpService().sendMail(mailOptions);
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
         })()
       );
 
