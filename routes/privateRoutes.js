@@ -154,6 +154,7 @@ const privateRoutes = {
     "SkillCohortResponseRatingController.upsert",
   "GET /skill-cohort/resource/:resourceId/participant/:participantId/ratings":
     "SkillCohortResponseRatingController.getAllByIds",
+  "POST /user/:UserId/change-password": "UserController.changePassword",
 };
 
 module.exports = privateRoutes;
