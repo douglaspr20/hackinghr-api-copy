@@ -17,7 +17,8 @@ module.exports = (sequelize, DataTypes) => {
   SkillCohort.init(
     {
       title: DataTypes.STRING,
-      description: DataTypes.TEXT,
+      howProjectXWorks: DataTypes.JSON,
+      description: DataTypes.JSON,
       objectives: DataTypes.STRING,
       image: DataTypes.STRING,
       categories: {
