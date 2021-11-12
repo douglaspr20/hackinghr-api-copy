@@ -7,6 +7,11 @@ const { LabEmails } = require("../enum");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 const TimeZoneList = require("../enum/TimeZoneList");
+const {
+  googleCalendar,
+  yahooCalendar,
+  generateIcsCalendar,
+} = require("../utils/generateCalendars");
 
 const Bonfire = db.Bonfire;
 const User = db.User;
@@ -20,26 +25,38 @@ const BonfireController = () => {
         ...reqBonfire,
       };
 
-      const users = await User.findAll(
-        {
-          where: {
-            [Op.and]: [
-              { percentOfCompletion: 100 },
-              { attendedToConference: 1 },
-              {
-                id: {
-                  [Op.ne]: bonfireInfo.bonfireCreator,
-                },
+      const users = await User.findAll({
+        where: {
+          [Op.and]: [
+            { percentOfCompletion: 100 },
+            { attendedToConference: 1 },
+            {
+              id: {
+                [Op.ne]: bonfireInfo.bonfireCreator,
               },
-            ],
-          },
+            },
+            {
+              email: {
+                [Op.ne]: "enrique@hackinghr.io",
+              },
+            },
+          ],
         },
-        { order: Sequelize.literal("rand()"), limit: 20 }
-      );
+        order: [[Sequelize.fn("RANDOM")]],
+        limit: 20,
+      });
 
       const invitedUsers = users.map((user) => {
         return user.dataValues.id;
       });
+
+      const userAlwaysInvited = await User.findOne({
+        where: { email: "enrique@hackinghr.io" },
+      });
+
+      if (userAlwaysInvited?.dataValues?.id)
+        invitedUsers.push(userAlwaysInvited.dataValues.id);
+      users.push(userAlwaysInvited);
 
       bonfireInfo = {
         ...bonfireInfo,
@@ -92,19 +109,23 @@ const BonfireController = () => {
         (() => {
           const timezone = TimeZoneList.find(
             (timezone) =>
-              timezone.value === bonfireCreatorInfo.timezone ||
-              timezone.text === bonfireCreatorInfo.timezone
+              timezone.value === bonfireInfo.timezone ||
+              timezone.text === bonfireInfo.timezone
           );
+          const offset = timezone.offset;
+          const targetBonfireDate = moment(bonfire.dataValues.startTime)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, false);
 
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: bonfireCreatorInfo.email,
             subject: LabEmails.BONFIRE_CREATOR.subject,
             html: LabEmails.BONFIRE_CREATOR.body(
               bonfireCreatorInfo,
               bonfire,
-              moment(bonfireInfo.startTime).format("MMM DD"),
-              moment(bonfireInfo.endTime).format("h:mm a"),
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a"),
               timezone.value
             ),
           };
@@ -118,30 +139,66 @@ const BonfireController = () => {
         users.map((user) => {
           const timezone = TimeZoneList.find(
             (timezone) =>
-              timezone.value === user.timezone ||
-              timezone.text === user.timezone
+              timezone.value === bonfireInfo.timezone ||
+              timezone.text === bonfireInfo.timezone
           );
           const offset = timezone.offset;
           const _user = user.toJSON();
-          const targetBonfireDate = moment(bonfire.startDate)
+          const targetBonfireStartDate = moment(bonfire.dataValues.startTime)
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
+
+          const targetBonfireEndDate = moment(bonfire.dataValues.endTime)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+
+          const timezoneUser = TimeZoneList.find(
+            (timezone) =>
+              timezone.value === _user.timezone ||
+              timezone.text === _user.timezone
+          );
+
+          const googleLink = googleCalendar(
+            bonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+          const yahooLink = yahooCalendar(
+            bonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+
+          const calendarInvite = generateIcsCalendar(
+            bonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+
+          let icsContent = calendarInvite.toString();
+
           let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: _user.email,
             subject: LabEmails.BONFIRE_INVITATION.subject,
             html: LabEmails.BONFIRE_INVITATION.body(
               _user,
               bonfire,
               bonfireCreatorInfo,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a")
+              targetBonfireStartDate.format("MMM DD"),
+              targetBonfireStartDate.format("h:mm a"),
+              targetBonfireEndDate.format("h:mm a"),
+              timezone.value,
+              googleLink,
+              yahooLink
             ),
+            icalEvent: {
+              filename: `${bonfire.dataValues.title}.ics`,
+              method: "request",
+              content: icsContent,
+            },
           };
 
           console.log("***** mailOptions ", mailOptions);
 
-          return smtpService().sendMail(mailOptions);
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
         })
       );
 

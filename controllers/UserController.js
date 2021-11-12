@@ -15,6 +15,11 @@ const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
+const {
+  googleCalendar,
+  yahooCalendar,
+  generateIcsCalendar,
+} = require("../utils/generateCalendars");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -677,13 +682,35 @@ const UserController = () => {
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.value === affectedRows.dataValues.timezone
+            (timezone) =>
+              timezone.value === bonfireToJoin.timezone ||
+              timezone.text === bonfireToJoin.timezone
           );
 
           const offset = timezone.offset;
-          const targetBonfireDate = moment(bonfireToJoin.startDate)
+          const targetBonfireStartDate = moment(bonfireToJoin.startTime)
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
+
+          const targetBonfireEndDate = moment(bonfireToJoin.endTime)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+
+          const timezoneUser = TimeZoneList.find(
+            (timezone) =>
+              timezone.value === affectedRows.dataValues.timezone ||
+              timezone.text === affectedRows.dataValues.timezone
+          );
+
+          const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
+          const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
+
+          const calendarInvite = generateIcsCalendar(
+            bonfireToJoin,
+            timezoneUser.utc[0]
+          );
+
+          let icsContent = calendarInvite.toString();
 
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_USER,
@@ -693,9 +720,18 @@ const UserController = () => {
               affectedRows.dataValues,
               bonfireToJoin,
               bonfireCreator,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a")
+              targetBonfireStartDate.format("MMM DD"),
+              targetBonfireStartDate.format("h:mm a"),
+              targetBonfireEndDate.format("h:mm a"),
+              timezone.value,
+              googleLink,
+              yahooLink
             ),
+            icalEvent: {
+              filename: `${bonfireToJoin.title}.ics`,
+              method: "request",
+              content: icsContent,
+            },
           };
           console.log("***** mailOptions ", mailOptions);
 
