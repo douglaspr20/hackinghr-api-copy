@@ -15,7 +15,11 @@ const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
-const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
+const {
+  googleCalendar,
+  yahooCalendar,
+  generateIcsCalendar,
+} = require("../utils/generateCalendars");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -701,6 +705,13 @@ const UserController = () => {
           const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
           const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
 
+          const calendarInvite = generateIcsCalendar(
+            bonfireToJoin,
+            timezoneUser.utc[0]
+          );
+
+          let icsContent = calendarInvite.toString();
+
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_USER,
             to: affectedRows.dataValues.email,
@@ -716,6 +727,11 @@ const UserController = () => {
               googleLink,
               yahooLink
             ),
+            icalEvent: {
+              filename: `${bonfireToJoin.title}.ics`,
+              method: "request",
+              content: icsContent,
+            },
           };
           console.log("***** mailOptions ", mailOptions);
 
