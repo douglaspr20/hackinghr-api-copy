@@ -52,11 +52,14 @@ const BonfireController = () => {
 
       if (userAlwaysInvited?.dataValues?.id)
         invitedUsers.push(userAlwaysInvited.dataValues.id);
+      users.push(userAlwaysInvited);
 
       bonfireInfo = {
         ...bonfireInfo,
         invitedUsers,
       };
+
+      console.log(invitedUsers);
 
       const bonfire = await Bonfire.create(bonfireInfo);
 
