@@ -58,6 +58,8 @@ const BonfireController = () => {
         invitedUsers,
       };
 
+      console.log(invitedUsers);
+
       const bonfire = await Bonfire.create(bonfireInfo);
 
       const { dataValues: bonfireCreatorInfo } = await User.findOne({
@@ -169,7 +171,7 @@ const BonfireController = () => {
 
           console.log("***** mailOptions ", mailOptions);
 
-          return smtpService().sendMail(mailOptions);
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
         })
       );
 

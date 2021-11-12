@@ -15,6 +15,7 @@ const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
+const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -677,13 +678,22 @@ const UserController = () => {
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.value === affectedRows.dataValues.timezone
+            (timezone) =>
+              timezone.value === bonfireToJoin.timezone ||
+              timezone.text === bonfireToJoin.timezone
           );
 
           const offset = timezone.offset;
-          const targetBonfireDate = moment(bonfireToJoin.startDate)
+          const targetBonfireStartDate = moment(bonfireToJoin.startTime)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, false);
+
+          const targetBonfireEndDate = moment(bonfireToJoin.endTime)
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
+
+          const googleLink = googleCalendar(bonfireToJoin, timezone.value);
+          const yahooLink = yahooCalendar(bonfireToJoin, timezone.value);
 
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_USER,
@@ -693,8 +703,12 @@ const UserController = () => {
               affectedRows.dataValues,
               bonfireToJoin,
               bonfireCreator,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a")
+              targetBonfireStartDate.format("MMM DD"),
+              targetBonfireStartDate.format("h:mm a"),
+              targetBonfireEndDate.format("h:mm a"),
+              timezone.value,
+              googleLink,
+              yahooLink
             ),
           };
           console.log("***** mailOptions ", mailOptions);

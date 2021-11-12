@@ -395,12 +395,22 @@ module.exports = {
   BONFIRE_JOINING: {
     subject: `Thank you for joining a Bonfire as part of the networking experience at the 
     Hacking HR 2022 Global Online Conference`,
-    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+    body: (
+      user,
+      bonfire,
+      bonfireCreator,
+      startDate,
+      startTime,
+      endTime,
+      timezone,
+      googleLink,
+      yahooLink
+    ) => `
     <p>
     Hi ${user.firstName}
     </p>
     <p>
-    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}, 
+    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}-${endTime} (${timezone}), 
     created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email})!
     </p>
     <p>
@@ -417,6 +427,10 @@ module.exports = {
     </p>
     <p>
     Attached a calendar invite including all details, just in case!
+    </p>
+    <p>
+    <a href="${googleLink}" target="_blank">Google Calendar</a>
+    <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
     </p>
     <br>
     <br>
