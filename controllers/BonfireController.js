@@ -58,8 +58,6 @@ const BonfireController = () => {
         invitedUsers,
       };
 
-      console.log(invitedUsers);
-
       const bonfire = await Bonfire.create(bonfireInfo);
 
       const { dataValues: bonfireCreatorInfo } = await User.findOne({
