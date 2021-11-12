@@ -175,12 +175,11 @@ const AnnualConferenceController = () => {
         ],
       };
 
-      let participants = await User.findAll(
-        {
-          where,
-        },
-        { order: Sequelize.literal("rand()"), limit: 50 }
-      );
+      let participants = await User.findAll({
+        where,
+        order: [[Sequelize.fn("RANDOM")]],
+        limit: 50,
+      });
 
       return res.status(HttpCodes.OK).json({ participants });
     } catch (error) {
