@@ -235,12 +235,19 @@ const ConferenceController = () => {
 
     if (libraryId) {
       try {
-        let prevLibrary = await ConferenceLibrary.findOne({ where: { id: libraryId } });
+        let prevLibrary = await ConferenceLibrary.findOne({
+          where: { id: libraryId },
+        });
+        const saveForLater = prevLibrary.saveForLater.filter((item) => {
+          return item !== userId;
+        });
         prevLibrary = prevLibrary.toJSON();
+
         const [numberOfAffectedRows, affectedRows] =
           await ConferenceLibrary.update(
             {
               viewed: { ...prevLibrary.viewed, [userId]: mark },
+              saveForLater,
             },
             {
               where: { id: libraryId },
@@ -264,6 +271,55 @@ const ConferenceController = () => {
       .json({ msg: "Bad Request: Conference library id is wrong" });
   };
 
+  const saveForLater = async (req, res) => {
+    const { id } = req.params;
+    const { UserId, status } = req.body;
+
+    try {
+      let conference = await ConferenceLibrary.findOne({
+        where: {
+          id,
+        },
+      });
+
+      conference = conference.toJSON();
+
+      if (!conference) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Conference Library not found." });
+      }
+
+      const saveForLater =
+        status === "saved"
+          ? [...conference.saveForLater, UserId.toString()]
+          : conference.saveForLater.filter((item) => item !== UserId);
+
+      const [numberOfAffectedRows, affectedRows] =
+        await ConferenceLibrary.update(
+          {
+            saveForLater,
+          },
+          {
+            where: {
+              id,
+            },
+            returning: true,
+            plain: true,
+          }
+        );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
@@ -272,6 +328,7 @@ const ConferenceController = () => {
     remove,
     claim,
     markAsViewed,
+    saveForLater,
   };
 };
 
