@@ -213,7 +213,7 @@ const PodcastSeriesController = () => {
           ...podcastSeries,
           shrmCode: cryptoService().decrypt(podcastSeries.shrmCode),
           hrciCode: cryptoService().decrypt(podcastSeries.hrciCode),
-        }
+        };
 
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
@@ -250,19 +250,25 @@ const PodcastSeriesController = () => {
 
     if (podcastseriesId) {
       try {
-        let prevSeries = await PodcastSeries.findOne({ where: { id: podcastseriesId } });
+        let prevSeries = await PodcastSeries.findOne({
+          where: { id: podcastseriesId },
+        });
+        const saveForLater = prevSeries.saveForLater.filter((item) => {
+          return item !== userId;
+        });
         prevSeries = prevSeries.toJSON();
-        const [numberOfAffectedRows, affectedRows] =
-          await PodcastSeries.update(
-            {
-              viewed: { ...prevSeries.viewed, [userId]: mark },
-            },
-            {
-              where: { id: podcastseriesId },
-              returning: true,
-              plain: true,
-            }
-          );
+
+        const [numberOfAffectedRows, affectedRows] = await PodcastSeries.update(
+          {
+            viewed: { ...prevSeries.viewed, [userId]: mark },
+            saveForLater,
+          },
+          {
+            where: { id: podcastseriesId },
+            returning: true,
+            plain: true,
+          }
+        );
 
         return res
           .status(HttpCodes.OK)
@@ -279,6 +285,54 @@ const PodcastSeriesController = () => {
       .json({ msg: "Bad Request: Conference library id is wrong" });
   };
 
+  const saveForLater = async (req, res) => {
+    const { id } = req.params;
+    const { UserId, status } = req.body;
+
+    try {
+      let podcastSeries = await PodcastSeries.findOne({
+        where: {
+          id,
+        },
+      });
+
+      podcastSeries = podcastSeries.toJSON();
+
+      if (!podcastSeries) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Podcast Series not found." });
+      }
+
+      const saveForLater =
+        status === "saved"
+          ? [...podcastSeries.saveForLater, UserId.toString()]
+          : podcastSeries.saveForLater.filter((item) => item !== UserId);
+
+      const [numberOfAffectedRows, affectedRows] = await PodcastSeries.update(
+        {
+          saveForLater,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
@@ -287,6 +341,7 @@ const PodcastSeriesController = () => {
     remove,
     claim,
     markAsViewed,
+    saveForLater,
   };
 };
 
