@@ -323,8 +323,8 @@ module.exports = {
       Attached a calendar invite including all details, just in case! 
       </p>
       <p>
-      <a href="${googleLink}" target="_blank"></a>
-      <a href="${yahooLink}" target="_blank"></a>
+      <a href="${googleLink}" target="_blank">Google Calendar</a>
+      <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
       </p>
       <p>
       Happy networking! 
