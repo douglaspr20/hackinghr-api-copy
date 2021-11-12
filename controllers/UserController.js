@@ -690,7 +690,7 @@ const UserController = () => {
           const offset = timezone.offset;
           const targetBonfireStartDate = moment(bonfireToJoin.startTime)
             .tz(timezone.utc[0])
-            .utcOffset(offset, false);
+            .utcOffset(offset, true);
 
           const targetBonfireEndDate = moment(bonfireToJoin.endTime)
             .tz(timezone.utc[0])
