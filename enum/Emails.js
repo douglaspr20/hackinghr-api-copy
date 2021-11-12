@@ -324,6 +324,7 @@ module.exports = {
       </p>
       <p>
       <a href="${googleLink}" target="_blank">Google Calendar</a>
+      <br>
       <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
       </p>
       <p>
@@ -430,6 +431,7 @@ module.exports = {
     </p>
     <p>
     <a href="${googleLink}" target="_blank">Google Calendar</a>
+    <br>
     <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
     </p>
     <br>

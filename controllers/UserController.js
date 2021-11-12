@@ -692,8 +692,14 @@ const UserController = () => {
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
 
-          const googleLink = googleCalendar(bonfireToJoin, timezone.value);
-          const yahooLink = yahooCalendar(bonfireToJoin, timezone.value);
+          const timezoneUser = TimeZoneList.find(
+            (timezone) =>
+              timezone.value === affectedRows.dataValues.timezone ||
+              timezone.text === affectedRows.dataValues.timezone
+          );
+
+          const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
+          const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
 
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_USER,

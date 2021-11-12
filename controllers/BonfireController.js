@@ -7,7 +7,11 @@ const { LabEmails } = require("../enum");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 const TimeZoneList = require("../enum/TimeZoneList");
-const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
+const {
+  googleCalendar,
+  yahooCalendar,
+  generateIcsCalendar,
+} = require("../utils/generateCalendars");
 
 const Bonfire = db.Bonfire;
 const User = db.User;
@@ -47,7 +51,7 @@ const BonfireController = () => {
       });
 
       const userAlwaysInvited = await User.findOne({
-        where: { email: "enrique@hackinghr.io" },
+        where: { email: "douglas.eduardo2000@gmail.com" },
       });
 
       if (userAlwaysInvited?.dataValues?.id)
@@ -58,8 +62,6 @@ const BonfireController = () => {
         ...bonfireInfo,
         invitedUsers,
       };
-
-      console.log(invitedUsers);
 
       const bonfire = await Bonfire.create(bonfireInfo);
 
@@ -116,7 +118,7 @@ const BonfireController = () => {
             .utcOffset(offset, false);
 
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: bonfireCreatorInfo.email,
             subject: LabEmails.BONFIRE_CREATOR.subject,
             html: LabEmails.BONFIRE_CREATOR.body(
@@ -150,11 +152,30 @@ const BonfireController = () => {
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
 
-          const googleLink = googleCalendar(bonfireInfo, timezone.value);
-          const yahooLink = yahooCalendar(bonfireInfo, timezone.value);
+          const timezoneUser = TimeZoneList.find(
+            (timezone) =>
+              timezone.value === _user.timezone ||
+              timezone.text === _user.timezone
+          );
+
+          const googleLink = googleCalendar(
+            bonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+          const yahooLink = yahooCalendar(
+            bonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+
+          const calendarInvite = generateIcsCalendar(
+            bonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+
+          let icsContent = calendarInvite.toString();
 
           let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: _user.email,
             subject: LabEmails.BONFIRE_INVITATION.subject,
             html: LabEmails.BONFIRE_INVITATION.body(
@@ -168,6 +189,11 @@ const BonfireController = () => {
               googleLink,
               yahooLink
             ),
+            icalEvent: {
+              filename: `${bonfire.dataValues.title}.ics`,
+              method: "request",
+              content: icsContent,
+            },
           };
 
           console.log("***** mailOptions ", mailOptions);

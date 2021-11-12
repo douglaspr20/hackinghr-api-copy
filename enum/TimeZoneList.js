@@ -242,7 +242,7 @@ module.exports = [
     abbr: "VST",
     offset: -4,
     isdst: false,
-    text: "(UTC-04:00) Caracas",
+    text: "(UTC-04:30) Caracas",
     utc: ["America/Caracas"],
   },
   {
