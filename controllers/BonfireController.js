@@ -160,15 +160,21 @@ const BonfireController = () => {
 
           const googleLink = googleCalendar(
             bonfire.dataValues,
+            targetBonfireStartDate,
+            targetBonfireEndDate,
             timezoneUser.utc[0]
           );
           const yahooLink = yahooCalendar(
             bonfire.dataValues,
+            targetBonfireStartDate,
+            targetBonfireEndDate,
             timezoneUser.utc[0]
           );
 
           const calendarInvite = generateIcsCalendar(
             bonfire.dataValues,
+            targetBonfireStartDate,
+            targetBonfireEndDate,
             timezoneUser.utc[0]
           );
 
