@@ -1,10 +1,10 @@
 const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
 
-const googleCalendar = (item, tz) => {
-  const convertedStartTime = moment.utc(item.startTime).tz(tz).local();
+const googleCalendar = (item, startDate, endDate, tz) => {
+  const convertedStartTime = moment.utc(startDate).tz(tz).local();
 
-  const convertedEndTime = moment.utc(item.endTime).tz(tz).local();
+  const convertedEndTime = moment.utc(endDate).tz(tz).local();
 
   let googleCalendarUrl = `http://www.google.com/calendar/event?action=TEMPLATE&text=${
     item.title
@@ -19,10 +19,10 @@ const googleCalendar = (item, tz) => {
   console.log(googleCalendarUrl);
   return googleCalendarUrl;
 };
-const yahooCalendar = (item, tz) => {
-  const convertedStartTime = moment.utc(item.startTime).tz(tz).local();
+const yahooCalendar = (item, startDate, endDate, tz) => {
+  const convertedStartTime = moment.utc(startDate).tz(tz).local();
 
-  const convertedEndTime = moment.utc(item.endTime).tz(tz).local();
+  const convertedEndTime = moment.utc(endDate).tz(tz).local();
 
   let yahooCalendarUrl = `http://calendar.yahoo.com/?v=60&type=10&title=${
     item.title
@@ -34,10 +34,10 @@ const yahooCalendar = (item, tz) => {
   return yahooCalendarUrl;
 };
 
-const generateIcsCalendar = (item, tz) => {
-  const convertedStartTime = moment.utc(item.startTime).tz(tz).local();
+const generateIcsCalendar = (item, startDate, endDate, tz) => {
+  const convertedStartTime = moment.utc(startDate).tz(tz).local();
 
-  const convertedEndTime = moment.utc(item.endTime).tz(tz).local();
+  const convertedEndTime = moment.utc(endDate).tz(tz).local();
 
   return smtpService().generateCalendarInvite(
     convertedStartTime.format("YYYY-MM-DD h:mm a"),
