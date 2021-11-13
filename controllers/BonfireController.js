@@ -37,7 +37,7 @@ const BonfireController = () => {
             },
             {
               email: {
-                [Op.ne]: "douglas.eduardo2000@gmail.com",
+                [Op.ne]: "enrique@hackinghr.io",
               },
             },
           ],
@@ -51,7 +51,7 @@ const BonfireController = () => {
       });
 
       const userAlwaysInvited = await User.findOne({
-        where: { email: "douglas.eduardo2000@gmail.com" },
+        where: { email: "enrique@hackinghr.io" },
       });
 
       if (userAlwaysInvited?.dataValues?.id)
@@ -160,21 +160,15 @@ const BonfireController = () => {
 
           const googleLink = googleCalendar(
             bonfire.dataValues,
-            targetBonfireStartDate,
-            targetBonfireEndDate,
             timezoneUser.utc[0]
           );
           const yahooLink = yahooCalendar(
             bonfire.dataValues,
-            targetBonfireStartDate,
-            targetBonfireEndDate,
             timezoneUser.utc[0]
           );
 
           const calendarInvite = generateIcsCalendar(
             bonfire.dataValues,
-            targetBonfireStartDate,
-            targetBonfireEndDate,
             timezoneUser.utc[0]
           );
 
