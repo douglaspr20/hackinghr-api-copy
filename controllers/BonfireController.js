@@ -1,7 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const moment = require("moment-timezone");
-const { Op, Sequelize } = require("sequelize");
+const { Op, Sequelize, json } = require("sequelize");
 const isEmpty = require("lodash/isEmpty");
 const { LabEmails } = require("../enum");
 const { convertToLocalTime } = require("../utils/format");
@@ -339,6 +339,34 @@ const BonfireController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
       }
+    }
+  };
+
+  const invitedUser = async (req, res) => {
+    const { userId, bonfireId } = req.params;
+
+    try {
+      await User.update(
+        {
+          bonfires: Sequelize.fn(
+            "array_append",
+            Sequelize.col("bonfires"),
+            bonfireId
+          ),
+        },
+        {
+          where: { id: userId },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      await Bonfire.update;
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
     }
   };
 
