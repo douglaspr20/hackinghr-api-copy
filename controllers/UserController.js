@@ -741,7 +741,7 @@ const UserController = () => {
             ),
             attachments: [
               {
-                filename: `${bonfire.dataValues.title}-invite.ics`,
+                filename: `${bonfireToJoin.title}-invite.ics`,
                 content: icsContent,
                 contentType: "application/ics; charset=UTF-8; method=REQUEST",
                 contentDisposition: "inline",
