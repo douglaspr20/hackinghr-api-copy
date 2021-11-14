@@ -705,12 +705,12 @@ const UserController = () => {
           const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
           const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
 
-          const calendarInvite = generateIcsCalendar(
-            bonfireToJoin,
-            timezoneUser.utc[0]
-          );
+          // const calendarInvite = generateIcsCalendar(
+          //   bonfireToJoin,
+          //   timezoneUser.utc[0]
+          // );
 
-          let icsContent = calendarInvite.toString();
+          // let icsContent = calendarInvite.toString();
 
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
@@ -727,15 +727,15 @@ const UserController = () => {
               googleLink,
               yahooLink
             ),
-            contentType: "text/calendar",
-            attachments: [
-              {
-                filename: `${bonfireToJoin.title}-invite.ics`,
-                content: icsContent,
-                contentType: "application/ics; charset=UTF-8; method=REQUEST",
-                contentDisposition: "inline",
-              },
-            ],
+            // contentType: "text/calendar",
+            // attachments: [
+            //   {
+            //     filename: `${bonfireToJoin.title}-invite.ics`,
+            //     content: icsContent,
+            //     contentType: "application/ics; charset=UTF-8; method=REQUEST",
+            //     contentDisposition: "inline",
+            //   },
+            // ],
           };
           console.log("***** mailOptions ", mailOptions);
 

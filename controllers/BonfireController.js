@@ -54,9 +54,10 @@ const BonfireController = () => {
         where: { email: "enrique@hackinghr.io" },
       });
 
-      if (userAlwaysInvited?.dataValues?.id)
+      if (userAlwaysInvited?.dataValues?.id) {
         invitedUsers.push(userAlwaysInvited.dataValues.id);
-      users.push(userAlwaysInvited);
+        users.push(userAlwaysInvited);
+      }
 
       bonfireInfo = {
         ...bonfireInfo,
@@ -167,12 +168,12 @@ const BonfireController = () => {
             timezoneUser.utc[0]
           );
 
-          const calendarInvite = generateIcsCalendar(
-            bonfire.dataValues,
-            timezoneUser.utc[0]
-          );
+          // const calendarInvite = generateIcsCalendar(
+          //   bonfire.dataValues,
+          //   timezoneUser.utc[0]
+          // );
 
-          let icsContent = calendarInvite.toString();
+          // let icsContent = calendarInvite.toString();
 
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
@@ -189,15 +190,15 @@ const BonfireController = () => {
               googleLink,
               yahooLink
             ),
-            contentType: "text/calendar",
-            attachments: [
-              {
-                filename: `${bonfire.dataValues.title}-invite.ics`,
-                content: icsContent,
-                contentType: "application/ics; charset=UTF-8; method=REQUEST",
-                contentDisposition: "inline",
-              },
-            ],
+            // contentType: "text/calendar",
+            // attachments: [
+            //   {
+            //     filename: `${bonfire.dataValues.title}-invite.ics`,
+            //     content: icsContent,
+            //     contentType: "application/ics; charset=UTF-8; method=REQUEST",
+            //     contentDisposition: "inline",
+            //   },
+            // ],
           };
 
           console.log("***** mailOptions ", mailOptions);
