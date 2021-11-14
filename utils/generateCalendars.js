@@ -22,13 +22,13 @@ const yahooCalendar = (item, tz) => {
 
   const convertedEndTime = moment.utc(item.endTime).tz(tz);
 
-  let yahooCalendarUrl = `http://calendar.yahoo.com/?v=60&type=10&title=${
+  let yahooCalendarUrl = `http://calendar.yahoo.com/?v=60&type=10&TITLE=${
     item.title
   }&st=${convertedStartTime.format(
     "YYYYMMDDTHHmm"
-  )}&dur${convertedEndTime.format("HHmmss")}&details=${
-    item.description
-  }&location=${item.link}`;
+  )}&dur${convertedEndTime.format("HHmmss")}&DESC=${item.description}&in_loc=${
+    item.link
+  }`;
   return yahooCalendarUrl;
 };
 
