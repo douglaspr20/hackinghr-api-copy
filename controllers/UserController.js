@@ -725,7 +725,7 @@ const UserController = () => {
           let icsContent = calendarInvite.toString();
 
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: affectedRows.dataValues.email,
             subject: LabEmails.BONFIRE_JOINING.subject,
             html: LabEmails.BONFIRE_JOINING.body(
