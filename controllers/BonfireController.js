@@ -7,11 +7,7 @@ const { LabEmails } = require("../enum");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 const TimeZoneList = require("../enum/TimeZoneList");
-const {
-  googleCalendar,
-  yahooCalendar,
-  generateIcsCalendar,
-} = require("../utils/generateCalendars");
+const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 
 const Bonfire = db.Bonfire;
 const User = db.User;
@@ -301,6 +297,19 @@ const BonfireController = () => {
             .json({ msg: "Bad Request: Bonfire not found." });
         }
 
+        const usersId = prevBonfire.dataValues.invitedUsers.concat(
+          prevBonfire.dataValues.uninvitedJoinedUsers
+        );
+
+        const usersJoinedToBonfire = await Promise.all(
+          usersId.map(async (userId) => {
+            const { dataValues } = await User.findOne({
+              where: { id: userId },
+            });
+            return dataValues;
+          })
+        );
+
         const [numberOfAffectedRows, affectedRows] = await Bonfire.update(
           bonfireInfo,
           {
@@ -308,6 +317,47 @@ const BonfireController = () => {
             returning: true,
             plain: true,
           }
+        );
+
+        await Promise.all(
+          usersJoinedToBonfire.map((user) => {
+            const timezone = TimeZoneList.find(
+              (timezone) =>
+                timezone.value === affectedRows.dataValues.timezone ||
+                timezone.text === affectedRows.dataValues.timezone
+            );
+            const offset = timezone.offset;
+            const targetBonfireStartDate = moment(
+              affectedRows.dataValues.startTime
+            )
+              .tz(timezone.utc[0])
+              .utcOffset(offset, true);
+
+            const targetBonfireEndDate = moment(affectedRows.dataValues.endTime)
+              .tz(timezone.utc[0])
+              .utcOffset(offset, true);
+
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
+              subject: LabEmails.BONFIRE_EDITED.subject(
+                affectedRows.dataValues.title
+              ),
+              html: LabEmails.BONFIRE_EDITED.body(
+                user,
+                prevBonfire.dataValues.title,
+                affectedRows.dataValues,
+                targetBonfireStartDate.format("MMM DD"),
+                targetBonfireStartDate.format("h:mm a"),
+                targetBonfireEndDate.format("h:mm a"),
+                timezone.value
+              ),
+            };
+
+            console.log("***** mailOptions ", mailOptions);
+
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
+          })
         );
 
         return res
@@ -331,11 +381,91 @@ const BonfireController = () => {
 
     if (id) {
       try {
+        const { dataValues: bonfireToDelete } = await Bonfire.findOne({
+          where: {
+            id,
+          },
+        });
+
+        if (!bonfireToDelete) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: Bonfire not found." });
+        }
+
+        const usersId = bonfireToDelete.invitedUsers.concat(
+          bonfireToDelete.uninvitedJoinedUsers
+        );
+
+        const usersJoinedToBonfire = await Promise.all(
+          usersId.map(async (userId) => {
+            const { dataValues } = await User.findOne({
+              where: { id: userId },
+            });
+            return dataValues;
+          })
+        );
+
         await Bonfire.destroy({
           where: {
             id,
           },
         });
+
+        await Promise.all(
+          usersId.map((userID) => {
+            return User.update(
+              {
+                bonfires: Sequelize.fn(
+                  "array_remove",
+                  Sequelize.col("bonfires"),
+                  id
+                ),
+              },
+              {
+                where: { id: userID },
+                returning: true,
+                plain: true,
+              }
+            );
+          })
+        );
+
+        await Promise.all(
+          usersJoinedToBonfire.map((user) => {
+            const timezone = TimeZoneList.find(
+              (timezone) =>
+                timezone.value === bonfireToDelete.timezone ||
+                timezone.text === bonfireToDelete.timezone
+            );
+            const offset = timezone.offset;
+            const targetBonfireStartDate = moment(bonfireToDelete.startTime)
+              .tz(timezone.utc[0])
+              .utcOffset(offset, true);
+
+            const targetBonfireEndDate = moment(bonfireToDelete.endTime)
+              .tz(timezone.utc[0])
+              .utcOffset(offset, true);
+
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
+              subject: LabEmails.BONFIRE_DELETED.subject(bonfireToDelete.title),
+              html: LabEmails.BONFIRE_DELETED.body(
+                user,
+                bonfireToDelete,
+                targetBonfireStartDate.format("MMM DD"),
+                targetBonfireStartDate.format("h:mm a"),
+                targetBonfireEndDate.format("h:mm a"),
+                timezone.value
+              ),
+            };
+
+            console.log("***** mailOptions ", mailOptions);
+
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
+          })
+        );
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {

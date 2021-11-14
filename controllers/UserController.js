@@ -664,7 +664,7 @@ const UserController = () => {
       for (const bonfire of userBonfires) {
         if (bonfire.startTime === bonfireToJoin.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
-            msg: "You already have join another bonfire at the same time and date",
+            msg: "You already joined another bonfire at the same time and date",
           });
         }
       }
