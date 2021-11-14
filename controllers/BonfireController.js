@@ -37,7 +37,7 @@ const BonfireController = () => {
             },
             {
               email: {
-                [Op.ne]: "enrique@hackinghr.io",
+                [Op.ne]: "douglas.eduardo2000@gmail.com",
               },
             },
           ],
@@ -51,7 +51,7 @@ const BonfireController = () => {
       });
 
       const userAlwaysInvited = await User.findOne({
-        where: { email: "enrique@hackinghr.io" },
+        where: { email: "douglas.eduardo2000@gmail.com" },
       });
 
       if (userAlwaysInvited?.dataValues?.id)
@@ -195,11 +195,14 @@ const BonfireController = () => {
               googleLink,
               yahooLink
             ),
-            icalEvent: {
-              filename: `${bonfire.dataValues.title}.ics`,
-              method: "request",
-              content: icsContent,
-            },
+            attachments: [
+              {
+                filename: `${bonfire.dataValues.title}-invite.ics`,
+                content: icsContent,
+                contentType: "application/ics; charset=UTF-8; method=REQUEST",
+                contentDisposition: "inline",
+              },
+            ],
           };
 
           console.log("***** mailOptions ", mailOptions);
