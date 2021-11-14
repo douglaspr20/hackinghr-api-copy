@@ -702,23 +702,11 @@ const UserController = () => {
               timezone.text === affectedRows.dataValues.timezone
           );
 
-          const googleLink = googleCalendar(
-            bonfireToJoin,
-            targetBonfireStartDate,
-            targetBonfireEndDate,
-            timezoneUser.utc[0]
-          );
-          const yahooLink = yahooCalendar(
-            bonfireToJoin,
-            targetBonfireStartDate,
-            targetBonfireEndDate,
-            timezoneUser.utc[0]
-          );
+          const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
+          const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
 
           const calendarInvite = generateIcsCalendar(
             bonfireToJoin,
-            targetBonfireStartDate,
-            targetBonfireEndDate,
             timezoneUser.utc[0]
           );
 
@@ -739,6 +727,7 @@ const UserController = () => {
               googleLink,
               yahooLink
             ),
+            contentType: "text/calendar",
             attachments: [
               {
                 filename: `${bonfireToJoin.title}-invite.ics`,
