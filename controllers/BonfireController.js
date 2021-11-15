@@ -551,7 +551,8 @@ const BonfireController = () => {
         // event.location,
         `${process.env.DOMAIN_URL}${bonfire.id}`,
         "hacking Lab HR",
-        process.env.FEEDBACK_EMAIL_CONFIG_SENDER
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        timezone.utc[0]
       );
 
       let icsContent = calendarInvite.toString();
