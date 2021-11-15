@@ -11,6 +11,7 @@ const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 
 const Bonfire = db.Bonfire;
 const User = db.User;
+const QueryTypes = Sequelize.QueryTypes;
 
 const BonfireController = () => {
   const create = async (req, res) => {
@@ -213,26 +214,15 @@ const BonfireController = () => {
   };
 
   const getAll = async (req, res) => {
-    const filter = req.query;
-    let where = {
-      endTime: {
-        [Op.gte]: moment().utc().format(),
-      },
-    };
-
+    let where = `WHERE public."Bonfires"."endTime" >='${moment()
+      .utc()
+      .format()}'`;
     try {
-      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
-        where = {
-          ...where,
-          categories: {
-            [Op.overlap]: JSON.parse(filter.topics),
-          },
-        };
-      }
+      const query = `SELECT public."Bonfires".*, public."Users"."id", public."Users"."firstName", public."Users"."lastName", public."Users"."img",
+      public."Users"."company", public."Users"."titleProfessions", public."Users"."personalLinks" FROM public."Bonfires" LEFT JOIN public."Users" ON public."Users".id = public."Bonfires"."bonfireCreator" ${where}`;
 
-      const bonfires = await Bonfire.findAll({
-        where,
-        order: [["startTime"]],
+      const bonfires = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
 
       return res.status(HttpCodes.OK).json({ bonfires });
