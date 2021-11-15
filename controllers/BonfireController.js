@@ -411,87 +411,87 @@ const BonfireController = () => {
           },
         });
 
-        if (!bonfireToDelete) {
-          return res
-            .status(HttpCodes.BAD_REQUEST)
-            .json({ msg: "Bad Request: Bonfire not found." });
-        }
+        // if (!bonfireToDelete) {
+        //   return res
+        //     .status(HttpCodes.BAD_REQUEST)
+        //     .json({ msg: "Bad Request: Bonfire not found." });
+        // }
 
-        const usersId = bonfireToDelete.invitedUsers.concat(
-          bonfireToDelete.uninvitedJoinedUsers
-        );
+        // const usersId = bonfireToDelete.invitedUsers.concat(
+        //   bonfireToDelete.uninvitedJoinedUsers
+        // );
 
-        const usersJoinedToBonfire = await Promise.all(
-          usersId.map(async (userId) => {
-            const { dataValues } = await User.findOne({
-              where: { id: userId },
-            });
-            return dataValues;
-          })
-        );
+        // const usersJoinedToBonfire = await Promise.all(
+        //   usersId.map(async (userId) => {
+        //     const { dataValues } = await User.findOne({
+        //       where: { id: userId },
+        //     });
+        //     return dataValues;
+        //   })
+        // );
 
-        await Bonfire.destroy({
-          where: {
-            id,
-          },
-        });
+        // await Bonfire.destroy({
+        //   where: {
+        //     id,
+        //   },
+        // });
 
-        await Promise.all(
-          usersId.map((userID) => {
-            return User.update(
-              {
-                bonfires: Sequelize.fn(
-                  "array_remove",
-                  Sequelize.col("bonfires"),
-                  id
-                ),
-              },
-              {
-                where: { id: userID },
-                returning: true,
-                plain: true,
-              }
-            );
-          })
-        );
+        // await Promise.all(
+        //   usersId.map((userID) => {
+        //     return User.update(
+        //       {
+        //         bonfires: Sequelize.fn(
+        //           "array_remove",
+        //           Sequelize.col("bonfires"),
+        //           id
+        //         ),
+        //       },
+        //       {
+        //         where: { id: userID },
+        //         returning: true,
+        //         plain: true,
+        //       }
+        //     );
+        //   })
+        // );
 
-        await Promise.all(
-          usersJoinedToBonfire.map((user) => {
-            const timezone = TimeZoneList.find(
-              (timezone) =>
-                timezone.value === bonfireToDelete.timezone ||
-                timezone.text === bonfireToDelete.timezone
-            );
-            const offset = timezone.offset;
-            const targetBonfireStartDate = moment(bonfireToDelete.startTime)
-              .tz(timezone.utc[0])
-              .utcOffset(offset, true);
+        // await Promise.all(
+        //   usersJoinedToBonfire.map((user) => {
+        //     const timezone = TimeZoneList.find(
+        //       (timezone) =>
+        //         timezone.value === bonfireToDelete.timezone ||
+        //         timezone.text === bonfireToDelete.timezone
+        //     );
+        //     const offset = timezone.offset;
+        //     const targetBonfireStartDate = moment(bonfireToDelete.startTime)
+        //       .tz(timezone.utc[0])
+        //       .utcOffset(offset, true);
 
-            const targetBonfireEndDate = moment(bonfireToDelete.endTime)
-              .tz(timezone.utc[0])
-              .utcOffset(offset, true);
+        //     const targetBonfireEndDate = moment(bonfireToDelete.endTime)
+        //       .tz(timezone.utc[0])
+        //       .utcOffset(offset, true);
 
-            let mailOptions = {
-              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-              to: user.email,
-              subject: LabEmails.BONFIRE_DELETED.subject(bonfireToDelete.title),
-              html: LabEmails.BONFIRE_DELETED.body(
-                user,
-                bonfireToDelete,
-                targetBonfireStartDate.format("MMM DD"),
-                targetBonfireStartDate.format("h:mm a"),
-                targetBonfireEndDate.format("h:mm a"),
-                timezone.value
-              ),
-            };
+        //     let mailOptions = {
+        //       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        //       to: user.email,
+        //       subject: LabEmails.BONFIRE_DELETED.subject(bonfireToDelete.title),
+        //       html: LabEmails.BONFIRE_DELETED.body(
+        //         user,
+        //         bonfireToDelete,
+        //         targetBonfireStartDate.format("MMM DD"),
+        //         targetBonfireStartDate.format("h:mm a"),
+        //         targetBonfireEndDate.format("h:mm a"),
+        //         timezone.value
+        //       ),
+        //     };
 
-            console.log("***** mailOptions ", mailOptions);
+        //     console.log("***** mailOptions ", mailOptions);
 
-            return smtpService().sendMailUsingSendInBlue(mailOptions);
-          })
-        );
+        //     return smtpService().sendMailUsingSendInBlue(mailOptions);
+        //   })
+        // );
 
-        return res.status(HttpCodes.OK).json({});
+        // return res.status(HttpCodes.OK).json({});
       } catch (error) {
         console.log(error);
         return res
@@ -503,6 +503,7 @@ const BonfireController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
+    const { userTimezone } = req.query;
 
     try {
       const bonfire = await Bonfire.findOne({
@@ -516,21 +517,34 @@ const BonfireController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
+      const timezone = TimeZoneList.find(
+        (timezone) =>
+          timezone.value === userTimezone || timezone.text === userTimezone
+      );
 
-      let endDate = moment(bonfire.endTime).format("YYYY-MM-DD");
+      const targetBonfireStartDate = moment
+        .utc(bonfire.startTime)
+        .tz(timezone.utc[0]);
 
-      const startTime = moment(bonfire.startTime).format("HH:mm:ss");
+      const targetBonfireEndDate = moment
+        .utc(bonfire.endTime)
+        .tz(timezone.utc[0]);
 
-      const endTime = moment(bonfire.endTime).format("HH:mm:ss");
+      let startDate = targetBonfireStartDate.format("YYYY-MM-DD");
+
+      let endDate = targetBonfireEndDate.format("YYYY-MM-DD");
+
+      const startTime = targetBonfireStartDate.format("HH:mm:ss");
+
+      const endTime = targetBonfireEndDate.format("HH:mm:ss");
 
       let formatStartDate = moment(`${startDate}  ${startTime}`);
 
       let formatEndDate = moment(`${endDate}  ${endTime}`);
 
-      startDate = convertToLocalTime(formatStartDate, "YYYY-MM-DD h:mm a");
+      startDate = formatStartDate.format("YYYY-MM-DD h:mm a");
 
-      endDate = convertToLocalTime(formatEndDate, "YYYY-MM-DD h:mm a");
+      endDate = formatEndDate.format("YYYY-MM-DD h:mm a");
 
       const localTimezone = moment.tz.guess();
 
