@@ -503,25 +503,11 @@ const BonfireController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
-    const { userTimezone } = req.query;
 
     try {
       const bonfire = await Bonfire.findOne({
         where: { id },
       });
-
-      const timezone = TimeZoneList.find((item) => item.value === userTimezone);
-      const offset = timezone.offset;
-
-      const convertedStartTime = moment(bonfire.startTime)
-        .tz(timezone.utc[0])
-        .utcOffset(offset, true)
-        .format("YYYY-MM-DD HH:mm:ss");
-
-      const convertedEndTime = moment(bonfire.endTime)
-        .tz(timezone.utc[0])
-        .utcOffset(offset, true)
-        .format("YYYY-MM-DD HH:mm:ss");
 
       if (!bonfire) {
         console.log(error);
@@ -530,22 +516,19 @@ const BonfireController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      // let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
+      let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
 
-      // let endDate = moment(bonfire.endTime).format("YYYY-MM-DD");
+      let endDate = moment(bonfire.endTime).format("YYYY-MM-DD");
 
-      // const startTime = moment(bonfire.startTime).format("HH:mm:ss");
-      // startDate = moment(`${startDate}  ${startTime}`);
+      const startTime = moment(bonfire.startTime).format("HH:mm:ss");
+      startDate = moment(`${startDate}  ${startTime}`);
 
-      // const endTime = moment(bonfire.endTime).format("HH:mm:ss");
-      // endDate = moment(`${endDate}  ${endTime}`);
+      const endTime = moment(bonfire.endTime).format("HH:mm:ss");
+      endDate = moment(`${endDate}  ${endTime}`);
 
-      let startDate = convertToLocalTime(
-        convertedStartTime,
-        "YYYY-MM-DD h:mm a"
-      );
+      startDate = convertToLocalTime(startDate, "YYYY-MM-DD h:mm a");
 
-      let endDate = convertToLocalTime(convertedEndTime, "YYYY-MM-DD h:mm a");
+      endDate = convertToLocalTime(endDate, "YYYY-MM-DD h:mm a");
 
       const localTimezone = moment.tz.guess();
 
