@@ -524,10 +524,6 @@ const BonfireController = () => {
 
       const offset = timezone.offset;
 
-      console.log(req.query);
-
-      console.log(timezone);
-
       const targetBonfireStartDate = moment(bonfire.startTime)
         .tz(timezone.utc[0])
         .utcOffset(offset, true);
@@ -555,8 +551,7 @@ const BonfireController = () => {
         // event.location,
         `${process.env.DOMAIN_URL}${bonfire.id}`,
         "hacking Lab HR",
-        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        timezone.utc[0]
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER
       );
 
       let icsContent = calendarInvite.toString();
