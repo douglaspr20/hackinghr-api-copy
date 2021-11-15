@@ -503,7 +503,6 @@ const BonfireController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
-    const { userTimezone } = req.query;
 
     try {
       const bonfire = await Bonfire.findOne({
@@ -517,30 +516,21 @@ const BonfireController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      const timezone = TimeZoneList.find(
-        (timezone) =>
-          timezone.value === userTimezone || timezone.text === userTimezone
-      );
+      let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
 
-      const offset = timezone.offset;
+      let endDate = moment(bonfire.endTime).format("YYYY-MM-DD");
 
-      const targetBonfireStartDate = moment(bonfire.startTime)
-        .tz(timezone.utc[0])
-        .utcOffset(offset, true);
+      const startTime = moment(bonfire.startTime).format("HH:mm:ss");
+      startDate = moment(`${startDate}  ${startTime}`);
 
-      const targetBonfireEndDate = moment(bonfire.endTime)
-        .tz(timezone.utc[0])
-        .utcOffset(offset, true);
+      const endTime = moment(bonfire.endTime).format("HH:mm:ss");
+      endDate = moment(`${endDate}  ${endTime}`);
 
-      let startDate = moment
-        .utc(targetBonfireStartDate)
-        .tz(timezone.utc[0])
-        .format("YYYY-MM-DD HH:mm:ss");
+      startDate = convertToLocalTime(startDate, "YYYY-MM-DD h:mm a");
 
-      let endDate = moment
-        .utc(targetBonfireEndDate)
-        .tz(timezone.utc[0])
-        .format("YYYY-MM-DD HH:mm:ss");
+      endDate = convertToLocalTime(endDate, "YYYY-MM-DD h:mm a");
+
+      const localTimezone = moment.tz.guess();
 
       const calendarInvite = smtpService().generateCalendarInvite(
         startDate,
@@ -552,7 +542,7 @@ const BonfireController = () => {
         `${process.env.DOMAIN_URL}${bonfire.id}`,
         "hacking Lab HR",
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        timezone.utc[0]
+        localTimezone
       );
 
       let icsContent = calendarInvite.toString();
