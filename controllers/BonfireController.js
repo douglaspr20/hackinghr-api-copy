@@ -524,7 +524,7 @@ const BonfireController = () => {
 
       const offset = timezone.offset;
 
-      console.log(bonfire);
+      console.log(req.query);
 
       console.log(timezone);
 
