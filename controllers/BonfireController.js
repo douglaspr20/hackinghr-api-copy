@@ -252,7 +252,7 @@ const BonfireController = () => {
       .utc()
       .format()}'`;
     try {
-      const query = `SELECT public."Bonfires".*, public."Users"."id", public."Users"."firstName", public."Users"."lastName", public."Users"."img",
+      const query = `SELECT public."Bonfires".*, public."Users"."id" as "bonfireOrganizerId", public."Users"."firstName", public."Users"."lastName", public."Users"."img",
       public."Users"."company", public."Users"."titleProfessions", public."Users"."personalLinks" FROM public."Bonfires" LEFT JOIN public."Users" ON public."Users".id = public."Bonfires"."bonfireCreator" ${where}`;
 
       const bonfires = await db.sequelize.query(query, {
@@ -405,7 +405,7 @@ const BonfireController = () => {
 
     if (id) {
       try {
-        const { dataValues: bonfireToDelete } = await Bonfire.findOne({
+        const bonfireToDelete = await Bonfire.findOne({
           where: {
             id,
           },
