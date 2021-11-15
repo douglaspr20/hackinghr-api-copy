@@ -38,7 +38,6 @@ const SkillCohortResourcesController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { date } = req.query;
     const { skillCohortId } = req.params;
 
     let where = {
@@ -46,19 +45,6 @@ const SkillCohortResourcesController = () => {
     };
 
     try {
-      if (date) {
-        where = {
-          ...where,
-          releaseDate: {
-            [Op.lte]: moment(date)
-              .tz("America/Los_Angeles")
-              .startOf("day")
-              .utc()
-              .format("YYYY-MM-DD HH:mm:ssZ"),
-          },
-        };
-      }
-
       const skillCohortResources = await SkillCohortResources.findAll({
         where,
         include: [
@@ -95,8 +81,8 @@ const SkillCohortResourcesController = () => {
         where = {
           ...where,
           releaseDate: {
-            [Op.lt]: moment(date)
-              .tz("America/Los_Angeles")
+            [Op.lt]: moment
+              .tz(date, "America/Los_Angeles")
               .startOf("day")
               .format("YYYY-MM-DD HH:mm:ssZ"),
           },
@@ -212,6 +198,7 @@ const SkillCohortResourcesController = () => {
             id: resourceId,
           },
         });
+
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
         console.log(error);
@@ -260,11 +247,7 @@ const SkillCohortResourcesController = () => {
    * Get resources released today
    */
   const getResourcesToBeReleasedToday = async () => {
-    const dateToday = moment()
-      .tz("America/Los_Angeles")
-      .startOf("day")
-      .utc()
-      .format("YYYY-MM-DD HH:mm:ssZ");
+    const dateToday = moment().tz("America/Los_Angeles").startOf("day");
 
     return await SkillCohortResources.findAll({
       where: {
@@ -313,10 +296,27 @@ const SkillCohortResourcesController = () => {
 
   const batchWrite = async (req, res) => {
     const { skillCohortResources } = req.body;
-    console.log(skillCohortResources, "shesh");
+    const transformedSkillCohortResources = skillCohortResources.map(
+      (resource) => {
+        let releaseDate = resource.releaseDate.replace(/\//g, "-");
+
+        releaseDate = moment.tz(
+          `${releaseDate} 00:00:00`,
+          "MM-DD-YYYY",
+          "America/Los_Angeles"
+        );
+
+        return {
+          ...resource,
+          releaseDate,
+        };
+      }
+    );
+
     try {
-      const allSkillCohortResources =
-        SkillCohortResources.bulkCreate(skillCohortResources);
+      const allSkillCohortResources = SkillCohortResources.bulkCreate(
+        transformedSkillCohortResources
+      );
 
       return res.status(HttpCodes.OK).json({ allSkillCohortResources });
     } catch (error) {
