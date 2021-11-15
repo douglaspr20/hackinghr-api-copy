@@ -286,12 +286,22 @@ module.exports = {
   BONFIRE_INVITATION: {
     subject: `You have been invited to a bonfire! A networking experience as part of the 
     Hacking HR 2022 Global Online Conference`,
-    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+    body: (
+      user,
+      bonfire,
+      bonfireCreator,
+      startDate,
+      startTime,
+      endTime,
+      timezone,
+      googleLink,
+      yahooLink
+    ) => `
       <p>
       Hi, ${user.firstName}
       </p>
       <p>
-      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}, 
+      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}-${endTime} (${timezone}), 
       created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email}).
       </p>
       <p>
@@ -313,23 +323,39 @@ module.exports = {
       Attached a calendar invite including all details, just in case! 
       </p>
       <p>
+      <a href="${googleLink}" target="_blank">Google Calendar</a>
+      <br>
+      <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
+      </p>
+      <p>
       Happy networking! 
       </p>
       <br />
       <br />
-      Hacking HR Team
+      Hacking HR LAB
       <br/>
+      <p>
+      P.S.: Bonfires <b>ARE NOT</b> tools for sales or marketing pitches. If this happens during 
+      your bonfire and the bonfire organizer is selling anything, marketing a product or 
+      service, or using you for any purpose other than networking, please report it to us 
+      (enrique@hackinghr.io). We will take immediate action.
+      </p>
     `,
   },
   BONFIRE_CREATOR: {
     subject: `Thank you creating a Bonfire as part of the networking experience at the 
     Hacking HR 2022 Global Online Conference`,
-    body: (bonfireCreator, bonfire, startDate, startTime) => `
+    body: (bonfireCreator, bonfire, startDate, startTime, timezone) => `
     <p>
     Hi, ${bonfireCreator.firstName}
     </p>
     <p>
-    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime}
+    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime} (${timezone})
+    </p>
+    <p>
+    <b>Quick note before moving on: time zones are always a headache for 
+    everyone. PLEASE make sure that you entered the proper time zone when 
+    creating your Bonfire. Thank you!.</b>
     </p>
     <p>
     You are so AWESOME!!! THANK YOU!
@@ -359,23 +385,33 @@ module.exports = {
     <p>
     Happy networking! 
     </p>
-    <br />
-    <br />
+    <br>
+    <br>
     <p>Enrique Rubio</p>
     <p>Founder</p>
     <p>Hacking HR</p>
-    <br/>
+    <br>
     `,
   },
   BONFIRE_JOINING: {
     subject: `Thank you for joining a Bonfire as part of the networking experience at the 
     Hacking HR 2022 Global Online Conference`,
-    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+    body: (
+      user,
+      bonfire,
+      bonfireCreator,
+      startDate,
+      startTime,
+      endTime,
+      timezone,
+      googleLink,
+      yahooLink
+    ) => `
     <p>
     Hi ${user.firstName}
     </p>
     <p>
-    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}, 
+    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}-${endTime} (${timezone}), 
     created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email})!
     </p>
     <p>
@@ -393,6 +429,11 @@ module.exports = {
     <p>
     Attached a calendar invite including all details, just in case!
     </p>
+    <p>
+    <a href="${googleLink}" target="_blank">Google Calendar</a>
+    <br>
+    <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
+    </p>
     <br>
     <br>
     <p>
@@ -402,11 +443,18 @@ module.exports = {
     <p>
     Hacking HR LAB
     </p>
+    <br>
+    <p>
+    P.S.: Bonfires <b>ARE NOT</b> tools for sales or marketing pitches. If this happens during 
+    your bonfire and the bonfire organizer is selling anything, marketing a product or 
+    service, or using you for any purpose other than networking, please report it to us 
+    (enrique@hackinghr.io). We will take immediate actio
+    </p>
     `,
   },
   JOIN_COHORT_EMAIL: {
-    subject: (cohort) => `
-    Welcome to Cohort ${cohort.title} as part of Hacking HR's ProjectX
+    subject: (cohort, startDate) => `
+    Welcome to Hacking HR's ProjectX Cohort: ${cohort.title} (Starting on ${startDate})
     `,
     body: (user, cohort, startDate) => `
     <p>

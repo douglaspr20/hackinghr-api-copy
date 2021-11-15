@@ -240,7 +240,7 @@ module.exports = [
   {
     value: "Venezuela Standard Time",
     abbr: "VST",
-    offset: -4.5,
+    offset: -4,
     isdst: false,
     text: "(UTC-04:30) Caracas",
     utc: ["America/Caracas"],

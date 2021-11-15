@@ -12,24 +12,14 @@ const User = db.User;
 
 const AuthController = () => {
   const sendEmailAfterRegister = async (user) => {
-    // TODO: Enable after sendinblue solve problem
-    /*const mailOptions = {
-      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-      to: user.email,
-      subject: LabEmails.NEW_USER_SIGNUP.subject(),
-      html: LabEmails.NEW_USER_SIGNUP.body(user),
-    };*/
-
-    // await smtpService().sendMailUsingSendInBlue(mailOptions);
-
     const mailOptions = {
-      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
       to: user.email,
       subject: LabEmails.NEW_USER_SIGNUP.subject(),
       html: LabEmails.NEW_USER_SIGNUP.body(user),
     };
 
-    await smtpService().sendMail(mailOptions);
+    await smtpService().sendMailUsingSendInBlue(mailOptions);
   };
 
   const login = async (req, res) => {

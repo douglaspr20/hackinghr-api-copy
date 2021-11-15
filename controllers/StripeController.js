@@ -234,22 +234,14 @@ const StripeController = () => {
                       .unix(subItemPremium.current_period_end)
                       .format("YYYY-MM-DD HH:mm:ss");
 
-                    // TODO: Enable after sendinblue solve problem
-                    /*const mailOptions = {
+                    const mailOptions = {
                       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                       to: user.email,
                       subject: LabEmails.USER_BECOME_PREMIUM.subject(),
                       html: LabEmails.USER_BECOME_PREMIUM.body(user),
-                    };*/
-                    //await smtpService().sendMailUsingSendInBlue(mailOptions);
-
-                    const mailOptions = {
-                      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-                      to: user.email,
-                      subject: LabEmails.USER_BECOME_PREMIUM.subject(),
-                      html: LabEmails.USER_BECOME_PREMIUM.body(user),
                     };
-                    await smtpService().sendMail(mailOptions);
+
+                    await smtpService().sendMailUsingSendInBlue(mailOptions);
                   }
                 });
               }

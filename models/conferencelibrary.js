@@ -61,8 +61,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       duration: DataTypes.STRING,
       viewed: {
-        type: DataTypes.JSON,
+        type: DataTypes.JSONB,
         defaultValue: {},
+      },
+      saveForLater: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
       },
     },
     {
