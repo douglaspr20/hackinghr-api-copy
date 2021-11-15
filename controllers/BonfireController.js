@@ -503,6 +503,7 @@ const BonfireController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
+    const { userTimezone } = req.query;
 
     try {
       const bonfire = await Bonfire.findOne({
@@ -515,6 +516,21 @@ const BonfireController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
       }
+
+      const timezoneUser = TimeZoneList.find(
+        (timezone) =>
+          timezone.value === userTimezone || timezone.text === userTimezone
+      );
+
+      const convertedStartTime = moment
+        .utc(bonfire.dataValues.startTime)
+        .tz(timezoneUser.utc[0]);
+
+      const convertedEndTime = moment
+        .utc(bonfire.dataValues.endTime)
+        .tz(timezoneUser.utc[0]);
+
+      console.log(convertedStartTime);
 
       let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
 
