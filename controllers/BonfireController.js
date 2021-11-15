@@ -522,29 +522,23 @@ const BonfireController = () => {
           timezone.value === userTimezone || timezone.text === userTimezone
       );
 
-      const targetBonfireStartDate = moment
-        .utc(bonfire.startTime)
-        .tz(timezone.utc[0]);
+      const targetBonfireStartDate = moment(bonfire.startTime)
+        .tz(timezone.utc[0])
+        .utcOffset(offset, true);
 
-      const targetBonfireEndDate = moment
-        .utc(bonfire.endTime)
-        .tz(timezone.utc[0]);
+      const targetBonfireEndDate = moment(bonfire.endTime)
+        .tz(timezone.utc[0])
+        .utcOffset(offset, true);
 
-      let startDate = targetBonfireStartDate.format("YYYY-MM-DD");
+      let startDate = moment
+        .utc(targetBonfireStartDate)
+        .tz(timezone.utc[0])
+        .format("YYYY-MM-DD HH:mm:ss");
 
-      let endDate = targetBonfireEndDate.format("YYYY-MM-DD");
-
-      const startTime = targetBonfireStartDate.format("HH:mm:ss");
-
-      const endTime = targetBonfireEndDate.format("HH:mm:ss");
-
-      let formatStartDate = moment(`${startDate}  ${startTime}`);
-
-      let formatEndDate = moment(`${endDate}  ${endTime}`);
-
-      startDate = formatStartDate.format("YYYY-MM-DD h:mm a");
-
-      endDate = formatEndDate.format("YYYY-MM-DD h:mm a");
+      let endDate = moment
+        .utc(targetBonfireEndDate)
+        .tz(timezone.utc[0])
+        .format("YYYY-MM-DD HH:mm:ss");
 
       const calendarInvite = smtpService().generateCalendarInvite(
         startDate,
