@@ -530,7 +530,7 @@ const BonfireController = () => {
         .utc(bonfire.dataValues.endTime)
         .tz(timezoneUser.utc[0]);
 
-      console.log(convertedStartTime);
+      console.log({ const: convertedStartTime });
 
       let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
 
