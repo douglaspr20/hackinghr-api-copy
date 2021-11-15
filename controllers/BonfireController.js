@@ -524,6 +524,10 @@ const BonfireController = () => {
 
       const offset = timezone.offset;
 
+      console.log(bonfire);
+
+      console.log(timezone);
+
       const targetBonfireStartDate = moment(bonfire.startTime)
         .tz(timezone.utc[0])
         .utcOffset(offset, true);
