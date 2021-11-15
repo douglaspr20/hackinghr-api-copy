@@ -530,16 +530,15 @@ const BonfireController = () => {
         .utc(bonfire.dataValues.endTime)
         .tz(timezoneUser.utc[0]);
 
-      console.log({ const: convertedStartTime });
+      let startDate = moment(convertedStartTime).format("YYYY-MM-DD");
 
-      let startDate = moment(bonfire.startTime).format("YYYY-MM-DD");
+      let endDate = moment(convertedEndTime).format("YYYY-MM-DD");
 
-      let endDate = moment(bonfire.endTime).format("YYYY-MM-DD");
+      const startTime = moment(convertedStartTime).format("HH:mm:ss");
 
-      const startTime = moment(bonfire.startTime).format("HH:mm:ss");
       startDate = moment(`${startDate}  ${startTime}`);
 
-      const endTime = moment(bonfire.endTime).format("HH:mm:ss");
+      const endTime = moment(convertedEndTime).format("HH:mm:ss");
       endDate = moment(`${endDate}  ${endTime}`);
 
       startDate = convertToLocalTime(startDate, "YYYY-MM-DD h:mm a");
