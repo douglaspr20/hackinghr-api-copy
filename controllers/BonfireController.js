@@ -2,7 +2,6 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const moment = require("moment-timezone");
 const { Op, Sequelize } = require("sequelize");
-const isEmpty = require("lodash/isEmpty");
 const { LabEmails } = require("../enum");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
@@ -13,6 +12,31 @@ const Bonfire = db.Bonfire;
 const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
 
+const validatedUserToInvited = async (user, bonfireToCreate) => {
+  const query = `
+  SELECT public."Bonfires"."startTime", public."Bonfires"."endTime" FROM public."Users" 
+  LEFT JOIN public."Bonfires" ON public."Bonfires".id = ANY (public."Users".bonfires::int[]) 
+  WHERE (public."Users"."id" = ${
+    user.id
+  }) AND (public."Bonfires"."endTime" >= '${moment().utc().format()}')
+`;
+  try {
+    const userBonfires = await db.sequelize.query(query, {
+      type: QueryTypes.SELECT,
+    });
+
+    for (const bonfire of userBonfires) {
+      if (bonfire.startTime === bonfireToCreate.startTime) {
+        return null;
+      }
+    }
+
+    return user;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const BonfireController = () => {
   const create = async (req, res) => {
     const reqBonfire = req.body;
@@ -22,7 +46,7 @@ const BonfireController = () => {
         ...reqBonfire,
       };
 
-      const users = await User.findAll({
+      let users = await User.findAll({
         where: {
           [Op.and]: [
             { percentOfCompletion: 100 },
@@ -43,7 +67,17 @@ const BonfireController = () => {
         limit: 20,
       });
 
-      const invitedUsers = users.map((user) => {
+      let usersValidated = [];
+
+      for (const user of users) {
+        const userValidate = await Promise.resolve(
+          validatedUserToInvited(user.dataValues, bonfireInfo)
+        );
+
+        if (userValidate !== null) usersValidated.push(user);
+      }
+
+      const invitedUsers = usersValidated.map((user) => {
         return user.dataValues.id;
       });
 
@@ -53,7 +87,7 @@ const BonfireController = () => {
 
       if (userAlwaysInvited?.dataValues?.id) {
         invitedUsers.push(userAlwaysInvited.dataValues.id);
-        users.push(userAlwaysInvited);
+        usersValidated.push(userAlwaysInvited);
       }
 
       bonfireInfo = {
@@ -134,7 +168,7 @@ const BonfireController = () => {
       );
 
       await Promise.all(
-        users.map((user) => {
+        usersValidated.map((user) => {
           const timezone = TimeZoneList.find(
             (timezone) =>
               timezone.value === bonfireInfo.timezone ||
