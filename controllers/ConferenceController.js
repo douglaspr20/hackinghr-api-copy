@@ -41,47 +41,55 @@ const ConferenceController = () => {
   };
 
   const getAll = async (req, res) => {
-    const filter = req.query;
+    const query = req.query;
 
     try {
       let where = {};
 
-      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+      if (query.topics && !isEmpty(JSON.parse(query.topics))) {
         where = {
           ...where,
           categories: {
-            [Op.overlap]: JSON.parse(filter.topics),
+            [Op.overlap]: JSON.parse(query.topics),
           },
         };
       }
 
-      if (filter.year && !isEmpty(JSON.parse(filter.year))) {
+      if (query.year && !isEmpty(JSON.parse(query.year))) {
         where = {
           ...where,
           year: {
-            [Op.in]: JSON.parse(filter.year),
+            [Op.in]: JSON.parse(query.year),
           },
         };
       }
 
-      if (filter.meta) {
+      if (query.meta) {
         where = {
           ...where,
           meta: {
-            [Op.iLike]: `%${filter.meta}%`,
+            [Op.iLike]: `%${query.meta}%`,
           },
         };
       }
 
-      const conferences = await ConferenceLibrary.findAndCountAll({
-        where,
-        offset: (filter.page - 1) * filter.num,
-        limit: filter.num,
-        order: [
-          ["year", "DESC"],
-          ["order", "DESC"],
-        ],
+      const listOfYears = JSON.parse(query.listOfYears);
+      let conferences = listOfYears.map((year, index) => {
+        return ConferenceLibrary.findAndCountAll({
+          where: {
+            ...where,
+            year,
+          },
+          offset: (query.page - 1) * query.num,
+          limit: query.num,
+          order: [
+            ["year", "DESC"],
+            ["order", "DESC"],
+          ],
+        });
       });
+
+      conferences = await Promise.all(conferences);
 
       return res.status(HttpCodes.OK).json({ conferences });
     } catch (error) {
