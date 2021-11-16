@@ -32,7 +32,7 @@ module.exports = [
   {
     value: "Alaskan Standard Time",
     abbr: "AKDT",
-    offset: -8,
+    offset: -9,
     isdst: true,
     text: "(UTC-09:00) Alaska",
     utc: [
@@ -46,7 +46,7 @@ module.exports = [
   {
     value: "Pacific Standard Time (Mexico)",
     abbr: "PDT",
-    offset: -7,
+    offset: -8,
     isdst: true,
     text: "(UTC-08:00) Baja California",
     utc: ["America/Santa_Isabel"],
@@ -97,7 +97,7 @@ module.exports = [
   {
     value: "Mountain Standard Time (Mexico)",
     abbr: "MDT",
-    offset: -6,
+    offset: -7,
     isdst: true,
     text: "(UTC-07:00) Chihuahua, La Paz, Mazatlan",
     utc: ["America/Chihuahua", "America/Mazatlan"],
@@ -105,7 +105,7 @@ module.exports = [
   {
     value: "Mountain Standard Time",
     abbr: "MDT",
-    offset: -6,
+    offset: -7,
     isdst: true,
     text: "(UTC-07:00) Mountain Time (US & Canada)",
     utc: [
@@ -139,7 +139,7 @@ module.exports = [
   {
     value: "Central Standard Time",
     abbr: "CDT",
-    offset: -5,
+    offset: -6,
     isdst: true,
     text: "(UTC-06:00) Central Time (US & Canada)",
     utc: [
@@ -161,7 +161,7 @@ module.exports = [
   {
     value: "Central Standard Time (Mexico)",
     abbr: "CDT",
-    offset: -5,
+    offset: -6,
     isdst: true,
     text: "(UTC-06:00) Guadalajara, Mexico City, Monterrey",
     utc: [
@@ -202,7 +202,7 @@ module.exports = [
   {
     value: "Eastern Standard Time",
     abbr: "EDT",
-    offset: -4,
+    offset: -5,
     isdst: true,
     text: "(UTC-05:00) Eastern Time (US & Canada)",
     utc: [
@@ -228,7 +228,7 @@ module.exports = [
   {
     value: "US Eastern Standard Time",
     abbr: "UEDT",
-    offset: -4,
+    offset: -5,
     isdst: true,
     text: "(UTC-05:00) Indiana (East)",
     utc: [
@@ -256,7 +256,7 @@ module.exports = [
   {
     value: "Atlantic Standard Time",
     abbr: "ADT",
-    offset: -3,
+    offset: -4,
     isdst: true,
     text: "(UTC-04:00) Atlantic Time (Canada)",
     utc: [
@@ -326,7 +326,7 @@ module.exports = [
   {
     value: "Newfoundland Standard Time",
     abbr: "NDT",
-    offset: -2.5,
+    offset: -3.5,
     isdst: true,
     text: "(UTC-03:30) Newfoundland",
     utc: ["America/St_Johns"],
@@ -415,7 +415,7 @@ module.exports = [
   {
     value: "Mid-Atlantic Standard Time",
     abbr: "MDT",
-    offset: -1,
+    offset: -2,
     isdst: true,
     text: "(UTC-02:00) Mid-Atlantic - Old",
     utc: [],
@@ -423,7 +423,7 @@ module.exports = [
   {
     value: "Azores Standard Time",
     abbr: "ADT",
-    offset: 0,
+    offset: -1,
     isdst: true,
     text: "(UTC-01:00) Azores",
     utc: ["America/Scoresbysund", "Atlantic/Azores"],
@@ -441,7 +441,7 @@ module.exports = [
     abbr: "MDT",
     offset: 1,
     isdst: true,
-    text: "(UTC) Casablanca",
+    text: "(UTC+01:00) Casablanca",
     utc: ["Africa/Casablanca", "Africa/El_Aaiun"],
   },
   {
@@ -481,7 +481,7 @@ module.exports = [
   {
     value: "GMT Standard Time",
     abbr: "GDT",
-    offset: 1,
+    offset: 0,
     isdst: true,
     text: "(UTC) Dublin, Lisbon",
     utc: [
@@ -519,7 +519,7 @@ module.exports = [
   {
     value: "W. Europe Standard Time",
     abbr: "WEDT",
-    offset: 2,
+    offset: 1,
     isdst: true,
     text: "(UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna",
     utc: [
@@ -545,7 +545,7 @@ module.exports = [
   {
     value: "Central Europe Standard Time",
     abbr: "CEDT",
-    offset: 2,
+    offset: 1,
     isdst: true,
     text: "(UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague",
     utc: [
@@ -561,7 +561,7 @@ module.exports = [
   {
     value: "Romance Standard Time",
     abbr: "RDT",
-    offset: 2,
+    offset: 1,
     isdst: true,
     text: "(UTC+01:00) Brussels, Copenhagen, Madrid, Paris",
     utc: [
@@ -575,7 +575,7 @@ module.exports = [
   {
     value: "Central European Standard Time",
     abbr: "CEDT",
-    offset: 2,
+    offset: 1,
     isdst: true,
     text: "(UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb",
     utc: ["Europe/Sarajevo", "Europe/Skopje", "Europe/Warsaw", "Europe/Zagreb"],
@@ -614,7 +614,7 @@ module.exports = [
   {
     value: "GTB Standard Time",
     abbr: "GDT",
-    offset: 3,
+    offset: 2,
     isdst: true,
     text: "(UTC+02:00) Athens, Bucharest",
     utc: [
@@ -627,7 +627,7 @@ module.exports = [
   {
     value: "Middle East Standard Time",
     abbr: "MEDT",
-    offset: 3,
+    offset: 2,
     isdst: true,
     text: "(UTC+02:00) Beirut",
     utc: ["Asia/Beirut"],
@@ -643,7 +643,7 @@ module.exports = [
   {
     value: "Syria Standard Time",
     abbr: "SDT",
-    offset: 3,
+    offset: 2,
     isdst: true,
     text: "(UTC+02:00) Damascus",
     utc: ["Asia/Damascus"],
@@ -651,7 +651,7 @@ module.exports = [
   {
     value: "E. Europe Standard Time",
     abbr: "EEDT",
-    offset: 3,
+    offset: 2,
     isdst: true,
     text: "(UTC+02:00) E. Europe",
     utc: [
@@ -695,7 +695,7 @@ module.exports = [
   {
     value: "FLE Standard Time",
     abbr: "FDT",
-    offset: 3,
+    offset: 2,
     isdst: true,
     text: "(UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius",
     utc: [
@@ -721,7 +721,7 @@ module.exports = [
   {
     value: "Israel Standard Time",
     abbr: "JDT",
-    offset: 3,
+    offset: 2,
     isdst: true,
     text: "(UTC+02:00) Jerusalem",
     utc: ["Asia/Jerusalem"],
@@ -753,7 +753,7 @@ module.exports = [
   {
     value: "Kaliningrad Standard Time",
     abbr: "KST",
-    offset: 3,
+    offset: 2,
     isdst: false,
     text: "(UTC+02:00) Kaliningrad",
     utc: ["Europe/Kaliningrad"],
@@ -836,7 +836,7 @@ module.exports = [
   {
     value: "Azerbaijan Standard Time",
     abbr: "ADT",
-    offset: 5,
+    offset: 4,
     isdst: true,
     text: "(UTC+04:00) Baku",
     utc: ["Asia/Baku"],
@@ -1214,7 +1214,7 @@ module.exports = [
   {
     value: "Kamchatka Standard Time",
     abbr: "KDT",
-    offset: 13,
+    offset: 12,
     isdst: true,
     text: "(UTC+12:00) Petropavlovsk-Kamchatsky - Old",
     utc: ["Asia/Kamchatka"],

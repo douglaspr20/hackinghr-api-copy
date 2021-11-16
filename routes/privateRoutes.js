@@ -122,6 +122,8 @@ const privateRoutes = {
   "POST /bonfire": "BonfireController.create",
   "GET /bonfire": "BonfireController.getAll",
   "GET /bonfire/:id": "BonfireController.get",
+  "PUT /bonfire/:id": "BonfireController.update",
+  "DELETE /bonfire/:id": "BonfireController.remove",
   "GET /skill-cohort": "SkillCohortController.getAllActiveUserSide",
   "GET /skill-cohort/my-cohort/:UserId":
     "SkillCohortController.getAllOfMyCohort",

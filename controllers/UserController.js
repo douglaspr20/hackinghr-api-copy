@@ -664,7 +664,7 @@ const UserController = () => {
       for (const bonfire of userBonfires) {
         if (bonfire.startTime === bonfireToJoin.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
-            msg: "You already have join another bonfire at the same time and date",
+            msg: "You already joined another bonfire at the same time and date",
           });
         }
       }
@@ -705,15 +705,15 @@ const UserController = () => {
           const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
           const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
 
-          const calendarInvite = generateIcsCalendar(
-            bonfireToJoin,
-            timezoneUser.utc[0]
-          );
+          // const calendarInvite = generateIcsCalendar(
+          //   bonfireToJoin,
+          //   timezoneUser.utc[0]
+          // );
 
-          let icsContent = calendarInvite.toString();
+          // let icsContent = calendarInvite.toString();
 
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: affectedRows.dataValues.email,
             subject: LabEmails.BONFIRE_JOINING.subject,
             html: LabEmails.BONFIRE_JOINING.body(
@@ -727,11 +727,15 @@ const UserController = () => {
               googleLink,
               yahooLink
             ),
-            icalEvent: {
-              filename: `${bonfireToJoin.title}.ics`,
-              method: "request",
-              content: icsContent,
-            },
+            // contentType: "text/calendar",
+            // attachments: [
+            //   {
+            //     filename: `${bonfireToJoin.title}-invite.ics`,
+            //     content: icsContent,
+            //     contentType: "application/ics; charset=UTF-8; method=REQUEST",
+            //     contentDisposition: "inline",
+            //   },
+            // ],
           };
           console.log("***** mailOptions ", mailOptions);
 

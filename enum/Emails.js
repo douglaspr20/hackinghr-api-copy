@@ -284,8 +284,7 @@ module.exports = {
     `,
   },
   BONFIRE_INVITATION: {
-    subject: `You have been invited to a bonfire! A networking experience as part of the 
-    Hacking HR 2022 Global Online Conference`,
+    subject: `You have been invited to a bonfire! A networking experience as part of the Hacking HR 2022 Global Online Conference`,
     body: (
       user,
       bonfire,
@@ -343,8 +342,7 @@ module.exports = {
     `,
   },
   BONFIRE_CREATOR: {
-    subject: `Thank you creating a Bonfire as part of the networking experience at the 
-    Hacking HR 2022 Global Online Conference`,
+    subject: `Thank you creating a Bonfire as part of the networking experience at the Hacking HR 2022 Global Online Conference`,
     body: (bonfireCreator, bonfire, startDate, startTime, timezone) => `
     <p>
     Hi, ${bonfireCreator.firstName}
@@ -394,8 +392,7 @@ module.exports = {
     `,
   },
   BONFIRE_JOINING: {
-    subject: `Thank you for joining a Bonfire as part of the networking experience at the 
-    Hacking HR 2022 Global Online Conference`,
+    subject: `Thank you for joining a Bonfire as part of the networking experience at the Hacking HR 2022 Global Online Conference`,
     body: (
       user,
       bonfire,
@@ -449,6 +446,63 @@ module.exports = {
     your bonfire and the bonfire organizer is selling anything, marketing a product or 
     service, or using you for any purpose other than networking, please report it to us 
     (enrique@hackinghr.io). We will take immediate actio
+    </p>
+    `,
+  },
+  BONFIRE_DELETED: {
+    subject: (bonfireTitle) => `"${bonfireTitle}" was deleted`,
+    body: (user, bonfire, startDate, startTime, endTime, timezone) => `
+    <p>
+    Hi ${user.firstName}
+    </p>
+    <p>
+    We are sorry to let you know that the bonfire: “${bonfire.title}” which was 
+    scheduled for ${startDate} and ${startTime}-${endTime} (${timezone}) has been deleted by its creator. 
+    </P>
+    <p>
+    Please visit the <a href="https://www.hackinghrlab.io/global-conference">Global Conference application</a> in the Hacking HR LAB and join other 
+    bonfires. 
+    </p>
+    <br>
+    <p>
+    Thank you! 
+    </p>
+    <br>
+    <p>
+    Hacking HR LAB
+    </p>
+    `,
+  },
+  BONFIRE_EDITED: {
+    subject: (bonfireTitle) => `"${bonfireTitle}" was edited`,
+    body: (
+      user,
+      oldBonfireTitle,
+      newBonfireinfo,
+      startDate,
+      startTime,
+      endTime,
+      timezone
+    ) => `
+    <p>
+    Hi ${user.firstName}
+    </p>
+    <p>
+    The bonfire: “${oldBonfireTitle}” has been edited. These are the new details: 
+    </P>
+    <p>${newBonfireinfo.title}</p>
+    <p>${startDate}</p>
+    <p>${startTime}-${endTime} (${timezone})</p>
+    <p>${newBonfireinfo.link}</p>
+    <br>
+    <br>
+    <p>
+    Please make sure to update your calendar with the new details
+    </p>
+    <br>
+    <p>Thank you and happy networking!</p>
+    <p>
+    Hacking HR LAB
     </p>
     `,
   },
