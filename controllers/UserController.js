@@ -15,11 +15,7 @@ const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
-const {
-  googleCalendar,
-  yahooCalendar,
-  generateIcsCalendar,
-} = require("../utils/generateCalendars");
+const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -540,6 +536,10 @@ const UserController = () => {
         attributes: ["startTime"],
       });
 
+      const { dataValues: userToJoin } = await user.findOne({
+        where: { id: user.id },
+      });
+
       for (const session of userSessions) {
         if (session.startTime === sessionToSchedule.dataValues.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
@@ -547,9 +547,30 @@ const UserController = () => {
           });
         }
       }
+
+      let points;
+
+      if (userToJoin.addedFirstSession) {
+        points = {
+          pointsConferenceLeaderboard: Sequelize.fn(
+            "sum",
+            Sequelize.col("pointsConferenceLeaderboard"),
+            20
+          ),
+        };
+      } else {
+        points = {
+          pointsConferenceLeaderboard: Sequelize.fn(
+            "sum",
+            Sequelize.col("pointsConferenceLeaderboard"),
+            50
+          ),
+        };
+      }
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
+          ...points,
         },
         {
           where: { id: user.id },
@@ -671,6 +692,11 @@ const UserController = () => {
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           bonfires: Sequelize.fn("array_append", Sequelize.col("bonfires"), id),
+          pointsConferenceLeaderboard: Sequelize.fn(
+            "sum",
+            Sequelize.col("pointsConferenceLeaderboard"),
+            200
+          ),
         },
         {
           where: { id: user.id },
@@ -785,7 +811,7 @@ const UserController = () => {
 
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
-      console.log(err);
+      console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
@@ -865,6 +891,100 @@ const UserController = () => {
     return res.status(HttpCodes.OK).json({ s3Hash });
   };
 
+  const createInvitation = async (req, res) => {
+    const { email, username } = req.body;
+
+    try {
+      const userAlreadyRegistered = await User.findOne({
+        where: {
+          email,
+        },
+      });
+
+      if (userAlreadyRegistered) {
+        return res
+          .status(HttpCodes.CONFLICT)
+          .json({ msg: "this user has already been registered" });
+      }
+      const link = `${process.env.DOMAIN_URL}invitation/${username}/${email}`;
+
+      await User.update(
+        {
+          pointsConferenceLeaderboard: Sequelize.fn(
+            "sum",
+            Sequelize.col("pointsConferenceLeaderboard"),
+            100
+          ),
+        },
+        {
+          where: { username },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: email,
+            subject: LabEmails.INVITATION_TO_JOIN.subject,
+            html: LabEmails.INVITATION_TO_JOIN.body(link),
+          };
+
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res.status(HttpCodes.OK).json({ msg: `User invited succesfully` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const acceptInvitationJoin = async (req, res) => {
+    const { hostUser } = req.query;
+
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: { username: hostUser },
+      });
+
+      if (!user) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Host user not found" });
+      }
+
+      await User.update(
+        {
+          pointsConferenceLeaderboard: Sequelize.fn(
+            "sum",
+            Sequelize.col("pointsConferenceLeaderboard"),
+            500
+          ),
+        },
+        {
+          where: { username: hostUser },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ msg: `Thanks for joining` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -886,6 +1006,8 @@ const UserController = () => {
     uploadResume,
     deleteResume,
     getEditorSignature,
+    createInvitation,
+    acceptInvitationJoin,
   };
 };
 

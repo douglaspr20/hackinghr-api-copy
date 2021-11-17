@@ -2,7 +2,6 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op, Sequelize } = require("sequelize");
 const moment = require("moment-timezone");
-const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 
 const AnnualConference = db.AnnualConference;
@@ -166,18 +165,23 @@ const AnnualConferenceController = () => {
   };
 
   const getParticipants = async (req, res) => {
-    const { filters, num, page } = req.query;
+    const { filters, num, page, order } = req.query;
+
     try {
       let where = {
-        [Op.and]: [
-          { attendedToConference: 1 },
-          { topicsOfInterest: { [Op.overlap]: JSON.parse(filters).topics } },
-        ],
+        [Op.and]: [{ attendedToConference: 1 }],
       };
+
+      if (filters) {
+        where[Op.and].push(
+          { topicsOfInterest: { [Op.overlap]: JSON.parse(filters).topics } },
+          { id: { [Op.ne]: JSON.parse(filters).userId } }
+        );
+      }
 
       let participants = await User.findAll({
         where,
-        order: [[Sequelize.fn("RANDOM")]],
+        order: order ? [order] : [[Sequelize.fn("RANDOM")]],
         limit: 50,
       });
 

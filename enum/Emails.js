@@ -622,4 +622,25 @@ module.exports = {
     </p>
     `,
   },
+
+  INVITATION_TO_JOIN: {
+    subject: `You have been invited to join hacking lab`,
+    body: (link) => `
+    <p>
+    Hi you have been invited to join the hacking platform hr lab <br>
+    </p>
+    <p>
+    Click on the following link to quickly access all the content we offer for you <br>
+    </p>
+    <p>
+    <a href="${link}">${link}</a>
+    </p>
+    <p>
+    Thank you so much! <br>
+    </p>
+    <p>
+      Hacking HR Team
+    </p>
+    `,
+  },
 };
