@@ -524,13 +524,16 @@ module.exports = {
       We created this tool with one idea in mind: to help you learn or improve your knowledge in ${cohort.title} through daily resources, personal reflections and assessment of your fellow cohort participants’ reflections! 
     </p>
     <p>
-    This program is intense, but light touch: we will provide a daily resource that should last less than 15-20 minutes to read, listen or watch. Then you provide your personal reflection about what you learned and you plan to apply the lessons learned. Finally, you will look at some of the reflections provided by other participants’ and provide your feedback. 
+    This program is intense, but light touch: we will provide a daily resource that you should be able to read, listen or watch in less than 20 minutes. After reading, listening or watching the resource, you will provide a personal reflection about what you learned and how you plan to apply the lessons learned. Finally, you will look at some of the reflections provided by other participants’ and provide your feedback. 
     </p>
     <p>
-    This cohort lasts 66 days. The program includes a weekly meeting with a small group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. 
+    This cohort program lasts 66 consecutive days. Each day, for 66 consecutive days, you will receive a daily resource, provide the reflection and assess your fellow cohort members’ reflections. This won’t take more than 20-25 minutes per day… Hey, “excellence is a habit”… and we aim to make light-touch learning a habit with discipline and commitment. 
     </p>
     <p>
-    The program relies on daily consistency and discipline. Instead of bugging you with heavy daily resources and long programs that lasts for hours and months, we only ask you for 20 minutes or less on a daily basis for 66 days. That’s it! 
+    There will be a few meetings with a small and selected group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. 
+    </p>
+    <p>
+    As I mentioned before, the program relies on daily consistency and discipline. Instead of bugging you with heavy daily resources, “self-pace” learning program for which you disengage too soon or long programs that lasts for hours and months, we only ask you for 20-25 minutes or less on a daily basis for 66 days. That’s it! 
     </p>
     <p>
       Enjoy the program. Happy learning. And please do not hesitate to reach out if you have any questions: enrique@hackinghr.io
@@ -546,8 +549,8 @@ module.exports = {
     `,
   },
   DAILY_RESOURCE: {
-    subject: (resource) => `
-      Today's Resource is: ${resource.title}
+    subject: (cohort, resource) => `
+    Hacking HR's ProjectX's ${cohort.title}.Today's Resource is: ${resource.title}
     `,
     body: (user, cohort, resource) => `
     <p>

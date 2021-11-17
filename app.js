@@ -219,7 +219,7 @@ cron.schedule(
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: participant.User.email,
-          subject: LabEmails.DAILY_RESOURCE.subject(resource),
+          subject: LabEmails.DAILY_RESOURCE.subject(cohort, resource),
           html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
           contentType: "text/html",
         };
