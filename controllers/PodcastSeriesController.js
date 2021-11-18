@@ -253,6 +253,7 @@ const PodcastSeriesController = () => {
         let prevSeries = await PodcastSeries.findOne({
           where: { id: podcastseriesId },
         });
+
         const saveForLater = prevSeries.saveForLater.filter((item) => {
           return item !== userId;
         });

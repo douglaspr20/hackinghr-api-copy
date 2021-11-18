@@ -8,10 +8,8 @@ const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
-const cryptoService = require("../services/crypto.service");
-const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
-const isEmpty = require("lodash/isEmpty");
+const { isEmpty, flatten } = require("lodash");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
@@ -296,7 +294,7 @@ const EventController = () => {
   const updateEvent = async (req, res) => {
     const { id } = req.params;
     const event = req.body;
-    
+
     try {
       let eventInfo = {
         ...event,
@@ -903,6 +901,41 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
+  const getAllEventVideos = async (req, res) => {
+    const user = req.user;
+
+    try {
+      const event = await Event.findAll({
+        where: {
+          users: {
+            [Op.contains]: [user.id],
+          },
+        },
+        include: {
+          model: db.Library,
+          required: true,
+        },
+      });
+
+      let libraries = event.map((event) => {
+        return event.Libraries;
+      });
+      libraries = flatten(libraries);
+
+      libraries = {
+        count: libraries.length,
+        rows: libraries,
+      };
+
+      return res.status(HttpCodes.OK).json({ libraries });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: User id is wrong" });
+    }
+  };
+
   return {
     create,
     getAllEvents,
@@ -920,6 +953,7 @@ const EventController = () => {
     resetEmailReminders,
     claimCredit,
     claimAttendance,
+    getAllEventVideos,
   };
 };
 

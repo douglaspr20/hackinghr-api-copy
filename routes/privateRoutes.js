@@ -164,7 +164,10 @@ const privateRoutes = {
   "POST /user/:UserId/change-password": "UserController.changePassword",
   "GET /my-learnings/saved": "LearningController.getAllSaved",
   "GET /my-learnings/completed": "LearningController.getAllCompleted",
+  "GET /my-learnings/items-with-hr-credits":
+    "LearningController.getAllItemsWithHrCredit",
   "GET /learning-badges": "LearningBadgeController.getAll",
+  "GET /events/event-videos": "EventController.getAllEventVideos",
 };
 
 module.exports = privateRoutes;
