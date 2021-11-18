@@ -10,7 +10,7 @@ module.exports = {
      */
     await queryInterface.addColumn("Users", "addedFirstSession", {
       type: Sequelize.BOOLEAN,
-      defaultValue: 0,
+      defaultValue: false,
     });
   },
 
