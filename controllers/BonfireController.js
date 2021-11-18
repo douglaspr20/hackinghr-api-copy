@@ -130,7 +130,7 @@ const BonfireController = () => {
             bonfire.id
           ),
           pointsConferenceLeaderboard: Sequelize.fn(
-            "sum",
+            "SUM",
             Sequelize.col("pointsConferenceLeaderboard"),
             500
           ),

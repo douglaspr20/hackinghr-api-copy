@@ -553,7 +553,7 @@ const UserController = () => {
       if (userToJoin.addedFirstSession) {
         points = {
           pointsConferenceLeaderboard: Sequelize.fn(
-            "sum",
+            "SUM",
             Sequelize.col("pointsConferenceLeaderboard"),
             20
           ),
@@ -561,7 +561,7 @@ const UserController = () => {
       } else {
         points = {
           pointsConferenceLeaderboard: Sequelize.fn(
-            "sum",
+            "SUM",
             Sequelize.col("pointsConferenceLeaderboard"),
             50
           ),
@@ -693,7 +693,7 @@ const UserController = () => {
         {
           bonfires: Sequelize.fn("array_append", Sequelize.col("bonfires"), id),
           pointsConferenceLeaderboard: Sequelize.fn(
-            "sum",
+            "SUM",
             Sequelize.col("pointsConferenceLeaderboard"),
             200
           ),
@@ -911,7 +911,7 @@ const UserController = () => {
       await User.update(
         {
           pointsConferenceLeaderboard: Sequelize.fn(
-            "sum",
+            "SUM",
             Sequelize.col("pointsConferenceLeaderboard"),
             100
           ),
@@ -964,7 +964,7 @@ const UserController = () => {
       await User.update(
         {
           pointsConferenceLeaderboard: Sequelize.fn(
-            "sum",
+            "SUM",
             Sequelize.col("pointsConferenceLeaderboard"),
             500
           ),
