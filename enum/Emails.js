@@ -643,4 +643,19 @@ module.exports = {
     </p>
     `,
   },
+  USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
+    subject: `User confirm accessibility requirements`,
+    body: (user) => `
+    <p>
+    ${user.firstName} ${user.lastName} <br>
+    </p>
+    <p>
+    ${user.email}<br>
+    </p>
+    </p>
+    <p>
+      Hacking HR Team
+    </p>
+    `,
+  },
 };

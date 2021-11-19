@@ -552,19 +552,23 @@ const UserController = () => {
 
       if (userToJoin.addedFirstSession) {
         points = {
-          pointsConferenceLeaderboard: Sequelize.fn(
-            "SUM",
-            Sequelize.col("pointsConferenceLeaderboard"),
-            20
-          ),
+          pointsConferenceLeaderboard: [
+            Sequelize.fn(
+              "SUM",
+              Sequelize.col("pointsConferenceLeaderboard"),
+              20
+            ),
+          ],
         };
       } else {
         points = {
-          pointsConferenceLeaderboard: Sequelize.fn(
-            "SUM",
-            Sequelize.col("pointsConferenceLeaderboard"),
-            50
-          ),
+          pointsConferenceLeaderboard: [
+            Sequelize.fn(
+              "SUM",
+              Sequelize.col("pointsConferenceLeaderboard"),
+              50
+            ),
+          ],
         };
       }
       const [numberOfAffectedRows, affectedRows] = await User.update(
@@ -692,11 +696,13 @@ const UserController = () => {
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           bonfires: Sequelize.fn("array_append", Sequelize.col("bonfires"), id),
-          pointsConferenceLeaderboard: Sequelize.fn(
-            "SUM",
-            Sequelize.col("pointsConferenceLeaderboard"),
-            200
-          ),
+          pointsConferenceLeaderboard: [
+            Sequelize.fn(
+              "SUM",
+              Sequelize.col("pointsConferenceLeaderboard"),
+              200
+            ),
+          ],
         },
         {
           where: { id: user.id },
@@ -910,11 +916,13 @@ const UserController = () => {
 
       await User.update(
         {
-          pointsConferenceLeaderboard: Sequelize.fn(
-            "SUM",
-            Sequelize.col("pointsConferenceLeaderboard"),
-            100
-          ),
+          pointsConferenceLeaderboard: [
+            Sequelize.fn(
+              "SUM",
+              Sequelize.col("pointsConferenceLeaderboard"),
+              100
+            ),
+          ],
         },
         {
           where: { username },
@@ -963,11 +971,13 @@ const UserController = () => {
 
       await User.update(
         {
-          pointsConferenceLeaderboard: Sequelize.fn(
-            "SUM",
-            Sequelize.col("pointsConferenceLeaderboard"),
-            500
-          ),
+          pointsConferenceLeaderboard: [
+            Sequelize.fn(
+              "SUM",
+              Sequelize.col("pointsConferenceLeaderboard"),
+              500
+            ),
+          ],
         },
         {
           where: { username: hostUser },
@@ -977,6 +987,45 @@ const UserController = () => {
       );
 
       return res.status(HttpCodes.OK).json({ msg: `Thanks for joining` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const confirmAccessibilityRequirements = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "user not found",
+        });
+      }
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: "enrique@hackinghr.io",
+            subject: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.subject,
+            html: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.body(user),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res.status(HttpCodes.OK).json({ msg: "Confirm accepted" });
     } catch (error) {
       console.log(error);
       return res
@@ -1008,6 +1057,7 @@ const UserController = () => {
     getEditorSignature,
     createInvitation,
     acceptInvitationJoin,
+    confirmAccessibilityRequirements,
   };
 };
 
