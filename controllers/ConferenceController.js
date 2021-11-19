@@ -264,9 +264,14 @@ const ConferenceController = () => {
             }
           );
 
+        const data = {
+          ...affectedRows.dataValues,
+          type: "conferences",
+        };
+
         return res
           .status(HttpCodes.OK)
-          .json({ numberOfAffectedRows, affectedRows });
+          .json({ numberOfAffectedRows, affectedRows: data });
       } catch (error) {
         console.log(error);
         return res
@@ -317,9 +322,14 @@ const ConferenceController = () => {
           }
         );
 
+      const data = {
+        ...affectedRows.dataValues,
+        type: "conferences",
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: data });
     } catch (error) {
       console.log(error);
       return res

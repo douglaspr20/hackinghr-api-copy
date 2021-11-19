@@ -379,9 +379,14 @@ const PodcastController = () => {
           }
         );
 
+        const data = {
+          ...affectedRows.dataValues,
+          type: "podcasts",
+        };
+
         return res
           .status(HttpCodes.OK)
-          .json({ numberOfAffectedRows, affectedRows });
+          .json({ numberOfAffectedRows, affectedRows: data });
       } catch (error) {
         console.log(error);
         return res
@@ -431,9 +436,14 @@ const PodcastController = () => {
         }
       );
 
+      const data = {
+        ...affectedRows.dataValues,
+        type: "podcasts",
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: data });
     } catch (error) {
       console.log(error);
       return res

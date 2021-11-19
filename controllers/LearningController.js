@@ -8,10 +8,11 @@ const Podcast = db.Podcast;
 const PodcastSeries = db.PodcastSeries;
 const Library = db.Library;
 const ConferenceLibrary = db.ConferenceLibrary;
+const Event = db.Event;
 
 const LearningController = () => {
   const getAllSaved = async (req, res) => {
-    const { filter } = req.query;
+    const query = req.query;
     const user = req.user;
 
     let where = {
@@ -25,11 +26,11 @@ const LearningController = () => {
     };
 
     try {
-      if (filter && !isEmpty(JSON.parse(filter))) {
+      if (query.category && !isEmpty(JSON.parse(query.category))) {
         libraryWhere = {
           ...where,
           categories: {
-            [Op.overlap]: JSON.parse(filter),
+            [Op.overlap]: JSON.parse(query.category),
           },
         };
       }
@@ -62,11 +63,52 @@ const LearningController = () => {
         raw: true,
       });
 
-      const allSaved = {
+      let allSaved = [
         allLibraries,
         allConferenceLibraries,
         allPodcasts,
         allPodcastSeries,
+      ];
+
+      allSaved = allSaved.map((items, itemsIndex) => {
+        return items.map((item) => {
+          let type;
+
+          if (itemsIndex === 0) {
+            type = "libraries";
+          } else if (itemsIndex === 1) {
+            type = "conferences";
+          } else if (itemsIndex === 2) {
+            type = "podcasts";
+          } else {
+            type = "podcastSeries";
+          }
+
+          return {
+            ...item,
+            type,
+          };
+        });
+      });
+
+      allSaved = flatten(allSaved);
+
+      allSaved = allSaved.sort((a, b) => {
+        if (moment(a.updatedAt) > moment(b.updatedAt)) {
+          return -1;
+        } else if (moment(b.updatedAt) < moment(a.updatedAt)) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
+      const offset = (+query.page - 1) * +query.num;
+      const limit = offset + +query.num;
+
+      allSaved = {
+        count: allSaved.length,
+        rows: allSaved.slice(offset, limit),
       };
 
       return res.status(HttpCodes.OK).json({ allSaved });
@@ -80,7 +122,7 @@ const LearningController = () => {
   };
 
   const getAllCompleted = async (req, res) => {
-    const { filter } = req.query;
+    const query = req.query;
     const user = req.user;
 
     let where = {
@@ -96,11 +138,11 @@ const LearningController = () => {
     };
 
     try {
-      if (filter && !isEmpty(JSON.parse(filter))) {
+      if (query.category && !isEmpty(JSON.parse(query.category))) {
         libraryWhere = {
           ...where,
           categories: {
-            [Op.overlap]: JSON.parse(filter),
+            [Op.overlap]: JSON.parse(query.category),
           },
         };
       }
@@ -109,7 +151,6 @@ const LearningController = () => {
         where: {
           ...libraryWhere,
         },
-        order: [["updatedAt", "DESC"]],
         raw: true,
       });
 
@@ -117,27 +158,65 @@ const LearningController = () => {
         where: {
           ...libraryWhere,
         },
-        order: [["updatedAt", "DESC"]],
         raw: true,
       });
 
       const allPodcasts = await Podcast.findAll({
         where,
-        order: [["updatedAt", "DESC"]],
         raw: true,
       });
 
       const allPodcastSeries = await PodcastSeries.findAll({
         where,
-        order: [["updatedAt", "DESC"]],
         raw: true,
       });
 
-      const allCompleted = {
+      let allCompleted = [
         allLibraries,
         allConferenceLibraries,
         allPodcasts,
         allPodcastSeries,
+      ];
+
+      allCompleted = allCompleted.map((items, itemsIndex) => {
+        return items.map((item) => {
+          let type;
+
+          if (itemsIndex === 0) {
+            type = "libraries";
+          } else if (itemsIndex === 1) {
+            type = "conferences";
+          } else if (itemsIndex === 2) {
+            type = "podcasts";
+          } else {
+            type = "podcastSeries";
+          }
+
+          return {
+            ...item,
+            type,
+          };
+        });
+      });
+
+      allCompleted = flatten(allCompleted);
+
+      allCompleted = allCompleted.sort((a, b) => {
+        if (moment(a.updatedAt) > moment(b.updatedAt)) {
+          return -1;
+        } else if (moment(b.updatedAt) < moment(a.updatedAt)) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
+      const offset = (+query.page - 1) * +query.num;
+      const limit = offset + +query.num;
+
+      allCompleted = {
+        count: allCompleted.length,
+        rows: allCompleted.slice(offset, limit),
       };
 
       return res.status(HttpCodes.OK).json({ allCompleted });
@@ -264,10 +343,57 @@ const LearningController = () => {
     }
   };
 
+  const getAllEventVideos = async (req, res) => {
+    const user = req.user;
+    const query = req.query;
+
+    let where = {
+      EventId: {
+        [Op.not]: null,
+      },
+    };
+
+    try {
+      if (query.category && !isEmpty(JSON.parse(query.category))) {
+        where = {
+          ...where,
+          topics: {
+            [Op.overlap]: JSON.parse(query.category),
+          },
+        };
+      }
+
+      const libraries = await Library.findAndCountAll({
+        where,
+        offset: (query.page - 1) * query.num,
+        limit: query.num,
+        order: [["createdAt", "DESC"]],
+        include: {
+          attributes: [],
+          model: Event,
+          where: {
+            users: {
+              [Op.contains]: [user.id],
+            },
+          },
+          required: true,
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ libraries });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: User id is wrong" });
+    }
+  };
+
   return {
     getAllSaved,
     getAllCompleted,
     getAllItemsWithHrCredit,
+    getAllEventVideos,
   };
 };
 

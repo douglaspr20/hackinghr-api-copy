@@ -901,41 +901,6 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
-  const getAllEventVideos = async (req, res) => {
-    const user = req.user;
-
-    try {
-      const event = await Event.findAll({
-        where: {
-          users: {
-            [Op.contains]: [user.id],
-          },
-        },
-        include: {
-          model: db.Library,
-          required: true,
-        },
-      });
-
-      let libraries = event.map((event) => {
-        return event.Libraries;
-      });
-      libraries = flatten(libraries);
-
-      libraries = {
-        count: libraries.length,
-        rows: libraries,
-      };
-
-      return res.status(HttpCodes.OK).json({ libraries });
-    } catch (error) {
-      console.error(error);
-      return res
-        .status(HttpCodes.BAD_REQUEST)
-        .json({ msg: "Bad Request: User id is wrong" });
-    }
-  };
-
   return {
     create,
     getAllEvents,
@@ -953,7 +918,6 @@ const EventController = () => {
     resetEmailReminders,
     claimCredit,
     claimAttendance,
-    getAllEventVideos,
   };
 };
 
