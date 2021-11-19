@@ -18,6 +18,8 @@ const privateRoutes = {
   "PUT /user/delete-resume": "UserController.deleteResume",
   "POST /user/create-invitation": "UserController.createInvitation",
   "GET /user/accept-invitation/:newuser": "UserController.acceptInvitationJoin",
+  "GET /user/confirm-accessibility-requirements/:id":
+    "UserController.confirmAccessibilityRequirements",
   "PUT /event/set-status/:id": "EventController.updateEventStatus",
   "POST /stripe/checkout-session/": "StripeController.createCheckoutSession",
   "GET /stripe/portal-session/": "StripeController.createPortalSession",
