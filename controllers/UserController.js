@@ -16,6 +16,7 @@ const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
+const { sequelize } = require("../models");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -548,33 +549,28 @@ const UserController = () => {
         }
       }
 
-      let points;
-
       if (userToJoin.addedFirstSession) {
-        points = {
-          pointsConferenceLeaderboard: [
-            Sequelize.fn(
-              "SUM",
-              Sequelize.col("pointsConferenceLeaderboard"),
-              20
-            ),
-          ],
-        };
+        await User.increment(
+          {
+            pointsConferenceLeaderboard: +20,
+          },
+          {
+            where: { username },
+          }
+        );
       } else {
-        points = {
-          pointsConferenceLeaderboard: [
-            Sequelize.fn(
-              "SUM",
-              Sequelize.col("pointsConferenceLeaderboard"),
-              50
-            ),
-          ],
-        };
+        await User.increment(
+          {
+            pointsConferenceLeaderboard: +50,
+          },
+          {
+            where: { id: user.id },
+          }
+        );
       }
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
-          ...points,
         },
         {
           where: { id: user.id },
@@ -696,18 +692,20 @@ const UserController = () => {
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           bonfires: Sequelize.fn("array_append", Sequelize.col("bonfires"), id),
-          pointsConferenceLeaderboard: [
-            Sequelize.fn(
-              "SUM",
-              Sequelize.col("pointsConferenceLeaderboard"),
-              200
-            ),
-          ],
         },
         {
           where: { id: user.id },
           returning: true,
           plain: true,
+        }
+      );
+
+      await User.increment(
+        {
+          pointsConferenceLeaderboard: +200,
+        },
+        {
+          where: { id: user.id },
         }
       );
 
@@ -914,20 +912,12 @@ const UserController = () => {
       }
       const link = `${process.env.DOMAIN_URL}invitation/${username}/${email}`;
 
-      await User.update(
+      await User.increment(
         {
-          pointsConferenceLeaderboard: [
-            Sequelize.fn(
-              "SUM",
-              Sequelize.col("pointsConferenceLeaderboard"),
-              100
-            ),
-          ],
+          pointsConferenceLeaderboard: +100,
         },
         {
           where: { username },
-          returning: true,
-          plain: true,
         }
       );
 
@@ -969,20 +959,12 @@ const UserController = () => {
           .json({ msg: "Host user not found" });
       }
 
-      await User.update(
+      await User.increment(
         {
-          pointsConferenceLeaderboard: [
-            Sequelize.fn(
-              "SUM",
-              Sequelize.col("pointsConferenceLeaderboard"),
-              500
-            ),
-          ],
+          pointsConferenceLeaderboard: +500,
         },
         {
           where: { username: hostUser },
-          returning: true,
-          plain: true,
         }
       );
 

@@ -129,18 +129,20 @@ const BonfireController = () => {
             Sequelize.col("bonfires"),
             bonfire.id
           ),
-          pointsConferenceLeaderboard: [
-            Sequelize.fn(
-              "SUM",
-              Sequelize.col("pointsConferenceLeaderboard"),
-              500
-            ),
-          ],
         },
         {
           where: { id: bonfireInfo.bonfireCreator },
           returning: true,
           plain: true,
+        }
+      );
+
+      await User.increment(
+        {
+          pointsConferenceLeaderboard: +500,
+        },
+        {
+          where: { id: bonfireInfo.bonfireCreator },
         }
       );
 
