@@ -537,7 +537,7 @@ const UserController = () => {
         attributes: ["startTime"],
       });
 
-      const { dataValues: userToJoin } = await user.findOne({
+      const { dataValues: userToJoin } = await User.findOne({
         where: { id: user.id },
       });
 
@@ -555,7 +555,7 @@ const UserController = () => {
             pointsConferenceLeaderboard: +20,
           },
           {
-            where: { username },
+            where: { id: user.id },
           }
         );
       } else {
@@ -571,6 +571,7 @@ const UserController = () => {
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
+          addedFirstSession: true,
         },
         {
           where: { id: user.id },
@@ -581,7 +582,7 @@ const UserController = () => {
 
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
-      console.log(err);
+      console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
@@ -912,12 +913,13 @@ const UserController = () => {
       }
       const link = `${process.env.DOMAIN_URL}invitation/${username}/${email}`;
 
-      await User.increment(
+      const user = await User.increment(
         {
           pointsConferenceLeaderboard: +100,
         },
         {
           where: { username },
+          returning: true,
         }
       );
 
@@ -926,7 +928,7 @@ const UserController = () => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: email,
-            subject: LabEmails.INVITATION_TO_JOIN.subject,
+            subject: LabEmails.INVITATION_TO_JOIN.subject(user[0][0][0]),
             html: LabEmails.INVITATION_TO_JOIN.body(link),
           };
 
@@ -1007,7 +1009,9 @@ const UserController = () => {
         })()
       );
 
-      return res.status(HttpCodes.OK).json({ msg: "Confirm accepted" });
+      return res
+        .status(HttpCodes.OK)
+        .json({ msg: "We received your request and will be in touch shortly" });
     } catch (error) {
       console.log(error);
       return res

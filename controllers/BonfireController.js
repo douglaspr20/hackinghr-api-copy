@@ -139,7 +139,7 @@ const BonfireController = () => {
 
       await User.increment(
         {
-          pointsConferenceLeaderboard: +500,
+          pointsConferenceLeaderboard: 500,
         },
         {
           where: { id: bonfireInfo.bonfireCreator },

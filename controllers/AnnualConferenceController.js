@@ -165,24 +165,24 @@ const AnnualConferenceController = () => {
   };
 
   const getParticipants = async (req, res) => {
-    const { filters, num, page, order } = req.query;
+    const { topics, userId, num, page, order } = req.query;
 
     try {
       let where = {
         [Op.and]: [{ attendedToConference: 1 }],
       };
 
-      if (filters) {
+      if (topics && userId) {
         where[Op.and].push(
-          { topicsOfInterest: { [Op.overlap]: JSON.parse(filters).topics } },
-          { id: { [Op.ne]: JSON.parse(filters).userId } }
+          { topicsOfInterest: { [Op.overlap]: topics } },
+          { id: { [Op.ne]: userId } }
         );
       }
 
       let participants = await User.findAll({
         where,
         order: order ? [order] : [[Sequelize.fn("RANDOM")]],
-        limit: 50,
+        limit: +num,
       });
 
       return res.status(HttpCodes.OK).json({ participants });

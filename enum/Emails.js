@@ -624,21 +624,41 @@ module.exports = {
   },
 
   INVITATION_TO_JOIN: {
-    subject: `You have been invited to join hacking lab`,
+    subject: (
+      user
+    ) => `${user.firstName} ${user.lastName} is inviting you to join the Hacking HR 2022 Global 
+    Online Conference`,
     body: (link) => `
     <p>
-    Hi you have been invited to join the hacking platform hr lab <br>
+    Hi!<br>
     </p>
     <p>
-    Click on the following link to quickly access all the content we offer for you <br>
+    Would love for you to join the Hacking HR 2022 Global 
+    Online Conference “HR Innovation and Future of Work”. 
     </p>
     <p>
-    <a href="${link}">${link}</a>
+    Join here: <a href="${link}">${link}</a><br>
     </p>
     <p>
-    Thank you so much! <br>
+    Hacking HR’s Global Online Conference is the most robust HR event in the world. 
     </p>
     <p>
+    It includes more than 300 sessions with over 500 speakers from all over the world. 
+    The event includes over 80 tracks with 3 panels each one, dozens of presentations 
+    and roundtable conversations, and countless networking opportunities.
+    </p>
+    <p>
+    The entire content of the conference during and post-event is FREE!
+    </p>
+    <p>
+    And for our premium members in the Hacking HR LAB: in addition to all the content 
+    of the conference, you can also earn HR certification credits (more than 500 credits 
+    available for the event!).
+    </p>
+    <p>
+    Join us! 
+    </p>
+    <p>   
       Hacking HR Team
     </p>
     `,
