@@ -897,7 +897,7 @@ const UserController = () => {
   };
 
   const createInvitation = async (req, res) => {
-    const { usersInvited, username } = req.body;
+    const { usersInvited, hostUserId } = req.body;
 
     try {
       const userAlreadyRegistered = await Promise.all(
@@ -923,14 +923,14 @@ const UserController = () => {
           pointsConferenceLeaderboard: 100 * usersInvited.length,
         },
         {
-          where: { username },
+          where: { id: hostUserId },
           returning: true,
         }
       );
 
       await Promise.all(
         usersInvited.map((user) => {
-          const link = `${process.env.DOMAIN_URL}invitation/${username}/${user.email}`;
+          const link = `${process.env.DOMAIN_URL}invitation/${hostUserId}/${user.email}`;
 
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
@@ -964,11 +964,11 @@ const UserController = () => {
   };
 
   const acceptInvitationJoin = async (req, res) => {
-    const { hostUser } = req.query;
+    const { hostUserId } = req.query;
 
     try {
       const { dataValues: user } = await User.findOne({
-        where: { username: hostUser },
+        where: { id: hostUserId },
       });
 
       if (!user) {
@@ -982,7 +982,7 @@ const UserController = () => {
           pointsConferenceLeaderboard: +500,
         },
         {
-          where: { username: hostUser },
+          where: { id: hostUserId },
         }
       );
 
