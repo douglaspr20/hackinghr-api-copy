@@ -897,25 +897,30 @@ const UserController = () => {
   };
 
   const createInvitation = async (req, res) => {
-    const { email, username } = req.body;
+    const { usersInvited, username } = req.body;
 
     try {
-      const userAlreadyRegistered = await User.findOne({
-        where: {
-          email,
-        },
-      });
+      const userAlreadyRegistered = await Promise.all(
+        usersInvited.map((user) => {
+          return User.findOne({
+            where: {
+              email: user.email,
+            },
+          });
+        })
+      );
 
-      if (userAlreadyRegistered) {
-        return res
-          .status(HttpCodes.CONFLICT)
-          .json({ msg: "this user has already been registered" });
+      for (const userRegistered of userAlreadyRegistered) {
+        if (userRegistered) {
+          return res
+            .status(HttpCodes.CONFLICT)
+            .json({ msg: "Some user has already been registered" });
+        }
       }
-      const link = `${process.env.DOMAIN_URL}invitation/${username}/${email}`;
 
-      const user = await User.increment(
+      const hostUser = await User.increment(
         {
-          pointsConferenceLeaderboard: +100,
+          pointsConferenceLeaderboard: 100 * usersInvited.length,
         },
         {
           where: { username },
@@ -923,22 +928,33 @@ const UserController = () => {
         }
       );
 
-      await Promise.resolve(
-        (() => {
+      await Promise.all(
+        usersInvited.map((user) => {
+          const link = `${process.env.DOMAIN_URL}invitation/${username}/${user.email}`;
+
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-            to: email,
-            subject: LabEmails.INVITATION_TO_JOIN.subject(user[0][0][0]),
-            html: LabEmails.INVITATION_TO_JOIN.body(link),
+            to: user.email,
+            subject: LabEmails.INVITATION_TO_JOIN.subject(
+              hostUser[0][0][0],
+              user
+            ),
+            html: LabEmails.INVITATION_TO_JOIN.body(
+              hostUser[0][0][0],
+              user,
+              link
+            ),
           };
 
           console.log("***** mailOptions ", mailOptions);
 
           return smtpService().sendMailUsingSendInBlue(mailOptions);
-        })()
+        })
       );
 
-      return res.status(HttpCodes.OK).json({ msg: `User invited succesfully` });
+      return res
+        .status(HttpCodes.OK)
+        .json({ msg: `Users invited succesfully` });
     } catch (error) {
       console.log(error);
       return res

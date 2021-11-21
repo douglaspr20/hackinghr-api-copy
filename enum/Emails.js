@@ -625,16 +625,21 @@ module.exports = {
 
   INVITATION_TO_JOIN: {
     subject: (
-      user
-    ) => `${user.firstName} ${user.lastName} is inviting you to join the Hacking HR 2022 Global 
+      hostUser,
+      userInvited
+    ) => `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global 
     Online Conference`,
-    body: (link) => `
+    body: (hostUser, userInvited, link) => `
     <p>
-    Hi!<br>
+    Hi ${userInvited.name}!<br>
     </p>
     <p>
-    Would love for you to join the Hacking HR 2022 Global 
-    Online Conference “HR Innovation and Future of Work”. 
+    How are you?
+    </p>
+    <p>
+    Hey, we wanted to let you know that ${hostUser.firstName} ${hostUser.lastName} would love for you to 
+    join the Hacking HR 2022 Global Online Conference “HR Innovation and Future of 
+    Work”.
     </p>
     <p>
     Join here: <a href="${link}">${link}</a><br>
