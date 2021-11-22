@@ -1028,7 +1028,14 @@ const UserController = () => {
       return res
         .status(HttpCodes.OK)
         .json({ msg: "We received your request and will be in touch shortly" });
-      
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong." });
+    }
+  };
+
   const changePassword = async (req, res) => {
     const { UserId } = req.params;
     const { body } = req;
@@ -1063,7 +1070,6 @@ const UserController = () => {
       );
 
       return res.status(HttpCodes.OK).json({});
-      
     } catch (error) {
       console.log(error);
       return res
@@ -1097,7 +1103,6 @@ const UserController = () => {
     acceptInvitationJoin,
     confirmAccessibilityRequirements,
     changePassword,
-
   };
 };
 
