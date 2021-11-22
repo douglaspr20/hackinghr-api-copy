@@ -253,6 +253,7 @@ const PodcastSeriesController = () => {
         let prevSeries = await PodcastSeries.findOne({
           where: { id: podcastseriesId },
         });
+
         const saveForLater = prevSeries.saveForLater.filter((item) => {
           return item !== userId;
         });
@@ -270,9 +271,14 @@ const PodcastSeriesController = () => {
           }
         );
 
+        const data = {
+          ...affectedRows.dataValues,
+          type: "podcastSeries",
+        };
+
         return res
           .status(HttpCodes.OK)
-          .json({ numberOfAffectedRows, affectedRows });
+          .json({ numberOfAffectedRows, affectedRows: data });
       } catch (error) {
         console.log(error);
         return res
@@ -322,9 +328,14 @@ const PodcastSeriesController = () => {
         }
       );
 
+      const data = {
+        ...affectedRows.dataValues,
+        type: "podcastSeries",
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: data });
     } catch (error) {
       console.log(error);
       return res

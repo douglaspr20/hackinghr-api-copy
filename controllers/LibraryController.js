@@ -605,9 +605,14 @@ const LibraryController = () => {
           }
         );
 
+        const data = {
+          ...affectedRows.dataValues,
+          type: "libraries",
+        };
+
         return res
           .status(HttpCodes.OK)
-          .json({ numberOfAffectedRows, affectedRows });
+          .json({ numberOfAffectedRows, affectedRows: data });
       } catch (error) {
         console.log(error);
         return res
@@ -657,9 +662,14 @@ const LibraryController = () => {
         }
       );
 
+      const data = {
+        ...affectedRows.dataValues,
+        type: "libraries",
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: data });
     } catch (error) {
       console.log(error);
       return res
