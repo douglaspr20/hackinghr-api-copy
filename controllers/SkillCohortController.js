@@ -198,7 +198,10 @@ const SkillCohortController = () => {
       });
 
       const allOfMySkillCohorts = allParticipated.map((participated) => {
-        return participated.SkillCohort;
+        return {
+          ...participated.SkillCohort,
+          hasAccess: participated.hasAccess,
+        };
       });
 
       return res.status(HttpCodes.OK).json({ allOfMySkillCohorts });

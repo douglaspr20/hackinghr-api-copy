@@ -276,6 +276,7 @@ const EventController = () => {
               ...event,
               publicLink: `${process.env.DOMAIN_URL}${event.id}`,
             },
+            onlyFor: [-1],
           });
         }
 
@@ -296,7 +297,7 @@ const EventController = () => {
   const updateEvent = async (req, res) => {
     const { id } = req.params;
     const event = req.body;
-    
+
     try {
       let eventInfo = {
         ...event,

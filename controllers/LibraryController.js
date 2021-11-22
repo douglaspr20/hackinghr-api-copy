@@ -55,6 +55,7 @@ const LibraryController = () => {
           meta: {
             ...newLibrary,
           },
+          onlyFor: [-1],
         });
 
         return res.status(HttpCodes.OK).json({ library: newLibrary });
@@ -550,7 +551,7 @@ const LibraryController = () => {
           ...library,
           shrmCode: cryptoService().decrypt(library.shrmCode),
           hrciCode: cryptoService().decrypt(library.hrciCode),
-        }
+        };
 
         if (library.showClaim === 1) {
           let mailOptions = {

@@ -1,13 +1,12 @@
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
-const path = require("path");
-const db = require("./models/index.js");
 const mapRoutes = require("express-routes-mapper");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const authPolicy = require("./policies/auth.policy");
+const { isEmpty } = require("lodash");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
 const JourneyController = require("./controllers/JourneyController");
@@ -196,11 +195,15 @@ cron.schedule(
       );
 
     const notifications = skillCohortResources.map((resource, indx) => {
-      const participantIds = jaggedListOfParticipants[indx].map(
+      let participantIds = jaggedListOfParticipants[indx].map(
         (participants) => {
           return participants.UserId;
         }
       );
+
+      if (isEmpty(participantIds)) {
+        participantIds = [-2];
+      }
 
       return NotificationController().createNotification({
         message: `New Resource was created`,

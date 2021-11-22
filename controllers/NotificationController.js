@@ -15,7 +15,10 @@ const NotificationController = () => {
 
     if (body.message) {
       try {
-        const newNotification = await createNotification(body);
+        const newNotification = await createNotification({
+          ...body,
+          onlyFor: [-1],
+        });
         return res.status(HttpCodes.OK).json({ notification: newNotification });
       } catch (error) {
         console.log(error);
@@ -40,6 +43,8 @@ const NotificationController = () => {
         limit: num,
         order: [["createdAt", "DESC"]],
       });
+
+      console.log(notifications.count, "faith");
 
       const readCount = await Notification.count({
         where: {
