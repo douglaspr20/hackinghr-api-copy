@@ -1028,11 +1028,47 @@ const UserController = () => {
       return res
         .status(HttpCodes.OK)
         .json({ msg: "We received your request and will be in touch shortly" });
+      
+  const changePassword = async (req, res) => {
+    const { UserId } = req.params;
+    const { body } = req;
+
+    try {
+      const user = await User.findOne({
+        where: {
+          id: UserId,
+        },
+      });
+
+      const isEqual = bcryptService().comparePassword(
+        body.oldPassword,
+        user.password
+      );
+
+      if (!isEqual) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Incorrect Old Password." });
+      }
+
+      await User.update(
+        {
+          password: bcryptService().password(body.newPassword),
+        },
+        {
+          where: {
+            id: UserId,
+          },
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({});
+      
     } catch (error) {
       console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error" });
+        .json({ msg: "Something went wrong." });
     }
   };
 
@@ -1060,6 +1096,8 @@ const UserController = () => {
     createInvitation,
     acceptInvitationJoin,
     confirmAccessibilityRequirements,
+    changePassword,
+
   };
 };
 

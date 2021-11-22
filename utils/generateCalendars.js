@@ -6,13 +6,15 @@ const googleCalendar = (item, tz) => {
 
   const convertedEndTime = moment.utc(item.endTime).tz(tz);
 
-  let googleCalendarUrl = `http://www.google.com/calendar/event?action=TEMPLATE&text=${
+  console.log(item);
+
+  let googleCalendarUrl = `http://www.google.com/calendar/event?action=TEMPLATE&text=${encodeURIComponent(
     item.title
-  }&dates=${convertedStartTime.format(
+  )}&dates=${convertedStartTime.format(
     "YYYYMMDDTHHmm"
-  )}/${convertedEndTime.format("YYYYMMDDTHHmm")}&details=${
+  )}/${convertedEndTime.format("YYYYMMDDTHHmm")}&details=${encodeURIComponent(
     item.description
-  }&location=${
+  )}&location=${
     item.link
   }&trp=false&sprop=https://www.hackinghrlab.io/&sprop=name:`;
   return googleCalendarUrl;
@@ -24,9 +26,11 @@ const yahooCalendar = (item, tz) => {
 
   let yahooCalendarUrl = `https://calendar.yahoo.com/?v=60&st=${convertedStartTime.format(
     "YYYYMMDDTHHmm"
-  )}&et=${convertedEndTime.format("YYYYMMDDTHHmm")}&title=${item.title}&desc=${
+  )}&et=${convertedEndTime.format("YYYYMMDDTHHmm")}&title=${encodeURIComponent(
+    item.title
+  )}&desc=${encodeURIComponent(
     item.description
-  }&in_loc=https://www.hackinghrlab.io/global-conference`;
+  )}&in_loc=https://www.hackinghrlab.io/global-conference`;
   return yahooCalendarUrl;
 };
 

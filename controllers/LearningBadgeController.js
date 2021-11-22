@@ -35,7 +35,7 @@ const LearningBadgeController = () => {
                 psd.value
             from
                 "PodcastSeries" ps
-            join json_each_text(ps.viewed) psd on
+            join jsonb_each_text(ps.viewed) psd on
                 true
         union
             select
@@ -46,7 +46,7 @@ const LearningBadgeController = () => {
                 cld.value
             from
                 "ConferenceLibraries" cl
-            join json_each_text(cl.viewed) cld on
+            join jsonb_each_text(cl.viewed) cld on
                 true
         union
             select
@@ -57,7 +57,7 @@ const LearningBadgeController = () => {
                 ld.value
             from
                 "Libraries" l
-            join json_each_text(l.viewed) ld on
+            join jsonb_each_text(l.viewed) ld on
                 true
         union
             select
@@ -68,7 +68,7 @@ const LearningBadgeController = () => {
                 pd.value
             from
                 "Podcasts" p
-            join json_each_text(p.viewed) pd on
+            join jsonb_each_text(p.viewed) pd on
                 true
         ) main_data
         inner join "Users" u on
