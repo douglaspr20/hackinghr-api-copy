@@ -96,7 +96,7 @@ cron.schedule(
         yesterdayDate
       );
 
-    const jaggedParticipants =
+    let jaggedParticipants =
       await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
         allActiveSkillCohortsWithYesterdayResource
       );
@@ -142,6 +142,11 @@ cron.schedule(
       );
 
     cohortCtr = 0;
+
+    jaggedParticipants =
+      await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
+        allActiveSkillCohortsWithYesterdayResource
+      );
 
     jaggedParticipants.map((participants) => {
       participants.map(async (participant) => {
