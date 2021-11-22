@@ -137,6 +137,15 @@ const BonfireController = () => {
         }
       );
 
+      await User.increment(
+        {
+          pointsConferenceLeaderboard: 500,
+        },
+        {
+          where: { id: bonfireInfo.bonfireCreator },
+        }
+      );
+
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
@@ -501,6 +510,113 @@ const BonfireController = () => {
     }
   };
 
+  const inviteUser = async (req, res) => {
+    const { id, userId } = req.params;
+
+    try {
+      const [numberOfAffectedRowsUser, affectedRowsUser] = await User.update(
+        {
+          bonfires: Sequelize.fn("array_append", Sequelize.col("bonfires"), id),
+        },
+        {
+          where: { id: userId },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      const [numberOfAffectedRowsBonfire, affectedRowsBonfire] =
+        await Bonfire.update(
+          {
+            usersInvitedByOrganizer: Sequelize.fn(
+              "array_append",
+              Sequelize.col("usersInvitedByOrganizer"),
+              userId
+            ),
+          },
+          {
+            where: { id },
+            returning: true,
+            plain: true,
+          }
+        );
+
+      const { dataValues: bonfireCreatorInfo } = await User.findOne({
+        where: {
+          id: affectedRowsBonfire.dataValues.bonfireCreator,
+        },
+      });
+
+      await Promise.resolve(
+        (() => {
+          const timezone = TimeZoneList.find(
+            (timezone) =>
+              timezone.value === affectedRowsBonfire.dataValues.timezone ||
+              timezone.text === affectedRowsBonfire.dataValues.timezone
+          );
+          const offset = timezone.offset;
+          const _user = affectedRowsUser.dataValues;
+          const targetBonfireStartDate = moment(
+            affectedRowsBonfire.dataValues.startTime
+          )
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+
+          const targetBonfireEndDate = moment(
+            affectedRowsBonfire.dataValues.endTime
+          )
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+
+          const timezoneUser = TimeZoneList.find(
+            (timezone) =>
+              timezone.value === _user.timezone ||
+              timezone.text === _user.timezone
+          );
+
+          const googleLink = googleCalendar(
+            affectedRowsBonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+          const yahooLink = yahooCalendar(
+            affectedRowsBonfire.dataValues,
+            timezoneUser.utc[0]
+          );
+
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: _user.email,
+            subject: LabEmails.BONFIRE_INVITATION.subject,
+            html: LabEmails.BONFIRE_INVITATION.body(
+              _user,
+              affectedRowsBonfire.dataValues,
+              bonfireCreatorInfo,
+              targetBonfireStartDate.format("MMM DD"),
+              targetBonfireStartDate.format("h:mm a"),
+              targetBonfireEndDate.format("h:mm a"),
+              timezone.value,
+              googleLink,
+              yahooLink
+            ),
+          };
+
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRowsBonfire, affectedRowsBonfire });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const downloadICS = async (req, res) => {
     const { id } = req.params;
     const { userTimezone } = req.query;
@@ -589,6 +705,7 @@ const BonfireController = () => {
     get,
     update,
     remove,
+    inviteUser,
     downloadICS,
   };
 };

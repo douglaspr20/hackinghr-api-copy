@@ -15,11 +15,8 @@ const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
-const {
-  googleCalendar,
-  yahooCalendar,
-  generateIcsCalendar,
-} = require("../utils/generateCalendars");
+const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
+const { sequelize } = require("../models");
 
 const { Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -540,6 +537,10 @@ const UserController = () => {
         attributes: ["startTime"],
       });
 
+      const { dataValues: userToJoin } = await User.findOne({
+        where: { id: user.id },
+      });
+
       for (const session of userSessions) {
         if (session.startTime === sessionToSchedule.dataValues.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
@@ -547,9 +548,30 @@ const UserController = () => {
           });
         }
       }
+
+      if (userToJoin.addedFirstSession) {
+        await User.increment(
+          {
+            pointsConferenceLeaderboard: +20,
+          },
+          {
+            where: { id: user.id },
+          }
+        );
+      } else {
+        await User.increment(
+          {
+            pointsConferenceLeaderboard: +50,
+          },
+          {
+            where: { id: user.id },
+          }
+        );
+      }
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
+          addedFirstSession: true,
         },
         {
           where: { id: user.id },
@@ -560,7 +582,7 @@ const UserController = () => {
 
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
-      console.log(err);
+      console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
@@ -679,6 +701,15 @@ const UserController = () => {
         }
       );
 
+      await User.increment(
+        {
+          pointsConferenceLeaderboard: +200,
+        },
+        {
+          where: { id: user.id },
+        }
+      );
+
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
@@ -785,7 +816,7 @@ const UserController = () => {
 
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
-      console.log(err);
+      console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
@@ -865,6 +896,139 @@ const UserController = () => {
     return res.status(HttpCodes.OK).json({ s3Hash });
   };
 
+  const createInvitation = async (req, res) => {
+    const { usersInvited, hostUserId } = req.body;
+
+    try {
+      const userAlreadyRegistered = await Promise.all(
+        usersInvited.map((user) => {
+          return User.findOne({
+            where: {
+              email: user.email,
+            },
+          });
+        })
+      );
+
+      for (const userRegistered of userAlreadyRegistered) {
+        if (userRegistered) {
+          return res
+            .status(HttpCodes.CONFLICT)
+            .json({ msg: "Some user has already been registered" });
+        }
+      }
+
+      const hostUser = await User.increment(
+        {
+          pointsConferenceLeaderboard: 100 * usersInvited.length,
+        },
+        {
+          where: { id: hostUserId },
+          returning: true,
+        }
+      );
+
+      await Promise.all(
+        usersInvited.map((user) => {
+          const link = `${process.env.DOMAIN_URL}invitation/${hostUserId}/${user.email}`;
+
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.INVITATION_TO_JOIN.subject(
+              hostUser[0][0][0],
+              user
+            ),
+            html: LabEmails.INVITATION_TO_JOIN.body(
+              hostUser[0][0][0],
+              user,
+              link
+            ),
+          };
+
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ msg: `Users invited succesfully` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const acceptInvitationJoin = async (req, res) => {
+    const { hostUserId } = req.query;
+
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: { id: hostUserId },
+      });
+
+      if (!user) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Host user not found" });
+      }
+
+      await User.increment(
+        {
+          pointsConferenceLeaderboard: +500,
+        },
+        {
+          where: { id: hostUserId },
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ msg: `Thanks for joining` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const confirmAccessibilityRequirements = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "user not found",
+        });
+      }
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: "enrique@hackinghr.io",
+            subject: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.subject,
+            html: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.body(user),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ msg: "We received your request and will be in touch shortly" });
+      
   const changePassword = async (req, res) => {
     const { UserId } = req.params;
     const { body } = req;
@@ -899,6 +1063,7 @@ const UserController = () => {
       );
 
       return res.status(HttpCodes.OK).json({});
+      
     } catch (error) {
       console.log(error);
       return res
@@ -928,7 +1093,11 @@ const UserController = () => {
     uploadResume,
     deleteResume,
     getEditorSignature,
+    createInvitation,
+    acceptInvitationJoin,
+    confirmAccessibilityRequirements,
     changePassword,
+
   };
 };
 

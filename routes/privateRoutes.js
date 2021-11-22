@@ -16,6 +16,10 @@ const privateRoutes = {
   "PUT /user/remove-bonfire/:id": "UserController.removeBonfire",
   "PUT /user/upload-resume": "UserController.uploadResume",
   "PUT /user/delete-resume": "UserController.deleteResume",
+  "POST /user/create-invitation": "UserController.createInvitation",
+  "GET /user/accept-invitation/:newuser": "UserController.acceptInvitationJoin",
+  "GET /user/confirm-accessibility-requirements/:id":
+    "UserController.confirmAccessibilityRequirements",
   "PUT /event/set-status/:id": "EventController.updateEventStatus",
   "POST /stripe/checkout-session/": "StripeController.createCheckoutSession",
   "GET /stripe/portal-session/": "StripeController.createPortalSession",
@@ -123,6 +127,7 @@ const privateRoutes = {
   "GET /bonfire": "BonfireController.getAll",
   "GET /bonfire/:id": "BonfireController.get",
   "PUT /bonfire/:id": "BonfireController.update",
+  "PUT /bonfire/:id/invitedUser/:userId": "BonfireController.inviteUser",
   "DELETE /bonfire/:id": "BonfireController.remove",
   "GET /skill-cohort": "SkillCohortController.getAllActiveUserSide",
   "GET /skill-cohort/my-cohort/:UserId":
