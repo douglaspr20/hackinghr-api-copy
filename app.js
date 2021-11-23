@@ -182,8 +182,7 @@ cron.schedule(
 
 // cron job that notifies a cohort participants that a resource for the day is available through notification and email
 cron.schedule(
-  // "0 2 * * *", // 2AM everyday
-  "*/2 * * * *",
+  "0 2 * * *", // 2AM everyday
   async () => {
     console.log("running a task every 2 AM.");
     console.log("****************Notification****************");
@@ -216,28 +215,28 @@ cron.schedule(
 
     await Promise.all(notifications);
 
-    // const emailToBeSent = jaggedListOfParticipants.map((participants) => {
-    //   return participants.map((participant) => {
-    //     const cohort = participant.SkillCohort;
-    //     const resource = skillCohortResources.find((resource) => {
-    //       return resource.SkillCohortId === cohort.id;
-    //     });
+    const emailToBeSent = jaggedListOfParticipants.map((participants) => {
+      return participants.map((participant) => {
+        const cohort = participant.SkillCohort;
+        const resource = skillCohortResources.find((resource) => {
+          return resource.SkillCohortId === cohort.id;
+        });
 
-    //     const user = participant.User;
+        const user = participant.User;
 
-    //     const mailOptions = {
-    //       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-    //       to: participant.User.email,
-    //       subject: LabEmails.DAILY_RESOURCE.subject(cohort, resource),
-    //       html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
-    //       contentType: "text/html",
-    //     };
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: participant.User.email,
+          subject: LabEmails.DAILY_RESOURCE.subject(cohort, resource),
+          html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
+          contentType: "text/html",
+        };
 
-    //     return smtpService().sendMailUsingSendInBlue(mailOptions);
-    //   });
-    // });
+        return smtpService().sendMailUsingSendInBlue(mailOptions);
+      });
+    });
 
-    // await Promise.all(emailToBeSent.flat());
+    await Promise.all(emailToBeSent.flat());
   },
   {
     timezone: "America/Los_Angeles",
