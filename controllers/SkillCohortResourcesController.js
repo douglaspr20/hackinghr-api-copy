@@ -256,6 +256,9 @@ const SkillCohortResourcesController = () => {
           [Op.ne]: null,
         },
       },
+      include: {
+        model: SkillCohort,
+      },
     });
   };
 

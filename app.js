@@ -206,7 +206,7 @@ cron.schedule(
       }
 
       return NotificationController().createNotification({
-        message: `New Resource was created`,
+        message: `${resource.SkillCohort.title} - New resource available`,
         type: "resource",
         meta: resource,
         onlyFor: participantIds,
