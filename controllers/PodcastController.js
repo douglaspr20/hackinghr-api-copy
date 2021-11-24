@@ -183,6 +183,7 @@ const PodcastController = () => {
         meta: {
           ...podcast,
         },
+        onlyFor: [-1],
       });
 
       return res.status(HttpCodes.OK).send();

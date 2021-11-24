@@ -274,6 +274,7 @@ const EventController = () => {
               ...event,
               publicLink: `${process.env.DOMAIN_URL}${event.id}`,
             },
+            onlyFor: [-1],
           });
         }
 

@@ -252,6 +252,12 @@ const SkillCohortResourcesController = () => {
     return await SkillCohortResources.findAll({
       where: {
         releaseDate: dateToday,
+        SkillCohortId: {
+          [Op.ne]: null,
+        },
+      },
+      include: {
+        model: SkillCohort,
       },
     });
   };

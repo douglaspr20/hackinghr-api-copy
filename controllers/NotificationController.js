@@ -15,7 +15,10 @@ const NotificationController = () => {
 
     if (body.message) {
       try {
-        const newNotification = await createNotification(body);
+        const newNotification = await createNotification({
+          ...body,
+          onlyFor: [-1],
+        });
         return res.status(HttpCodes.OK).json({ notification: newNotification });
       } catch (error) {
         console.log(error);
@@ -39,6 +42,11 @@ const NotificationController = () => {
         offset: (page - 1) * num,
         limit: num,
         order: [["createdAt", "DESC"]],
+        where: {
+          onlyFor: {
+            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+          },
+        },
       });
 
       const readCount = await Notification.count({
@@ -54,6 +62,8 @@ const NotificationController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Bad Request: Notifications not found" });
       }
+
+      console.log(notifications.count, readCount, "faith");
 
       return res.status(HttpCodes.OK).json({ notifications, readCount });
     } catch (error) {

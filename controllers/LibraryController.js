@@ -55,6 +55,7 @@ const LibraryController = () => {
           meta: {
             ...newLibrary,
           },
+          onlyFor: [-1],
         });
 
         return res.status(HttpCodes.OK).json({ library: newLibrary });

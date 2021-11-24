@@ -30,6 +30,7 @@ const PostCommentController = () => {
             ...postComment,
           },
           UserId: req.user.id,
+          onlyFor: [-1],
         });
       }
 

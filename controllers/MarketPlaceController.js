@@ -11,14 +11,14 @@ const Category = db.Category;
 const MarketplaceController = () => {
   /**
    * Method to get all MarketPlace objects
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const getAll = async (req, res) => {
     const { orderParam, filter } = req.body;
     try {
       let where = {};
-      if(filter){
+      if (filter) {
         if (filter && !isEmpty(JSON.parse(filter))) {
           where = {
             ...where,
@@ -30,9 +30,7 @@ const MarketplaceController = () => {
       }
       let marketplace = await Marketplace.findAll({
         where,
-        order: [
-          ['name', orderParam],
-        ]
+        order: [["name", orderParam]],
       });
       if (!marketplace) {
         return res
@@ -40,9 +38,7 @@ const MarketplaceController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      return res
-        .status(HttpCodes.OK)
-        .json(marketplace);
+      return res.status(HttpCodes.OK).json(marketplace);
     } catch (error) {
       console.log(error);
       return res
@@ -52,8 +48,8 @@ const MarketplaceController = () => {
   };
   /**
    * Method to get MarketPlace object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const get = async (req, res) => {
     const { id } = req.params;
@@ -71,9 +67,7 @@ const MarketplaceController = () => {
             .json({ msg: "Internal server error" });
         }
 
-        return res
-          .status(HttpCodes.OK)
-          .json(marketPlace);
+        return res.status(HttpCodes.OK).json(marketPlace);
       } catch (error) {
         console.log(error);
         return res
@@ -88,11 +82,11 @@ const MarketplaceController = () => {
   };
   /**
    * Method to add MarketPlace object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const add = async (req, res) => {
-    const { 
+    const {
       name,
       description,
       url,
@@ -117,16 +111,19 @@ const MarketplaceController = () => {
         demoUrl,
       });
       if (logoUrl) {
-        let imageUrl = await s3Service().getMarketplaceImageUrl('', logoUrl);
-        await Marketplace.update({ logoUrl: imageUrl }, {
-          where: { id: marketplace.id }
-        })
+        let imageUrl = await s3Service().getMarketplaceImageUrl("", logoUrl);
+        await Marketplace.update(
+          { logoUrl: imageUrl },
+          {
+            where: { id: marketplace.id },
+          }
+        );
         marketplace = {
           ...marketplace,
           id: marketplace.id,
           name,
           imageUrl,
-        }
+        };
       }
 
       await NotificationController().createNotification({
@@ -135,11 +132,10 @@ const MarketplaceController = () => {
         meta: {
           ...marketplace,
         },
+        onlyFor: [-1],
       });
 
-      return res
-        .status(HttpCodes.OK)
-        .send();
+      return res.status(HttpCodes.OK).send();
     } catch (error) {
       console.log(error);
       return res
@@ -149,30 +145,30 @@ const MarketplaceController = () => {
   };
   /**
    * Method to updated MarketPlace object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const update = async (req, res) => {
     const { id } = req.params;
-    const { body } = req
+    const { body } = req;
 
     if (id) {
       try {
         let data = {};
         let fields = [
-          'name',
-          'description',
-          'url',
-          'contact_name',
-          'contact_email',
-          'contact_phone',
-          'contact_position',
-          'topics',
-          'demoUrl',
-          'twitter',
-          'facebook',
-          'linkedin',
-          'instagram',
+          "name",
+          "description",
+          "url",
+          "contact_name",
+          "contact_email",
+          "contact_phone",
+          "contact_position",
+          "topics",
+          "demoUrl",
+          "twitter",
+          "facebook",
+          "linkedin",
+          "instagram",
         ];
         for (let item of fields) {
           if (body[item]) {
@@ -185,15 +181,16 @@ const MarketplaceController = () => {
               id,
             },
           });
-          let imageUrl = await s3Service().getMarketplaceImageUrl((marketplace.logoUrl || ''), body.logoUrl);
-          data = { ...data, logoUrl: imageUrl }
+          let imageUrl = await s3Service().getMarketplaceImageUrl(
+            marketplace.logoUrl || "",
+            body.logoUrl
+          );
+          data = { ...data, logoUrl: imageUrl };
         }
         await Marketplace.update(data, {
-          where: { id }
-        })
-        return res
-          .status(HttpCodes.OK)
-          .send();
+          where: { id },
+        });
+        return res.status(HttpCodes.OK).send();
       } catch (error) {
         console.log(error);
         return res
@@ -208,8 +205,8 @@ const MarketplaceController = () => {
   };
   /**
    * Method to delete MarketPlace object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const remove = async (req, res) => {
     let { id } = req.params;
@@ -217,11 +214,9 @@ const MarketplaceController = () => {
     if (id) {
       try {
         await Marketplace.destroy({
-          where: { id }
+          where: { id },
         });
-        return res
-          .status(HttpCodes.OK)
-          .send();
+        return res.status(HttpCodes.OK).send();
       } catch (error) {
         console.log(error);
         return res
