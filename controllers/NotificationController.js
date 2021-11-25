@@ -66,8 +66,6 @@ const NotificationController = () => {
           .json({ msg: "Bad Request: Notifications not found" });
       }
 
-      console.log(notifications.count, readCount, "faith");
-
       return res.status(HttpCodes.OK).json({ notifications, readCount });
     } catch (error) {
       console.log(error);
@@ -175,6 +173,11 @@ const NotificationController = () => {
 
     if (totalCount > MAX_NUMBER_OF_NOTIFICATION) {
       const lastElement = await Notification.findAll({
+        where: {
+          onlyFor: {
+            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+          },
+        },
         offset: 0,
         limit: 1,
         order: ["createdAt", "ASC"],
@@ -209,12 +212,21 @@ const NotificationController = () => {
         }
       );
 
-      const totalCount = await Notification.count();
+      const totalCount = await Notification.count({
+        where: {
+          onlyFor: {
+            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+          },
+        },
+      });
 
       const readCount = await Notification.count({
         where: {
           readers: {
             [Op.contains]: [user.id],
+          },
+          onlyFor: {
+            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
           },
         },
       });
@@ -250,12 +262,21 @@ const NotificationController = () => {
         }
       );
 
-      const totalCount = await Notification.count();
+      const totalCount = await Notification.count({
+        where: {
+          onlyFor: {
+            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+          },
+        },
+      });
 
       const readCount = await Notification.count({
         where: {
           readers: {
             [Op.contains]: [user.id],
+          },
+          onlyFor: {
+            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
           },
         },
       });
