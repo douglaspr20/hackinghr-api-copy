@@ -54,6 +54,9 @@ const NotificationController = () => {
           readers: {
             [Op.contains]: [user.id],
           },
+          onlyFor: {
+            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+          },
         },
       });
 
