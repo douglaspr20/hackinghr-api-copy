@@ -29,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       facebook: DataTypes.STRING,
       linkedin: DataTypes.STRING,
       instagram: DataTypes.STRING,
+      isPartner: DataTypes.BOOLEAN,
     },
     {
       sequelize,
