@@ -40,6 +40,7 @@ const adminRoutes = {
   "POST /session": "AnnualConferenceController.create",
   "PUT /session/:id": "AnnualConferenceController.update",
   "DELETE /session/:id": "AnnualConferenceController.remove",
+  "POST /session/send-message": "AnnualConferenceController.sendMessage",
   "GET /courses/": "CourseController.getAllAdmin",
   "GET /course/:id": "CourseController.get",
   "POST /course/": "CourseController.add",

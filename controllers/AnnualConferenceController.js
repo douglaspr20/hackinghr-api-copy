@@ -3,6 +3,8 @@ const HttpCodes = require("http-codes");
 const { Op, Sequelize } = require("sequelize");
 const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
+const socketService = require("../services/socket.service");
+const SocketEventTypes = require("../enum/SocketEventTypes");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
@@ -219,6 +221,23 @@ const AnnualConferenceController = () => {
       .json({ msg: "Bad Request: id is wrong" });
   };
 
+  const sendMessage = (req, res) => {
+    const { message } = req.body;
+    try {
+      socketService().emit(
+        SocketEventTypes.SEND_MESSAGE_GLOBAL_CONFERENCE,
+        message
+      );
+
+      return res.status(HttpCodes.OK).send();
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const downloadICS = async (req, res) => {
     const { id } = req.params;
     const { userTimezone } = req.query;
@@ -308,6 +327,7 @@ const AnnualConferenceController = () => {
     get,
     update,
     remove,
+    sendMessage,
     downloadICS,
   };
 };
