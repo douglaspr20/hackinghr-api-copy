@@ -41,47 +41,55 @@ const ConferenceController = () => {
   };
 
   const getAll = async (req, res) => {
-    const filter = req.query;
+    const query = req.query;
 
     try {
       let where = {};
 
-      if (filter.topics && !isEmpty(JSON.parse(filter.topics))) {
+      if (query.topics && !isEmpty(JSON.parse(query.topics))) {
         where = {
           ...where,
           categories: {
-            [Op.overlap]: JSON.parse(filter.topics),
+            [Op.overlap]: JSON.parse(query.topics),
           },
         };
       }
 
-      if (filter.year && !isEmpty(JSON.parse(filter.year))) {
+      if (query.year && !isEmpty(JSON.parse(query.year))) {
         where = {
           ...where,
           year: {
-            [Op.in]: JSON.parse(filter.year),
+            [Op.in]: JSON.parse(query.year),
           },
         };
       }
 
-      if (filter.meta) {
+      if (query.meta) {
         where = {
           ...where,
           meta: {
-            [Op.iLike]: `%${filter.meta}%`,
+            [Op.iLike]: `%${query.meta}%`,
           },
         };
       }
 
-      const conferences = await ConferenceLibrary.findAndCountAll({
-        where,
-        offset: (filter.page - 1) * filter.num,
-        limit: filter.num,
-        order: [
-          ["year", "DESC"],
-          ["order", "DESC"],
-        ],
+      const listOfYears = JSON.parse(query.listOfYears);
+      let conferences = listOfYears.map((year, index) => {
+        return ConferenceLibrary.findAndCountAll({
+          where: {
+            ...where,
+            year,
+          },
+          offset: (query.page - 1) * query.num,
+          limit: query.num,
+          order: [
+            ["year", "DESC"],
+            ["order", "DESC"],
+          ],
+        });
       });
+
+      conferences = await Promise.all(conferences);
 
       return res.status(HttpCodes.OK).json({ conferences });
     } catch (error) {
@@ -235,12 +243,19 @@ const ConferenceController = () => {
 
     if (libraryId) {
       try {
-        let prevLibrary = await ConferenceLibrary.findOne({ where: { id: libraryId } });
+        let prevLibrary = await ConferenceLibrary.findOne({
+          where: { id: libraryId },
+        });
+        const saveForLater = prevLibrary.saveForLater.filter((item) => {
+          return item !== userId;
+        });
         prevLibrary = prevLibrary.toJSON();
+
         const [numberOfAffectedRows, affectedRows] =
           await ConferenceLibrary.update(
             {
               viewed: { ...prevLibrary.viewed, [userId]: mark },
+              saveForLater,
             },
             {
               where: { id: libraryId },
@@ -249,9 +264,14 @@ const ConferenceController = () => {
             }
           );
 
+        const data = {
+          ...affectedRows.dataValues,
+          type: "conferences",
+        };
+
         return res
           .status(HttpCodes.OK)
-          .json({ numberOfAffectedRows, affectedRows });
+          .json({ numberOfAffectedRows, affectedRows: data });
       } catch (error) {
         console.log(error);
         return res
@@ -264,6 +284,60 @@ const ConferenceController = () => {
       .json({ msg: "Bad Request: Conference library id is wrong" });
   };
 
+  const saveForLater = async (req, res) => {
+    const { id } = req.params;
+    const { UserId, status } = req.body;
+
+    try {
+      let conference = await ConferenceLibrary.findOne({
+        where: {
+          id,
+        },
+      });
+
+      conference = conference.toJSON();
+
+      if (!conference) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Conference Library not found." });
+      }
+
+      const saveForLater =
+        status === "saved"
+          ? [...conference.saveForLater, UserId.toString()]
+          : conference.saveForLater.filter((item) => item !== UserId);
+
+      const [numberOfAffectedRows, affectedRows] =
+        await ConferenceLibrary.update(
+          {
+            saveForLater,
+          },
+          {
+            where: {
+              id,
+            },
+            returning: true,
+            plain: true,
+          }
+        );
+
+      const data = {
+        ...affectedRows.dataValues,
+        type: "conferences",
+      };
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows: data });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
@@ -272,6 +346,7 @@ const ConferenceController = () => {
     remove,
     claim,
     markAsViewed,
+    saveForLater,
   };
 };
 

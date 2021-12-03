@@ -363,10 +363,15 @@ const PodcastController = () => {
     if (podcastId) {
       try {
         let prev = await Podcast.findOne({ where: { id: podcastId } });
+        const saveForLater = prev.saveForLater.filter((item) => {
+          return item !== userId;
+        });
         prev = prev.toJSON();
+
         const [numberOfAffectedRows, affectedRows] = await Podcast.update(
           {
             viewed: { ...prev.viewed, [userId]: mark },
+            saveForLater,
           },
           {
             where: { id: podcastId },
@@ -375,9 +380,14 @@ const PodcastController = () => {
           }
         );
 
+        const data = {
+          ...affectedRows.dataValues,
+          type: "podcasts",
+        };
+
         return res
           .status(HttpCodes.OK)
-          .json({ numberOfAffectedRows, affectedRows });
+          .json({ numberOfAffectedRows, affectedRows: data });
       } catch (error) {
         console.log(error);
         return res
@@ -390,6 +400,59 @@ const PodcastController = () => {
       .json({ msg: "Bad Request: Podcast id is wrong" });
   };
 
+  const saveForLater = async (req, res) => {
+    const { id } = req.params;
+    const { UserId, status } = req.body;
+
+    try {
+      let podcast = await Podcast.findOne({
+        where: {
+          id,
+        },
+      });
+
+      podcast = podcast.toJSON();
+
+      if (!podcast) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Podcast not found." });
+      }
+
+      const saveForLater =
+        status === "saved"
+          ? [...podcast.saveForLater, UserId.toString()]
+          : podcast.saveForLater.filter((item) => item !== UserId);
+
+      const [numberOfAffectedRows, affectedRows] = await Podcast.update(
+        {
+          saveForLater,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      const data = {
+        ...affectedRows.dataValues,
+        type: "podcasts",
+      };
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows: data });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     getAll,
     get,
@@ -400,6 +463,7 @@ const PodcastController = () => {
     deleteChannelPodcast,
     searchPodcast,
     markAsViewed,
+    saveForLater,
   };
 };
 

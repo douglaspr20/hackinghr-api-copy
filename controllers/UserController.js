@@ -15,8 +15,10 @@ const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
+const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
+const { sequelize } = require("../models");
 
-const { Op, QueryTypes } = Sequelize;
+const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
 const Event = db.Event;
 const AnnualConference = db.AnnualConference;
@@ -40,7 +42,13 @@ const UserController = () => {
             .json({ msg: "Bad Request: User not found" });
         }
 
-        return res.status(HttpCodes.OK).json({ user });
+        const learningBadgesHours = await getLearningBadgesHoursByUser(
+          req.user.id
+        );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ user: { ...user.dataValues, learningBadgesHours } });
       } catch (error) {
         console.log(error);
         return res
@@ -407,7 +415,74 @@ const UserController = () => {
 
   const getAll = async (req, res) => {
     try {
-      const users = await User.findAll();
+      const users = await User.findAll({
+        attributes: {
+          include: [
+            [
+              literal(`(
+              select
+                    SUM(main_data.duration) / 60 as hours
+                from
+                    (
+                    select
+                        'podcastseries' as element,
+                        cast(coalesce(ps."durationLearningBadges", '0') as float) as duration,
+                        ps.id,
+                        psd.key,
+                        psd.value
+                    from
+                        "PodcastSeries" ps
+                    join jsonb_each_text(ps.viewed) psd on
+                        true
+                union
+                    select
+                        'conference_library' as element,
+                        cast(coalesce(cl.duration, '0') as float) as duration,
+                        cl.id,
+                        cld.key,
+                        cld.value
+                    from
+                        "ConferenceLibraries" cl
+                    join jsonb_each_text(cl.viewed) cld on
+                        true
+                union
+                    select
+                        'library' as element,
+                        cast(coalesce(l.duration, '0') as float) as duration,
+                        l.id,
+                        ld.key,
+                        ld.value
+                    from
+                        "Libraries" l
+                    join jsonb_each_text(l.viewed) ld on
+                        true
+                union
+                    select
+                        'podcast' as element,
+                        cast(coalesce(p.duration, '0') as float) as duration,
+                        p.id,
+                        pd.key,
+                        pd.value
+                    from
+                        "Podcasts" p
+                    join jsonb_each_text(p.viewed) pd on
+                        true
+                ) main_data
+                inner join "Users" u on
+                    main_data.key = cast(u.id as varchar)
+                where
+                    u.id="User".id and
+                    main_data.value = 'mark'
+                group by
+                    u.id
+                order by
+                    hours desc
+              )`),
+              "learningBadgesHours",
+            ],
+          ],
+        },
+      });
 
       if (!users) {
         return res
@@ -535,6 +610,10 @@ const UserController = () => {
         attributes: ["startTime"],
       });
 
+      const { dataValues: userToJoin } = await User.findOne({
+        where: { id: user.id },
+      });
+
       for (const session of userSessions) {
         if (session.startTime === sessionToSchedule.dataValues.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
@@ -542,9 +621,30 @@ const UserController = () => {
           });
         }
       }
+
+      if (userToJoin.addedFirstSession) {
+        await User.increment(
+          {
+            pointsConferenceLeaderboard: +20,
+          },
+          {
+            where: { id: user.id },
+          }
+        );
+      } else {
+        await User.increment(
+          {
+            pointsConferenceLeaderboard: +50,
+          },
+          {
+            where: { id: user.id },
+          }
+        );
+      }
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
+          addedFirstSession: true,
         },
         {
           where: { id: user.id },
@@ -555,7 +655,7 @@ const UserController = () => {
 
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
-      console.log(err);
+      console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
@@ -659,7 +759,7 @@ const UserController = () => {
       for (const bonfire of userBonfires) {
         if (bonfire.startTime === bonfireToJoin.startTime) {
           return res.status(HttpCodes.BAD_REQUEST).json({
-            msg: "You already have join another bonfire at the same time and date",
+            msg: "You already joined another bonfire at the same time and date",
           });
         }
       }
@@ -674,28 +774,72 @@ const UserController = () => {
         }
       );
 
+      await User.increment(
+        {
+          pointsConferenceLeaderboard: +200,
+        },
+        {
+          where: { id: user.id },
+        }
+      );
+
       await Promise.resolve(
         (() => {
           const timezone = TimeZoneList.find(
-            (timezone) => timezone.value === affectedRows.dataValues.timezone
+            (timezone) =>
+              timezone.value === bonfireToJoin.timezone ||
+              timezone.text === bonfireToJoin.timezone
           );
 
           const offset = timezone.offset;
-          const targetBonfireDate = moment(bonfireToJoin.startDate)
+          const targetBonfireStartDate = moment(bonfireToJoin.startTime)
             .tz(timezone.utc[0])
             .utcOffset(offset, true);
 
+          const targetBonfireEndDate = moment(bonfireToJoin.endTime)
+            .tz(timezone.utc[0])
+            .utcOffset(offset, true);
+
+          const timezoneUser = TimeZoneList.find(
+            (timezone) =>
+              timezone.value === affectedRows.dataValues.timezone ||
+              timezone.text === affectedRows.dataValues.timezone
+          );
+
+          const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
+          const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
+
+          // const calendarInvite = generateIcsCalendar(
+          //   bonfireToJoin,
+          //   timezoneUser.utc[0]
+          // );
+
+          // let icsContent = calendarInvite.toString();
+
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: affectedRows.dataValues.email,
             subject: LabEmails.BONFIRE_JOINING.subject,
             html: LabEmails.BONFIRE_JOINING.body(
               affectedRows.dataValues,
               bonfireToJoin,
               bonfireCreator,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a")
+              targetBonfireStartDate.format("MMM DD"),
+              targetBonfireStartDate.format("h:mm a"),
+              targetBonfireEndDate.format("h:mm a"),
+              timezone.value,
+              googleLink,
+              yahooLink
             ),
+            // contentType: "text/calendar",
+            // attachments: [
+            //   {
+            //     filename: `${bonfireToJoin.title}-invite.ics`,
+            //     content: icsContent,
+            //     contentType: "application/ics; charset=UTF-8; method=REQUEST",
+            //     contentDisposition: "inline",
+            //   },
+            // ],
           };
           console.log("***** mailOptions ", mailOptions);
 
@@ -745,7 +889,7 @@ const UserController = () => {
 
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
-      console.log(err);
+      console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
@@ -825,6 +969,264 @@ const UserController = () => {
     return res.status(HttpCodes.OK).json({ s3Hash });
   };
 
+  const createInvitation = async (req, res) => {
+    const { usersInvited, hostUserId } = req.body;
+
+    try {
+      const userAlreadyRegistered = await Promise.all(
+        usersInvited.map((user) => {
+          return User.findOne({
+            where: {
+              email: user.email,
+            },
+          });
+        })
+      );
+
+      for (const userRegistered of userAlreadyRegistered) {
+        if (userRegistered) {
+          return res
+            .status(HttpCodes.CONFLICT)
+            .json({ msg: "Some user has already been registered" });
+        }
+      }
+
+      const hostUser = await User.increment(
+        {
+          pointsConferenceLeaderboard: 100 * usersInvited.length,
+        },
+        {
+          where: { id: hostUserId },
+          returning: true,
+        }
+      );
+
+      await Promise.all(
+        usersInvited.map((user) => {
+          const link = `${process.env.DOMAIN_URL}invitation/${hostUserId}/${user.email}`;
+
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.INVITATION_TO_JOIN.subject(
+              hostUser[0][0][0],
+              user
+            ),
+            html: LabEmails.INVITATION_TO_JOIN.body(
+              hostUser[0][0][0],
+              user,
+              link
+            ),
+          };
+
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ msg: `Users invited succesfully` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const acceptInvitationJoin = async (req, res) => {
+    const { hostUserId } = req.query;
+
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: { id: hostUserId },
+      });
+
+      if (!user) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Host user not found" });
+      }
+
+      await User.increment(
+        {
+          pointsConferenceLeaderboard: +500,
+        },
+        {
+          where: { id: hostUserId },
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ msg: `Thanks for joining` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const confirmAccessibilityRequirements = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "user not found",
+        });
+      }
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: "enrique@hackinghr.io",
+            subject: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.subject,
+            html: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.body(user),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ msg: "We received your request and will be in touch shortly" });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong." });
+    }
+  };
+
+  const changePassword = async (req, res) => {
+    const { UserId } = req.params;
+    const { body } = req;
+
+    try {
+      const user = await User.findOne({
+        where: {
+          id: UserId,
+        },
+      });
+
+      const isEqual = bcryptService().comparePassword(
+        body.oldPassword,
+        user.password
+      );
+
+      if (!isEqual) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Incorrect Old Password." });
+      }
+
+      await User.update(
+        {
+          password: bcryptService().password(body.newPassword),
+        },
+        {
+          where: {
+            id: UserId,
+          },
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong." });
+    }
+  };
+
+  const getLearningBadgesHoursByUser = async (userId) => {
+    try {
+      let query = `
+      select
+            u.id,
+            SUM(main_data.duration) / 60 as hours
+        from
+            (
+            select
+                'podcastseries' as element,
+                cast(coalesce(ps."durationLearningBadges", '0') as float) as duration,
+                ps.id,
+                psd.key,
+                psd.value
+            from
+                "PodcastSeries" ps
+            join jsonb_each_text(ps.viewed) psd on
+                true
+        union
+            select
+                'conference_library' as element,
+                cast(coalesce(cl.duration, '0') as float) as duration,
+                cl.id,
+                cld.key,
+                cld.value
+            from
+                "ConferenceLibraries" cl
+            join jsonb_each_text(cl.viewed) cld on
+                true
+        union
+            select
+                'library' as element,
+                cast(coalesce(l.duration, '0') as float) as duration,
+                l.id,
+                ld.key,
+                ld.value
+            from
+                "Libraries" l
+            join jsonb_each_text(l.viewed) ld on
+                true
+        union
+            select
+                'podcast' as element,
+                cast(coalesce(p.duration, '0') as float) as duration,
+                p.id,
+                pd.key,
+                pd.value
+            from
+                "Podcasts" p
+            join jsonb_each_text(p.viewed) pd on
+                true
+        ) main_data
+        inner join "Users" u on
+            main_data.key = cast(u.id as varchar)
+        where
+            u.id=${userId} and
+            main_data.value = 'mark'
+        group by
+            u.id
+        order by
+            hours desc
+      `;
+
+      const learningBadges = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+      if (!learningBadges) {
+        return 0;
+      }
+      return learningBadges[0].hours;
+    } catch (error) {
+      console.log(error);
+      return 0;
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -846,6 +1248,11 @@ const UserController = () => {
     uploadResume,
     deleteResume,
     getEditorSignature,
+    createInvitation,
+    acceptInvitationJoin,
+    confirmAccessibilityRequirements,
+    changePassword,
+    getLearningBadgesHoursByUser,
   };
 };
 

@@ -588,10 +588,16 @@ const LibraryController = () => {
     if (libraryId) {
       try {
         let prev = await Library.findOne({ where: { id: libraryId } });
+
+        const saveForLater = prev.saveForLater.filter((item) => {
+          return item !== userId;
+        });
         prev = prev.toJSON();
+
         const [numberOfAffectedRows, affectedRows] = await Library.update(
           {
             viewed: { ...prev.viewed, [userId]: mark },
+            saveForLater,
           },
           {
             where: { id: libraryId },
@@ -600,9 +606,14 @@ const LibraryController = () => {
           }
         );
 
+        const data = {
+          ...affectedRows.dataValues,
+          type: "libraries",
+        };
+
         return res
           .status(HttpCodes.OK)
-          .json({ numberOfAffectedRows, affectedRows });
+          .json({ numberOfAffectedRows, affectedRows: data });
       } catch (error) {
         console.log(error);
         return res
@@ -613,6 +624,59 @@ const LibraryController = () => {
     return res
       .status(HttpCodes.BAD_REQUEST)
       .json({ msg: "Bad Request: Library id is wrong" });
+  };
+
+  const saveForLater = async (req, res) => {
+    const { id } = req.params;
+    const { UserId, status } = req.body;
+
+    try {
+      let library = await Library.findOne({
+        where: {
+          id,
+        },
+      });
+
+      library = library.toJSON();
+
+      if (!library) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Library not found." });
+      }
+
+      const saveForLater =
+        status === "saved"
+          ? [...library.saveForLater, UserId.toString()]
+          : library.saveForLater.filter((item) => item !== UserId);
+
+      const [numberOfAffectedRows, affectedRows] = await Library.update(
+        {
+          saveForLater,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      const data = {
+        ...affectedRows.dataValues,
+        type: "libraries",
+      };
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows: data });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
   };
 
   return {
@@ -630,6 +694,7 @@ const LibraryController = () => {
     deleteChannelLibrary,
     claim,
     markAsViewed,
+    saveForLater,
   };
 };
 

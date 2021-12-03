@@ -2,7 +2,6 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op, Sequelize } = require("sequelize");
 const moment = require("moment-timezone");
-const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 
 const AnnualConference = db.AnnualConference;
@@ -166,21 +165,25 @@ const AnnualConferenceController = () => {
   };
 
   const getParticipants = async (req, res) => {
-    const { filters, num, page } = req.query;
+    const { topics, userId, num, page, order } = req.query;
+
     try {
       let where = {
-        [Op.and]: [
-          { attendedToConference: 1 },
-          { topicsOfInterest: { [Op.overlap]: JSON.parse(filters).topics } },
-        ],
+        [Op.and]: [{ attendedToConference: 1 }],
       };
 
-      let participants = await User.findAll(
-        {
-          where,
-        },
-        { order: Sequelize.literal("rand()"), limit: 50 }
-      );
+      if (topics && userId) {
+        where[Op.and].push(
+          { topicsOfInterest: { [Op.overlap]: topics } },
+          { id: { [Op.ne]: userId } }
+        );
+      }
+
+      let participants = await User.findAll({
+        where,
+        order: order ? [order] : [[Sequelize.fn("RANDOM")]],
+        limit: +num,
+      });
 
       return res.status(HttpCodes.OK).json({ participants });
     } catch (error) {
@@ -218,6 +221,7 @@ const AnnualConferenceController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
+    const { userTimezone } = req.query;
 
     try {
       const annualConference = await AnnualConference.findOne({
@@ -231,25 +235,34 @@ const AnnualConferenceController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      let startDate = moment(annualConference.startTime).format("YYYY-MM-DD");
+      const timezone = TimeZoneList.find(
+        (timezone) =>
+          timezone.value === userTimezone || timezone.text === userTimezone
+      );
 
-      let endDate = moment(annualConference.endTime).format("YYYY-MM-DD");
+      const targetBonfireStartDate = moment
+        .utc(annualConference.startTime)
+        .tz(timezone.utc[0]);
 
-      const startTime = moment(annualConference.startTime).format("HH:mm:ss");
+      const targetBonfireEndDate = moment
+        .utc(annualConference.endTime)
+        .tz(timezone.utc[0]);
 
-      const endTime = moment(annualConference.endTime).format("HH:mm:ss");
+      let startDate = targetBonfireStartDate.format("YYYY-MM-DD");
+
+      let endDate = targetBonfireEndDate.format("YYYY-MM-DD");
+
+      const startTime = targetBonfireStartDate.format("HH:mm:ss");
+
+      const endTime = targetBonfireEndDate.format("HH:mm:ss");
 
       let formatStartDate = moment(`${startDate}  ${startTime}`);
 
       let formatEndDate = moment(`${endDate}  ${endTime}`);
 
-      startDate = convertToLocalTime(
-        moment(formatStartDate).tz(timezone.utc[0]).utcOffset(offset, true)
-      ).format("YYYY-MM-DD HH:mm:ss");
+      startDate = formatStartDate.format("YYYY-MM-DD h:mm a");
 
-      endDate = convertToLocalTime(
-        moment(formatEndDate).tz(timezone.utc[0]).utcOffset(offset, true)
-      ).format("YYYY-MM-DD HH:mm:ss");
+      endDate = formatEndDate.format("YYYY-MM-DD h:mm a");
 
       const localTimezone = moment.tz.guess();
 

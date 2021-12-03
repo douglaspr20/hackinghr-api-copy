@@ -8,10 +8,8 @@ const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
-const cryptoService = require("../services/crypto.service");
-const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
-const isEmpty = require("lodash/isEmpty");
+const { isEmpty, flatten } = require("lodash");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 

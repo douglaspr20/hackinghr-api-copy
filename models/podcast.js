@@ -11,8 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
-    }
+    static associate(models) {}
   }
   Podcast.init(
     {
@@ -44,8 +43,12 @@ module.exports = (sequelize, DataTypes) => {
       },
       duration: DataTypes.STRING,
       viewed: {
-        type: DataTypes.JSON,
+        type: DataTypes.JSONB,
         defaultValue: {},
+      },
+      saveForLater: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
       },
     },
     {

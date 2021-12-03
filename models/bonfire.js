@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       description: DataTypes.TEXT,
       startTime: DataTypes.STRING,
       endTime: DataTypes.STRING,
+      timezone: DataTypes.STRING,
       categories: {
         type: DataTypes.ARRAY(DataTypes.STRING),
         defaultValue: [],
@@ -28,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: [],
       },
       uninvitedJoinedUsers: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
+      usersInvitedByOrganizer: {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },

@@ -104,6 +104,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
+      pointsConferenceLeaderboard: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      addedFirstSession: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

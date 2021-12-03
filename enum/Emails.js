@@ -18,7 +18,7 @@ module.exports = {
       We have a bunch of great features and content for you. And we are working nonstop in product development and improvement. That means that you will be seeing changes and a lot of more value every time you log in.
       </p>
       <p>
-      If you think this is a good place for you to invest some money, please become a PREMIUM member for $99 a year. Just click on UPGRADE. You will get access to EVERYTHING. And when I say EVERYTHING, I mean everything that we have now and everything we will develop and deploy in the future.
+      If you think this is a good place for you to invest some money, please become a PREMIUM member for $119 a year. Just click on UPGRADE. You will get access to EVERYTHING. And when I say EVERYTHING, I mean everything that we have now and everything we will develop and deploy in the future.
       </p>
       <p>
       Well. Long email… 
@@ -284,14 +284,23 @@ module.exports = {
     `,
   },
   BONFIRE_INVITATION: {
-    subject: `You have been invited to a bonfire! A networking experience as part of the 
-    Hacking HR 2022 Global Online Conference`,
-    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+    subject: `You have been invited to a bonfire! A networking experience as part of the Hacking HR 2022 Global Online Conference`,
+    body: (
+      user,
+      bonfire,
+      bonfireCreator,
+      startDate,
+      startTime,
+      endTime,
+      timezone,
+      googleLink,
+      yahooLink
+    ) => `
       <p>
       Hi, ${user.firstName}
       </p>
       <p>
-      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}, 
+      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}-${endTime} (${timezone}), 
       created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email}).
       </p>
       <p>
@@ -313,6 +322,11 @@ module.exports = {
       Attached a calendar invite including all details, just in case! 
       </p>
       <p>
+      <a href="${googleLink}" target="_blank">Google Calendar</a>
+      <br>
+      <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
+      </p>
+      <p>
       Happy networking! 
       </p>
       <br />
@@ -328,8 +342,7 @@ module.exports = {
     `,
   },
   BONFIRE_CREATOR: {
-    subject: `Thank you creating a Bonfire as part of the networking experience at the 
-    Hacking HR 2022 Global Online Conference`,
+    subject: `Thank you creating a Bonfire as part of the networking experience at the Hacking HR 2022 Global Online Conference`,
     body: (bonfireCreator, bonfire, startDate, startTime, timezone) => `
     <p>
     Hi, ${bonfireCreator.firstName}
@@ -379,14 +392,23 @@ module.exports = {
     `,
   },
   BONFIRE_JOINING: {
-    subject: `Thank you for joining a Bonfire as part of the networking experience at the 
-    Hacking HR 2022 Global Online Conference`,
-    body: (user, bonfire, bonfireCreator, startDate, startTime) => `
+    subject: `Thank you for joining a Bonfire as part of the networking experience at the Hacking HR 2022 Global Online Conference`,
+    body: (
+      user,
+      bonfire,
+      bonfireCreator,
+      startDate,
+      startTime,
+      endTime,
+      timezone,
+      googleLink,
+      yahooLink
+    ) => `
     <p>
     Hi ${user.firstName}
     </p>
     <p>
-    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}, 
+    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}-${endTime} (${timezone}), 
     created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email})!
     </p>
     <p>
@@ -404,6 +426,11 @@ module.exports = {
     <p>
     Attached a calendar invite including all details, just in case!
     </p>
+    <p>
+    <a href="${googleLink}" target="_blank">Google Calendar</a>
+    <br>
+    <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
+    </p>
     <br>
     <br>
     <p>
@@ -419,6 +446,63 @@ module.exports = {
     your bonfire and the bonfire organizer is selling anything, marketing a product or 
     service, or using you for any purpose other than networking, please report it to us 
     (enrique@hackinghr.io). We will take immediate actio
+    </p>
+    `,
+  },
+  BONFIRE_DELETED: {
+    subject: (bonfireTitle) => `"${bonfireTitle}" was deleted`,
+    body: (user, bonfire, startDate, startTime, endTime, timezone) => `
+    <p>
+    Hi ${user.firstName}
+    </p>
+    <p>
+    We are sorry to let you know that the bonfire: “${bonfire.title}” which was 
+    scheduled for ${startDate} and ${startTime}-${endTime} (${timezone}) has been deleted by its creator. 
+    </P>
+    <p>
+    Please visit the <a href="https://www.hackinghrlab.io/global-conference">Global Conference application</a> in the Hacking HR LAB and join other 
+    bonfires. 
+    </p>
+    <br>
+    <p>
+    Thank you! 
+    </p>
+    <br>
+    <p>
+    Hacking HR LAB
+    </p>
+    `,
+  },
+  BONFIRE_EDITED: {
+    subject: (bonfireTitle) => `"${bonfireTitle}" was edited`,
+    body: (
+      user,
+      oldBonfireTitle,
+      newBonfireinfo,
+      startDate,
+      startTime,
+      endTime,
+      timezone
+    ) => `
+    <p>
+    Hi ${user.firstName}
+    </p>
+    <p>
+    The bonfire: “${oldBonfireTitle}” has been edited. These are the new details: 
+    </P>
+    <p>${newBonfireinfo.title}</p>
+    <p>${startDate}</p>
+    <p>${startTime}-${endTime} (${timezone})</p>
+    <p>${newBonfireinfo.link}</p>
+    <br>
+    <br>
+    <p>
+    Please make sure to update your calendar with the new details
+    </p>
+    <br>
+    <p>Thank you and happy networking!</p>
+    <p>
+    Hacking HR LAB
     </p>
     `,
   },
@@ -635,6 +719,62 @@ module.exports = {
       <p>
         Thank you!
       </p>
+
+  INVITATION_TO_JOIN: {
+    subject: (hostUser, userInvited) =>
+      `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global Online Conference`,
+    body: (hostUser, userInvited, link) => `
+    <p>
+    Hi ${userInvited.name}!<br>
+    </p>
+    <p>
+    How are you?
+    </p>
+    <p>
+    Hey, we wanted to let you know that ${hostUser.firstName} ${hostUser.lastName} would love for you to 
+    join the Hacking HR 2022 Global Online Conference “HR Innovation and Future of 
+    Work”.
+    </p>
+    <p>
+    Join here: <a href="${link}">${link}</a><br>
+    </p>
+    <p>
+    Hacking HR’s Global Online Conference is the most robust HR event in the world. 
+    </p>
+    <p>
+    It includes more than 300 sessions with over 500 speakers from all over the world. 
+    The event includes over 80 tracks with 3 panels each one, dozens of presentations 
+    and roundtable conversations, and countless networking opportunities.
+    </p>
+    <p>
+    The entire content of the conference during and post-event is FREE!
+    </p>
+    <p>
+    And for our premium members in the Hacking HR LAB: in addition to all the content 
+    of the conference, you can also earn HR certification credits (more than 500 credits 
+    available for the event!).
+    </p>
+    <p>
+    Join us! 
+    </p>
+    <p>   
+      Hacking HR Team
+    </p>
+    `,
+  },
+  USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
+    subject: `User confirm accessibility requirements`,
+    body: (user) => `
+    <p>
+    ${user.firstName} ${user.lastName} <br>
+    </p>
+    <p>
+    ${user.email}<br>
+    </p>
+    </p>
+    <p>
+      Hacking HR Team
+    </p>
     `,
   },
 };

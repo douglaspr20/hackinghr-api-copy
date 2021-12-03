@@ -16,6 +16,10 @@ const privateRoutes = {
   "PUT /user/remove-bonfire/:id": "UserController.removeBonfire",
   "PUT /user/upload-resume": "UserController.uploadResume",
   "PUT /user/delete-resume": "UserController.deleteResume",
+  "POST /user/create-invitation": "UserController.createInvitation",
+  "GET /user/accept-invitation/:newuser": "UserController.acceptInvitationJoin",
+  "GET /user/confirm-accessibility-requirements/:id":
+    "UserController.confirmAccessibilityRequirements",
   "PUT /event/set-status/:id": "EventController.updateEventStatus",
   "POST /stripe/checkout-session/": "StripeController.createCheckoutSession",
   "GET /stripe/portal-session/": "StripeController.createPortalSession",
@@ -31,6 +35,7 @@ const privateRoutes = {
   "GET /library/channel/": "LibraryController.getChannelLibraries",
   "GET /library/recommendations/": "HomeController.getRecommendations",
   "GET /library/:id/": "LibraryController.getLibrary",
+  "PUT /library/:id/save-for-later": "LibraryController.saveForLater",
   "POST /mentoring": "MentoringController.create",
   "GET /mentoring": "MentoringController.getMentoringInfo",
   "PUT /mentoring": "MentoringController.updateMentoringInfo",
@@ -52,6 +57,7 @@ const privateRoutes = {
   "PUT /journey-items/:id": "JourneyItemController.update",
   "GET /conference/": "ConferenceController.getAll",
   "GET /conference/:id": "ConferenceController.get",
+  "PUT /conference/:id/save-for-later": "ConferenceController.saveForLater",
   "POST /channel/": "ChannelController.create",
   "GET /channel/": "ChannelController.getAll",
   "GET /channel/:id": "ChannelController.get",
@@ -64,6 +70,7 @@ const privateRoutes = {
   "DELETE /podcast/channel/:id": "PodcastController.deleteChannelPodcast",
   "PUT /podcast/channel/:id": "PodcastController.update",
   "PUT /podcast/viewed": "PodcastController.markAsViewed",
+  "PUT /podcast/:id/save-for-later": "PodcastController.saveForLater",
   "DELETE /event/channel/:id": "EventController.deleteChannelEvent",
   "PUT /event/channel/:id": "EventController.updateEvent",
   "PUT /channel/follow/:id": "ChannelController.setFollow",
@@ -98,6 +105,8 @@ const privateRoutes = {
   "POST /event/claim-attendance": "EventController.claimAttendance",
   "PUT /conference/viewed": "ConferenceController.markAsViewed",
   "PUT /podcast-series/viewed": "PodcastSeriesController.markAsViewed",
+  "PUT /podcast-series/:id/save-for-later":
+    "PodcastSeriesController.saveForLater",
   "GET /post/": "PostController.getAll",
   "GET /post/:id": "PostController.get",
   "GET /posts/search": "PostController.searchPost",
@@ -117,6 +126,9 @@ const privateRoutes = {
   "POST /bonfire": "BonfireController.create",
   "GET /bonfire": "BonfireController.getAll",
   "GET /bonfire/:id": "BonfireController.get",
+  "PUT /bonfire/:id": "BonfireController.update",
+  "PUT /bonfire/:id/invitedUser/:userId": "BonfireController.inviteUser",
+  "DELETE /bonfire/:id": "BonfireController.remove",
   "GET /skill-cohort": "SkillCohortController.getAllActiveUserSide",
   "GET /skill-cohort/my-cohort/:UserId":
     "SkillCohortController.getAllOfMyCohort",
@@ -154,6 +166,13 @@ const privateRoutes = {
     "SkillCohortResponseRatingController.upsert",
   "GET /skill-cohort/resource/:resourceId/participant/:participantId/ratings":
     "SkillCohortResponseRatingController.getAllByIds",
+  "POST /user/:UserId/change-password": "UserController.changePassword",
+  "GET /my-learnings/saved": "LearningController.getAllSaved",
+  "GET /my-learnings/completed": "LearningController.getAllCompleted",
+  "GET /my-learnings/items-with-hr-credits":
+    "LearningController.getAllItemsWithHrCredit",
+  "GET /my-learnings/event-videos": "LearningController.getAllEventVideos",
+  "GET /learning-badges": "LearningBadgeController.getAll",
 };
 
 module.exports = privateRoutes;
