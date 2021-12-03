@@ -380,6 +380,106 @@ const SkillCohortController = () => {
     }
   };
 
+  const getAllActiveSkillCohortsWithParticipants = async () => {
+    try {
+      const dateToday = moment()
+        .tz("America/Los_Angeles")
+        .startOf("day")
+        .utc()
+        .format("YYYY-MM-DD HH:mm:ssZ");
+
+      const allSkillCohorts = await SkillCohort.findAll({
+        where: {
+          startDate: {
+            [Op.lte]: dateToday,
+          },
+          endDate: {
+            [Op.gte]: dateToday,
+          },
+        },
+        include: [
+          {
+            model: SkillCohortParticipant,
+            where: {
+              hasAccess: "TRUE",
+            },
+            required: true,
+            include: db.User,
+          },
+        ],
+      });
+
+      return allSkillCohorts;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
+
+  const getAllSkillCohortThatWillStartWeekLater = async () => {
+    try {
+      const weekLaterDate = moment()
+        .tz("America/Los_Angeles")
+        .startOf("day")
+        .utc()
+        .add(1, "week")
+        .format("YYYY-MM-DD HH:mm:ssZ");
+
+      const allSkillCohorts = SkillCohort.findAll({
+        where: {
+          startDate: weekLaterDate,
+        },
+        include: [
+          {
+            model: SkillCohortParticipant,
+            where: {
+              hasAccess: "TRUE",
+            },
+            required: true,
+            include: db.User,
+          },
+        ],
+      });
+
+      return allSkillCohorts;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
+
+  const getAllSkillCohortThatWillStartTomorrow = async () => {
+    try {
+      const tomorrowDate = moment()
+        .tz("America/Los_Angeles")
+        .startOf("day")
+        .utc()
+        .add(1, "day")
+        .format("YYYY-MM-DD HH:mm:ssZ");
+
+      const allSkillCohorts = SkillCohort.findAll({
+        where: {
+          startDate: tomorrowDate,
+        },
+        include: [
+          {
+            model: SkillCohortParticipant,
+            where: {
+              hasAccess: "TRUE",
+            },
+            required: true,
+            include: db.User,
+          },
+        ],
+      });
+
+      return allSkillCohorts;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
+
   return {
     create,
     getAllActiveUserSide,
@@ -390,6 +490,9 @@ const SkillCohortController = () => {
     getAllActiveSkillCohorts,
     getAllOfMyCohort,
     getAll,
+    getAllActiveSkillCohortsWithParticipants,
+    getAllSkillCohortThatWillStartWeekLater,
+    getAllSkillCohortThatWillStartTomorrow,
   };
 };
 

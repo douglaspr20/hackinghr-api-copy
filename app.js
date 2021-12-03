@@ -73,7 +73,7 @@ cron.schedule(
   }
 );
 
-// Creating a cron job which runs every day. Checks if participants have responded to a resource and kick them if they havent
+// Creating a cron job which runs every day. Checks if participants have responded to a resource
 cron.schedule(
   "0 1 * * *", // 1AM every day
   async () => {
@@ -112,17 +112,10 @@ cron.schedule(
           );
 
         if (!hasResponded) {
-          if (participant.numberOfCommentStrike >= 1) {
-            await SkillCohortParticipantController().removeParticipantAccess(
-              participant,
-              skillCohort.id
-            );
-          } else {
-            await SkillCohortParticipantController().incrementCommentStrike(
-              participant,
-              skillCohort.id
-            );
-          }
+          await SkillCohortParticipantController().incrementCommentStrike(
+            participant,
+            skillCohort.id
+          );
         }
       });
       cohortCtr++;
@@ -159,21 +152,49 @@ cron.schedule(
           );
 
         if (!hasAssessed) {
-          if (participant.numberOfAssessmentStrike >= 1) {
-            await SkillCohortParticipantController().removeParticipantAccess(
-              participant,
-              skillCohort.id
-            );
-          } else {
-            await SkillCohortParticipantController().incrementAssessmentStrike(
-              participant,
-              skillCohort.id
-            );
-          }
+          await SkillCohortParticipantController().incrementAssessmentStrike(
+            participant,
+            skillCohort.id
+          );
         }
       });
       cohortCtr++;
     });
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+// kick out on sunday night
+cron.schedule(
+  "45 23 * * 7", //sunday 11 pm
+  async () => {
+    const activeSkillCohortWithParticipants =
+      await SkillCohortController().getAllActiveSkillCohortsWithParticipants();
+
+    let participantsToBeKickedOut = [];
+
+    activeSkillCohortWithParticipants.map((cohort) => {
+      const participants = cohort.SkillCohortParticipants;
+
+      participants.map((participant) => {
+        participant = participant.dataValues;
+        const { numberOfCommentStrike, numberOfAssessmentStrike } = participant;
+
+        if (numberOfCommentStrike >= 2 || numberOfAssessmentStrike >= 2) {
+          const kick =
+            SkillCohortParticipantController().removeParticipantAccess(
+              participant,
+              cohort.id
+            );
+
+          participantsToBeKickedOut.push(kick);
+        }
+      });
+    });
+
+    await Promise.all(participantsToBeKickedOut);
   },
   {
     timezone: "America/Los_Angeles",
@@ -248,6 +269,105 @@ cron.schedule(
   async () => {
     console.log("****************Grouping****************");
     await SkillCohortGroupingsController().createSkillCohortGroups();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+cron.schedule(
+  "0 4 * * *", // 4AM Everyday
+  async () => {
+    console.log(
+      "****************Send Emails To Participants That A Cohort Will Start At Exactly 1 Week From Now****************"
+    );
+    let skillCohorts =
+      await SkillCohortController().getAllSkillCohortThatWillStartWeekLater();
+
+    let emailsToBeSent = [];
+
+    skillCohorts.map((cohort) => {
+      const participants = cohort.SkillCohortParticipants;
+
+      const startDate = moment(cohort.startDate).format("LL");
+
+      participants.map((participant) => {
+        participant = participant.dataValues;
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: participant.User.email,
+          subject:
+            LabEmails.SKILL_COHORT_EMAIL_ONE_WEEK_BEFORE_IT_STARTS.subject(
+              cohort,
+              startDate
+            ),
+          html: LabEmails.SKILL_COHORT_EMAIL_ONE_WEEK_BEFORE_IT_STARTS.body(
+            participant.User,
+            cohort
+          ),
+          contentType: "text/html",
+        };
+
+        const email = smtpService().sendMailUsingSendInBlue(mailOptions);
+
+        emailsToBeSent.push(email);
+      });
+    });
+
+    await Promise.all(emailsToBeSent);
+
+    console.log(
+      "****************Send Emails To Participants That A Cohort Will Start At Exactly 1 Week From Now****************"
+    );
+    skillCohorts =
+      await SkillCohortController().getAllSkillCohortThatWillStartTomorrow();
+
+    emailsToBeSent = [];
+
+    skillCohorts.map((cohort) => {
+      const participants = cohort.SkillCohortParticipants;
+
+      const startDate = moment(cohort.startDate).format("LL");
+      const endDate = moment(cohort.startDate).format("LL");
+
+      let location = participants.map((participant) => {
+        participant = participant.dataValues;
+        const user = participant.User.dataValues;
+
+        return user.location;
+      });
+
+      location = [...new Set(location)];
+
+      participants.map((participant) => {
+        participant = participant.dataValues;
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: participant.User.email,
+          subject: LabEmails.SKILL_COHORT_EMAIL_DAY_BEFORE_IT_STARTS.subject(
+            cohort,
+            startDate
+          ),
+          html: LabEmails.SKILL_COHORT_EMAIL_DAY_BEFORE_IT_STARTS.body(
+            participant.User,
+            cohort,
+            startDate,
+            endDate,
+            participants.length,
+            location.length
+          ),
+          contentType: "text/html",
+        };
+
+        const email = smtpService().sendMailUsingSendInBlue(mailOptions);
+
+        emailsToBeSent.push(email);
+      });
+    });
+
+    await Promise.all(emailsToBeSent);
   },
   {
     timezone: "America/Los_Angeles",
