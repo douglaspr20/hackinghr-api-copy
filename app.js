@@ -302,6 +302,10 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     socketService().removeSocket(socket);
   });
+
+  socket.on("error", (error) => {
+    console.log(`Socket IO Error:`, error);
+  });
 });
 
 server.listen(port, () =>

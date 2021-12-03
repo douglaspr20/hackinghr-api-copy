@@ -18,7 +18,7 @@ const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const { sequelize } = require("../models");
 
-const { Op, QueryTypes } = Sequelize;
+const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
 const Event = db.Event;
 const AnnualConference = db.AnnualConference;
@@ -42,7 +42,13 @@ const UserController = () => {
             .json({ msg: "Bad Request: User not found" });
         }
 
-        return res.status(HttpCodes.OK).json({ user });
+        const learningBadgesHours = await getLearningBadgesHoursByUser(
+          req.user.id
+        );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ user: { ...user.dataValues, learningBadgesHours } });
       } catch (error) {
         console.log(error);
         return res
@@ -409,7 +415,74 @@ const UserController = () => {
 
   const getAll = async (req, res) => {
     try {
-      const users = await User.findAll();
+      const users = await User.findAll({
+        attributes: {
+          include: [
+            [
+              literal(`(
+              select
+                    SUM(main_data.duration) / 60 as hours
+                from
+                    (
+                    select
+                        'podcastseries' as element,
+                        cast(coalesce(ps."durationLearningBadges", '0') as float) as duration,
+                        ps.id,
+                        psd.key,
+                        psd.value
+                    from
+                        "PodcastSeries" ps
+                    join jsonb_each_text(ps.viewed) psd on
+                        true
+                union
+                    select
+                        'conference_library' as element,
+                        cast(coalesce(cl.duration, '0') as float) as duration,
+                        cl.id,
+                        cld.key,
+                        cld.value
+                    from
+                        "ConferenceLibraries" cl
+                    join jsonb_each_text(cl.viewed) cld on
+                        true
+                union
+                    select
+                        'library' as element,
+                        cast(coalesce(l.duration, '0') as float) as duration,
+                        l.id,
+                        ld.key,
+                        ld.value
+                    from
+                        "Libraries" l
+                    join jsonb_each_text(l.viewed) ld on
+                        true
+                union
+                    select
+                        'podcast' as element,
+                        cast(coalesce(p.duration, '0') as float) as duration,
+                        p.id,
+                        pd.key,
+                        pd.value
+                    from
+                        "Podcasts" p
+                    join jsonb_each_text(p.viewed) pd on
+                        true
+                ) main_data
+                inner join "Users" u on
+                    main_data.key = cast(u.id as varchar)
+                where
+                    u.id="User".id and
+                    main_data.value = 'mark'
+                group by
+                    u.id
+                order by
+                    hours desc
+              )`),
+              "learningBadgesHours",
+            ],
+          ],
+        },
+      });
 
       if (!users) {
         return res
@@ -1078,6 +1151,82 @@ const UserController = () => {
     }
   };
 
+  const getLearningBadgesHoursByUser = async (userId) => {
+    try {
+      let query = `
+      select
+            u.id,
+            SUM(main_data.duration) / 60 as hours
+        from
+            (
+            select
+                'podcastseries' as element,
+                cast(coalesce(ps."durationLearningBadges", '0') as float) as duration,
+                ps.id,
+                psd.key,
+                psd.value
+            from
+                "PodcastSeries" ps
+            join jsonb_each_text(ps.viewed) psd on
+                true
+        union
+            select
+                'conference_library' as element,
+                cast(coalesce(cl.duration, '0') as float) as duration,
+                cl.id,
+                cld.key,
+                cld.value
+            from
+                "ConferenceLibraries" cl
+            join jsonb_each_text(cl.viewed) cld on
+                true
+        union
+            select
+                'library' as element,
+                cast(coalesce(l.duration, '0') as float) as duration,
+                l.id,
+                ld.key,
+                ld.value
+            from
+                "Libraries" l
+            join jsonb_each_text(l.viewed) ld on
+                true
+        union
+            select
+                'podcast' as element,
+                cast(coalesce(p.duration, '0') as float) as duration,
+                p.id,
+                pd.key,
+                pd.value
+            from
+                "Podcasts" p
+            join jsonb_each_text(p.viewed) pd on
+                true
+        ) main_data
+        inner join "Users" u on
+            main_data.key = cast(u.id as varchar)
+        where
+            u.id=${userId} and
+            main_data.value = 'mark'
+        group by
+            u.id
+        order by
+            hours desc
+      `;
+
+      const learningBadges = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+      if (!learningBadges) {
+        return 0;
+      }
+      return learningBadges[0].hours;
+    } catch (error) {
+      console.log(error);
+      return 0;
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -1103,6 +1252,7 @@ const UserController = () => {
     acceptInvitationJoin,
     confirmAccessibilityRequirements,
     changePassword,
+    getLearningBadgesHoursByUser,
   };
 };
 
