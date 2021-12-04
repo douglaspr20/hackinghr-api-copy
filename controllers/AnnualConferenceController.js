@@ -8,6 +8,7 @@ const SocketEventTypes = require("../enum/SocketEventTypes");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
+const Instructor = db.Instructor;
 const QueryTypes = Sequelize.QueryTypes;
 
 const AnnualConferenceController = () => {
@@ -221,6 +222,52 @@ const AnnualConferenceController = () => {
       .json({ msg: "Bad Request: id is wrong" });
   };
 
+  const recommendedAgenda = async (req, res) => {
+    const { topics, time } = req.query;
+
+    try {
+      let timeLeft = +time;
+
+      const where = `WHERE public."AnnualConferences".categories && ARRAY[${topics.map(
+        (topic) => `'${topic}'`
+      )}]::VARCHAR(255)[]`;
+
+      const query = `
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+        public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+        FROM public."AnnualConferences"
+        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
+
+      const sessions = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      const recommendedAgenda = [];
+
+      for (const session of sessions) {
+        const startTime = moment(session.startTime);
+        const endTime = moment(session.endTime);
+        const duration = moment.duration(endTime.diff(startTime));
+
+        if (duration.asHours() < timeLeft) {
+          recommendedAgenda.push(session);
+          timeLeft -= duration.asHours();
+        }
+
+        if (timeLeft <= 0) {
+          break;
+        }
+      }
+
+      return res.status(HttpCodes.OK).json({ recommendedAgenda });
+    } catch (error) {
+      console.log(error);
+      res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const sendMessage = (req, res) => {
     const { message } = req.body;
     try {
@@ -328,6 +375,7 @@ const AnnualConferenceController = () => {
     update,
     remove,
     sendMessage,
+    recommendedAgenda,
     downloadICS,
   };
 };
