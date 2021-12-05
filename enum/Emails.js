@@ -719,11 +719,11 @@ module.exports = {
       <p>
         Thank you!
       </p>
-
-  INVITATION_TO_JOIN: {
-    subject: (hostUser, userInvited) =>
-      `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global Online Conference`,
-    body: (hostUser, userInvited, link) => `
+    `,
+    INVITATION_TO_JOIN: {
+      subject: (hostUser, userInvited) =>
+        `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global Online Conference`,
+      body: (hostUser, userInvited, link) => `
     <p>
     Hi ${userInvited.name}!<br>
     </p>
@@ -761,10 +761,10 @@ module.exports = {
       Hacking HR Team
     </p>
     `,
-  },
-  USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
-    subject: `User confirm accessibility requirements`,
-    body: (user) => `
+    },
+    USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
+      subject: `User confirm accessibility requirements`,
+      body: (user) => `
     <p>
     ${user.firstName} ${user.lastName} <br>
     </p>
@@ -776,5 +776,6 @@ module.exports = {
       Hacking HR Team
     </p>
     `,
+    },
   },
 };
