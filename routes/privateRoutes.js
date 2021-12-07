@@ -12,6 +12,7 @@ const privateRoutes = {
   "PUT /user/attend-conference": "UserController.setAttendedToConference",
   "PUT /user/add-session/:id": "UserController.addSession",
   "PUT /user/remove-session/:id": "UserController.removeSession",
+  "PUT /user/session-joined/:id": "UserController.sessionUserJoined",
   "PUT /user/add-bonfire/:id": "UserController.addBonfire",
   "PUT /user/remove-bonfire/:id": "UserController.removeBonfire",
   "PUT /user/upload-resume": "UserController.uploadResume",
