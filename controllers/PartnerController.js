@@ -8,6 +8,7 @@ const Partner = db.Partner;
 const PartnerController = () => {
   /**
    * Method to get all Partner objects
+
    * @param {*} req
    * @param {*} res
    */
