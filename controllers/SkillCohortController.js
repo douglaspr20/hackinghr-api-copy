@@ -332,6 +332,9 @@ const SkillCohortController = () => {
           model: SkillCohortResources,
           where: {
             releaseDate: passedDate,
+            SkillCohortId: {
+              [Op.ne]: null,
+            },
           },
           required: true,
         },

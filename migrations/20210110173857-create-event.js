@@ -25,6 +25,7 @@ module.exports = {
       location: Sequelize.ARRAY(Sequelize.STRING),
       description: Sequelize.JSON,
       link: Sequelize.STRING,
+      externalLink: Sequelize.STRING,
       credit: Sequelize.JSON,
       code: Sequelize.STRING,
       image: Sequelize.STRING,

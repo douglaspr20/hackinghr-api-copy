@@ -7,7 +7,7 @@ const Partner = db.Partner;
 
 const PartnerController = () => {
   /**
-   * Method to get all MarketPlace objects
+   * Method to get all Partners objects
    * @param {*} req
    * @param {*} res
    */
@@ -29,7 +29,7 @@ const PartnerController = () => {
     }
   };
   /**
-   * Method to get MarketPlace object
+   * Method to get Partner object
    * @param {*} req
    * @param {*} res
    */
@@ -63,7 +63,7 @@ const PartnerController = () => {
     }
   };
   /**
-   * Method to add MarketPlace object
+   * Method to add Partner object
    * @param {*} req
    * @param {*} res
    */
@@ -112,7 +112,7 @@ const PartnerController = () => {
       .json({ msg: "Bad Request: Name is needed." });
   };
   /**
-   * Method to updated MarketPlace object
+   * Method to updated Partner object
    * @param {*} req
    * @param {*} res
    */
@@ -150,7 +150,7 @@ const PartnerController = () => {
               id,
             },
           });
-          let imageUrl = await s3Service().getMarketplaceImageUrl(
+          let imageUrl = await s3Service().getPartnerImageUrl(
             partner.logoUrl || "",
             body.logoUrl
           );
@@ -173,7 +173,7 @@ const PartnerController = () => {
     }
   };
   /**
-   * Method to delete MarketPlace object
+   * Method to delete Partner object
    * @param {*} req
    * @param {*} res
    */

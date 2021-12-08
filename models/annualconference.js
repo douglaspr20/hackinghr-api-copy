@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      AnnualConference.hasMany(models.Instructor, {
+        foreignKey: "id",
+        foreignKeyConstraint: null,
+      });
     }
   }
   AnnualConference.init(
