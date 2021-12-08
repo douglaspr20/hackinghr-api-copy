@@ -73,128 +73,91 @@ cron.schedule(
   }
 );
 
-// Creating a cron job which runs every day. Checks if participants have responded to a resource
-cron.schedule(
-  "0 1 * * *", // 1AM every day
-  async () => {
-    console.log("****************Running task at 1AM everyday****************");
-    console.log(
-      "****************Checking comments and assessments****************"
-    );
-    let cohortCtr = 0;
-
-    const yesterdayDate = moment()
-      .tz("America/Los_Angeles")
-      .startOf("day")
-      .utc()
-      .subtract(1, "day")
-      .format("YYYY-MM-DD HH:mm:ssZ");
-
-    const allActiveSkillCohortsWithYesterdayResource =
-      await SkillCohortController().getAllActiveSkillCohortsWithResource(
-        yesterdayDate
-      );
-
-    let jaggedParticipants =
-      await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
-        allActiveSkillCohortsWithYesterdayResource
-      );
-
-    jaggedParticipants.map((participants) => {
-      participants.map(async (participant) => {
-        const skillCohort =
-          allActiveSkillCohortsWithYesterdayResource[cohortCtr];
-
-        const hasResponded =
-          await SkillCohortResourceResponseController().checkIfParticipantHasRespondedToTheResource(
-            skillCohort,
-            participant
-          );
-
-        if (!hasResponded) {
-          await SkillCohortParticipantController().incrementCommentStrike(
-            participant,
-            skillCohort.id
-          );
-        }
-      });
-      cohortCtr++;
-    });
-
-    const dayBeforeYesterday = moment()
-      .tz("America/Los_Angeles")
-      .startOf("day")
-      .utc()
-      .subtract(2, "day")
-      .format("YYYY-MM-DD HH:mm:ssZ");
-
-    const allActiveSkillCohortsWithDayBeforeYesterdayResource =
-      await SkillCohortController().getAllActiveSkillCohortsWithResource(
-        dayBeforeYesterday
-      );
-
-    cohortCtr = 0;
-
-    jaggedParticipants =
-      await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
-        allActiveSkillCohortsWithYesterdayResource
-      );
-
-    jaggedParticipants.map((participants) => {
-      participants.map(async (participant) => {
-        const skillCohort =
-          allActiveSkillCohortsWithDayBeforeYesterdayResource[cohortCtr];
-
-        const hasAssessed =
-          await SkillCohortResourceResponseAssessmentController().checkIfParticipantHasAssessedOtherComments(
-            skillCohort,
-            participant
-          );
-
-        if (!hasAssessed) {
-          await SkillCohortParticipantController().incrementAssessmentStrike(
-            participant,
-            skillCohort.id
-          );
-        }
-      });
-      cohortCtr++;
-    });
-  },
-  {
-    timezone: "America/Los_Angeles",
-  }
-);
-
-// kick out on sunday night
+// Checks if participants have responded to a resource and kick them if they didn't
 cron.schedule(
   "45 23 * * 7", //sunday 11 pm
   async () => {
-    const activeSkillCohortWithParticipants =
-      await SkillCohortController().getAllActiveSkillCohortsWithParticipants();
+    for (let i = 6; i >= 0; i--) {
+      let cohortCtr = 0;
 
-    let participantsToBeKickedOut = [];
+      const date = moment()
+        .tz("America/Los_Angeles")
+        .startOf("day")
+        .utc()
+        .subtract(i, "day")
+        .format("YYYY-MM-DD HH:mm:ssZ");
 
-    activeSkillCohortWithParticipants.map((cohort) => {
-      const participants = cohort.SkillCohortParticipants;
+      const allActiveSkillCohortsWithYesterdayResource =
+        await SkillCohortController().getAllActiveSkillCohortsWithResource(
+          date
+        );
 
-      participants.map((participant) => {
-        participant = participant.dataValues;
-        const { numberOfCommentStrike, numberOfAssessmentStrike } = participant;
+      let jaggedParticipants =
+        await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
+          allActiveSkillCohortsWithYesterdayResource
+        );
 
-        if (numberOfCommentStrike >= 2 || numberOfAssessmentStrike >= 2) {
-          const kick =
-            SkillCohortParticipantController().removeParticipantAccess(
-              participant,
-              cohort.id
+      jaggedParticipants.map((participants) => {
+        participants.map(async (participant) => {
+          const skillCohort =
+            allActiveSkillCohortsWithYesterdayResource[cohortCtr];
+
+          const hasResponded =
+            await SkillCohortResourceResponseController().checkIfParticipantHasRespondedToTheResource(
+              skillCohort,
+              participant
             );
 
-          participantsToBeKickedOut.push(kick);
-        }
+          if (!hasResponded) {
+            if (participant.numberOfCommentStrike >= 1) {
+              await SkillCohortParticipantController().removeParticipantAccess(
+                participant,
+                skillCohort.id
+              );
+            } else {
+              await SkillCohortParticipantController().incrementCommentStrike(
+                participant,
+                skillCohort.id
+              );
+            }
+          }
+        });
+        cohortCtr++;
       });
-    });
 
-    await Promise.all(participantsToBeKickedOut);
+      const allActiveSkillCohortsWithDayBeforeYesterdayResource =
+        await SkillCohortController().getAllActiveSkillCohortsWithResource(
+          date
+        );
+
+      cohortCtr = 0;
+
+      jaggedParticipants =
+        await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
+          allActiveSkillCohortsWithYesterdayResource
+        );
+
+      jaggedParticipants.map((participants) => {
+        participants.map(async (participant) => {
+          const skillCohort =
+            allActiveSkillCohortsWithDayBeforeYesterdayResource[cohortCtr];
+
+          const hasAssessed =
+            await SkillCohortResourceResponseAssessmentController().checkIfParticipantHasAssessedOtherComments(
+              skillCohort,
+              participant
+            );
+
+          if (!hasAssessed) {
+            await SkillCohortParticipantController().incrementAssessmentStrike(
+              participant,
+              skillCohort.id
+            );
+          }
+        });
+        cohortCtr++;
+      });
+    }
   },
   {
     timezone: "America/Los_Angeles",

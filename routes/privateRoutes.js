@@ -135,6 +135,8 @@ const privateRoutes = {
   "GET /skill-cohort/:id": "SkillCohortController.get",
   "GET /skill-cohort/:skillCohortId/resources":
     "SkillCohortResourcesController.getAllAndCount",
+  "GET /skill-cohort/resources/:skillCohortId/entire":
+    "SkillCohortResourcesController.getEntire",
   "GET /skill-cohort/resource/:resourceId":
     "SkillCohortResourcesController.get",
   "GET /skill-cohort/:SkillCohortId/resource/":
