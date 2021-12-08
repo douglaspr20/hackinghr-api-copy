@@ -195,23 +195,6 @@ const AnnualConferenceController = () => {
     }
   };
 
-  const getPartners = async (req, res) => {
-    try {
-      const partners = await Marketplace.findAll({
-        where: {
-          isPartner: true,
-        },
-      });
-
-      return res.status(HttpCodes.OK).json({ partners });
-    } catch (error) {
-      console.log(error);
-      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
-        msg: "Something went wrong.",
-      });
-    }
-  };
-
   const remove = async (req, res) => {
     const { id } = req.params;
 
@@ -323,7 +306,6 @@ const AnnualConferenceController = () => {
     getAll,
     getSessionsUser,
     getParticipants,
-    getPartners,
     get,
     update,
     remove,
