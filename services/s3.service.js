@@ -158,8 +158,14 @@ const s3Service = () => {
   };
 
   const getPostImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(S3.POST_IMAGE_FOLDER, prevImg, base64Image);
+
+    return url;
+  };
+
+  const getPartnerImageUrl = async (prevImg, base64Image) => {
     const url = await getImageUrl(
-      S3.POST_IMAGE_FOLDER,
+      S3.PARTNER_IMAGE_FOLDER,
       prevImg,
       base64Image
     );
@@ -232,6 +238,7 @@ const s3Service = () => {
     getInstructorImageUrl,
     getPostImageUrl,
     getSkillCohortImageUrl,
+    getPartnerImageUrl,
     uploadResume,
     deleteResume,
   };

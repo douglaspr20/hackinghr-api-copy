@@ -11,6 +11,7 @@ module.exports = {
     LIBRARY_IMAGE_FOLDER: "library",
     PODCAST_IMAGE_FOLDER: "podcast",
     MARKETPLACE_IMAGE_FOLDER: "marketplace",
+    PARTNER_IMAGE_FOLDER: "partner",
     CHANNEL_IMAGE_FOLDER: "channel",
     COURSE_IMAGE_FOLDER: "course",
     SPONSOR_IMAGE_FOLDER: "sponsor",
