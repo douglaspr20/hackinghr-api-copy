@@ -8,6 +8,8 @@ const SocketEventTypes = require("../enum/SocketEventTypes");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
+
+const Marketplace = db.Marketplace;
 const Instructor = db.Instructor;
 const QueryTypes = Sequelize.QueryTypes;
 
@@ -236,7 +238,7 @@ const AnnualConferenceController = () => {
       SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
         public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
         FROM public."AnnualConferences"
-        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
+        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where} ORDER BY random()`;
 
       const sessions = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,

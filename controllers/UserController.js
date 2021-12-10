@@ -1250,7 +1250,15 @@ const UserController = () => {
       if (!learningBadges) {
         return 0;
       }
-      return learningBadges[0].hours;
+      if (learningBadges.length > 0) {
+        if (learningBadges[0].hours) {
+          return learningBadges[0].hours;
+        } else {
+          return 0;
+        }
+      } else {
+        return 0;
+      }
     } catch (error) {
       console.log(error);
       return 0;
