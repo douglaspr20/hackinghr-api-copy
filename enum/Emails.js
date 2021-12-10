@@ -581,18 +581,21 @@ module.exports = {
     `,
   },
   KICK_OUT: {
-    subject: () => `
-      You have missed two mandatory activities – you can’t join this cohort anymore
+    subject: (cohort) => `
+    You have missed two mandatory activities for Hacking HR’s ProjectX ${cohort.title} (you can’t join this cohort anymore)
     `,
-    body: (user) => `
+    body: (user, cohort) => `
     <p>
       Hi ${user.firstName}
     </p>
     <p>
-      Unfortunately you have missed two mandatory activities this week. We understand that life and work happen and perhaps other priorities came up and you had to reallocate your time. It’s ok. 
+      Unfortunately you have missed two mandatory activities this week corresponding to Hacking HR’s ProjectX ${cohort.title}. 
     </p>
     <p>
-      We hope you can join a future cohort on the same skill or any other similar skill. 
+      We understand that life and work happen and perhaps other priorities came up and you had to reallocate your time. It’s ok.  
+    </p>
+    <p>
+      We hope you can join a future cohort on the same skill or any other similar skill. We will be opening similar cohorts (if not the same!) several times during the year. 
     </p>
     <p>
       You won’t be able to join this cohort’s dashboard anymore and you will not receive any more information about it. 

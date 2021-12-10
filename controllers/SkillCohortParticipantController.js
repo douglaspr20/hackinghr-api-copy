@@ -264,11 +264,17 @@ const SkillCohortParticipantController = () => {
         }
       );
 
+      const skillCohort = await SkillCohort.findOne({
+        where: {
+          id: SkillCohortId,
+        },
+      });
+
       const mailOptions = {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: participant.User.email,
-        subject: LabEmails.KICK_OUT.subject(),
-        html: LabEmails.KICK_OUT.body(participant.User),
+        subject: LabEmails.KICK_OUT.subject(skillCohort),
+        html: LabEmails.KICK_OUT.body(participant.User, skillCohort),
         contentType: "text/html",
       };
 
