@@ -72,11 +72,10 @@ const PartnerController = () => {
     const { body } = req;
 
     if (body.name) {
-      console.log(body);
       try {
         let newPartner = await Partner.create(body);
         if (body.logoUrl) {
-          let imageUrl = await s3Service().getPartnerImageUrl("", logoUrl);
+          let imageUrl = await s3Service().getPartnerImageUrl("", body.logoUrl);
           await Partner.update(
             { logoUrl: imageUrl },
             {
