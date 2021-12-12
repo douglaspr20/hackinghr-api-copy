@@ -97,7 +97,7 @@ const AnnualConferenceController = () => {
       if (!conference) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Bad Request: Conferernce not found" });
+          .json({ msg: "Bad Request: Confererence not found" });
       }
 
       return res.status(HttpCodes.OK).json({ conference });

@@ -83,6 +83,7 @@ const privateRoutes = {
   "POST /course/claim": "CourseController.claim",
   "GET /course-classes/:course": "CourseClassController.getByCourse",
   "GET /session": "AnnualConferenceController.getAll",
+  "GET /session/:id": "AnnualConferenceController.get",
   "GET /sessions-user": "AnnualConferenceController.getSessionsUser",
   "GET /session/participants": "AnnualConferenceController.getParticipants",
   "GET /session/recommended-agenda":
