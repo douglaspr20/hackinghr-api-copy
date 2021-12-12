@@ -1,7 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
-const NotificationController = require("./NotificationController");
 
 const Partner = db.Partner;
 
@@ -88,15 +87,6 @@ const PartnerController = () => {
             imageUrl,
           };
         }
-
-        await NotificationController().createNotification({
-          message: `New Company "${newPartner.name}" was created.`,
-          type: "partner",
-          meta: {
-            ...newPartner,
-          },
-          onlyFor: [-1],
-        });
 
         return res.status(HttpCodes.OK).send();
       } catch (error) {
