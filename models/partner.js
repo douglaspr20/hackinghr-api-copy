@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
   Partner.init(
     {
       name: DataTypes.STRING,
-      logoUrl: DataTypes.STRING,
+      logoUrl: DataTypes.TEXT,
       description: DataTypes.STRING,
       url: DataTypes.STRING,
       categories: DataTypes.ARRAY(DataTypes.STRING),

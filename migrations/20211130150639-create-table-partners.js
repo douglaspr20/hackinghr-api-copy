@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       name: Sequelize.STRING,
-      logoUrl: Sequelize.STRING,
+      logoUrl: Sequelize.TEXT,
       demoUrl: Sequelize.STRING,
       description: Sequelize.STRING(1000),
       url: Sequelize.STRING,

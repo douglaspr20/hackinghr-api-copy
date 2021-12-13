@@ -1,7 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
-const NotificationController = require("./NotificationController");
 
 const Partner = db.Partner;
 
@@ -72,11 +71,10 @@ const PartnerController = () => {
     const { body } = req;
 
     if (body.name) {
-      console.log(body);
       try {
         let newPartner = await Partner.create(body);
         if (body.logoUrl) {
-          let imageUrl = await s3Service().getPartnerImageUrl("", logoUrl);
+          let imageUrl = await s3Service().getPartnerImageUrl("", body.logoUrl);
           await Partner.update(
             { logoUrl: imageUrl },
             {
@@ -89,15 +87,6 @@ const PartnerController = () => {
             imageUrl,
           };
         }
-
-        await NotificationController().createNotification({
-          message: `New Company "${newPartner.name}" was created.`,
-          type: "partner",
-          meta: {
-            ...newPartner,
-          },
-          onlyFor: [-1],
-        });
 
         return res.status(HttpCodes.OK).send();
       } catch (error) {
