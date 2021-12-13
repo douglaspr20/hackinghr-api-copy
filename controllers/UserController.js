@@ -1239,6 +1239,9 @@ const UserController = () => {
     try {
       const users = await User.findAll({
         attributes: { exclude: ["password"] },
+        where: {
+          completed: "TRUE",
+        },
       });
 
       return res.status(HttpCodes.OK).json({ users });
