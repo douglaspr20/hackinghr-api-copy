@@ -22,6 +22,10 @@ const PostCommentController = () => {
         where: { PostId: data.PostId, UserId: req.user.id },
       });
 
+      const ids = follow.map((follow) => {
+        return follow.dataValues.UserId;
+      });
+
       if (follow.length > 0) {
         await NotificationController().createNotification({
           message: `New Comment "${postComment.comment}" was created.`,
@@ -30,7 +34,7 @@ const PostCommentController = () => {
             ...postComment,
           },
           UserId: req.user.id,
-          onlyFor: [-1],
+          onlyFor: ids,
         });
       }
 
