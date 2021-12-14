@@ -363,6 +363,34 @@ const SkillCohortParticipantController = () => {
     }
   };
 
+  const exportAllSkillCohortParticipantData = async (req, res) => {
+    try {
+      const participants = await SkillCohortParticipant.findAll({
+        attributes: [],
+        include: [
+          {
+            model: db.SkillCohort,
+            attributes: ["title", "id"],
+          },
+          {
+            model: db.User,
+            attributes: ["firstName", "lastName", "id"],
+          },
+        ],
+        raw: true,
+        nest: true,
+      });
+
+      return res.status(HttpCodes.OK).json({ participants });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
   return {
     create,
     get,
@@ -375,6 +403,7 @@ const SkillCohortParticipantController = () => {
     resetCounter,
     incrementAssessmentStrike,
     withdrawParticipation,
+    exportAllSkillCohortParticipantData,
   };
 };
 
