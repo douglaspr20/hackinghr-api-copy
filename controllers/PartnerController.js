@@ -1,44 +1,26 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
-const isEmpty = require("lodash/isEmpty");
-const { Op } = require("sequelize");
-const NotificationController = require("../controllers/NotificationController");
 
-const Marketplace = db.Marketplace;
-const Category = db.Category;
+const Partner = db.Partner;
 
-const MarketplaceController = () => {
+const PartnerController = () => {
   /**
-   * Method to get all MarketPlace objects
+   * Method to get all Partner objects
+
    * @param {*} req
    * @param {*} res
    */
   const getAll = async (req, res) => {
-    const { orderParam, filter } = req.body;
     try {
-      let where = {};
-      if (filter) {
-        if (filter && !isEmpty(JSON.parse(filter))) {
-          where = {
-            ...where,
-            topics: {
-              [Op.overlap]: JSON.parse(filter),
-            },
-          };
-        }
-      }
-      let marketplace = await Marketplace.findAll({
-        where,
-        order: [["name", orderParam]],
-      });
-      if (!marketplace) {
+      let partners = await Partner.findAll({});
+      if (!partners) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
       }
 
-      return res.status(HttpCodes.OK).json(marketplace);
+      return res.status(HttpCodes.OK).json({ partners });
     } catch (error) {
       console.log(error);
       return res
@@ -47,7 +29,7 @@ const MarketplaceController = () => {
     }
   };
   /**
-   * Method to get MarketPlace object
+   * Method to get Partner object
    * @param {*} req
    * @param {*} res
    */
@@ -55,19 +37,19 @@ const MarketplaceController = () => {
     const { id } = req.params;
     if (id) {
       try {
-        const marketPlace = await Marketplace.findOne({
+        const partner = await Partner.findOne({
           where: {
             id,
           },
         });
 
-        if (!marketPlace) {
+        if (!partner) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
 
-        return res.status(HttpCodes.OK).json(marketPlace);
+        return res.status(HttpCodes.OK).json({ partner });
       } catch (error) {
         console.log(error);
         return res
@@ -81,72 +63,46 @@ const MarketplaceController = () => {
     }
   };
   /**
-   * Method to add MarketPlace object
+   * Method to add Partner object
    * @param {*} req
    * @param {*} res
    */
   const add = async (req, res) => {
-    const {
-      name,
-      description,
-      url,
-      contact_name,
-      contact_email,
-      contact_phone,
-      contact_position,
-      logoUrl,
-      topics,
-      demoUrl,
-      isPartner,
-    } = req.body;
-    try {
-      let marketplace = await Marketplace.create({
-        name,
-        description,
-        url,
-        contact_name,
-        contact_email,
-        contact_phone,
-        contact_position,
-        topics,
-        demoUrl,
-        isPartner,
-      });
-      if (logoUrl) {
-        let imageUrl = await s3Service().getMarketplaceImageUrl("", logoUrl);
-        await Marketplace.update(
-          { logoUrl: imageUrl },
-          {
-            where: { id: marketplace.id },
-          }
-        );
-        marketplace = {
-          ...marketplace,
-          id: marketplace.id,
-          name,
-          imageUrl,
-        };
+    const { body } = req;
+
+    if (body.name) {
+      try {
+        let newPartner = await Partner.create(body);
+        if (body.logoUrl) {
+          let imageUrl = await s3Service().getPartnerImageUrl("", body.logoUrl);
+          await Partner.update(
+            { logoUrl: imageUrl },
+            {
+              where: { id: newPartner.id },
+            }
+          );
+          newPartner = {
+            ...newPartner,
+            id: newPartner.id,
+            imageUrl,
+          };
+        }
+
+        return res.status(HttpCodes.OK).send();
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+        0;
       }
-
-      await NotificationController().createNotification({
-        message: `New Company "${marketplace.name}" was created.`,
-        type: "marketplace",
-        meta: {
-          ...marketplace,
-        },
-        onlyFor: [-1],
-      });
-
-      return res.status(HttpCodes.OK).send();
-    } catch (error) {
-      console.log(error);
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error" });
     }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Name is needed." });
   };
   /**
-   * Method to updated MarketPlace object
+   * Method to updated Partner object
    * @param {*} req
    * @param {*} res
    */
@@ -179,18 +135,18 @@ const MarketplaceController = () => {
           }
         }
         if (body.logoUrl) {
-          const marketplace = await Marketplace.findOne({
+          const partner = await Partner.findOne({
             where: {
               id,
             },
           });
-          let imageUrl = await s3Service().getMarketplaceImageUrl(
-            marketplace.logoUrl || "",
+          let imageUrl = await s3Service().getPartnerImageUrl(
+            partner.logoUrl || "",
             body.logoUrl
           );
           data = { ...data, logoUrl: imageUrl };
         }
-        await Marketplace.update(data, {
+        await Partner.update(data, {
           where: { id },
         });
         return res.status(HttpCodes.OK).send();
@@ -207,7 +163,7 @@ const MarketplaceController = () => {
     }
   };
   /**
-   * Method to delete MarketPlace object
+   * Method to delete Partner object
    * @param {*} req
    * @param {*} res
    */
@@ -216,7 +172,7 @@ const MarketplaceController = () => {
 
     if (id) {
       try {
-        await Marketplace.destroy({
+        await Partner.destroy({
           where: { id },
         });
         return res.status(HttpCodes.OK).send();
@@ -242,4 +198,4 @@ const MarketplaceController = () => {
   };
 };
 
-module.exports = MarketplaceController;
+module.exports = PartnerController;

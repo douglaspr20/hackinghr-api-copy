@@ -1220,10 +1220,36 @@ const UserController = () => {
       if (!learningBadges) {
         return 0;
       }
-      return learningBadges[0].hours;
+      if (learningBadges.length > 0) {
+        if (learningBadges[0].hours) {
+          return learningBadges[0].hours;
+        } else {
+          return 0;
+        }
+      } else {
+        return 0;
+      }
     } catch (error) {
       console.log(error);
       return 0;
+    }
+  };
+
+  const getAllUsersExcludePassword = async (req, res) => {
+    try {
+      const users = await User.findAll({
+        attributes: { exclude: ["password"] },
+        where: {
+          completed: "TRUE",
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong." });
     }
   };
 
@@ -1253,6 +1279,7 @@ const UserController = () => {
     confirmAccessibilityRequirements,
     changePassword,
     getLearningBadgesHoursByUser,
+    getAllUsersExcludePassword,
   };
 };
 

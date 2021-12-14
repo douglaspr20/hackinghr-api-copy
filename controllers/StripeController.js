@@ -188,13 +188,14 @@ const StripeController = () => {
   const webhook = async (req, res) => {
     const { type, data } = req.body;
     try {
+      let newUserData = {};
       if (
         type === "customer.subscription.created" ||
-        type === "customer.subscription.updated"
+        type === "customer.subscription.updated" ||
+        type === "invoice.payment_succeeded"
       ) {
         console.log("********* STRIPE Webhook *************");
         console.log(`********* Type ${type} *************`);
-        let newUserData = {};
         const { customer } = data.object;
         console.log(`***** Customer: ${customer} ******`);
         const customerInformation = await stripe.customers.retrieve(customer);
@@ -266,7 +267,9 @@ const StripeController = () => {
                 .data) {
                 subChannelsItem.items.data.map((itemSubscription) => {
                   console.log(
-                    `***** PREMIUM -- Price: ${itemSubscription.price.id} / ${channelsItem} - status: ${subChannelsItem.status} ******`
+                    `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
+                    channelsItem,
+                    ` - status: ${subChannelsItem.status} ******`
                   );
                   if (
                     itemSubscription.price.id === channelsItem &&
@@ -289,12 +292,12 @@ const StripeController = () => {
           }
         }
 
-        console.log(`***** newUserData: ${newUserData} ******`);
+        console.log(`***** newUserData:`, newUserData);
         await User.update(newUserData, {
           where: { email: customerInformation.email.toLowerCase() },
         });
       }
-      return res.status(HttpCodes.OK).send();
+      return res.status(HttpCodes.OK).json({ newUserData });
     } catch (err) {
       console.log(err);
       return res

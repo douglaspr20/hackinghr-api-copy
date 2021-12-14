@@ -84,6 +84,8 @@ const privateRoutes = {
   "GET /session": "AnnualConferenceController.getAll",
   "GET /sessions-user": "AnnualConferenceController.getSessionsUser",
   "GET /session/participants": "AnnualConferenceController.getParticipants",
+  "GET /session/recommended-agenda":
+    "AnnualConferenceController.recommendedAgenda",
   "GET /session/:id": "AnnualConferenceController.get",
   "GET /course-instructors/:course": "CourseController.getInstructorsByCourse",
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
@@ -175,6 +177,9 @@ const privateRoutes = {
     "LearningController.getAllItemsWithHrCredit",
   "GET /my-learnings/event-videos": "LearningController.getAllEventVideos",
   "GET /learning-badges": "LearningBadgeController.getAll",
+  "GET /partner": "PartnerController.getAll",
+  "GET /partner/:id": "PartnerController.get",
+  "GET /users": "UserController.getAllUsersExcludePassword",
 };
 
 module.exports = privateRoutes;
