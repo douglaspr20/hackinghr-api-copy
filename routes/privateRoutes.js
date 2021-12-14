@@ -177,6 +177,7 @@ const privateRoutes = {
   "GET /learning-badges": "LearningBadgeController.getAll",
   "GET /partner": "PartnerController.getAll",
   "GET /partner/:id": "PartnerController.get",
+  "GET /users": "UserController.getAllUsersExcludePassword",
 };
 
 module.exports = privateRoutes;

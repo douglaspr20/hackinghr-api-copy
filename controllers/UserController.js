@@ -1235,6 +1235,24 @@ const UserController = () => {
     }
   };
 
+  const getAllUsersExcludePassword = async (req, res) => {
+    try {
+      const users = await User.findAll({
+        attributes: { exclude: ["password"] },
+        where: {
+          completed: "TRUE",
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong." });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -1261,6 +1279,7 @@ const UserController = () => {
     confirmAccessibilityRequirements,
     changePassword,
     getLearningBadgesHoursByUser,
+    getAllUsersExcludePassword,
   };
 };
 
