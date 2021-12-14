@@ -84,6 +84,8 @@ const adminRoutes = {
   "GET /skill-cohort/grouping/:groupId": "SkillCohortGroupingsController.get",
   "PUT /skill-cohort/grouping/:groupId":
     "SkillCohortGroupingsController.update",
+  "GET /skill-cohort/participants/export-all":
+    "SkillCohortParticipantController.exportAllSkillCohortParticipantData",
   "POST /partner/": "PartnerController.add",
   "PUT /partner/:id": "PartnerController.update",
   "DELETE /partner/:id": "PartnerController.remove",

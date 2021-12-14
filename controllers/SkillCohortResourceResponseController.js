@@ -21,6 +21,30 @@ const SkillCohortResourceResponseController = () => {
         await SkillCohortResourceResponse.create({
           ...body,
           SkillCohortResourceId,
+          include: [
+            {
+              model: db.SkillCohortParticipant,
+              include: [
+                {
+                  model: db.User,
+                },
+              ],
+            },
+            {
+              model: db.SkillCohortResponseAssessment,
+              separate: true,
+              include: [
+                {
+                  model: db.SkillCohortParticipant,
+                  include: [
+                    {
+                      model: db.User,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         });
 
       return res.status(HttpCodes.OK).json({ skillCohortResourceResponse });

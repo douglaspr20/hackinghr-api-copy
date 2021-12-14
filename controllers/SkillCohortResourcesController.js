@@ -68,6 +68,36 @@ const SkillCohortResourcesController = () => {
     }
   };
 
+  const getEntire = async (req, res) => {
+    const { skillCohortId } = req.params;
+    const { date } = req.body;
+
+    let where = {
+      SkillCohortId: skillCohortId,
+      releaseDate: {
+        [Op.lte]: moment
+          .tz(date, "America/Los_Angeles")
+          .startOf("day")
+          .format("YYYY-MM-DD HH:mm:ssZ"),
+      },
+    };
+
+    try {
+      const entireSkillCohortResources = await SkillCohortResources.findAll({
+        where,
+        order: [["releaseDate", "DESC"]],
+      });
+
+      return res.status(HttpCodes.OK).json({ entireSkillCohortResources });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal Server error",
+        error,
+      });
+    }
+  };
+
   const getAllAndCount = async (req, res) => {
     const { date, page, num } = req.query;
     const { skillCohortId } = req.params;
@@ -81,7 +111,7 @@ const SkillCohortResourcesController = () => {
         where = {
           ...where,
           releaseDate: {
-            [Op.lt]: moment
+            [Op.lte]: moment
               .tz(date, "America/Los_Angeles")
               .startOf("day")
               .format("YYYY-MM-DD HH:mm:ssZ"),
@@ -91,14 +121,6 @@ const SkillCohortResourcesController = () => {
 
       let skillCohortResources = await SkillCohortResources.findAndCountAll({
         where,
-        include: [
-          {
-            model: SkillCohortResourceResponse,
-          },
-          {
-            model: SkillCohortResponseAssessment,
-          },
-        ],
         distinct: true,
         offset: (+page - 1) * +num,
         limit: +num * +page,
@@ -129,6 +151,42 @@ const SkillCohortResourcesController = () => {
           where: {
             id: resourceId,
           },
+          include: [
+            {
+              model: SkillCohortResourceResponse,
+              where: {
+                isDeleted: "FALSE",
+              },
+              separate: true,
+              include: [
+                {
+                  model: db.SkillCohortParticipant,
+                  include: [
+                    {
+                      model: db.User,
+                    },
+                  ],
+                },
+                {
+                  model: SkillCohortResponseAssessment,
+                  where: {
+                    isDeleted: "FALSE",
+                  },
+                  separate: true,
+                  include: [
+                    {
+                      model: db.SkillCohortParticipant,
+                      include: [
+                        {
+                          model: db.User,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         });
 
         if (!skillCohortResource) {
@@ -160,11 +218,6 @@ const SkillCohortResourcesController = () => {
               .startOf("day")
               .format("YYYY-MM-DD HH:mm:ssZ"),
           },
-          include: [
-            {
-              model: SkillCohortResourceResponse,
-            },
-          ],
         });
 
         if (!skillCohortResource) {
@@ -343,6 +396,7 @@ const SkillCohortResourcesController = () => {
     batchWrite,
     getAllAndCount,
     getTodaysResource,
+    getEntire,
   };
 };
 

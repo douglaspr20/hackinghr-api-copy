@@ -264,11 +264,17 @@ const SkillCohortParticipantController = () => {
         }
       );
 
+      const skillCohort = await SkillCohort.findOne({
+        where: {
+          id: SkillCohortId,
+        },
+      });
+
       const mailOptions = {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: participant.User.email,
-        subject: LabEmails.KICK_OUT.subject(),
-        html: LabEmails.KICK_OUT.body(participant.User),
+        subject: LabEmails.KICK_OUT.subject(skillCohort),
+        html: LabEmails.KICK_OUT.body(participant.User, skillCohort),
         contentType: "text/html",
       };
 
@@ -357,6 +363,34 @@ const SkillCohortParticipantController = () => {
     }
   };
 
+  const exportAllSkillCohortParticipantData = async (req, res) => {
+    try {
+      const participants = await SkillCohortParticipant.findAll({
+        attributes: [],
+        include: [
+          {
+            model: db.SkillCohort,
+            attributes: ["title", "id"],
+          },
+          {
+            model: db.User,
+            attributes: ["firstName", "lastName", "id"],
+          },
+        ],
+        raw: true,
+        nest: true,
+      });
+
+      return res.status(HttpCodes.OK).json({ participants });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
   return {
     create,
     get,
@@ -369,6 +403,7 @@ const SkillCohortParticipantController = () => {
     resetCounter,
     incrementAssessmentStrike,
     withdrawParticipation,
+    exportAllSkillCohortParticipantData,
   };
 };
 
