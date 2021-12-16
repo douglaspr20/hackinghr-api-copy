@@ -87,6 +87,8 @@ const privateRoutes = {
   "GET /session/recommended-agenda":
     "AnnualConferenceController.recommendedAgenda",
   "GET /session/:id": "AnnualConferenceController.get",
+  "GET /conference-classes/:conference":
+    "AnnualConferenceClassController.getByAnnualConference",
   "GET /course-instructors/:course": "CourseController.getInstructorsByCourse",
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
   "GET /notification": "NotificationController.getAll",
