@@ -178,29 +178,6 @@ const UserController = () => {
     return "";
   };
 
-  //Get users with councilMember field in true
-  const getCouncilMembers = async (req, res) => {
-    try {
-      const councilMembers = await User.findAll({
-        where: {
-          councilMember: true,
-        },
-      });
-
-      if (!councilMembers) {
-        return res
-          .status(HttpCodes.BAD_REQUEST)
-          .json({ msg: "There are not Council Members" });
-      }
-
-      return res.status(HttpCodes.OK).json({ councilMembers });
-    } catch (error) {
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error" });
-    }
-  };
-
   const generateAttendEmail = async (user, tz, event) => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
@@ -1258,7 +1235,6 @@ const UserController = () => {
     addEvent,
     removeEvent,
     getMyEvents,
-    getCouncilMembers,
     importUsers,
     getAll,
     generateInvitationEmail,
