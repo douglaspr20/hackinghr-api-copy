@@ -41,6 +41,9 @@ const adminRoutes = {
   "PUT /session/:id": "AnnualConferenceController.update",
   "DELETE /session/:id": "AnnualConferenceController.remove",
   "POST /session/send-message": "AnnualConferenceController.sendMessage",
+  "POST /conference-classes/": "AnnualConferenceClassController.add",
+  "PUT /conference-classes/:id": "AnnualConferenceClassController.update",
+  "DELETE /conference-classes/:id": "AnnualConferenceClassController.remove",
   "GET /courses/": "CourseController.getAllAdmin",
   "GET /course/:id": "CourseController.get",
   "POST /course/": "CourseController.add",
@@ -84,6 +87,8 @@ const adminRoutes = {
   "GET /skill-cohort/grouping/:groupId": "SkillCohortGroupingsController.get",
   "PUT /skill-cohort/grouping/:groupId":
     "SkillCohortGroupingsController.update",
+  "GET /skill-cohort/participants/export-all":
+    "SkillCohortParticipantController.exportAllSkillCohortParticipantData",
   "POST /partner/": "PartnerController.add",
   "PUT /partner/:id": "PartnerController.update",
   "DELETE /partner/:id": "PartnerController.remove",

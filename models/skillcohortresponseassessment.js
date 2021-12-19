@@ -26,6 +26,7 @@ module.exports = (sequelize, DataTypes) => {
   SkillCohortResponseAssessment.init(
     {
       assessment: DataTypes.TEXT,
+      isDeleted: DataTypes.BOOLEAN,
     },
     {
       sequelize,

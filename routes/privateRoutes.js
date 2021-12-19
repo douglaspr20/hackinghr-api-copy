@@ -88,6 +88,8 @@ const privateRoutes = {
   "GET /session/recommended-agenda":
     "AnnualConferenceController.recommendedAgenda",
   "GET /session/:id": "AnnualConferenceController.get",
+  "GET /conference-classes/:conference":
+    "AnnualConferenceClassController.getByAnnualConference",
   "GET /course-instructors/:course": "CourseController.getInstructorsByCourse",
   "GET /course-sponsors/:course": "CourseController.getSponsorsByCourse",
   "GET /notification": "NotificationController.getAll",
@@ -138,6 +140,8 @@ const privateRoutes = {
   "GET /skill-cohort/:id": "SkillCohortController.get",
   "GET /skill-cohort/:skillCohortId/resources":
     "SkillCohortResourcesController.getAllAndCount",
+  "GET /skill-cohort/resources/:skillCohortId/entire":
+    "SkillCohortResourcesController.getEntire",
   "GET /skill-cohort/resource/:resourceId":
     "SkillCohortResourcesController.get",
   "GET /skill-cohort/:SkillCohortId/resource/":
@@ -178,6 +182,7 @@ const privateRoutes = {
   "GET /learning-badges": "LearningBadgeController.getAll",
   "GET /partner": "PartnerController.getAll",
   "GET /partner/:id": "PartnerController.get",
+  "GET /users": "UserController.getAllUsersExcludePassword",
 };
 
 module.exports = privateRoutes;

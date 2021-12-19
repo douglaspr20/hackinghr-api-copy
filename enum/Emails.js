@@ -550,7 +550,7 @@ module.exports = {
   },
   DAILY_RESOURCE: {
     subject: (cohort, resource) => `
-    Hacking HR's ProjectX's ${cohort.title}.Today's Resource is: ${resource.title}
+    Today’s Resource for Hacking HR’s Project X ${cohort.title} is ${resource.title}
     `,
     body: (user, cohort, resource) => `
     <p>
@@ -562,6 +562,7 @@ module.exports = {
       - Type: ${resource.type} <br>
       - Link: ${resource.resourceLink} <br>
       - Estimated duration: ${resource.duration} minutes <br>
+      -	You can enter the cohort dashboard here: https://www.hackinghrlab.io/projectx/${cohort.id}/resources
     </p>
     <p>
       Please remember to: <br> <br>
@@ -569,7 +570,7 @@ module.exports = {
       -	Assess the responses provided by other cohort participants
     </p>
     <p>
-    Please remember that to stay enrolled in this cohort you must provide your daily reflection and daily assessment on other cohort participants' reflections. You are allowed only to miss two reflections or two assessments in any given week.
+      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
     </p>
     <p>
       Thank you! 
@@ -580,18 +581,21 @@ module.exports = {
     `,
   },
   KICK_OUT: {
-    subject: () => `
-      You have missed two mandatory activities – you can’t join this cohort anymore
+    subject: (cohort) => `
+    You have missed two mandatory activities for Hacking HR’s ProjectX ${cohort.title} (you can’t join this cohort anymore)
     `,
-    body: (user) => `
+    body: (user, cohort) => `
     <p>
       Hi ${user.firstName}
     </p>
     <p>
-      Unfortunately you have missed two mandatory activities this week. We understand that life and work happen and perhaps other priorities came up and you had to reallocate your time. It’s ok. 
+      Unfortunately you have missed two mandatory activities this week corresponding to Hacking HR’s ProjectX ${cohort.title}. 
     </p>
     <p>
-      We hope you can join a future cohort on the same skill or any other similar skill. 
+      We understand that life and work happen and perhaps other priorities came up and you had to reallocate your time. It’s ok.  
+    </p>
+    <p>
+      We hope you can join a future cohort on the same skill or any other similar skill. We will be opening similar cohorts (if not the same!) several times during the year. 
     </p>
     <p>
       You won’t be able to join this cohort’s dashboard anymore and you will not receive any more information about it. 
@@ -625,11 +629,104 @@ module.exports = {
     </p>
     `,
   },
-
-  INVITATION_TO_JOIN: {
-    subject: (hostUser, userInvited) =>
-      `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global Online Conference`,
-    body: (hostUser, userInvited, link) => `
+  SKILL_COHORT_EMAIL_ONE_WEEK_BEFORE_IT_STARTS: {
+    subject: (cohort, startDate) => `
+      One Week to Kick-Off Hacking HR's ProjectX Cohort: ${cohort.title} (Starting on ${startDate})
+    `,
+    body: (user, cohort) => `
+      <p>
+        Hi ${user.firstName}, <br>
+      </p>
+      <p>
+        We are only one week away from the kick-off of Hacking HR's ProjectX Cohort: ${cohort.title}<br>
+      </p>
+      <p>
+        We are so excited that you are joining! <br>
+      </p>
+      <p>
+        As you know, we created this tool with one idea in mind: to help you learn or improve your knowledge in ${cohort.title} through daily resources, personal reflections and assessment of your fellow cohort participants’ reflections! <br>
+      </p>
+      <p>
+        This program is intense, but light touch: we will provide a daily resource that you should be able to read, listen or watch in less than 20 minutes. After reading, listening or watching the resource, you will provide a personal reflection about what you learned and how you plan to apply the lessons learned. Finally, you will look at some of the reflections provided by other participants’ and provide your feedback. <br>
+      </p>
+      <p>
+        This cohort program lasts 66 consecutive days. Each day, for 66 consecutive days, you will receive a daily resource, provide the reflection and assess your fellow cohort members’ reflections. This won’t take more than 20-25 minutes per day.<br>
+      </p>
+      <p>
+        There will be a few meetings with a small and selected group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. <br>
+      </p>
+      <p>
+        As I mentioned before, the program relies on daily consistency and discipline. Instead of bugging you with heavy daily resources, “self-pace” learning program for which you disengage too soon or long programs that lasts for hours and months, we only ask you for 20-25 minutes or less on a daily basis for 66 days. That’s it! <br>
+      </p>
+      <p>
+        Please note: you won’t be able to continue enrolled in the program if you miss two activities (reflections or comments on other participants’ reflections) in a given week. This is automated and there is no way to include you again after you are removed from the cohort for missing two activities. <br>
+      </p>
+      <p>
+        Enjoy the program. Happy learning. And please do not hesitate to reach out if you have any questions:
+      </p>
+      <p>
+        enrique@hackinghr.io <br>
+      </p>
+      <p>
+        Thank you!
+      </p>
+    `,
+  },
+  SKILL_COHORT_EMAIL_DAY_BEFORE_IT_STARTS: {
+    subject: (cohort, startDate) => `
+      This is it! We are kicking off tomorrow! Hacking HR's ProjectX Cohort: ${cohort.title} (Starting on ${startDate})
+    `,
+    body: (
+      user,
+      cohort,
+      startDate,
+      endDate,
+      numOfParticipants,
+      numOfCountries
+    ) => `
+      <p>
+        Hi ${user.firstName}, <br>
+      </p>
+      <p>
+        We are only one week away from the kick-off of Hacking HR's ProjectX Cohort: ${cohort.title}<br>
+      </p>
+      <p>
+        This is it, folks! We are kicking off Hacking HR's ProjectX Cohort: ${cohort.title} tomorrow, ${startDate} and will last for 66 consecutive days until ${endDate}.  <br>
+      </p>
+      <p>
+        We wanted to send you a quick summary about what to expect during the program:<br>
+      </p>
+      <ul>
+        <li>For 66 consecutive days you will receive a daily a daily resource that you should be able to read, listen or watch in less than 20 minutes. We will send it via email, every day at 3 a.m. Pacific Time (we are early birds here!). If you don’t receive it, all you have to do is go to the cohort’s dashboard: https://www.hackinghrlab.io/projectx/${cohort.id}/resources and the resource will show.</li>
+        <li>After reading, listening or watching the resource, you will provide a personal reflection about what you learned and how you plan to apply the lessons learned.</li>
+        <li>Also, daily, you will look at some of the reflections provided by other participants’ and provide your feedback to their reflections.</li>
+        <li>In addition, you have access to the participants’ tab where you can see who is part of the cohorts and further connect with them.</li>
+        <li>Finally, there will be a “playground” to start experimenting and creating ideas together and you can get involved in this playground as much as you want.</li>
+      </ul>
+      <p>
+        Please note: you won’t be able to continue enrolled in the program if you miss two activities (reflections or comments on other participants’ reflections) in a given week. This is automated and there is no way to include you again after you are removed from the cohort for missing two activities. <br>
+      </p>
+      <p>
+        You already know this: ProjectX relies on daily consistency and discipline. Instead of bugging you with heavy daily resources, “self-pace” learning program for which you disengage too soon or long programs that lasts for hours and months, we only ask you for 20-25 minutes or less on a daily basis for 66 days. That’s it! <br>
+      </p>
+      <p>
+        Please note: you won’t be able to continue enrolled in the program if you miss two activities (reflections or comments on other participants’ reflections) in a given week. This is automated and there is no way to include you again after you are removed from the cohort for missing two activities. <br>
+      </p>
+      <p>
+        Last, but not least. This cohort is starting with ${numOfParticipants} participants and they come from ${numOfCountries} countries. So, happy learning and also happy networking! <br>
+      </p>
+      <p>
+        Enjoy the program. And please do not hesitate to reach out if you have any questions: <br>
+        enrique@hackinghr.io <br>
+      </p>
+      <p>
+        Thank you!
+      </p>
+    `,
+    INVITATION_TO_JOIN: {
+      subject: (hostUser, userInvited) =>
+        `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global Online Conference`,
+      body: (hostUser, userInvited, link) => `
     <p>
     Hi ${userInvited.name}!<br>
     </p>
@@ -667,10 +764,10 @@ module.exports = {
       Hacking HR Team
     </p>
     `,
-  },
-  USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
-    subject: `User confirm accessibility requirements`,
-    body: (user) => `
+    },
+    USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
+      subject: `User confirm accessibility requirements`,
+      body: (user) => `
     <p>
     ${user.firstName} ${user.lastName} <br>
     </p>
@@ -682,5 +779,6 @@ module.exports = {
       Hacking HR Team
     </p>
     `,
+    },
   },
 };
