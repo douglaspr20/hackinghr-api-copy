@@ -16,7 +16,6 @@ const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
-const { sequelize } = require("../models");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
