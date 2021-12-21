@@ -1,5 +1,13 @@
 const privateRoutes = {
   "GET /user/": "UserController.getUser",
+  "GET /council/members/": "CouncilMembersController.getCouncilMembers",
+  "GET /council/resources/": "CouncilMembersController.getAll",
+  "GET /council/resource/:id": "CouncilMembersController.getCouncilResource",
+  "POST /council/add-resources/": "CouncilMembersController.create",
+  "GET /councilComments/": "CouncilCommentController.getAll",
+  "POST /councilComments/create-comment": "CouncilCommentController.add",
+  "DELETE /councilComments/delete-comment/:id":
+    "CouncilCommentController.remove",
   "GET /events/": "EventController.getAllEvents",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
