@@ -29,18 +29,35 @@ const MarketplaceProfileController = () => {
     }
   };
   const getAll = async (req, res) => {
+    const { userId } = req.query;
     try {
+      console.log(userId);
       const marketPlaceProfiles = await MarketPlaceProfile.findAll({
         where: {
-          showMarketPlaceProfile: true,
+          [Op.and]: [
+            { showMarketPlaceProfile: true },
+            {
+              UserId: {
+                [Op.ne]: userId,
+              },
+            },
+          ],
         },
         include: {
           model: User,
           required: true,
+          attributes: [
+            "abbrName",
+            "email",
+            "firstName",
+            "lastName",
+            "img",
+            "personalLinks",
+            "resumeUrl",
+          ],
         },
-        order: order ? [order] : [[Sequelize.fn("RANDOM")]],
+        order: [[Sequelize.fn("RANDOM")]],
       });
-
       return res.status(HttpCodes.OK).json({ marketPlaceProfiles });
     } catch (error) {
       console.log(error);
@@ -63,7 +80,7 @@ const MarketplaceProfileController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Bad Request: Profile not found" });
       }
-
+      4;
       return res.status(HttpCodes.OK).json({ marketPlaceProfile });
     } catch (error) {
       console.log(error);
