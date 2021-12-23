@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
       User.hasMany(models.CourseClassUser);
+      User.hasMany(models.AnnualConferenceClassUser);
       User.hasMany(models.Post);
       User.hasMany(models.PostLike);
       User.hasMany(models.PostComment);

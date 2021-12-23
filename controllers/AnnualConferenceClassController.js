@@ -2,7 +2,6 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const Sequelize = require("sequelize");
 
-const QueryTypes = Sequelize.QueryTypes;
 const AnnualConferenceClass = db.AnnualConferenceClass;
 
 const AnnualConferenceClassController = () => {
