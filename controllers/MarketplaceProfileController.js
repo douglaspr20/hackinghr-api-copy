@@ -73,6 +73,11 @@ const MarketplaceProfileController = () => {
         where: {
           UserId: id,
         },
+        include: {
+          model: User,
+          required: true,
+          attributes: ["resumeUrl", "resumeFileName"],
+        },
       });
 
       if (!marketPlaceProfile) {
@@ -80,7 +85,6 @@ const MarketplaceProfileController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Bad Request: Profile not found" });
       }
-      4;
       return res.status(HttpCodes.OK).json({ marketPlaceProfile });
     } catch (error) {
       console.log(error);
