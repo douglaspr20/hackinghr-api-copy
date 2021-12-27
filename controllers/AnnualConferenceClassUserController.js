@@ -16,26 +16,23 @@ const AnnualConferenceClassUserController = () => {
     const { conference } = req.params;
     if (conference) {
       try {
-        const annualConferenceClass = await AnnualConferenceClassUser.findAll({
-          where: {
-            [Op.and]: [{ UserId: req.user.id }],
-          },
-          include: [
-            {
-              model: AnnualConferenceClass,
-              where: {
-                id: Sequelize.col(
-                  "AnnualConferenceClassUsers.AnnualConferenceClassId"
-                ),
+        const annualConferenceClassUser =
+          await AnnualConferenceClassUser.findAll({
+            include: [
+              {
+                model: AnnualConferenceClass,
+                where: {
+                  AnnualConferenceId: conference,
+                },
+
+                required: true,
               },
-              required: true,
+            ],
+            where: {
+              UserId: req.user.id,
             },
-          ],
-        });
-
-        console.log(annualConferenceClass);
-
-        return;
+          });
+        return res.status(HttpCodes.OK).json({ annualConferenceClassUser });
       } catch (error) {
         console.log(error);
         return res
@@ -58,7 +55,7 @@ const AnnualConferenceClassUserController = () => {
     try {
       let annualConferenceClassUser = await AnnualConferenceClassUser.findOne({
         where: {
-          CourseClassId: req.body.annualConferenceClassId,
+          AnnualConferenceClassId: req.body.SessionClassId,
           UserId: req.user.id,
         },
       });
@@ -66,7 +63,7 @@ const AnnualConferenceClassUserController = () => {
       if (!annualConferenceClassUser) {
         add({ ...req.body, UserId: req.user.id });
       } else {
-        if (req.body.progressVideo > courseClassUser.progressVideo) {
+        if (req.body.progressVideo > annualConferenceClassUser.progressVideo) {
           update({ ...req.body, UserId: req.user.id });
         } else if (req.body.viewed) {
           update({ ...req.body, UserId: req.user.id });
@@ -86,8 +83,14 @@ const AnnualConferenceClassUserController = () => {
    * Method to add CourseClassUser object
    */
   const add = async (params) => {
+    const { progressVideo, UserId, SessionClassId } = params;
     try {
-      await AnnualConferenceClassUser.create(params);
+      const newData = {
+        progressVideo,
+        UserId,
+        AnnualConferenceClassId: SessionClassId,
+      };
+      await AnnualConferenceClassUser.create(newData);
     } catch (error) {
       console.log(error);
     }
@@ -97,11 +100,24 @@ const AnnualConferenceClassUserController = () => {
    * Method to update Course Class User object
    */
   const update = async (params) => {
+    const { progressVideo, UserId, SessionClassId, viewed } = params;
     try {
-      await AnnualConferenceClassUser.update(params, {
+      let newData = {
+        progressVideo,
+        UserId,
+        AnnualConferenceClassId: SessionClassId,
+      };
+
+      if (viewed) {
+        newData = {
+          ...newData,
+          viewed,
+        };
+      }
+      await AnnualConferenceClassUser.update(newData, {
         where: {
-          AnnualConferenceClassId: params.AnnualConferenceClassId,
-          UserId: params.UserId,
+          AnnualConferenceClassId: newData.AnnualConferenceClassId,
+          UserId: newData.UserId,
         },
       });
     } catch (error) {
