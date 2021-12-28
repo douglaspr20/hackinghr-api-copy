@@ -31,7 +31,6 @@ const MarketplaceProfileController = () => {
   const getAll = async (req, res) => {
     const { userId } = req.query;
     try {
-      console.log(userId);
       const marketPlaceProfiles = await MarketPlaceProfile.findAll({
         where: {
           [Op.and]: [
