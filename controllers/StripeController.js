@@ -180,6 +180,7 @@ const StripeController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+
   /**
    * Function to manage stripe events
    * @param {*} req
@@ -209,88 +210,15 @@ const StripeController = () => {
         console.log(`***** memberShip: ${user.memberShip} ******`);
 
         if (user.memberShip == "free") {
-          let premiumPrices = [
-            process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
-            process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_ID,
-            process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
-          ];
-
-          for (let itemPremium of premiumPrices) {
-            if (customerInformation.subscriptions.data.length > 0) {
-              for (let subItemPremium of customerInformation.subscriptions
-                .data) {
-                subItemPremium.items.data.map(async (itemSubscription) => {
-                  console.log(
-                    `***** PREMIUM -- Price: ${itemSubscription.price.id} / ${itemPremium} - status: ${subItemPremium.status} ******`
-                  );
-                  if (
-                    itemSubscription.price.id === itemPremium &&
-                    subItemPremium.status === "active"
-                  ) {
-                    newUserData["memberShip"] = "premium";
-                    newUserData["subscription_startdate"] = moment
-                      .unix(subItemPremium.current_period_start)
-                      .format("YYYY-MM-DD HH:mm:ss");
-                    newUserData["subscription_enddate"] = moment
-                      .unix(subItemPremium.current_period_end)
-                      .format("YYYY-MM-DD HH:mm:ss");
-
-                    const mailOptions = {
-                      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                      to: user.email,
-                      subject: LabEmails.USER_BECOME_PREMIUM.subject(),
-                      html: LabEmails.USER_BECOME_PREMIUM.body(user),
-                    };
-
-                    await smtpService().sendMailUsingSendInBlue(mailOptions);
-                  }
-                });
-              }
-            }
-          }
+          const premiumData = premiumValidation(user, customerInformation);
+          newUserData = { ...newUserData, premiumData };
         }
 
-        let channelsPrices = [
-          process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_CHANNELS_ID,
-          process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_CHANNELS_ID,
-          process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_CHANNELS_ID,
-        ];
+        const channelData = channelsValidation(user, customerInformation);
+        newUserData = { ...newUserData, channelData };
 
-        console.log(
-          `***** CHANNELS -- channelsSubscription: ${user.channelsSubscription} ******`
-        );
-
-        if (user.channelsSubscription === false) {
-          for (let channelsItem of channelsPrices) {
-            if (customerInformation.subscriptions.data.length > 0) {
-              for (let subChannelsItem of customerInformation.subscriptions
-                .data) {
-                subChannelsItem.items.data.map((itemSubscription) => {
-                  console.log(
-                    `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
-                    channelsItem,
-                    ` - status: ${subChannelsItem.status} ******`
-                  );
-                  if (
-                    itemSubscription.price.id === channelsItem &&
-                    subChannelsItem.status === "active"
-                  ) {
-                    newUserData["channelsSubscription"] = true;
-                    if (user.role !== "admin") {
-                      newUserData["role"] = UserRoles.CHANNEL_ADMIN;
-                    }
-                    newUserData["channelsSubscription_startdate"] = moment
-                      .unix(subChannelsItem.current_period_start)
-                      .format("YYYY-MM-DD HH:mm:ss");
-                    newUserData["channelsSubscription_enddate"] = moment
-                      .unix(subChannelsItem.current_period_end)
-                      .format("YYYY-MM-DD HH:mm:ss");
-                  }
-                });
-              }
-            }
-          }
-        }
+        const recruiterData = recruiterValidation(user, customerInformation);
+        newUserData = { ...newUserData, recruiterData };
 
         console.log(`***** newUserData:`, newUserData);
         await User.update(newUserData, {
@@ -305,6 +233,219 @@ const StripeController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+  /**
+   * Function to validate premium subscription status
+   * @param {*} user
+   * @param {*} customerInformation
+   */
+  const premiumValidation = async (user, customerInformation) => {
+    let newUserData = {};
+    let premiumPrices = [
+      process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
+      process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_ID,
+      process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
+    ];
+
+    for (let itemPremium of premiumPrices) {
+      if (customerInformation.subscriptions.data.length > 0) {
+        for (let subItemPremium of customerInformation.subscriptions.data) {
+          subItemPremium.items.data.map(async (itemSubscription) => {
+            console.log(
+              `***** PREMIUM -- Price: ${itemSubscription.price.id} / ${itemPremium} - status: ${subItemPremium.status} ******`
+            );
+            if (
+              itemSubscription.price.id === itemPremium &&
+              subItemPremium.status === "active"
+            ) {
+              newUserData["memberShip"] = "premium";
+              newUserData["subscription_startdate"] = moment
+                .unix(subItemPremium.current_period_start)
+                .format("YYYY-MM-DD HH:mm:ss");
+              newUserData["subscription_enddate"] = moment
+                .unix(subItemPremium.current_period_end)
+                .format("YYYY-MM-DD HH:mm:ss");
+
+              const mailOptions = {
+                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                to: user.email,
+                subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+                html: LabEmails.USER_BECOME_PREMIUM.body(user),
+              };
+
+              await smtpService().sendMailUsingSendInBlue(mailOptions);
+            } else if (
+              (itemSubscription.price.id === itemPremium &&
+                subItemPremium.status === "past_due") ||
+              (itemSubscription.price.id === itemPremium &&
+                subItemPremium.status === "cancel")
+            ) {
+              newUserData["memberShip"] = "free";
+
+              const mailOptions = {
+                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                to: user.email,
+                subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+                html: LabEmails.USER_BECOME_PREMIUM.body(user),
+              };
+
+              await smtpService().sendMailUsingSendInBlue(mailOptions);
+            }
+          });
+        }
+      }
+    }
+
+    return newUserData;
+  };
+
+  /**
+   * Function to validate channel subscription status
+   * @param {*} user
+   * @param {*} customerInformation
+   */
+  const channelsValidation = async (user, customerInformation) => {
+    let newUserData = {};
+    let channelsPrices = [
+      process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_CHANNELS_ID,
+      process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_CHANNELS_ID,
+      process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_CHANNELS_ID,
+    ];
+
+    console.log(
+      `***** CHANNELS -- channelsSubscription: ${user.channelsSubscription} ******`
+    );
+
+    if (user.channelsSubscription === false) {
+      for (let channelsItem of channelsPrices) {
+        if (customerInformation.subscriptions.data.length > 0) {
+          for (let subChannelsItem of customerInformation.subscriptions.data) {
+            subChannelsItem.items.data.map((itemSubscription) => {
+              console.log(
+                `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
+                channelsItem,
+                ` - status: ${subChannelsItem.status} ******`
+              );
+              if (
+                itemSubscription.price.id === channelsItem &&
+                subChannelsItem.status === "active"
+              ) {
+                newUserData["channelsSubscription"] = true;
+                if (user.role !== "admin") {
+                  newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+                }
+                newUserData["channelsSubscription_startdate"] = moment
+                  .unix(subChannelsItem.current_period_start)
+                  .format("YYYY-MM-DD HH:mm:ss");
+                newUserData["channelsSubscription_enddate"] = moment
+                  .unix(subChannelsItem.current_period_end)
+                  .format("YYYY-MM-DD HH:mm:ss");
+              } else if (
+                (itemSubscription.price.id === channelsItem &&
+                  subChannelsItem.status === "past_due") ||
+                (itemSubscription.price.id === channelsItem &&
+                  subChannelsItem.status === "cancel")
+              ) {
+                newUserData["channelsSubscription"] = false;
+                if (user.role !== "admin") {
+                  newUserData["role"] = UserRoles.USER;
+                }
+              }
+            });
+          }
+        }
+      }
+    }
+    return newUserData;
+  };
+
+  /**
+   * Function to validate recruiter subscription status
+   * @param {*} user
+   * @param {*} customerInformation
+   */
+  const recruiterValidation = async () => {
+    let newUserData = {};
+    let recruiterPrices = [
+      process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_RECRUITER_ID,
+    ];
+
+    console.log(
+      `***** RECRUITER -- recruiterSubscription: ${user.recruiterSubscription} ******`
+    );
+
+    if (user.recruiterSubscription === false) {
+      for (let recruiterItem of recruiterPrices) {
+        if (customerInformation.subscriptions.data.length > 0) {
+          for (let subChannelsItem of customerInformation.subscriptions.data) {
+            subChannelsItem.items.data.map((itemSubscription) => {
+              console.log(
+                `***** RECRUITER -- Price: ${itemSubscription.price.id} /`,
+                recruiterItem,
+                ` - status: ${subChannelsItem.status} ******`
+              );
+              if (
+                itemSubscription.price.id === recruiterItem &&
+                subChannelsItem.status === "active"
+              ) {
+                newUserData["recruiterSubscription"] = true;
+                newUserData["recruiterSubscription_startdate"] = moment
+                  .unix(subChannelsItem.current_period_start)
+                  .format("YYYY-MM-DD HH:mm:ss");
+                newUserData["recruiterSubscription_enddate"] = moment
+                  .unix(subChannelsItem.current_period_end)
+                  .format("YYYY-MM-DD HH:mm:ss");
+              } else if (
+                (itemSubscription.price.id === recruiterItem &&
+                  subChannelsItem.status === "past_due") ||
+                (itemSubscription.price.id === recruiterItem &&
+                  subChannelsItem.status === "cancel")
+              ) {
+                newUserData["recruiterSubscription"] = false;
+              }
+            });
+          }
+        }
+      }
+    }
+    return newUserData;
+  };
+
+  /*
+  * TO DO: Only use when you need upgrade prices of subscriptios.
+  const upgradeSubscription = async (req, res) => {
+    let price = "{}";
+    let customerIds = [];
+    const subscriptions = await stripe.subscriptions.list({
+      price,
+      limit: 200,
+    });
+
+    for (let item of subscriptions.data) {
+      const subscription = await stripe.subscriptions.retrieve(item.id);
+      for (let i of subscription.items.data) {
+        let itemId = null;
+        if (i.price.id === price) {
+          itemId = i.id;
+        }
+        if (itemId != null) {
+          stripe.subscriptions.update(item.id, {
+            proration_behavior: "none",
+            items: [
+              {
+                id: itemId,
+                price: "{}",
+              },
+            ],
+          });
+          customerIds.push(item.customer);
+          break;
+        }
+      }
+    }
+
+    return res.status(HttpCodes.OK).json({ customerIds });
+  };
+  */
 
   return {
     createCheckoutSession,
