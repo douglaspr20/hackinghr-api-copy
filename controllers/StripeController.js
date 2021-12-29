@@ -209,16 +209,17 @@ const StripeController = () => {
 
         console.log(`***** memberShip: ${user.memberShip} ******`);
 
-        if (user.memberShip == "free") {
-          const premiumData = premiumValidation(user, customerInformation);
-          newUserData = { ...newUserData, premiumData };
-        }
+        const premiumData = await premiumValidation(user, customerInformation);
+        newUserData = { ...newUserData, ...premiumData };
 
-        const channelData = channelsValidation(user, customerInformation);
-        newUserData = { ...newUserData, channelData };
+        const channelData = await channelsValidation(user, customerInformation);
+        newUserData = { ...newUserData, ...channelData };
 
-        const recruiterData = recruiterValidation(user, customerInformation);
-        newUserData = { ...newUserData, recruiterData };
+        const recruiterData = await recruiterValidation(
+          user,
+          customerInformation
+        );
+        newUserData = { ...newUserData, ...recruiterData };
 
         console.log(`***** newUserData:`, newUserData);
         await User.update(newUserData, {
@@ -264,15 +265,18 @@ const StripeController = () => {
               newUserData["subscription_enddate"] = moment
                 .unix(subItemPremium.current_period_end)
                 .format("YYYY-MM-DD HH:mm:ss");
+              try {
+                const mailOptions = {
+                  from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                  to: user.email,
+                  subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+                  html: LabEmails.USER_BECOME_PREMIUM.body(user),
+                };
 
-              const mailOptions = {
-                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                to: user.email,
-                subject: LabEmails.USER_BECOME_PREMIUM.subject(),
-                html: LabEmails.USER_BECOME_PREMIUM.body(user),
-              };
-
-              await smtpService().sendMailUsingSendInBlue(mailOptions);
+                await smtpService().sendMailUsingSendInBlue(mailOptions);
+              } catch (error) {
+                console.log(error);
+              }
             } else if (
               (itemSubscription.price.id === itemPremium &&
                 subItemPremium.status === "past_due") ||
@@ -315,43 +319,41 @@ const StripeController = () => {
       `***** CHANNELS -- channelsSubscription: ${user.channelsSubscription} ******`
     );
 
-    if (user.channelsSubscription === false) {
-      for (let channelsItem of channelsPrices) {
-        if (customerInformation.subscriptions.data.length > 0) {
-          for (let subChannelsItem of customerInformation.subscriptions.data) {
-            subChannelsItem.items.data.map((itemSubscription) => {
-              console.log(
-                `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
-                channelsItem,
-                ` - status: ${subChannelsItem.status} ******`
-              );
-              if (
-                itemSubscription.price.id === channelsItem &&
-                subChannelsItem.status === "active"
-              ) {
-                newUserData["channelsSubscription"] = true;
-                if (user.role !== "admin") {
-                  newUserData["role"] = UserRoles.CHANNEL_ADMIN;
-                }
-                newUserData["channelsSubscription_startdate"] = moment
-                  .unix(subChannelsItem.current_period_start)
-                  .format("YYYY-MM-DD HH:mm:ss");
-                newUserData["channelsSubscription_enddate"] = moment
-                  .unix(subChannelsItem.current_period_end)
-                  .format("YYYY-MM-DD HH:mm:ss");
-              } else if (
-                (itemSubscription.price.id === channelsItem &&
-                  subChannelsItem.status === "past_due") ||
-                (itemSubscription.price.id === channelsItem &&
-                  subChannelsItem.status === "cancel")
-              ) {
-                newUserData["channelsSubscription"] = false;
-                if (user.role !== "admin") {
-                  newUserData["role"] = UserRoles.USER;
-                }
+    for (let channelsItem of channelsPrices) {
+      if (customerInformation.subscriptions.data.length > 0) {
+        for (let subChannelsItem of customerInformation.subscriptions.data) {
+          subChannelsItem.items.data.map((itemSubscription) => {
+            console.log(
+              `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
+              channelsItem,
+              ` - status: ${subChannelsItem.status} ******`
+            );
+            if (
+              itemSubscription.price.id === channelsItem &&
+              subChannelsItem.status === "active"
+            ) {
+              newUserData["channelsSubscription"] = true;
+              if (user.role !== "admin") {
+                newUserData["role"] = UserRoles.CHANNEL_ADMIN;
               }
-            });
-          }
+              newUserData["channelsSubscription_startdate"] = moment
+                .unix(subChannelsItem.current_period_start)
+                .format("YYYY-MM-DD HH:mm:ss");
+              newUserData["channelsSubscription_enddate"] = moment
+                .unix(subChannelsItem.current_period_end)
+                .format("YYYY-MM-DD HH:mm:ss");
+            } else if (
+              (itemSubscription.price.id === channelsItem &&
+                subChannelsItem.status === "past_due") ||
+              (itemSubscription.price.id === channelsItem &&
+                subChannelsItem.status === "cancel")
+            ) {
+              newUserData["channelsSubscription"] = false;
+              if (user.role !== "admin") {
+                newUserData["role"] = UserRoles.USER;
+              }
+            }
+          });
         }
       }
     }
@@ -363,7 +365,7 @@ const StripeController = () => {
    * @param {*} user
    * @param {*} customerInformation
    */
-  const recruiterValidation = async () => {
+  const recruiterValidation = async (user, customerInformation) => {
     let newUserData = {};
     let recruiterPrices = [
       process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_RECRUITER_ID,
@@ -373,41 +375,57 @@ const StripeController = () => {
       `***** RECRUITER -- recruiterSubscription: ${user.recruiterSubscription} ******`
     );
 
-    if (user.recruiterSubscription === false) {
-      for (let recruiterItem of recruiterPrices) {
-        if (customerInformation.subscriptions.data.length > 0) {
-          for (let subChannelsItem of customerInformation.subscriptions.data) {
-            subChannelsItem.items.data.map((itemSubscription) => {
-              console.log(
-                `***** RECRUITER -- Price: ${itemSubscription.price.id} /`,
-                recruiterItem,
-                ` - status: ${subChannelsItem.status} ******`
-              );
-              if (
-                itemSubscription.price.id === recruiterItem &&
-                subChannelsItem.status === "active"
-              ) {
-                newUserData["recruiterSubscription"] = true;
-                newUserData["recruiterSubscription_startdate"] = moment
-                  .unix(subChannelsItem.current_period_start)
-                  .format("YYYY-MM-DD HH:mm:ss");
-                newUserData["recruiterSubscription_enddate"] = moment
-                  .unix(subChannelsItem.current_period_end)
-                  .format("YYYY-MM-DD HH:mm:ss");
-              } else if (
-                (itemSubscription.price.id === recruiterItem &&
-                  subChannelsItem.status === "past_due") ||
-                (itemSubscription.price.id === recruiterItem &&
-                  subChannelsItem.status === "cancel")
-              ) {
-                newUserData["recruiterSubscription"] = false;
-              }
-            });
-          }
+    for (let recruiterItem of recruiterPrices) {
+      if (customerInformation.subscriptions.data.length > 0) {
+        for (let subChannelsItem of customerInformation.subscriptions.data) {
+          subChannelsItem.items.data.map((itemSubscription) => {
+            console.log(
+              `***** RECRUITER -- Price: ${itemSubscription.price.id} /`,
+              recruiterItem,
+              ` - status: ${subChannelsItem.status} ******`
+            );
+            if (
+              itemSubscription.price.id === recruiterItem &&
+              subChannelsItem.status === "active"
+            ) {
+              newUserData["recruiterSubscription"] = true;
+              newUserData["recruiterSubscription_startdate"] = moment
+                .unix(subChannelsItem.current_period_start)
+                .format("YYYY-MM-DD HH:mm:ss");
+              newUserData["recruiterSubscription_enddate"] = moment
+                .unix(subChannelsItem.current_period_end)
+                .format("YYYY-MM-DD HH:mm:ss");
+            } else if (
+              (itemSubscription.price.id === recruiterItem &&
+                subChannelsItem.status === "past_due") ||
+              (itemSubscription.price.id === recruiterItem &&
+                subChannelsItem.status === "cancel")
+            ) {
+              newUserData["recruiterSubscription"] = false;
+            }
+          });
         }
       }
     }
     return newUserData;
+  };
+
+  const updateEmail = async (oldEmail, newEmail) => {
+    try {
+      const customers = await stripe.customers.list({
+        email: oldEmail,
+        limit: 1,
+      });
+      if (customers.data.length > 0) {
+        await stripe.customers.update(customers.data[0].id, {
+          email: newEmail,
+        });
+      }
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
   };
 
   /*
@@ -452,6 +470,7 @@ const StripeController = () => {
     createPortalSession,
     getSubscription,
     webhook,
+    updateEmail,
   };
 };
 

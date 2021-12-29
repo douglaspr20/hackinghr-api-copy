@@ -117,6 +117,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      recruiterSubscription: DataTypes.BOOLEAN,
+      recruiterSubscription_startdate: DataTypes.DATE,
+      recruiterSubscription_enddate: DataTypes.DATE,
     },
     {
       sequelize,

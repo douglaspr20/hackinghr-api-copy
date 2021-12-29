@@ -17,6 +17,7 @@ const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const { sequelize } = require("../models");
+const StripeController = require("./StripeController");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -120,6 +121,11 @@ const UserController = () => {
             returning: true,
             plain: true,
           }
+        );
+
+        await StripeController().updateEmail(
+          prevUser.email,
+          user.email.toLowerCase()
         );
 
         return res
