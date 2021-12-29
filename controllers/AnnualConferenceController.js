@@ -8,9 +8,6 @@ const SocketEventTypes = require("../enum/SocketEventTypes");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
-
-const Marketplace = db.Marketplace;
-const Instructor = db.Instructor;
 const QueryTypes = Sequelize.QueryTypes;
 
 const AnnualConferenceController = () => {

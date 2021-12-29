@@ -188,6 +188,10 @@ const privateRoutes = {
   "GET /partner": "PartnerController.getAll",
   "GET /partner/:id": "PartnerController.get",
   "GET /users": "UserController.getAllUsersExcludePassword",
+  "GET /marketplace-profiles": "MarketplaceProfileController.getAll",
+  "POST /marketplace-profiles": "MarketplaceProfileController.add",
+  "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",
+  "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
 };
 
 module.exports = privateRoutes;
