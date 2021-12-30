@@ -43,7 +43,6 @@ const MarketplaceProfileController = () => {
         ],
       };
 
-      let where2 = {};
       if (meta) {
         where[Op.and].push({
           [Op.or]: [
