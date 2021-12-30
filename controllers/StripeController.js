@@ -193,7 +193,8 @@ const StripeController = () => {
       if (
         type === "customer.subscription.created" ||
         type === "customer.subscription.updated" ||
-        type === "invoice.payment_succeeded"
+        type === "invoice.payment_succeeded" ||
+        type === "customer.subscription.deleted"
       ) {
         console.log("********* STRIPE Webhook *************");
         console.log(`********* Type ${type} *************`);
