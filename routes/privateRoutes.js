@@ -180,6 +180,10 @@ const privateRoutes = {
   "GET /partner": "PartnerController.getAll",
   "GET /partner/:id": "PartnerController.get",
   "GET /users": "UserController.getAllUsersExcludePassword",
+  "GET /job-board/job-posts": "JobPostController.getAll",
+  "GET /job-board/job-post/:JobPostId": "JobPostController.getJobPost",
+  "POST /job-board/job-post": "JobPostController.upsert",
+  "GET /job-board/my-job-posts": "JobPostController.getMyJobPosts",
 };
 
 module.exports = privateRoutes;

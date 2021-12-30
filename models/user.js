@@ -25,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Notification);
       User.hasMany(models.SkillCohortParticipant);
       User.hasMany(models.SkillCohortGroupingMember);
+      User.hasMany(models.JobPost);
     }
   }
   User.init(

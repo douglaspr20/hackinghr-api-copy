@@ -22,7 +22,7 @@ module.exports = {
         type: Sequelize.STRING,
       },
       jobDescription: {
-        type: Sequelize.TEXT,
+        type: Sequelize.JSONB,
       },
       city: {
         type: Sequelize.STRING,
@@ -31,22 +31,25 @@ module.exports = {
         type: Sequelize.STRING,
       },
       location: {
-        type: Sequelize.ENUM("remote", "on-site", "hybrid"),
+        type: Sequelize.ARRAY(Sequelize.STRING),
       },
       salary: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
       },
       level: {
         type: Sequelize.STRING,
       },
       preferredSkills: {
-        type: Sequelize.STRING,
+        type: Sequelize.ARRAY(Sequelize.STRING),
       },
       linkToApply: {
         type: Sequelize.STRING,
       },
       closingDate: {
         type: Sequelize.DATE,
+      },
+      timezone: {
+        type: Sequelize.STRING,
       },
       companyName: {
         type: Sequelize.STRING,
@@ -55,7 +58,22 @@ module.exports = {
         type: Sequelize.STRING,
       },
       companyDescription: {
-        type: Sequelize.JSONB,
+        type: Sequelize.TEXT,
+      },
+      status: {
+        // type: Sequelize.ENUM("active", "draft", "expired", "closed"),
+        type: Sequelize.STRING,
+        validate: {
+          customValidator: (value) => {
+            const enums = ["active", "draft", "expired", "closed"];
+            if (!enums.includes(value)) {
+              throw new Error("not a valid option");
+            }
+          },
+        },
+      },
+      keywords: {
+        type: Sequelize.ARRAY(Sequelize.STRING),
       },
       createdAt: {
         allowNull: false,

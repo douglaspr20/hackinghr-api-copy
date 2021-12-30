@@ -9,23 +9,28 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      JobPost.belongsTo(models.User);
     }
   }
   JobPost.init(
     {
       title: DataTypes.STRING,
-      jobDescription: DataTypes.TEXT,
+      jobDescription: DataTypes.JSONB,
       city: DataTypes.STRING,
       country: DataTypes.STRING,
-      location: DataTypes.ENUM("remote", "on-site", "hybrid"),
-      salary: DataTypes.NUMBER,
+      location: DataTypes.ARRAY(DataTypes.STRING),
+      salary: DataTypes.STRING,
       level: DataTypes.STRING,
-      preferredSkills: DataTypes.STRING,
+      preferredSkills: DataTypes.ARRAY(DataTypes.STRING),
       linkToApply: DataTypes.STRING,
       closingDate: DataTypes.DATE,
+      timezone: DataTypes.STRING,
       companyName: DataTypes.STRING,
       companyLogo: DataTypes.STRING,
-      companyDescription: DataTypes.JSONB,
+      companyDescription: DataTypes.TEXT,
+      // status: DataTypes.ENUM("active", "draft", "expired", "closed"),
+      status: DataTypes.STRING,
+      keywords: DataTypes.ARRAY(DataTypes.STRING),
     },
     {
       sequelize,
