@@ -1,5 +1,13 @@
 const privateRoutes = {
   "GET /user/": "UserController.getUser",
+  "GET /council/members/": "CouncilMembersController.getCouncilMembers",
+  "GET /council/resources/": "CouncilMembersController.getAll",
+  "GET /council/resource/:id": "CouncilMembersController.getCouncilResource",
+  "POST /council/add-resources/": "CouncilMembersController.create",
+  "GET /councilComments/": "CouncilCommentController.getAll",
+  "POST /councilComments/create-comment": "CouncilCommentController.add",
+  "DELETE /councilComments/delete-comment/:id":
+    "CouncilCommentController.remove",
   "GET /events/": "EventController.getAllEvents",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
@@ -184,6 +192,10 @@ const privateRoutes = {
   "GET /job-board/job-post/:JobPostId": "JobPostController.getJobPost",
   "POST /job-board/job-post": "JobPostController.upsert",
   "GET /job-board/my-job-posts": "JobPostController.getMyJobPosts",
+  "GET /marketplace-profiles": "MarketplaceProfileController.getAll",
+  "POST /marketplace-profiles": "MarketplaceProfileController.add",
+  "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",
+  "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
 };
 
 module.exports = privateRoutes;
