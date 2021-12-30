@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       isRecruiter: DataTypes.BOOLEAN,
       showMarketPlaceProfile: DataTypes.BOOLEAN,
-      lookingFor: DataTypes.STRING,
+      lookingFor: DataTypes.ARRAY(DataTypes.STRING),
       topics: DataTypes.ARRAY(DataTypes.STRING),
       location: DataTypes.ARRAY(DataTypes.STRING),
     },
