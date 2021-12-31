@@ -6,6 +6,7 @@ const { isEmpty, flattenDeep } = require("lodash");
 const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
+const moment = require("moment");
 
 const JobPost = db.JobPost;
 
@@ -38,7 +39,7 @@ const JobPostController = () => {
 
       if (filter?.keyword && !isEmpty(filter.keyword)) {
         const keyword = generateKeywords(filter.keyword);
-        console.log(keyword, "keyword");
+
         where = {
           ...where,
           keywords: {
@@ -126,7 +127,7 @@ const JobPostController = () => {
         UserId: id,
         location: JSON.parse(body.location),
         preferredSkills: JSON.parse(body.preferredSkills),
-        closingDate: convertToCertainTime(body.closingDate, body.timezone),
+        closingDate: moment(body.closingDate).format("YYYY-MM-DD HH:mm:ssZ"),
       };
 
       let fetchedJobPost = {};
@@ -153,7 +154,7 @@ const JobPostController = () => {
         }
       }
 
-      const titleKeywords = generateKeywords(transformedData.title);
+      const titleKeywords = generateKeywords(transformedData.jobTitle);
       const companyNameKeywords = generateKeywords(transformedData.companyName);
       let keywords = [titleKeywords, companyNameKeywords];
       keywords = flattenDeep(keywords);
@@ -191,6 +192,17 @@ const JobPostController = () => {
       const jobPost = await JobPost.findOne({
         where: {
           id: JobPostId,
+        },
+        include: {
+          model: db.User,
+          attributes: [
+            "id",
+            "personalLinks",
+            "img",
+            "firstName",
+            "lastName",
+            "titleProfessions",
+          ],
         },
       });
 

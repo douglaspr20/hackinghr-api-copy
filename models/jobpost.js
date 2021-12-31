@@ -14,17 +14,16 @@ module.exports = (sequelize, DataTypes) => {
   }
   JobPost.init(
     {
-      title: DataTypes.STRING,
+      jobTitle: DataTypes.STRING,
       jobDescription: DataTypes.JSONB,
       city: DataTypes.STRING,
       country: DataTypes.STRING,
       location: DataTypes.ARRAY(DataTypes.STRING),
-      salary: DataTypes.STRING,
+      salaryRange: DataTypes.STRING,
       level: DataTypes.STRING,
       preferredSkills: DataTypes.ARRAY(DataTypes.STRING),
       linkToApply: DataTypes.STRING,
       closingDate: DataTypes.DATE,
-      timezone: DataTypes.STRING,
       companyName: DataTypes.STRING,
       companyLogo: DataTypes.STRING,
       companyDescription: DataTypes.TEXT,
