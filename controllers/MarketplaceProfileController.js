@@ -10,6 +10,15 @@ const MarketplaceProfileController = () => {
     const { marketplaceProfile } = req.body;
 
     try {
+      const prevMarketPlaceProfile = await MarketPlaceProfile.findOne({
+        where: {
+          UserId: marketplaceProfile.UserId,
+        },
+      });
+
+      if (prevMarketPlaceProfile) {
+        return res.status(HttpCodes.CONFLICT);
+      }
       const newMarketPlaceProfile = await MarketPlaceProfile.create(
         marketplaceProfile
       );
@@ -35,11 +44,11 @@ const MarketplaceProfileController = () => {
         [Op.and]: [
           { showMarketPlaceProfile: true },
 
-          // {
-          //   UserId: {
-          //     [Op.ne]: userId,
-          //   },
-          // },
+          {
+            UserId: {
+              [Op.ne]: userId,
+            },
+          },
         ],
       };
 
