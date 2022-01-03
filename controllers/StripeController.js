@@ -37,7 +37,7 @@ const StripeController = () => {
       try {
         let sessionData = {
           success_url: process.env.STRIPE_CALLBACK_URL,
-          cancel_url: process.env.STRIPE_CALLBACK_URL,
+          canceled_url: process.env.STRIPE_CALLBACK_URL,
           payment_method_types: ["card"],
           line_items: checkoutSessionPrinces,
           mode: "subscription",
@@ -285,7 +285,7 @@ const StripeController = () => {
                 (itemSubscription.price.id === itemPremium &&
                   subItemPremium.status === "past_due") ||
                 (itemSubscription.price.id === itemPremium &&
-                  subItemPremium.status === "cancel")
+                  subItemPremium.status === "canceled")
               ) {
                 newUserData["memberShip"] = "free";
               }
@@ -346,7 +346,7 @@ const StripeController = () => {
                 (itemSubscription.price.id === channelsItem &&
                   subChannelsItem.status === "past_due") ||
                 (itemSubscription.price.id === channelsItem &&
-                  subChannelsItem.status === "cancel")
+                  subChannelsItem.status === "canceled")
               ) {
                 newUserData["channelsSubscription"] = false;
                 if (user.role !== "admin") {
@@ -404,7 +404,7 @@ const StripeController = () => {
                 (itemSubscription.price.id === recruiterItem &&
                   subChannelsItem.status === "past_due") ||
                 (itemSubscription.price.id === recruiterItem &&
-                  subChannelsItem.status === "cancel")
+                  subChannelsItem.status === "canceled")
               ) {
                 newUserData["recruiterSubscription"] = false;
               }
