@@ -37,7 +37,7 @@ const StripeController = () => {
       try {
         let sessionData = {
           success_url: process.env.STRIPE_CALLBACK_URL,
-          canceled_url: process.env.STRIPE_CALLBACK_URL,
+          cancel_url: process.env.STRIPE_CALLBACK_URL,
           payment_method_types: ["card"],
           line_items: checkoutSessionPrinces,
           mode: "subscription",
