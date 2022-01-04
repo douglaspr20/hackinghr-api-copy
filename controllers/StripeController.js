@@ -292,7 +292,7 @@ const StripeController = () => {
                 isSubscribed = true;
                 newUserData["memberShip"] = "free";
                 if (subItemPremium.status === "past_due") {
-                  stripe.subscriptions.update(itemSubscription.id, {
+                  stripe.subscriptions.update(subItemPremium.id, {
                     proration_behavior: "none",
                     cancel_at_period_end: true,
                   });
@@ -369,7 +369,7 @@ const StripeController = () => {
                   newUserData["role"] = UserRoles.USER;
                 }
                 if (subChannelsItem.status === "past_due") {
-                  stripe.subscriptions.update(itemSubscription.id, {
+                  stripe.subscriptions.update(subChannelsItem.id, {
                     proration_behavior: "none",
                     cancel_at_period_end: true,
                   });
@@ -436,7 +436,7 @@ const StripeController = () => {
                 isSubscribed = true;
                 newUserData["recruiterSubscription"] = false;
                 if (subRecruiterItem.status === "past_due") {
-                  stripe.subscriptions.update(itemSubscription.id, {
+                  stripe.subscriptions.update(subRecruiterItem.id, {
                     proration_behavior: "none",
                     cancel_at_period_end: true,
                   });
