@@ -29,7 +29,6 @@ module.exports = (sequelize, DataTypes) => {
       companyDescription: DataTypes.TEXT,
       // status: DataTypes.ENUM("active", "draft", "expired", "closed"),
       status: DataTypes.STRING,
-      keywords: DataTypes.ARRAY(DataTypes.STRING),
     },
     {
       sequelize,

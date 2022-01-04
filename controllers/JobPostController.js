@@ -1,8 +1,6 @@
 const db = require("../models");
-const { generateKeywords } = require("../utils/string");
-const { convertToCertainTime } = require("../utils/format");
 const s3Service = require("../services/s3.service");
-const { isEmpty, flattenDeep } = require("lodash");
+const { isEmpty } = require("lodash");
 const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
@@ -38,15 +36,24 @@ const JobPostController = () => {
       }
 
       if (filter?.keyword && !isEmpty(filter.keyword)) {
-        const keyword = generateKeywords(filter.keyword);
-
         where = {
           ...where,
-          keywords: {
-            [Op.overlap]: keyword,
-          },
+          [Op.or]: [
+            {
+              jobTitle: {
+                [Op.like]: `%${filter.keyword}%`,
+              },
+            },
+            {
+              companyName: {
+                [Op.like]: `%${filter.keyword}%`,
+              },
+            },
+          ],
         };
       }
+
+      console.log(where, "**jobpost**");
 
       const allJobPosts = await JobPost.findAndCountAll({
         where,
@@ -93,12 +100,20 @@ const JobPostController = () => {
       }
 
       if (filter?.keyword && !isEmpty(filter.keyword)) {
-        const keyword = generateKeywords(filter.keyword);
         where = {
           ...where,
-          keywords: {
-            [Op.overlap]: keyword,
-          },
+          [Op.or]: [
+            {
+              jobTitle: {
+                [Op.like]: `%${filter.keyword}%`,
+              },
+            },
+            {
+              companyName: {
+                [Op.like]: `%${filter.keyword}%`,
+              },
+            },
+          ],
         };
       }
 
@@ -153,16 +168,6 @@ const JobPostController = () => {
           await s3Service().deleteUserPicture(fetchedJobPost.companyLogo);
         }
       }
-
-      const titleKeywords = generateKeywords(transformedData.jobTitle);
-      const companyNameKeywords = generateKeywords(transformedData.companyName);
-      let keywords = [titleKeywords, companyNameKeywords];
-      keywords = flattenDeep(keywords);
-
-      transformedData = {
-        ...transformedData,
-        keywords,
-      };
 
       await JobPost.upsert(transformedData, {
         returning: true,
