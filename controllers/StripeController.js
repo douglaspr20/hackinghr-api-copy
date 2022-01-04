@@ -242,6 +242,7 @@ const StripeController = () => {
    */
   const premiumValidation = async (user, customerInformation) => {
     let newUserData = {};
+    let isSubscribed = false;
     try {
       let premiumPrices = [
         process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
@@ -260,6 +261,7 @@ const StripeController = () => {
                 itemSubscription.price.id === itemPremium &&
                 subItemPremium.status === "active"
               ) {
+                isSubscribed = true;
                 if (user.memberShip === "free") {
                   newUserData["memberShip"] = "premium";
                   newUserData["subscription_startdate"] = moment
@@ -287,11 +289,22 @@ const StripeController = () => {
                 (itemSubscription.price.id === itemPremium &&
                   subItemPremium.status === "canceled")
               ) {
+                isSubscribed = true;
                 newUserData["memberShip"] = "free";
+                if (subItemPremium.status === "past_due") {
+                  stripe.subscriptions.update(itemSubscription.id, {
+                    proration_behavior: "none",
+                    cancel_at_period_end: true,
+                  });
+                }
               }
             });
           }
         }
+      }
+
+      if (!isSubscribed && user.memberShip === "premium") {
+        newUserData["memberShip"] = "free";
       }
 
       return newUserData;
@@ -308,6 +321,7 @@ const StripeController = () => {
    */
   const channelsValidation = async (user, customerInformation) => {
     let newUserData = {};
+    let isSubscribed = false;
     try {
       let channelsPrices = [
         process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_CHANNELS_ID,
@@ -332,6 +346,7 @@ const StripeController = () => {
                 itemSubscription.price.id === channelsItem &&
                 subChannelsItem.status === "active"
               ) {
+                isSubscribed = true;
                 newUserData["channelsSubscription"] = true;
                 if (user.role !== "admin") {
                   newUserData["role"] = UserRoles.CHANNEL_ADMIN;
@@ -348,14 +363,24 @@ const StripeController = () => {
                 (itemSubscription.price.id === channelsItem &&
                   subChannelsItem.status === "canceled")
               ) {
+                isSubscribed = true;
                 newUserData["channelsSubscription"] = false;
                 if (user.role !== "admin") {
                   newUserData["role"] = UserRoles.USER;
+                }
+                if (subChannelsItem.status === "past_due") {
+                  stripe.subscriptions.update(itemSubscription.id, {
+                    proration_behavior: "none",
+                    cancel_at_period_end: true,
+                  });
                 }
               }
             });
           }
         }
+      }
+      if (!isSubscribed && user.channelsSubscription === true) {
+        newUserData["channelsSubscription"] = false;
       }
       return newUserData;
     } catch (error) {
@@ -371,6 +396,7 @@ const StripeController = () => {
    */
   const recruiterValidation = async (user, customerInformation) => {
     let newUserData = {};
+    let isSubscribed = false;
     try {
       let recruiterPrices = [
         process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_RECRUITER_ID,
@@ -382,35 +408,47 @@ const StripeController = () => {
 
       for (let recruiterItem of recruiterPrices) {
         if (customerInformation.subscriptions.data.length > 0) {
-          for (let subChannelsItem of customerInformation.subscriptions.data) {
-            subChannelsItem.items.data.map((itemSubscription) => {
+          for (let subRecruiterItem of customerInformation.subscriptions.data) {
+            subRecruiterItem.items.data.map((itemSubscription) => {
               console.log(
                 `***** RECRUITER -- Price: ${itemSubscription.price.id} /`,
                 recruiterItem,
-                ` - status: ${subChannelsItem.status} ******`
+                ` - status: ${subRecruiterItem.status} ******`
               );
               if (
                 itemSubscription.price.id === recruiterItem &&
-                subChannelsItem.status === "active"
+                subRecruiterItem.status === "active"
               ) {
+                isSubscribed = true;
                 newUserData["recruiterSubscription"] = true;
                 newUserData["recruiterSubscription_startdate"] = moment
-                  .unix(subChannelsItem.current_period_start)
+                  .unix(subRecruiterItem.current_period_start)
                   .format("YYYY-MM-DD HH:mm:ss");
                 newUserData["recruiterSubscription_enddate"] = moment
-                  .unix(subChannelsItem.current_period_end)
+                  .unix(subRecruiterItem.current_period_end)
                   .format("YYYY-MM-DD HH:mm:ss");
               } else if (
                 (itemSubscription.price.id === recruiterItem &&
-                  subChannelsItem.status === "past_due") ||
+                  subRecruiterItem.status === "past_due") ||
                 (itemSubscription.price.id === recruiterItem &&
-                  subChannelsItem.status === "canceled")
+                  subRecruiterItem.status === "canceled")
               ) {
+                isSubscribed = true;
                 newUserData["recruiterSubscription"] = false;
+                if (subRecruiterItem.status === "past_due") {
+                  stripe.subscriptions.update(itemSubscription.id, {
+                    proration_behavior: "none",
+                    cancel_at_period_end: true,
+                  });
+                }
               }
             });
           }
         }
+      }
+
+      if (!isSubscribed && user.recruiterSubscription === true) {
+        newUserData["recruiterSubscription"] = false;
       }
       return newUserData;
     } catch (error) {
