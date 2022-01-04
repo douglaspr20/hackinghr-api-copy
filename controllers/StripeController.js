@@ -294,7 +294,7 @@ const StripeController = () => {
                 if (subItemPremium.status === "past_due") {
                   stripe.subscriptions.update(subItemPremium.id, {
                     proration_behavior: "none",
-                    cancel_at: moment().unix(),
+                    cancel_at: moment().add(1, "minutes").unix(),
                   });
                 }
               }
@@ -371,7 +371,7 @@ const StripeController = () => {
                 if (subChannelsItem.status === "past_due") {
                   stripe.subscriptions.update(subChannelsItem.id, {
                     proration_behavior: "none",
-                    cancel_at: moment().unix(),
+                    cancel_at: moment().add(1, "minutes").unix(),
                   });
                 }
               }
@@ -438,7 +438,7 @@ const StripeController = () => {
                 if (subRecruiterItem.status === "past_due") {
                   stripe.subscriptions.update(subRecruiterItem.id, {
                     proration_behavior: "none",
-                    cancel_at: moment().unix(),
+                    cancel_at: moment().add(1, "minutes").unix(),
                   });
                 }
               }
