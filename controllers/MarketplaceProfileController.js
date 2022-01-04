@@ -10,6 +10,15 @@ const MarketplaceProfileController = () => {
     const { marketplaceProfile } = req.body;
 
     try {
+      const prevMarketPlaceProfile = await MarketPlaceProfile.findOne({
+        where: {
+          UserId: marketplaceProfile.UserId,
+        },
+      });
+
+      if (prevMarketPlaceProfile) {
+        return res.status(HttpCodes.CONFLICT);
+      }
       const newMarketPlaceProfile = await MarketPlaceProfile.create(
         marketplaceProfile
       );
@@ -29,22 +38,37 @@ const MarketplaceProfileController = () => {
     }
   };
   const getAll = async (req, res) => {
-    const { userId } = req.query;
+    const { userId, meta } = req.query;
     try {
-      const marketPlaceProfiles = await MarketPlaceProfile.findAll({
-        where: {
-          [Op.and]: [
-            { showMarketPlaceProfile: true },
-            {
-              UserId: {
-                [Op.ne]: userId,
-              },
+      const where = {
+        [Op.and]: [
+          { showMarketPlaceProfile: true },
+
+          {
+            UserId: {
+              [Op.ne]: userId,
             },
+          },
+        ],
+      };
+
+      if (meta) {
+        where[Op.and].push({
+          [Op.or]: [
+            { lookingFor: { [Op.overlap]: [`${meta}`] } },
+            { topics: { [Op.overlap]: [`${meta}`] } },
+            { location: { [Op.overlap]: [`${meta}`] } },
+            { "$User.firstName$": { [Op.like]: `%${meta}%` } },
+            { "$User.lastName$": { [Op.like]: `%${meta}%` } },
           ],
-        },
+        });
+      }
+
+      // console.log(where2[Op.or][0]);
+      const marketPlaceProfiles = await MarketPlaceProfile.findAll({
+        where,
         include: {
           model: User,
-          required: true,
           attributes: [
             "abbrName",
             "email",
