@@ -1,5 +1,4 @@
 "use strict";
-const { generateKeywords } = require("../utils/string");
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
