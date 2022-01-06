@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
       User.hasMany(models.CourseClassUser);
+      User.hasMany(models.AnnualConferenceClassUser);
       User.hasMany(models.Post);
       User.hasMany(models.PostLike);
       User.hasMany(models.PostComment);
@@ -113,6 +114,10 @@ module.exports = (sequelize, DataTypes) => {
       addedFirstSession: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+      },
+      sessionsJoined: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
       },
       isSponsor: {
         type: DataTypes.BOOLEAN,

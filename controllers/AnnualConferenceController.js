@@ -85,16 +85,20 @@ const AnnualConferenceController = () => {
     const { id } = req.params;
 
     try {
-      const conference = await AnnualConference.findOne({
-        where: {
-          id,
-        },
+      const query = `
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+      FROM public."AnnualConferences"
+      LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) WHERE public."AnnualConferences".id = ${id}`;
+
+      const conference = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
 
       if (!conference) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Bad Request: Conferernce not found" });
+          .json({ msg: "Bad Request: Confererence not found" });
       }
 
       return res.status(HttpCodes.OK).json({ conference });
