@@ -5,8 +5,11 @@ const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const moment = require("moment");
+const { LabEmails } = require("../enum");
+const smtpService = require("../services/smtp.service");
 
 const JobPost = db.JobPost;
+const User = db.User;
 
 const JobPostController = () => {
   const getAll = async (req, res) => {
@@ -52,8 +55,6 @@ const JobPostController = () => {
           ],
         };
       }
-
-      console.log(where, "**jobpost**");
 
       const allJobPosts = await JobPost.findAndCountAll({
         where,
@@ -141,6 +142,7 @@ const JobPostController = () => {
         ...body,
         UserId: id,
         location: JSON.parse(body.location),
+        mainJobFunctions: JSON.parse(body.mainJobFunctions),
         preferredSkills: JSON.parse(body.preferredSkills),
         closingDate: moment(body.closingDate).format("YYYY-MM-DD HH:mm:ssZ"),
       };
@@ -228,11 +230,60 @@ const JobPostController = () => {
     }
   };
 
+  const invitationToApply = async (req, res) => {
+    const { UserId, JobPostId } = req.body;
+
+    try {
+      const user = await User.findOne({
+        where: {
+          id: UserId,
+        },
+      });
+
+      if (!user) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request", error });
+      }
+
+      const jobPost = await JobPost.findOne({
+        where: {
+          id: JobPostId,
+        },
+      });
+
+      if (!jobPost) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request", error });
+      }
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject: LabEmails.JOB_POST_INVITATION_TO_APPLY.subject(),
+        html: LabEmails.JOB_POST_INVITATION_TO_APPLY.body(user),
+        contentType: "text/html",
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      return res.status(HttpCodes.OK).json();
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
   return {
     getAll,
     upsert,
     getMyJobPosts,
     getJobPost,
+    invitationToApply,
   };
 };
 

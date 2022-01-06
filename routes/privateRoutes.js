@@ -192,6 +192,7 @@ const privateRoutes = {
   "GET /job-board/job-post/:JobPostId": "JobPostController.getJobPost",
   "POST /job-board/job-post": "JobPostController.upsert",
   "GET /job-board/my-job-posts": "JobPostController.getMyJobPosts",
+  "POST /job-board/invitation-to-apply": "JobPostController.invitationToApply",
   "GET /marketplace-profiles": "MarketplaceProfileController.getAll",
   "POST /marketplace-profiles": "MarketplaceProfileController.add",
   "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",

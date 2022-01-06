@@ -781,4 +781,12 @@ module.exports = {
   </p>
   `,
   },
+  JOB_POST_INVITATION_TO_APPLY: {
+    subject: () => `Job Post Invitation to Apply Test`,
+    body: (user) => `
+      <p>Test email</p>
+      <p>${user.firstName} ${user.lastName}</p>
+      <p>${user.email}</p>
+    `,
+  },
 };
