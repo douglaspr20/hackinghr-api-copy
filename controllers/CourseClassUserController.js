@@ -11,13 +11,12 @@ const CourseClassUser = db.CourseClassUser;
 const User = db.User;
 
 const CourseClassUserController = () => {
-  
   /**
    * Method to get Course object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
-   const getProgressCourseByUser = async (req, res) => {
+  const getProgressCourseByUser = async (req, res) => {
     const { course } = req.params;
     if (course) {
       try {
@@ -28,7 +27,7 @@ const CourseClassUserController = () => {
         let courseClassUser = await db.sequelize.query(query, {
           type: QueryTypes.SELECT,
         });
-        
+
         if (!courseClassUser) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -54,25 +53,23 @@ const CourseClassUserController = () => {
    * @param {*} req
    * @param {*} res
    */
-   const setProgress = async (req, res) => {
+  const setProgress = async (req, res) => {
     try {
-      let courseClassUser = await CourseClassUser.findOne({ 
-        where: { CourseClassId: req.body.CourseClassId, UserId: req.user.id }
+      let courseClassUser = await CourseClassUser.findOne({
+        where: { CourseClassId: req.body.CourseClassId, UserId: req.user.id },
       });
-      
-      if(!courseClassUser){
-        add({... req.body, UserId: req.user.id});
-      }else{
-        if(req.body.progressVideo > courseClassUser.progressVideo){
-          update({... req.body, UserId: req.user.id});
-        } else if (req.body.viewed) { 
-          update({... req.body, UserId: req.user.id});
+
+      if (!courseClassUser) {
+        add({ ...req.body, UserId: req.user.id });
+      } else {
+        if (req.body.progressVideo > courseClassUser.progressVideo) {
+          update({ ...req.body, UserId: req.user.id });
+        } else if (req.body.viewed) {
+          update({ ...req.body, UserId: req.user.id });
         }
       }
 
-      return res
-        .status(HttpCodes.OK)
-        .send();
+      return res.status(HttpCodes.OK).send();
     } catch (error) {
       console.log(error);
       return res
@@ -98,9 +95,8 @@ const CourseClassUserController = () => {
   const update = async (params) => {
     try {
       await CourseClassUser.update(params, {
-        where: { CourseClassId: params.CourseClassId, UserId: params.UserId }
+        where: { CourseClassId: params.CourseClassId, UserId: params.UserId },
       });
-
     } catch (error) {
       console.log(error);
     }

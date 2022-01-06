@@ -723,62 +723,62 @@ module.exports = {
         Thank you!
       </p>
     `,
-    INVITATION_TO_JOIN: {
-      subject: (hostUser, userInvited) =>
-        `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global Online Conference`,
-      body: (hostUser, userInvited, link) => `
-    <p>
-    Hi ${userInvited.name}!<br>
-    </p>
-    <p>
-    How are you?
-    </p>
-    <p>
-    Hey, we wanted to let you know that ${hostUser.firstName} ${hostUser.lastName} would love for you to 
-    join the Hacking HR 2022 Global Online Conference “HR Innovation and Future of 
-    Work”.
-    </p>
-    <p>
-    Join here: <a href="${link}">${link}</a><br>
-    </p>
-    <p>
-    Hacking HR’s Global Online Conference is the most robust HR event in the world. 
-    </p>
-    <p>
-    It includes more than 300 sessions with over 500 speakers from all over the world. 
-    The event includes over 80 tracks with 3 panels each one, dozens of presentations 
-    and roundtable conversations, and countless networking opportunities.
-    </p>
-    <p>
-    The entire content of the conference during and post-event is FREE!
-    </p>
-    <p>
-    And for our premium members in the Hacking HR LAB: in addition to all the content 
-    of the conference, you can also earn HR certification credits (more than 500 credits 
-    available for the event!).
-    </p>
-    <p>
-    Join us! 
-    </p>
-    <p>   
-      Hacking HR Team
-    </p>
-    `,
-    },
-    USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
-      subject: `User confirm accessibility requirements`,
-      body: (user) => `
-    <p>
-    ${user.firstName} ${user.lastName} <br>
-    </p>
-    <p>
-    ${user.email}<br>
-    </p>
-    </p>
-    <p>
-      Hacking HR Team
-    </p>
-    `,
-    },
+  },
+  INVITATION_TO_JOIN: {
+    subject: (hostUser, userInvited) =>
+      `Hi ${userInvited.name}, ${hostUser.firstName} ${hostUser.lastName} is inviting you to join the Hacking HR 2022 Global Online Conference`,
+    body: (hostUser, userInvited, link) => `
+  <p>
+  Hi ${userInvited.name}!<br>
+  </p>
+  <p>
+  How are you?
+  </p>
+  <p>
+  Hey, we wanted to let you know that ${hostUser.firstName} ${hostUser.lastName} would love for you to 
+  join the Hacking HR 2022 Global Online Conference “HR Innovation and Future of 
+  Work”.
+  </p>
+  <p>
+  Join here: <a href="${link}">${link}</a><br>
+  </p>
+  <p>
+  Hacking HR’s Global Online Conference is the most robust HR event in the world. 
+  </p>
+  <p>
+  It includes more than 300 sessions with over 500 speakers from all over the world. 
+  The event includes over 80 tracks with 3 panels each one, dozens of presentations 
+  and roundtable conversations, and countless networking opportunities.
+  </p>
+  <p>
+  The entire content of the conference during and post-event is FREE!
+  </p>
+  <p>
+  And for our premium members in the Hacking HR LAB: in addition to all the content 
+  of the conference, you can also earn HR certification credits (more than 500 credits 
+  available for the event!).
+  </p>
+  <p>
+  Join us! 
+  </p>
+  <p>   
+    Hacking HR Team
+  </p>
+  `,
+  },
+  USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
+    subject: `User confirm accessibility requirements`,
+    body: (user) => `
+  <p>
+  ${user.firstName} ${user.lastName} <br>
+  </p>
+  <p>
+  ${user.email}<br>
+  </p>
+  </p>
+  <p>
+    Hacking HR Team
+  </p>
+  `,
   },
 };

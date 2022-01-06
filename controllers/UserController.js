@@ -16,7 +16,6 @@ const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
-const { sequelize } = require("../models");
 const StripeController = require("./StripeController");
 
 const { literal, Op, QueryTypes } = Sequelize;
@@ -668,6 +667,36 @@ const UserController = () => {
     }
   };
 
+  const sessionUserJoined = async (req, res) => {
+    const { user } = req;
+    const { id } = req.params;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          sessionsJoined: Sequelize.fn(
+            "array_append",
+            Sequelize.col("sessionsJoined"),
+            id
+          ),
+          addedFirstSession: true,
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const removeSession = async (req, res) => {
     const { user } = req;
     const { id } = req.params;
@@ -1273,6 +1302,7 @@ const UserController = () => {
     setAttendedToConference,
     addSession,
     removeSession,
+    sessionUserJoined,
     getSessionUsers,
     removeSessionUser,
     addBonfire,
