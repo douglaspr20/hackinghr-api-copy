@@ -170,6 +170,27 @@ const AnnualConferenceController = () => {
     }
   };
 
+  const getSessionsUserJoined = async (req, res) => {
+    const { sessionsId } = req.query;
+
+    try {
+      const sessionUserJoined = await AnnualConference.findAll({
+        where: {
+          id: {
+            [Op.in]: sessionsId,
+          },
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ sessionUserJoined });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const getParticipants = async (req, res) => {
     const { topics, userId, num, page, order } = req.query;
 
@@ -373,6 +394,7 @@ const AnnualConferenceController = () => {
     create,
     getAll,
     getSessionsUser,
+    getSessionsUserJoined,
     getParticipants,
     get,
     update,
