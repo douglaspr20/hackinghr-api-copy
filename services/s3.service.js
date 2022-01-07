@@ -224,6 +224,16 @@ const s3Service = () => {
     return url;
   };
 
+  const getJobPostImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(
+      S3.JOB_POST_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
+
+    return url;
+  };
+
   return {
     getImageUrl,
     getUserImageUrl,
@@ -241,6 +251,7 @@ const s3Service = () => {
     getPartnerImageUrl,
     uploadResume,
     deleteResume,
+    getJobPostImageUrl,
   };
 };
 

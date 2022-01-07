@@ -781,4 +781,30 @@ module.exports = {
   </p>
   `,
   },
+  JOB_POST_INVITATION_TO_APPLY: {
+    subject: (jobPost) =>
+      `You have been invited to apply to ${jobPost.jobTitle}`,
+    body: (user, recruiter, jobPost) => `
+      <p>
+        Hi ${user.firstName}<br>
+      </p>
+      <p>
+        Thank you for being part of the Hacking HR’s Talent Marketplace! <br>
+      </p>
+      <p>
+        <a href="${recruiter.personalLinks.linkedin}" target="_blank">${recruiter.firstName} ${recruiter.lastName}</a>
+        is inviting you to apply for this job: <a href="${jobPost.linkToApply}" target="_blank">${jobPost.jobTitle}</a> <br>
+      </p>
+      <p>
+        We hope this is a good match for you and we wish you not just good luck… but the BEST luck in process! <br>
+      </p>
+      <p>
+        Please do not hesitate to let us know if there is anything we can do to help you. We are here for you! <br>
+      </p>
+      <p>
+        Thank you! <br>
+      </p>
+      <p>Hacking HR Team</p>
+    `,
+  },
 };

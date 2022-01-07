@@ -1,6 +1,7 @@
 const db = require("../models");
 const { Op, Sequelize } = require("sequelize");
 const HttpCodes = require("http-codes");
+const { isEmpty } = require("lodash");
 
 const User = db.User;
 const MarketPlaceProfile = db.MarketPlaceProfile;
@@ -19,6 +20,7 @@ const MarketplaceProfileController = () => {
       if (prevMarketPlaceProfile) {
         return res.status(HttpCodes.CONFLICT);
       }
+
       const newMarketPlaceProfile = await MarketPlaceProfile.create(
         marketplaceProfile
       );
@@ -38,31 +40,58 @@ const MarketplaceProfileController = () => {
     }
   };
   const getAll = async (req, res) => {
-    const { userId, meta } = req.query;
+    const filter = req.query;
+    const { id } = req.user;
+
     try {
-      const where = {
+      let where = {
         [Op.and]: [
           { showMarketPlaceProfile: true },
-
           {
             UserId: {
-              [Op.ne]: userId,
+              [Op.ne]: id,
             },
           },
         ],
       };
 
-      if (meta) {
-        where[Op.and].push({
-          [Op.or]: [
-            { lookingFor: { [Op.overlap]: [`${meta}`] } },
-            { topics: { [Op.overlap]: [`${meta}`] } },
-            { location: { [Op.overlap]: [`${meta}`] } },
-            { "$User.firstName$": { [Op.like]: `%${meta}%` } },
-            { "$User.lastName$": { [Op.like]: `%${meta}%` } },
-          ],
-        });
+      if (filter?.level && !isEmpty(JSON.parse(filter.level))) {
+        where = {
+          ...where,
+          lookingFor: {
+            [Op.overlap]: JSON.parse(filter.level),
+          },
+        };
       }
+
+      if (filter?.location && !isEmpty(JSON.parse(filter.location))) {
+        where = {
+          ...where,
+          location: {
+            [Op.overlap]: JSON.parse(filter.location),
+          },
+        };
+      }
+
+      if (filter?.keyword && !isEmpty(filter.keyword)) {
+        where = {
+          ...where,
+          [Op.or]: [
+            {
+              "$User.firstName$": {
+                [Op.like]: `%${filter.keyword}%`,
+              },
+            },
+            {
+              "$User.lastName$": {
+                [Op.like]: `%${filter.keyword}%`,
+              },
+            },
+          ],
+        };
+      }
+
+      console.log(where, "***where***");
 
       // console.log(where2[Op.or][0]);
       const marketPlaceProfiles = await MarketPlaceProfile.findAll({

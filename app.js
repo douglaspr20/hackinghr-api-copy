@@ -18,6 +18,7 @@ const SkillCohortGroupingsController = require("./controllers/SkillCohortGroupin
 const SkillCohortController = require("./controllers/SkillCohortController");
 const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
+const JobPostController = require("./controllers/JobPostController");
 
 const moment = require("moment-timezone");
 
@@ -331,6 +332,21 @@ cron.schedule(
     });
 
     await Promise.all(emailsToBeSent);
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+// Job Post Auto Expiry
+cron.schedule(
+  "0 0 * * *", // 12AM every day
+  async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Auto Expiry****************");
+    await JobPostController().jobPostAutoExpiry();
   },
   {
     timezone: "America/Los_Angeles",
