@@ -180,6 +180,7 @@ const StripeController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+
   /**
    * Function to manage stripe events
    * @param {*} req
@@ -192,7 +193,8 @@ const StripeController = () => {
       if (
         type === "customer.subscription.created" ||
         type === "customer.subscription.updated" ||
-        type === "invoice.payment_succeeded"
+        type === "invoice.payment_succeeded" ||
+        type === "customer.subscription.deleted"
       ) {
         console.log("********* STRIPE Webhook *************");
         console.log(`********* Type ${type} *************`);
@@ -208,89 +210,17 @@ const StripeController = () => {
 
         console.log(`***** memberShip: ${user.memberShip} ******`);
 
-        if (user.memberShip == "free") {
-          let premiumPrices = [
-            process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
-            process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_ID,
-            process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
-          ];
+        const premiumData = await premiumValidation(user, customerInformation);
+        newUserData = { ...newUserData, ...premiumData };
 
-          for (let itemPremium of premiumPrices) {
-            if (customerInformation.subscriptions.data.length > 0) {
-              for (let subItemPremium of customerInformation.subscriptions
-                .data) {
-                subItemPremium.items.data.map(async (itemSubscription) => {
-                  console.log(
-                    `***** PREMIUM -- Price: ${itemSubscription.price.id} / ${itemPremium} - status: ${subItemPremium.status} ******`
-                  );
-                  if (
-                    itemSubscription.price.id === itemPremium &&
-                    subItemPremium.status === "active"
-                  ) {
-                    newUserData["memberShip"] = "premium";
-                    newUserData["subscription_startdate"] = moment
-                      .unix(subItemPremium.current_period_start)
-                      .format("YYYY-MM-DD HH:mm:ss");
-                    newUserData["subscription_enddate"] = moment
-                      .unix(subItemPremium.current_period_end)
-                      .format("YYYY-MM-DD HH:mm:ss");
+        const channelData = await channelsValidation(user, customerInformation);
+        newUserData = { ...newUserData, ...channelData };
 
-                    const mailOptions = {
-                      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                      to: user.email,
-                      subject: LabEmails.USER_BECOME_PREMIUM.subject(),
-                      html: LabEmails.USER_BECOME_PREMIUM.body(user),
-                    };
-
-                    await smtpService().sendMailUsingSendInBlue(mailOptions);
-                  }
-                });
-              }
-            }
-          }
-        }
-
-        let channelsPrices = [
-          process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_CHANNELS_ID,
-          process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_CHANNELS_ID,
-          process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_CHANNELS_ID,
-        ];
-
-        console.log(
-          `***** CHANNELS -- channelsSubscription: ${user.channelsSubscription} ******`
+        const recruiterData = await recruiterValidation(
+          user,
+          customerInformation
         );
-
-        if (user.channelsSubscription === false) {
-          for (let channelsItem of channelsPrices) {
-            if (customerInformation.subscriptions.data.length > 0) {
-              for (let subChannelsItem of customerInformation.subscriptions
-                .data) {
-                subChannelsItem.items.data.map((itemSubscription) => {
-                  console.log(
-                    `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
-                    channelsItem,
-                    ` - status: ${subChannelsItem.status} ******`
-                  );
-                  if (
-                    itemSubscription.price.id === channelsItem &&
-                    subChannelsItem.status === "active"
-                  ) {
-                    newUserData["channelsSubscription"] = true;
-                    if (user.role !== "admin") {
-                      newUserData["role"] = UserRoles.CHANNEL_ADMIN;
-                    }
-                    newUserData["channelsSubscription_startdate"] = moment
-                      .unix(subChannelsItem.current_period_start)
-                      .format("YYYY-MM-DD HH:mm:ss");
-                    newUserData["channelsSubscription_enddate"] = moment
-                      .unix(subChannelsItem.current_period_end)
-                      .format("YYYY-MM-DD HH:mm:ss");
-                  }
-                });
-              }
-            }
-          }
-        }
+        newUserData = { ...newUserData, ...recruiterData };
 
         console.log(`***** newUserData:`, newUserData);
         await User.update(newUserData, {
@@ -305,12 +235,298 @@ const StripeController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+  /**
+   * Function to validate premium subscription status
+   * @param {*} user
+   * @param {*} customerInformation
+   */
+  const premiumValidation = async (user, customerInformation) => {
+    let newUserData = {};
+    let isSubscribed = false;
+    try {
+      let premiumPrices = [
+        process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
+        process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_ID,
+        process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
+      ];
+
+      for (let itemPremium of premiumPrices) {
+        if (customerInformation.subscriptions.data.length > 0) {
+          for (let subItemPremium of customerInformation.subscriptions.data) {
+            subItemPremium.items.data.map(async (itemSubscription) => {
+              console.log(
+                `***** PREMIUM -- Price: ${itemSubscription.price.id} / ${itemPremium} - status: ${subItemPremium.status} ******`
+              );
+              if (
+                itemSubscription.price.id === itemPremium &&
+                subItemPremium.status === "active"
+              ) {
+                isSubscribed = true;
+                if (user.memberShip === "free") {
+                  newUserData["memberShip"] = "premium";
+                  newUserData["subscription_startdate"] = moment
+                    .unix(subItemPremium.current_period_start)
+                    .format("YYYY-MM-DD HH:mm:ss");
+                  newUserData["subscription_enddate"] = moment
+                    .unix(subItemPremium.current_period_end)
+                    .format("YYYY-MM-DD HH:mm:ss");
+                  try {
+                    const mailOptions = {
+                      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                      to: user.email,
+                      subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+                      html: LabEmails.USER_BECOME_PREMIUM.body(user),
+                    };
+
+                    await smtpService().sendMailUsingSendInBlue(mailOptions);
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }
+              } else if (
+                (itemSubscription.price.id === itemPremium &&
+                  subItemPremium.status === "past_due") ||
+                (itemSubscription.price.id === itemPremium &&
+                  subItemPremium.status === "canceled")
+              ) {
+                isSubscribed = true;
+                newUserData["memberShip"] = "free";
+                if (
+                  user.memberShip === "premium" &&
+                  subItemPremium.status === "past_due"
+                ) {
+                  stripe.subscriptions.update(subItemPremium.id, {
+                    proration_behavior: "none",
+                    cancel_at: moment().add(1, "minutes").unix(),
+                  });
+                }
+              }
+            });
+          }
+        }
+      }
+
+      if (!isSubscribed && user.memberShip === "premium") {
+        newUserData["memberShip"] = "free";
+      }
+
+      return newUserData;
+    } catch (error) {
+      console.log(error);
+      return {};
+    }
+  };
+
+  /**
+   * Function to validate channel subscription status
+   * @param {*} user
+   * @param {*} customerInformation
+   */
+  const channelsValidation = async (user, customerInformation) => {
+    let newUserData = {};
+    let isSubscribed = false;
+    try {
+      let channelsPrices = [
+        process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_CHANNELS_ID,
+        process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_CHANNELS_ID,
+        process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_CHANNELS_ID,
+      ];
+
+      console.log(
+        `***** CHANNELS -- channelsSubscription: ${user.channelsSubscription} ******`
+      );
+
+      for (let channelsItem of channelsPrices) {
+        if (customerInformation.subscriptions.data.length > 0) {
+          for (let subChannelsItem of customerInformation.subscriptions.data) {
+            subChannelsItem.items.data.map((itemSubscription) => {
+              console.log(
+                `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
+                channelsItem,
+                ` - status: ${subChannelsItem.status} ******`
+              );
+              if (
+                itemSubscription.price.id === channelsItem &&
+                subChannelsItem.status === "active"
+              ) {
+                isSubscribed = true;
+                newUserData["channelsSubscription"] = true;
+                if (user.role !== "admin") {
+                  newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+                }
+                newUserData["channelsSubscription_startdate"] = moment
+                  .unix(subChannelsItem.current_period_start)
+                  .format("YYYY-MM-DD HH:mm:ss");
+                newUserData["channelsSubscription_enddate"] = moment
+                  .unix(subChannelsItem.current_period_end)
+                  .format("YYYY-MM-DD HH:mm:ss");
+              } else if (
+                (itemSubscription.price.id === channelsItem &&
+                  subChannelsItem.status === "past_due") ||
+                (itemSubscription.price.id === channelsItem &&
+                  subChannelsItem.status === "canceled")
+              ) {
+                isSubscribed = true;
+                newUserData["channelsSubscription"] = false;
+                if (user.role !== "admin") {
+                  newUserData["role"] = UserRoles.USER;
+                }
+                if (
+                  user.channelsSubscription === true &&
+                  subChannelsItem.status === "past_due"
+                ) {
+                  stripe.subscriptions.update(subChannelsItem.id, {
+                    proration_behavior: "none",
+                    cancel_at: moment().add(5, "minutes").unix(),
+                  });
+                }
+              }
+            });
+          }
+        }
+      }
+      if (!isSubscribed && user.channelsSubscription === true) {
+        newUserData["channelsSubscription"] = false;
+      }
+      return newUserData;
+    } catch (error) {
+      console.log(error);
+      return {};
+    }
+  };
+
+  /**
+   * Function to validate recruiter subscription status
+   * @param {*} user
+   * @param {*} customerInformation
+   */
+  const recruiterValidation = async (user, customerInformation) => {
+    let newUserData = {};
+    let isSubscribed = false;
+    try {
+      let recruiterPrices = [
+        process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_RECRUITER_ID,
+      ];
+
+      console.log(
+        `***** RECRUITER -- recruiterSubscription: ${user.recruiterSubscription} ******`
+      );
+
+      for (let recruiterItem of recruiterPrices) {
+        if (customerInformation.subscriptions.data.length > 0) {
+          for (let subRecruiterItem of customerInformation.subscriptions.data) {
+            subRecruiterItem.items.data.map((itemSubscription) => {
+              console.log(
+                `***** RECRUITER -- Price: ${itemSubscription.price.id} /`,
+                recruiterItem,
+                ` - status: ${subRecruiterItem.status} ******`
+              );
+              if (
+                itemSubscription.price.id === recruiterItem &&
+                subRecruiterItem.status === "active"
+              ) {
+                isSubscribed = true;
+                newUserData["recruiterSubscription"] = true;
+                newUserData["recruiterSubscription_startdate"] = moment
+                  .unix(subRecruiterItem.current_period_start)
+                  .format("YYYY-MM-DD HH:mm:ss");
+                newUserData["recruiterSubscription_enddate"] = moment
+                  .unix(subRecruiterItem.current_period_end)
+                  .format("YYYY-MM-DD HH:mm:ss");
+              } else if (
+                (itemSubscription.price.id === recruiterItem &&
+                  subRecruiterItem.status === "past_due") ||
+                (itemSubscription.price.id === recruiterItem &&
+                  subRecruiterItem.status === "canceled")
+              ) {
+                isSubscribed = true;
+                newUserData["recruiterSubscription"] = false;
+                if (
+                  user.recruiterSubscription === true &&
+                  subRecruiterItem.status === "past_due"
+                ) {
+                  stripe.subscriptions.update(subRecruiterItem.id, {
+                    proration_behavior: "none",
+                    cancel_at: moment().add(1, "minutes").unix(),
+                  });
+                }
+              }
+            });
+          }
+        }
+      }
+
+      if (!isSubscribed && user.recruiterSubscription === true) {
+        newUserData["recruiterSubscription"] = false;
+      }
+      return newUserData;
+    } catch (error) {
+      console.log(error);
+      return {};
+    }
+  };
+
+  const updateEmail = async (oldEmail, newEmail) => {
+    try {
+      const customers = await stripe.customers.list({
+        email: oldEmail,
+        limit: 1,
+      });
+      if (customers.data.length > 0) {
+        await stripe.customers.update(customers.data[0].id, {
+          email: newEmail,
+        });
+      }
+      return true;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  };
+
+  /*
+  * TO DO: Only use when you need upgrade prices of subscriptios.
+  const upgradeSubscription = async (req, res) => {
+    let price = "{}";
+    let customerIds = [];
+    const subscriptions = await stripe.subscriptions.list({
+      price,
+      limit: 200,
+    });
+
+    for (let item of subscriptions.data) {
+      const subscription = await stripe.subscriptions.retrieve(item.id);
+      for (let i of subscription.items.data) {
+        let itemId = null;
+        if (i.price.id === price) {
+          itemId = i.id;
+        }
+        if (itemId != null) {
+          stripe.subscriptions.update(item.id, {
+            proration_behavior: "none",
+            items: [
+              {
+                id: itemId,
+                price: "{}",
+              },
+            ],
+          });
+          customerIds.push(item.customer);
+          break;
+        }
+      }
+    }
+
+    return res.status(HttpCodes.OK).json({ customerIds });
+  };
+  */
 
   return {
     createCheckoutSession,
     createPortalSession,
     getSubscription,
     webhook,
+    updateEmail,
   };
 };
 

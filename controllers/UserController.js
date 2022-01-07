@@ -16,6 +16,7 @@ const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
 const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
+const StripeController = require("./StripeController");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -119,6 +120,11 @@ const UserController = () => {
             returning: true,
             plain: true,
           }
+        );
+
+        await StripeController().updateEmail(
+          prevUser.email,
+          user.email.toLowerCase()
         );
 
         return res
@@ -643,6 +649,36 @@ const UserController = () => {
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessions: Sequelize.fn("array_append", Sequelize.col("sessions"), id),
+          addedFirstSession: true,
+        },
+        {
+          where: { id: user.id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const sessionUserJoined = async (req, res) => {
+    const { user } = req;
+    const { id } = req.params;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          sessionsJoined: Sequelize.fn(
+            "array_append",
+            Sequelize.col("sessionsJoined"),
+            id
+          ),
           addedFirstSession: true,
         },
         {
@@ -1266,6 +1302,7 @@ const UserController = () => {
     setAttendedToConference,
     addSession,
     removeSession,
+    sessionUserJoined,
     getSessionUsers,
     removeSessionUser,
     addBonfire,
