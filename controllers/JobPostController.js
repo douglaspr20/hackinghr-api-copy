@@ -4,7 +4,7 @@ const { isEmpty } = require("lodash");
 const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 
@@ -278,12 +278,52 @@ const JobPostController = () => {
     }
   };
 
+  const jobPostAutoExpiry = async () => {
+    const dateToday = moment().endOf("day").format("YYYY-MM-DD HH:mm:ssZ");
+
+    try {
+      const jobPosts = await JobPost.findAll({
+        where: {
+          closingDate: {
+            [Op.lt]: dateToday,
+          },
+          status: {
+            [Op.and]: [
+              {
+                [Op.ne]: "expired",
+              },
+              {
+                [Op.ne]: "closed",
+              },
+            ],
+          },
+        },
+      });
+
+      const jobPostIds = jobPosts.map((post) => {
+        return post.id;
+      });
+
+      await JobPost.update(
+        { status: "expired" },
+        {
+          where: {
+            id: jobPostIds,
+          },
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     getAll,
     upsert,
     getMyJobPosts,
     getJobPost,
     invitationToApply,
+    jobPostAutoExpiry,
   };
 };
 
