@@ -250,6 +250,12 @@ const JobPostController = () => {
         where: {
           id: JobPostId,
         },
+        include: [
+          {
+            model: User,
+            attributes: ["id", "firstName", "lastName", "personalLinks"],
+          },
+        ],
       });
 
       if (!jobPost) {
@@ -261,8 +267,12 @@ const JobPostController = () => {
       const mailOptions = {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: user.email,
-        subject: LabEmails.JOB_POST_INVITATION_TO_APPLY.subject(),
-        html: LabEmails.JOB_POST_INVITATION_TO_APPLY.body(user),
+        subject: LabEmails.JOB_POST_INVITATION_TO_APPLY.subject(jobPost),
+        html: LabEmails.JOB_POST_INVITATION_TO_APPLY.body(
+          user,
+          jobPost.User,
+          jobPost
+        ),
         contentType: "text/html",
       };
 
