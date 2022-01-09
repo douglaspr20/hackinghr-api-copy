@@ -292,7 +292,7 @@ cron.schedule(
       const participants = cohort.SkillCohortParticipants;
 
       const startDate = moment(cohort.startDate).format("LL");
-      const endDate = moment(cohort.startDate).format("LL");
+      const endDate = moment(cohort.endDate).format("LL");
 
       let location = participants.map((participant) => {
         participant = participant.dataValues;

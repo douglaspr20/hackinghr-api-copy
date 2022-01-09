@@ -688,9 +688,6 @@ module.exports = {
         Hi ${user.firstName}, <br>
       </p>
       <p>
-        We are only one week away from the kick-off of Hacking HR's ProjectX Cohort: ${cohort.title}<br>
-      </p>
-      <p>
         This is it, folks! We are kicking off Hacking HR's ProjectX Cohort: ${cohort.title} tomorrow, ${startDate} and will last for 66 consecutive days until ${endDate}.  <br>
       </p>
       <p>
