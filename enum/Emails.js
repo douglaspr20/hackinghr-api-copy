@@ -566,11 +566,11 @@ module.exports = {
     </p>
     <p>
       Please remember to: <br> <br>
-      -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
-      -	Assess the responses provided by other cohort participants
+      -	Provide your reflection to today’s resource: go to the Cohort Dashboard, click on JOIN THE CONVERSATION in the resource, and provide your reflection on the comment section. Your reflection should include: what you learned from the resource and how you can apply it in your own HR work or practice. <br>
+      -	Provide comments on other cohort participants' reflections: check out what other participants have said and REPLY with your feedback to their reflection.
     </p>
     <p>
-      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+      Please keep in mind that providing your daily reflection and comments on others' reflections is MANDATORY. You will be removed from the program if you miss to provide your reflection two times during a given week or if you miss to assess other participants’ reflections two times during a given week. 
     </p>
     <p>
       Thank you! 
