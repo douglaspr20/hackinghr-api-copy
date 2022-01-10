@@ -1,5 +1,9 @@
 const privateRoutes = {
   "GET /user/": "UserController.getUser",
+  "POST /user/apply-business-partner":
+    "UserController.acceptInvitationApplyBusinessPartner",
+  "POST /user/confirm-apply-business/:id":
+    "UserController.confirmInvitationApplyBusiness",
   "GET /council/members/": "CouncilMembersController.getCouncilMembers",
   "GET /council/resources/": "CouncilMembersController.getAll",
   "GET /council/resource/:id": "CouncilMembersController.getCouncilResource",

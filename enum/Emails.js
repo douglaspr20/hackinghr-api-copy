@@ -781,4 +781,27 @@ module.exports = {
   </p>
   `,
   },
+
+  USER_BECOME_BUSINESS_PARTNER: {
+    subject: `User want aplly to the business partner community`,
+    body: (user, link) => `
+  <p>
+   ${user.firstName} ${user.lastName} <br>
+  </p>
+  <p>
+  ${user.email}<br>
+  </p>
+  <p>
+    ${user.personalLinks.linkedin}<br>
+  </p>
+  </p>
+  <div>
+    Accept: <a href="${link}?accepted=true">${link}</a><br>
+    Reject: <a href="${link}?accepted=false">${link}</a><br>
+  </div>
+  <p>
+    Hacking HR Team
+  </p>
+  `,
+  },
 };

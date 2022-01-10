@@ -1103,6 +1103,48 @@ const UserController = () => {
     }
   };
 
+  const acceptInvitationApplyBusinessPartner = async (req, res) => {
+    const { userId } = req.body;
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: { id: userId },
+      });
+      if (!user) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Host user not found" });
+      }
+      const link = `${process.env.DOMAIN_URL}user/confirm-apply-business/${userId}`;
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: "morenoelba2002@gmail.com",
+            subject: LabEmails.USER_BECOME_BUSINESS_PARTNER.subject,
+            html: LabEmails.USER_BECOME_BUSINESS_PARTNER.body(user, link),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res.status(HttpCodes.OK).json({ msg: `Thanks for nothing` });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const confirmInvitationApplyBusiness = (req, res) => {
+    console.log(req.params);
+    console.log(req.body);
+    console.log("cuando sera el dia");
+  };
+
   const confirmAccessibilityRequirements = async (req, res) => {
     const { id } = req.params;
 
@@ -1312,6 +1354,8 @@ const UserController = () => {
     getEditorSignature,
     createInvitation,
     acceptInvitationJoin,
+    acceptInvitationApplyBusinessPartner,
+    confirmInvitationApplyBusiness,
     confirmAccessibilityRequirements,
     changePassword,
     getLearningBadgesHoursByUser,
