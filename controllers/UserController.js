@@ -1124,7 +1124,8 @@ const UserController = () => {
         (() => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-            to: "enrique@hackinghr.io",
+            // to: "enrique@hackinghr.io",
+            to: "morenoelba2002@gmail.com",
             subject: LabEmails.USER_BECOME_BUSINESS_PARTNER.subject,
             html: LabEmails.USER_BECOME_BUSINESS_PARTNER.body(user, link),
           };
