@@ -91,8 +91,6 @@ const MarketplaceProfileController = () => {
         };
       }
 
-      console.log(where, "***where***");
-
       // console.log(where2[Op.or][0]);
       const marketPlaceProfiles = await MarketPlaceProfile.findAll({
         where,
