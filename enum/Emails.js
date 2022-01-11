@@ -566,11 +566,11 @@ module.exports = {
     </p>
     <p>
       Please remember to: <br> <br>
-      -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
-      -	Assess the responses provided by other cohort participants
+      -	Provide your reflection to today’s resource: go to the Cohort Dashboard, click on JOIN THE CONVERSATION in the resource, and provide your reflection on the comment section. Your reflection should include: what you learned from the resource and how you can apply it in your own HR work or practice. <br>
+      -	Provide comments on other cohort participants' reflections: check out what other participants have said and REPLY with your feedback to their reflection.
     </p>
     <p>
-      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+      Please keep in mind that providing your daily reflection and comments on others' reflections is MANDATORY. You will be removed from the program if you miss to provide your reflection two times during a given week or if you miss to assess other participants’ reflections two times during a given week. 
     </p>
     <p>
       Thank you! 
@@ -686,9 +686,6 @@ module.exports = {
     ) => `
       <p>
         Hi ${user.firstName}, <br>
-      </p>
-      <p>
-        We are only one week away from the kick-off of Hacking HR's ProjectX Cohort: ${cohort.title}<br>
       </p>
       <p>
         This is it, folks! We are kicking off Hacking HR's ProjectX Cohort: ${cohort.title} tomorrow, ${startDate} and will last for 66 consecutive days until ${endDate}.  <br>
@@ -825,6 +822,32 @@ module.exports = {
   <p>
     Hacking HR Team
   </p>
+  `,
+  },
+  JOB_POST_INVITATION_TO_APPLY: {
+    subject: (jobPost) =>
+      `You have been invited to apply to ${jobPost.jobTitle}`,
+    body: (user, recruiter, jobPost) => `
+      <p>
+        Hi ${user.firstName}<br>
+      </p>
+      <p>
+        Thank you for being part of the Hacking HR’s Talent Marketplace! <br>
+      </p>
+      <p>
+        <a href="${recruiter.personalLinks.linkedin}" target="_blank">${recruiter.firstName} ${recruiter.lastName}</a>
+        is inviting you to apply for this job: <a href="${jobPost.linkToApply}" target="_blank">${jobPost.jobTitle}</a> <br>
+      </p>
+      <p>
+        We hope this is a good match for you and we wish you not just good luck… but the BEST luck in process! <br>
+      </p>
+      <p>
+        Please do not hesitate to let us know if there is anything we can do to help you. We are here for you! <br>
+      </p>
+      <p>
+        Thank you! <br>
+      </p>
+      <p>Hacking HR Team</p>
     `,
   },
 };
