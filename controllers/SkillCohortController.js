@@ -194,13 +194,11 @@ const SkillCohortController = () => {
               },
             },
             nest: true,
-            order: [["startDate", "ASC"]],
             required: true,
             include: [
               {
                 model: SkillCohortResources,
-                attributes: ["id", "title", "createdAt"],
-                order: [["createdAt", "DESC"]],
+                attributes: ["id", "title", "releaseDate"],
                 where: {
                   SkillCohortId: {
                     [Op.ne]: null,
@@ -214,7 +212,6 @@ const SkillCohortController = () => {
           },
           {
             model: SkillCohortResourceResponse,
-            order: [["createdAt", "ASC"]],
             attributes: [
               "id",
               "SkillCohortResourceId",
@@ -224,7 +221,6 @@ const SkillCohortController = () => {
           },
           {
             model: SkillCohortResponseAssessment,
-            order: [["createdAt", "ASC"]],
             attributes: [
               "id",
               "SkillCohortResourceId",
