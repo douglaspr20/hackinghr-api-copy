@@ -1118,7 +1118,7 @@ const UserController = () => {
           .status(HttpCodes.BAD_REQUEST)
           .json({ msg: "Host user not found" });
       }
-      const link = `${process.env.DOMAIN_URL}user/confirm-apply-business/${userId}`;
+      const link = `${process.env.DOMAIN_URL}business-partner?id=${userId}`;
 
       await Promise.resolve(
         (() => {
@@ -1146,6 +1146,7 @@ const UserController = () => {
   const confirmInvitationApplyBusiness = async (req, res) => {
     const { id } = req.params;
     const { accepted } = req.body;
+    const link = `${process.env.DOMAIN_URL}business-partner`;
     try {
       const { dataValues: user } = await User.findOne({
         where: {
@@ -1181,7 +1182,7 @@ const UserController = () => {
             to: user.email,
             subject: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.subject,
             html: accepted
-              ? ACCEPT_USER_APPLY_PARTNER_BUSSINESS.body(user)
+              ? ACCEPT_USER_APPLY_PARTNER_BUSSINESS.body(user, link)
               : REJECT_USER_APPLY_PARTNER_BUSSINESS.body(user),
           };
           console.log("***** mailOptions ", mailOptions);

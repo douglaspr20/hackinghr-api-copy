@@ -793,8 +793,8 @@ module.exports = {
   </p>
   </p>
   <div>
-    Accept: <a href="${link}?accepted=true">${link}</a><br>
-    Reject: <a href="${link}?accepted=false">${link}</a><br>
+    Accept: <a href="${link}&accepted=true">${link}</a><br>
+    Reject: <a href="${link}&accepted=false">${link}</a><br>
   </div>
   <p>
     Hacking HR Team
@@ -815,9 +815,12 @@ module.exports = {
   },
   ACCEPT_USER_APPLY_PARTNER_BUSSINESS: {
     subject: "Hacking LAB business partner community",
-    body: (user) => `
+    body: (user, link) => `
   <p>
   You are accepted to the Business Partner community
+  </p>
+  <p>
+  ${link}
   </p>
   <p>
     Hacking HR Team
