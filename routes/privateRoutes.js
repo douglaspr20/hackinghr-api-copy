@@ -12,6 +12,17 @@ const privateRoutes = {
   "POST /councilComments/create-comment": "CouncilCommentController.add",
   "DELETE /councilComments/delete-comment/:id":
     "CouncilCommentController.remove",
+  "GET /business-partner/members/":
+    "BusinessPartnerController.getBusinessPartnerMembers",
+  "GET /business-partner/resources/": "BusinessPartnerController.getAll",
+  "GET /business-partner/resource/:id":
+    "BusinessPartnerController.getBusinessPartnerResource",
+  "POST /business-partner/add-resources/": "BusinessPartnerController.create",
+  "GET /business-partner-comments/": "BusinessPartnerCommentController.getAll",
+  "POST /business-partner-comments/create-comment":
+    "BusinessPartnerCommentController.add",
+  "DELETE /business-partner-comments/delete-comment/:id":
+    "BusinessPartnerCommentController.remove",
   "GET /events/": "EventController.getAllEvents",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",

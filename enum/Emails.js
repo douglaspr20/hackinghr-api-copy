@@ -783,7 +783,7 @@ module.exports = {
   },
 
   USER_BECOME_BUSINESS_PARTNER: {
-    subject: `User want aplly to the business partner community`,
+    subject: `User want apply to the business partner community`,
     body: (user, link) => `
   <p>
    ${user.firstName} ${user.lastName} <br>
@@ -803,5 +803,28 @@ module.exports = {
     Hacking HR Team
   </p>
   `,
+  },
+
+  REJECT_USER_APPLY_PARTNER_BUSSINESS: {
+    subject: "Hacking LAB business partner community",
+    body: (user) => `
+  <p>
+  You are not accepted to the Business Partner community
+  </p>
+  <p>
+    Hacking HR Team
+  </p>
+    `,
+  },
+  ACCEPT_USER_APPLY_PARTNER_BUSSINESS: {
+    subject: "Hacking LAB business partner community",
+    body: (user) => `
+  <p>
+  You are accepted to the Business Partner community
+  </p>
+  <p>
+    Hacking HR Team
+  </p>
+    `,
   },
 };

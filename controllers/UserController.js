@@ -17,6 +17,10 @@ const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
+const {
+  ACCEPT_USER_APPLY_PARTNER_BUSSINESS,
+  REJECT_USER_APPLY_PARTNER_BUSSINESS,
+} = require("../enum/Emails");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -1130,7 +1134,7 @@ const UserController = () => {
         })()
       );
 
-      return res.status(HttpCodes.OK).json({ msg: `Thanks for nothing` });
+      return res.status(HttpCodes.OK).json({ msg: `Thanks for apply` });
     } catch (error) {
       console.log(error);
       return res
@@ -1139,10 +1143,64 @@ const UserController = () => {
     }
   };
 
-  const confirmInvitationApplyBusiness = (req, res) => {
-    console.log(req.params);
-    console.log(req.body);
-    console.log("cuando sera el dia");
+  const confirmInvitationApplyBusiness = async (req, res) => {
+    const { id } = req.params;
+    const { accepted } = req.body;
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "user not found",
+        });
+      }
+      if (accepted) {
+        try {
+          await User.update(
+            { isBusinessPartner: true },
+            {
+              where: {
+                id,
+              },
+            }
+          );
+        } catch (error) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Something went wrong." });
+        }
+      }
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: "morenoelba2002@gmail.com",
+            subject: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.subject,
+            html: accepted
+              ? ACCEPT_USER_APPLY_PARTNER_BUSSINESS.body(user)
+              : REJECT_USER_APPLY_PARTNER_BUSSINESS.body(user),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      return res.status(HttpCodes.OK).json({
+        msg: accepted
+          ? "Business partner accepted"
+          : "Business partner rejected",
+      });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong." });
+    }
   };
 
   const confirmAccessibilityRequirements = async (req, res) => {
