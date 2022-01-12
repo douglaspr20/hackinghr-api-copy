@@ -9,6 +9,8 @@ const moment = require("moment-timezone");
 const SkillCohort = db.SkillCohort;
 const SkillCohortResources = db.SkillCohortResources;
 const SkillCohortParticipant = db.SkillCohortParticipant;
+const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
+const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
 
 const SkillCohortController = () => {
   /**
@@ -183,23 +185,61 @@ const SkillCohortController = () => {
         where: {
           UserId,
         },
-        include: {
-          model: SkillCohort,
-          where: {
-            endDate: {
-              [Op.gt]: dateToday,
+        include: [
+          {
+            model: SkillCohort,
+            where: {
+              endDate: {
+                [Op.gt]: dateToday,
+              },
             },
+            nest: true,
+            required: true,
+            include: [
+              {
+                model: SkillCohortResources,
+                attributes: ["id", "title", "releaseDate"],
+                where: {
+                  SkillCohortId: {
+                    [Op.ne]: null,
+                  },
+                  releaseDate: {
+                    [Op.lt]: dateToday,
+                  },
+                },
+              },
+            ],
           },
-          order: [["startDate", "ASC"]],
-          required: true,
-        },
-        raw: true,
+          {
+            model: SkillCohortResourceResponse,
+            attributes: [
+              "id",
+              "SkillCohortResourceId",
+              "SkillCohortParticipantId",
+            ],
+            nest: true,
+          },
+          {
+            model: SkillCohortResponseAssessment,
+            attributes: [
+              "id",
+              "SkillCohortResourceId",
+              "SkillCohortParticipantId",
+            ],
+            nest: true,
+          },
+        ],
         nest: true,
       });
 
       const allOfMySkillCohorts = allParticipated.map((participated) => {
         return {
-          ...participated.SkillCohort,
+          ParticipantId: participated.id,
+          ...participated.SkillCohort.dataValues,
+          SkillCohortResourceResponses:
+            participated.SkillCohortResourceResponses,
+          SkillCohortResponseAssessments:
+            participated.SkillCohortResponseAssessments,
           hasAccess: participated.hasAccess,
         };
       });
