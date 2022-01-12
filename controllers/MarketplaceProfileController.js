@@ -41,18 +41,10 @@ const MarketplaceProfileController = () => {
   };
   const getAll = async (req, res) => {
     const filter = req.query;
-    const { id } = req.user;
 
     try {
       let where = {
-        [Op.and]: [
-          { showMarketPlaceProfile: true },
-          {
-            UserId: {
-              [Op.ne]: id,
-            },
-          },
-        ],
+        showMarketPlaceProfile: true,
       };
 
       if (filter?.level && !isEmpty(JSON.parse(filter.level))) {
@@ -90,8 +82,6 @@ const MarketplaceProfileController = () => {
           ],
         };
       }
-
-      console.log(where, "***where***");
 
       // console.log(where2[Op.or][0]);
       const marketPlaceProfiles = await MarketPlaceProfile.findAll({
