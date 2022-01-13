@@ -209,6 +209,7 @@ const JobPostController = () => {
             "firstName",
             "lastName",
             "titleProfessions",
+            "email",
           ],
         },
       });
