@@ -1,13 +1,19 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const socketService = require("../services/socket.service");
+const SocketEventTypes = require("../enum/SocketEventTypes");
 const Message = db.Message;
 
 const MessageController = () => {
   const create = async (req, res) => {
     try {
       const message = await Message.create({ ...req.body });
+      socketService().emit(
+        SocketEventTypes.SEND_MESSAGE_GLOBAL_CONFERENCE,
+        message
+      );
 
-      return res.status(HttpCodes.OK).json({ message });
+      return res.status(HttpCodes.OK).json({});
     } catch (error) {
       res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)

@@ -1,6 +1,8 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
+const socketService = require("../services/socket.service");
+const SocketEventTypes = require("../enum/SocketEventTypes");
 const Conversation = db.Conversation;
 
 const ConversationController = () => {
@@ -9,7 +11,6 @@ const ConversationController = () => {
 
     try {
       const conversation = await Conversation.create({ members });
-
       return res.status(HttpCodes.OK).json({ conversation });
     } catch (error) {
       res
@@ -30,6 +31,8 @@ const ConversationController = () => {
           },
         },
       });
+
+      socketService().emit(SocketEventTypes.CONVERSATIONS, conversations);
 
       return res.status(HttpCodes.OK).json({ conversations });
     } catch (error) {

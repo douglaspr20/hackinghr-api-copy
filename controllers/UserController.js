@@ -17,6 +17,8 @@ const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
+const socketService = require("../services/socket.service");
+const SocketEventType = require("../enum/SocketEventTypes");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -1287,6 +1289,8 @@ const UserController = () => {
         .json({ msg: "Something went wrong." });
     }
   };
+
+  const userIsOnline = async (req, res) => {};
 
   return {
     getUser,

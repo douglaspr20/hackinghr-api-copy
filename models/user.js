@@ -127,6 +127,7 @@ module.exports = (sequelize, DataTypes) => {
       recruiterSubscription: DataTypes.BOOLEAN,
       recruiterSubscription_startdate: DataTypes.DATE,
       recruiterSubscription_enddate: DataTypes.DATE,
+      isOnline: DataTypes.BOOLEAN,
     },
     {
       sequelize,
