@@ -68,6 +68,7 @@ const adminRoutes = {
   "PUT /bonfire/:id": "BonfireController.update",
   "DELETE /bonfire/:id": "BonfireController.remove",
   "POST /skill-cohort": "SkillCohortController.create",
+  "POST /skill-cohort/duplicate": "SkillCohortController.duplicate",
   "GET /skill-cohort": "SkillCohortController.getAll",
   "DELETE /skill-cohort/:id": "SkillCohortController.remove",
   "PUT /skill-cohort/:id": "SkillCohortController.update",
