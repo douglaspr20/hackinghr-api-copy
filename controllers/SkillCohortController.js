@@ -153,10 +153,40 @@ const SkillCohortController = () => {
   const getAll = async (req, res) => {
     try {
       const skillCohorts = await SkillCohort.findAll({
-        order: [["startDate", "ASC"]],
+        order: [["id", "ASC"]],
+        include: {
+          model: SkillCohortResources,
+        },
       });
 
       return res.status(HttpCodes.OK).json({ skillCohorts });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal Server error",
+        error,
+      });
+    }
+  };
+
+  const duplicate = async (req, res) => {
+    const { skillCohort, skillCohortResources } = req.body;
+
+    try {
+      const newSkillCohort = await SkillCohort.create(skillCohort);
+
+      const transformedSkillCohortResources = skillCohortResources.map(
+        (resource) => {
+          return {
+            ...resource,
+            SkillCohortId: newSkillCohort.id,
+          };
+        }
+      );
+
+      await SkillCohortResources.bulkCreate(transformedSkillCohortResources);
+
+      return res.status(HttpCodes.OK).json({});
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -533,6 +563,7 @@ const SkillCohortController = () => {
     getAllActiveSkillCohortsWithParticipants,
     getAllSkillCohortThatWillStartWeekLater,
     getAllSkillCohortThatWillStartTomorrow,
+    duplicate,
   };
 };
 
