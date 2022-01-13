@@ -19,6 +19,7 @@ const SkillCohortController = require("./controllers/SkillCohortController");
 const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
+const UserController = require("./controllers/UserController");
 
 const moment = require("moment-timezone");
 
@@ -33,6 +34,7 @@ dotenv.config();
  * server configuration
  */
 const routes = require("./routes");
+const SocketEventTypes = require("./enum/SocketEventTypes");
 
 /**
  * express application
@@ -404,6 +406,14 @@ io.on("connection", (socket) => {
 
   socket.on("error", (error) => {
     console.log(`Socket IO Error:`, error);
+  });
+
+  socket.on(SocketEventTypes.USER_ONLINE, async ({ id }) => {
+    await UserController().userIsOnline(id, true);
+  });
+
+  socket.on(SocketEventTypes.USER_OFFLINE, async ({ id }) => {
+    await UserController().userIsOnline(id, false);
   });
 });
 

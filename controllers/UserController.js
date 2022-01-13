@@ -17,8 +17,6 @@ const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
-const socketService = require("../services/socket.service");
-const SocketEventType = require("../enum/SocketEventTypes");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -1290,7 +1288,36 @@ const UserController = () => {
     }
   };
 
-  const userIsOnline = async (req, res) => {};
+  const userIsOnline = async (id, online) => {
+    try {
+      const prevUser = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!prevUser) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request: data is wrong" });
+      }
+
+      const userOnline = await User.update(
+        {
+          isOnline: online,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+      return userOnline;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  };
 
   return {
     getUser,
@@ -1320,6 +1347,7 @@ const UserController = () => {
     changePassword,
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
+    userIsOnline,
   };
 };
 
