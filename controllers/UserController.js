@@ -940,7 +940,6 @@ const UserController = () => {
 
     try {
       const { resume } = req.files || {};
-
       if (resume) {
         const uploadRes = await s3Service().uploadResume(resume, user);
         const [rows, updatedUser] = await User.update(
@@ -1124,7 +1123,7 @@ const UserController = () => {
         (() => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-            to: "enrique@hackinghr.io",
+            to: "morenoelba2002@gmail.com",
             subject: LabEmails.USER_BECOME_BUSINESS_PARTNER.subject,
             html: LabEmails.USER_BECOME_BUSINESS_PARTNER.body(user, link),
           };

@@ -1,8 +1,10 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const s3Service = require("../services/s3.service");
 const NotificationController = require("./NotificationController");
 
 const BusinessPartner = db.BusinessPartner;
+const BusinessDocument = db.BusinessPartnerDocument;
 const User = db.User;
 
 const BusinessPartnerController = () => {
@@ -70,6 +72,103 @@ const BusinessPartnerController = () => {
     }
   };
 
+  const createDocument = async (req, res, next) => {
+    const { body, user } = req;
+    if (body.title) {
+      try {
+        const newBusinessPartnerDocument = await BusinessDocument.create({
+          businessInfo,
+          userId: user.id,
+        });
+
+        if (!newBusinessPartnerDocument) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        await NotificationController().createNotification({
+          message: `New Business Partner Document"${
+            newBusinessPartnerDocument.title || newBusinessPartnerDocument.title
+          }" was created.`,
+          type: "newBusinessPartnerDocument",
+          meta: {
+            ...newBusinessPartnerDocument,
+          },
+          onlyFor: [-1],
+        });
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ businessPartnerDocument: newBusinessPartnerDocument });
+      } catch (error) {
+        console.log(error);
+        res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error", error: error });
+      }
+    }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Title is needed." });
+  };
+
+  const uploadDocumentFile = async (req, res, next) => {
+    const { user } = req;
+
+    try {
+      const { document } = req.files || {};
+      if (document) {
+        const uploadFile = await s3Service().uploadResume(document, user);
+        const [rows, updatedDocument] = await BusinessDocument.update(
+          {
+            resumeFileName: document.name,
+            resumeUrl: uploadFile.Location,
+          },
+          {
+            where: { id: user.id },
+            returning: true,
+            plain: true,
+          }
+        );
+        res.status(HttpCodes.OK).json({ user: uploadFile });
+      }
+
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "File not found!" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  const deleteDocumentFile = async (req, res, next) => {
+    // const { user } = req;
+    // try {
+    //   if (user.resumeFileName) {
+    //     await s3Service().deleteResume(user.resumeUrl);
+    //     const [rows, updatedUser] = await User.update(
+    //       {
+    //         resumeFileName: "",
+    //         resumeUrl: "",
+    //       },node
+    //       {
+    //         where: { id: user.id },
+    //         returning: true,
+    //         plain: true,
+    //       }
+    //     );
+    //     res.status(HttpCodes.OK).json({ user: updatedUser });
+    //   }
+    //   return res
+    //     .status(HttpCodes.INTERNAL_SERVER_ERROR)
+    //     .json({ msg: "File not found!" });
+    // } catch (error) {
+    //   next(error);
+    // }
+  };
+
   const create = async (req, res) => {
     const { body } = req;
     if (body.title) {
@@ -118,6 +217,9 @@ const BusinessPartnerController = () => {
     getBusinessPartnerMembers,
     getBusinessPartnerResource,
     getAll,
+    createDocument,
+    uploadDocumentFile,
+    deleteDocumentFile,
     create,
   };
 };
