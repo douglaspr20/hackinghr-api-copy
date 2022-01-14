@@ -20,6 +20,7 @@ const SkillCohortResourceResponseController = require("./controllers/SkillCohort
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
 const UserController = require("./controllers/UserController");
+const ConversationController = require("./controllers/ConversationController");
 
 const moment = require("moment-timezone");
 
@@ -409,11 +410,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on(SocketEventTypes.USER_ONLINE, async ({ id }) => {
-    await UserController().userIsOnline(id, true);
+    const userOnline = await UserController().userIsOnline(id, true);
+    io.emit(SocketEventTypes.USER_ONLINE, userOnline.dataValues);
   });
 
   socket.on(SocketEventTypes.USER_OFFLINE, async ({ id }) => {
-    await UserController().userIsOnline(id, false);
+    const userOnline = await UserController().userIsOnline(id, false);
+    io.emit(SocketEventTypes.USER_OFFLINE, userOnline.dataValues);
   });
 });
 

@@ -17,6 +17,8 @@ const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
+const SocketEventTypes = require("../enum/SocketEventTypes");
+const socketService = require("../services/socket.service");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -1302,7 +1304,7 @@ const UserController = () => {
           .json({ msg: "Bad Request: data is wrong" });
       }
 
-      const userOnline = await User.update(
+      const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           isOnline: online,
         },
@@ -1312,7 +1314,8 @@ const UserController = () => {
           plain: true,
         }
       );
-      return userOnline;
+
+      return affectedRows;
     } catch (error) {
       console.log(error);
       return error;
