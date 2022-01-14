@@ -781,7 +781,7 @@ module.exports = {
 
   USER_BECOME_BUSINESS_PARTNER: {
     subject: `User want apply to the business partner community`,
-    body: (user, link) => `
+    body: (user, link, applyState) => `
   <p>
    ${user.firstName} ${user.lastName} <br>
   </p>
@@ -791,6 +791,7 @@ module.exports = {
   <p>
     ${user.personalLinks.linkedin}<br>
   </p>
+  <h3>${applyState}</h3>
   </p>
   <div>
     Accept: <a href="${link}&accepted=true">${link}</a><br>
@@ -803,27 +804,65 @@ module.exports = {
   },
 
   REJECT_USER_APPLY_PARTNER_BUSSINESS: {
-    subject: "Hacking LAB business partner community",
+    subject:
+      "Your Application for Hacking HR’s HR Business Partners Community was not approve",
     body: (user) => `
   <p>
-  You are not accepted to the Business Partner community
+  From: Hacking HR (info@hackinghr.io)
   </p>
   <p>
-    Hacking HR Team
+  Hi ${user.firstName} ${user.lastName},
+  </p>
+  <p>
+  Thank you for sending your application to be part of the HR Business Partners 
+  Community. 
+  </p>
+  <p>
+  We will this community specifically for HR professionals who currently are HR 
+  Business Partners or, even if they don’t have the “official” HR Business Partner title,
+  are performing HR Business Partnering functions. 
   </p>
     `,
   },
   ACCEPT_USER_APPLY_PARTNER_BUSSINESS: {
-    subject: "Hacking LAB business partner community",
+    subject: "Welcome to Hacking HR’s HR Business Partners Community",
     body: (user, link) => `
   <p>
-  You are accepted to the Business Partner community
+  From: Enrique Rubio (enrique@hackinghr.io)  </p>
+  <p>
+    Hy ${user.firstName.toUpperCase()} ${user.lastName.toUpperCase()}
   </p>
+  <p>
+    We are excited to welcome you to the HR Business Partners Community in the 
+    Hacking HR LAB.
+  </p>
+  <p>
+    This space is dedicated to the community of HR Business Partners and our hope is 
+    for it to become a place for learning, collaboration, community, support and much 
+    more!
+  </p>
+  <p>
+  In the HR Business Partners community you will be able to share resources, join 
+  conversations, upload and download valuable documents created by the 
+  community, join project conversations, connect with other HR Business Partners, 
+  help each other and a lot more.
+  </p>
+  <p>
+  We will be including more tools for collaboration, community and learning in the 
+  Community of HR Business Partners. This is just the beginning!
+  </p>
+  <p>
+  If there is anything that you believe can be of value to you and the community... 
+  well... don’t hesitate to let me know!
+  </p>
+  <p>
+  Thank you so much! Please remember to be an active member of the community.
+  </p>
+  <p>Enrique Rubio</p>
+  <p>Founder</p>
+  <p>Hacking HR</p>
   <p>
   ${link}
-  </p>
-  <p>
-    Hacking HR Team
   </p>
   `,
   },

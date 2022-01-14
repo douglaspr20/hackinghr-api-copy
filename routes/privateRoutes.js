@@ -18,10 +18,12 @@ const privateRoutes = {
   "GET /business-partner/resource/:id":
     "BusinessPartnerController.getBusinessPartnerResource",
   "POST /business-partner/add-resources/": "BusinessPartnerController.create",
+  "GET /business-partner/documents/":
+    "BusinessPartnerController.getBusinessPartnerDocuments",
   "POST /business-partner/create-document/":
     "BusinessPartnerController.createDocument",
   "PUT /business-partner/upload-document/":
-    "BusinessPartnerController.upladDocumentFile",
+    "BusinessPartnerController.uploadDocumentFile",
   "GET /business-partner-comments/": "BusinessPartnerCommentController.getAll",
   "POST /business-partner-comments/create-comment":
     "BusinessPartnerCommentController.add",

@@ -72,15 +72,41 @@ const BusinessPartnerController = () => {
     }
   };
 
+  const getBusinessPartnerDocuments = async (req, res) => {
+    try {
+      const businessPartnerDocuments = await BusinessDocument.findAll({
+        include: User,
+      });
+      if (!businessPartnerDocuments) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "There are not Documents" });
+      }
+
+      return res.status(HttpCodes.OK).json({ businessPartnerDocuments });
+    } catch (error) {
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const createDocument = async (req, res, next) => {
-    const { body, user } = req;
+    const { user } = req;
+    const body = req.query;
+    const { document } = req.files;
+    let newBusinessPartnerDocument;
     if (body.title) {
       try {
-        const newBusinessPartnerDocument = await BusinessDocument.create({
-          businessInfo,
-          userId: user.id,
-        });
-
+        if (document) {
+          const uploadFile = await s3Service().uploadResume(document, user);
+          newBusinessPartnerDocument = await BusinessDocument.create({
+            ...body,
+            UserId: user.dataValues.id,
+            documentFileName: document.name,
+            documentFileUrl: uploadFile.Location,
+          });
+        }
         if (!newBusinessPartnerDocument) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
@@ -132,7 +158,7 @@ const BusinessPartnerController = () => {
             plain: true,
           }
         );
-        res.status(HttpCodes.OK).json({ user: uploadFile });
+        res.status(HttpCodes.OK).json({ user: updatedDocument });
       }
 
       return res
@@ -216,6 +242,7 @@ const BusinessPartnerController = () => {
   return {
     getBusinessPartnerMembers,
     getBusinessPartnerResource,
+    getBusinessPartnerDocuments,
     getAll,
     createDocument,
     uploadDocumentFile,

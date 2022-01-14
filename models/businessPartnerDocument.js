@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "BusinessPartnerComment",
+      modelName: "BusinessPartnerDocument",
     }
   );
   return BusinessPartnerDocument;
