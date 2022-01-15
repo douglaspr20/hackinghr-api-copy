@@ -374,7 +374,7 @@ const SkillCohortParticipantController = () => {
           },
           {
             model: db.User,
-            attributes: ["firstName", "lastName", "id"],
+            attributes: ["firstName", "lastName", "id", "email"],
           },
         ],
         raw: true,
