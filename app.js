@@ -126,38 +126,38 @@ cron.schedule(
         cohortCtr++;
       });
 
-      const allActiveSkillCohortsWithDayBeforeYesterdayResource =
-        await SkillCohortController().getAllActiveSkillCohortsWithResource(
-          date
-        );
+      // const allActiveSkillCohortsWithDayBeforeYesterdayResource =
+      //   await SkillCohortController().getAllActiveSkillCohortsWithResource(
+      //     date
+      //   );
 
-      cohortCtr = 0;
+      // cohortCtr = 0;
 
-      jaggedParticipants =
-        await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
-          allActiveSkillCohortsWithYesterdayResource
-        );
+      // jaggedParticipants =
+      //   await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohort(
+      //     allActiveSkillCohortsWithYesterdayResource
+      //   );
 
-      jaggedParticipants.map((participants) => {
-        participants.map(async (participant) => {
-          const skillCohort =
-            allActiveSkillCohortsWithDayBeforeYesterdayResource[cohortCtr];
+      // jaggedParticipants.map((participants) => {
+      //   participants.map(async (participant) => {
+      //     const skillCohort =
+      //       allActiveSkillCohortsWithDayBeforeYesterdayResource[cohortCtr];
 
-          const hasAssessed =
-            await SkillCohortResourceResponseAssessmentController().checkIfParticipantHasAssessedOtherComments(
-              skillCohort,
-              participant
-            );
+      //     const hasAssessed =
+      //       await SkillCohortResourceResponseAssessmentController().checkIfParticipantHasAssessedOtherComments(
+      //         skillCohort,
+      //         participant
+      //       );
 
-          if (!hasAssessed) {
-            await SkillCohortParticipantController().incrementAssessmentStrike(
-              participant,
-              skillCohort.id
-            );
-          }
-        });
-        cohortCtr++;
-      });
+      //     if (!hasAssessed) {
+      //       await SkillCohortParticipantController().incrementAssessmentStrike(
+      //         participant,
+      //         skillCohort.id
+      //       );
+      //     }
+      //   });
+      //   cohortCtr++;
+      // });
     }
   },
   {
