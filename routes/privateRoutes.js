@@ -206,11 +206,8 @@ const privateRoutes = {
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
   "POST /conversations": "ConversationController.create",
   "GET /conversations/:userId": "ConversationController.getAll",
-  "GET /conversations/:id": "ConversationController.get",
   "POST /messages/": "MessageController.create",
   "GET /messages/:conversationId": "MessageController.getAll",
-  "POST /conversation/": "ConversationController.create",
-  "GET /conversation/:userId": "ConversationController.getAll",
 };
 
 module.exports = privateRoutes;

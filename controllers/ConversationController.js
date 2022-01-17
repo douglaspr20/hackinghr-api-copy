@@ -6,7 +6,8 @@ const SocketEventTypes = require("../enum/SocketEventTypes");
 const Conversation = db.Conversation;
 
 const ConversationController = () => {
-  const create = async (members) => {
+  const create = async (req, res) => {
+    const { members } = req.body;
     try {
       const prevConversation = await Conversation.findOne({
         where: {
@@ -17,10 +18,11 @@ const ConversationController = () => {
       });
 
       console.log(prevConversation);
+      return;
 
-      if (prevConversation) return;
-      const conversation = await Conversation.create({ members });
-      return conversation;
+      // if (prevConversation) return;
+      // const conversation = await Conversation.create({ members });
+      // return conversation;
     } catch (error) {
       console.log(error);
     }
