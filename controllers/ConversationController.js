@@ -6,38 +6,40 @@ const SocketEventTypes = require("../enum/SocketEventTypes");
 const Conversation = db.Conversation;
 
 const ConversationController = () => {
-  const create = async (req, res) => {
-    const { members } = req.body;
+  const create = async (members) => {
     try {
       const prevConversation = await Conversation.findOne({
         where: {
           members: {
-            [Op.overlap]: members,
+            [Op.in]: members,
           },
         },
       });
+
+      console.log(prevConversation);
+
       if (prevConversation) return;
       const conversation = await Conversation.create({ members });
-      return res.status(HttpCodes.OK).json({ conversation });
+      return conversation;
     } catch (error) {
       console.log(error);
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal Server Error" });
     }
   };
 
   const getAll = async (req, res) => {
     const { userId } = req.params;
+
     try {
       const conversations = await Conversation.findAll({
         where: {
           members: {
-            [Op.overlap]: [userId],
+            [Op.in]: [userId],
           },
         },
       });
+
       socketService().emit(SocketEventTypes.CONVERSATIONS, conversations);
+
       return res.status(HttpCodes.OK).json({ conversations });
     } catch (error) {
       res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
