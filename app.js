@@ -19,6 +19,7 @@ const SkillCohortController = require("./controllers/SkillCohortController");
 const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
+const WeeklyDigestController = require("./controllers/WeeklyDigestController");
 
 const moment = require("moment-timezone");
 
