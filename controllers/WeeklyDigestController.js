@@ -14,12 +14,19 @@ const WeeklyDigestController = () => {
             [Op.ne]: null,
           },
         },
+        raw: true,
       });
+
+      return podcasts;
     } catch (error) {
       console.log(error);
       return [];
     }
   };
+
+  const getResourcesByCreatorsThisWeek = async () => {
+    
+  }
 
   return {
     getPodcastByCreatorsThisWeek,
