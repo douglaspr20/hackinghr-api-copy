@@ -120,10 +120,10 @@ const AnnualConferenceController = () => {
       }
 
       if (meta) {
-        where += `AND (public."AnnualConferences"."title" LIKE '%${meta}%' OR public."AnnualConferences"."description" LIKE '%${meta}%' 
-        OR public."AnnualConferences"."type" LIKE '%${meta}%' OR public."Instructors"."name" LIKE '%${meta}%' 
-        OR public."Instructors"."description" LIKE '%${meta}%' OR public."AnnualConferences".categories::text LIKE '%${meta}%' 
-        OR public."AnnualConferences".meta LIKE '%${meta}%')`;
+        where += `AND (public."AnnualConferences"."title" ILIKE '%${meta}%' OR public."AnnualConferences"."description" ILIKE '%${meta}%' 
+        OR public."AnnualConferences"."type" ILIKE '%${meta}%' OR public."Instructors"."name" ILIKE '%${meta}%' 
+        OR public."Instructors"."description" ILIKE '%${meta}%' OR public."AnnualConferences".categories::text ILIKE '%${meta}%' 
+        OR public."AnnualConferences".meta ILIKE '%${meta}%')`;
       }
 
       const query = `
