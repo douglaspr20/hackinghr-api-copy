@@ -786,10 +786,13 @@ module.exports = {
    ${user.firstName} ${user.lastName} <br>
   </p>
   <p>
-  ${user.email}<br>
+  <h5>Email:</h5> ${user.email}<br>
   </p>
+  <p><h5>Company:</h5> ${user.company}</p>
+  <p><h5></h5>Company size: ${user.sizeOfOrganization}</p>
+  <p></p>
   <p>
-    ${user.personalLinks.linkedin}<br>
+    <h5>Linkedin:</h5> ${user.personalLinks.linkedin}<br>
   </p>
   <h3>${applyState}</h3>
   </p>
@@ -811,7 +814,7 @@ module.exports = {
   From: Hacking HR (info@hackinghr.io)
   </p>
   <p>
-  Hi ${user.firstName} ${user.lastName},
+  Hi ${user.firstName}
   </p>
   <p>
   Thank you for sending your application to be part of the HR Business Partners 
@@ -822,15 +825,26 @@ module.exports = {
   Business Partners or, even if they don’t have the “official” HR Business Partner title,
   are performing HR Business Partnering functions. 
   </p>
+  <p>
+  In reviewing your Hacking HR LAB profile we don’t see that you are either an HR 
+  Business Partner or performing those functions. We may be missing something. 
+  That happens. In that case, please let us know if we make a mistake so that we can 
+  reconsider your application.
+  </p>
+  <p>
+  There are still many tools for you to enjoy in the Hacking HR LAB and we hope you 
+  do! 
+  </p>
+  <p>Thank you so much.</p>
+  <p>
+  The Hacking HR Team
+  </p> 
     `,
   },
   ACCEPT_USER_APPLY_PARTNER_BUSSINESS: {
     subject: "Welcome to Hacking HR’s HR Business Partners Community",
     body: (user, link) => `
-  <p>
-  From: Enrique Rubio (enrique@hackinghr.io)  </p>
-  <p>
-    Hy ${user.firstName.toUpperCase()} ${user.lastName.toUpperCase()}
+    Hi ${user.firstName}
   </p>
   <p>
     We are excited to welcome you to the HR Business Partners Community in the 
@@ -860,11 +874,7 @@ module.exports = {
   </p>
   <p>Enrique Rubio</p>
   <p>Founder</p>
-  <p>Hacking HR</p>
-  <p>
-  ${link}
-  </p>
-  `,
+  <p>Hacking HR</p>`,
   },
   JOB_POST_INVITATION_TO_APPLY: {
     subject: (jobPost) =>

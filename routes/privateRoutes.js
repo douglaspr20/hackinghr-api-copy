@@ -24,6 +24,8 @@ const privateRoutes = {
     "BusinessPartnerController.createDocument",
   "PUT /business-partner/upload-document/":
     "BusinessPartnerController.uploadDocumentFile",
+  "DELETE /business-partner/delete-document/:id":
+    "BusinessPartnerController.deleteDocumentFile",
   "GET /business-partner-comments/": "BusinessPartnerCommentController.getAll",
   "POST /business-partner-comments/create-comment":
     "BusinessPartnerCommentController.add",

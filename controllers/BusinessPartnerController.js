@@ -142,23 +142,23 @@ const BusinessPartnerController = () => {
 
   const uploadDocumentFile = async (req, res, next) => {
     const { user } = req;
-
+    const body = req.query;
     try {
       const { document } = req.files || {};
       if (document) {
         const uploadFile = await s3Service().uploadResume(document, user);
         const [rows, updatedDocument] = await BusinessDocument.update(
           {
-            resumeFileName: document.name,
-            resumeUrl: uploadFile.Location,
+            documentFileName: document.name,
+            documentFileUrl: uploadFile.Location,
           },
           {
-            where: { id: user.id },
+            where: { id: body.documentId },
             returning: true,
             plain: true,
           }
         );
-        res.status(HttpCodes.OK).json({ user: updatedDocument });
+        res.status(HttpCodes.OK).json({ document: updatedDocument });
       }
 
       return res
@@ -170,29 +170,30 @@ const BusinessPartnerController = () => {
   };
 
   const deleteDocumentFile = async (req, res, next) => {
-    // const { user } = req;
-    // try {
-    //   if (user.resumeFileName) {
-    //     await s3Service().deleteResume(user.resumeUrl);
-    //     const [rows, updatedUser] = await User.update(
-    //       {
-    //         resumeFileName: "",
-    //         resumeUrl: "",
-    //       },node
-    //       {
-    //         where: { id: user.id },
-    //         returning: true,
-    //         plain: true,
-    //       }
-    //     );
-    //     res.status(HttpCodes.OK).json({ user: updatedUser });
-    //   }
-    //   return res
-    //     .status(HttpCodes.INTERNAL_SERVER_ERROR)
-    //     .json({ msg: "File not found!" });
-    // } catch (error) {
-    //   next(error);
-    // }
+    const { user, query } = req;
+    const { id } = req.params;
+    try {
+      if (query.fileUrl) {
+        await s3Service().deleteResume(query.fileUrl);
+        const [rows, updatedDocument] = await BusinessDocument.update(
+          {
+            documentFileName: "",
+            documentFileUrl: "",
+          },
+          {
+            where: { id: id },
+            returning: true,
+            plain: true,
+          }
+        );
+        res.status(HttpCodes.OK).json({ document: updatedDocument });
+      }
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "File not found!" });
+    } catch (error) {
+      next(error);
+    }
   };
 
   const create = async (req, res) => {

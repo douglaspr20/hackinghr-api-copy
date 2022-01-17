@@ -159,7 +159,6 @@ const BusinessPartnerCommentController = () => {
    */
   const remove = async (req, res) => {
     let { id } = req.params;
-
     if (id) {
       try {
         await BusinessPartnerComment.destroy({
