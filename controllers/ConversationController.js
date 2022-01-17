@@ -12,17 +12,14 @@ const ConversationController = () => {
       const prevConversation = await Conversation.findOne({
         where: {
           members: {
-            [Op.in]: members,
+            [Op.contains]: members,
           },
         },
       });
 
-      console.log(prevConversation);
-      return;
-
-      // if (prevConversation) return;
-      // const conversation = await Conversation.create({ members });
-      // return conversation;
+      if (prevConversation) return;
+      const conversation = await Conversation.create({ members });
+      return conversation;
     } catch (error) {
       console.log(error);
     }

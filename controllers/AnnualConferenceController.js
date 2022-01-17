@@ -122,7 +122,8 @@ const AnnualConferenceController = () => {
       if (meta) {
         where += `AND (public."AnnualConferences"."title" LIKE '%${meta}%' OR public."AnnualConferences"."description" LIKE '%${meta}%' 
         OR public."AnnualConferences"."type" LIKE '%${meta}%' OR public."Instructors"."name" LIKE '%${meta}%' 
-        OR public."Instructors"."description" LIKE '%${meta}%' OR public."AnnualConferences".categories::text LIKE '%${meta}%' )`;
+        OR public."Instructors"."description" LIKE '%${meta}%' OR public."AnnualConferences".categories::text LIKE '%${meta}%' 
+        OR public."AnnualConferences".meta LIKE '%${meta}%')`;
       }
 
       const query = `
@@ -162,6 +163,27 @@ const AnnualConferenceController = () => {
       });
 
       return res.status(HttpCodes.OK).json({ sessionsUser: sessionList });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const getSessionsUserJoined = async (req, res) => {
+    const { sessionsId } = req.query;
+
+    try {
+      const sessionUserJoined = await AnnualConference.findAll({
+        where: {
+          id: {
+            [Op.in]: sessionsId,
+          },
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ sessionUserJoined });
     } catch (error) {
       console.log(error);
       return res
@@ -383,6 +405,7 @@ const AnnualConferenceController = () => {
     create,
     getAll,
     getSessionsUser,
+    getSessionsUserJoined,
     getParticipants,
     get,
     update,
