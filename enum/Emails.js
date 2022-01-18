@@ -764,7 +764,7 @@ module.exports = {
   `,
   },
   USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
-    subject: `User confirm accessibility requirements`,
+    subject: `Welcome to Hacking HR’s HR Business Partners Community`,
     body: (user) => `
   <p>
   ${user.firstName} ${user.lastName} <br>
@@ -777,6 +777,109 @@ module.exports = {
     Hacking HR Team
   </p>
   `,
+  },
+
+  USER_BECOME_BUSINESS_PARTNER: {
+    subject: `User want apply to the business partner community`,
+    body: (user, link, applyState) => `
+  <p>
+   ${user.firstName} ${user.lastName} <br>
+  </p>
+  <p>
+  <strong>Email:</strong> ${user.email}<br>
+  </p>
+  <p><strong>Company:</strong> ${user.company}</p>
+  <p><strong>Company size:</strong> ${user.sizeOfOrganization}</p>
+  <p></p>
+  <p>
+    <strong>Linkedin:</strong> ${user.personalLinks.linkedin}<br>
+  </p>
+  <h3>${applyState ? applyState : ""}</h3>
+  </p>
+  <div>
+    Accept: <a href="${link}&accepted=true">${link}</a><br>
+    Reject: <a href="${link}&accepted=false">${link}</a><br>
+  </div>
+  <p>
+    Hacking HR Team
+  </p>
+  `,
+  },
+
+  REJECT_USER_APPLY_PARTNER_BUSSINESS: {
+    subject:
+      "Your Application for Hacking HR’s HR Business Partners Community was not approved",
+    body: (user) => `
+  <p>
+  </p>
+  <p>
+  Hi ${user.firstName}
+  </p>
+  <p>
+  Thank you for sending your application to be part of the HR Business Partners 
+  Community. 
+  </p>
+  <p>
+  We built this community specifically for HR professionals who currently are HR Business Partners or, even if they don’t have the “official” HR Business Partner title, are performing HR Business Partnering functions.
+  </p>
+  <p>
+  In reviewing your Hacking HR LAB profile we don’t see that you are either an HR Business Partner or performing those functions. We may be missing something. That happens. In that case, please let us know if we made a mistake so that we can reconsider your application. To do this, please send the application again and make sure to add any new information in the comment box provided in the application.
+  </p>
+  <p>
+  There are still many tools for you to enjoy in the Hacking HR LAB and we hope you 
+  do! 
+  </p>
+  <p>Thank you so much.</p>
+  <p>
+  The Hacking HR Team
+  </p> 
+    `,
+  },
+  ACCEPT_USER_APPLY_PARTNER_BUSSINESS: {
+    subject: "Welcome to Hacking HR’s HR Business Partners Community",
+    body: (user, link) => `
+    Hi ${user.firstName}
+  </p>
+  <p>
+    We are excited to welcome you to the HR Business Partners Community in the 
+    Hacking HR LAB.
+  </p>
+  <p>
+    This space is dedicated to the community of HR Business Partners and our hope is 
+    for it to become a place for learning, collaboration, community, support and much 
+    more!
+  </p>
+  <p>
+  In the HR Business Partners community you will be able to share resources, join 
+  conversations, upload and download valuable documents created by the 
+  community, join project conversations, connect with other HR Business Partners, 
+  help each other and a lot more.
+  </p>
+  <p>
+  We will be including more tools for collaboration, community and learning in the 
+  Community of HR Business Partners. This is just the beginning!
+  </p>
+  <p>
+  If there is anything that you believe can be of value to you and the community... 
+  well... don’t hesitate to let me know!
+  </p>
+  <p>
+  Thank you so much! Please remember to be an active member of the community.
+  </p>
+  <p>Enrique Rubio</p>
+  <p>Founder</p>
+  <p>Hacking HR</p>`,
+  },
+  USER_AFTER_APPLY_BUSINESS_PARTNER: {
+    subject: `Your Application for the Hacking HR’s HR Business Partners Community has been received`,
+    body: (user) =>
+      `<p>Hi ${user.firstName},</p>
+      <p>Thank you for sending your application to be part of the HR Business Partners 
+      Community.</p>
+      <p>We will review your application and you should receive a response within the next 
+      48 hours.</p> 
+      <p>Thank you so much.</p> 
+      <p>The Hacking HR Team</p>`,
   },
   JOB_POST_INVITATION_TO_APPLY: {
     subject: (jobPost) =>
