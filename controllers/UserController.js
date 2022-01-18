@@ -1123,13 +1123,28 @@ const UserController = () => {
         (() => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-            to: "enrique@hackinghr.io",
+            to: "morenoelba2002@gmail.com",
+            // to: "enrique@hackinghr.io",
             subject: LabEmails.USER_BECOME_BUSINESS_PARTNER.subject,
             html: LabEmails.USER_BECOME_BUSINESS_PARTNER.body(
               user,
               link,
               applyState
             ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.USER_AFTER_APPLY_BUSINESS_PARTNER.subject,
+            html: LabEmails.USER_AFTER_APPLY_BUSINESS_PARTNER.body(user),
           };
           console.log("***** mailOptions ", mailOptions);
 

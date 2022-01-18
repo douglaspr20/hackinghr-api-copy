@@ -764,7 +764,7 @@ module.exports = {
   `,
   },
   USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
-    subject: `User confirm accessibility requirements`,
+    subject: `Welcome to Hacking HR’s HR Business Partners Community`,
     body: (user) => `
   <p>
   ${user.firstName} ${user.lastName} <br>
@@ -786,13 +786,13 @@ module.exports = {
    ${user.firstName} ${user.lastName} <br>
   </p>
   <p>
-  <h5>Email:</h5> ${user.email}<br>
+  <strong>Email:</strong> ${user.email}<br>
   </p>
-  <p><h5>Company:</h5> ${user.company}</p>
-  <p><h5></h5>Company size: ${user.sizeOfOrganization}</p>
+  <p><strong>Company:</strong> ${user.company}</p>
+  <p><strong>Company size:</strong> ${user.sizeOfOrganization}</p>
   <p></p>
   <p>
-    <h5>Linkedin:</h5> ${user.personalLinks.linkedin}<br>
+    <strong>Linkedin:</strong> ${user.personalLinks.linkedin}<br>
   </p>
   <h3>${applyState}</h3>
   </p>
@@ -811,7 +811,6 @@ module.exports = {
       "Your Application for Hacking HR’s HR Business Partners Community was not approve",
     body: (user) => `
   <p>
-  From: Hacking HR (info@hackinghr.io)
   </p>
   <p>
   Hi ${user.firstName}
@@ -875,6 +874,18 @@ module.exports = {
   <p>Enrique Rubio</p>
   <p>Founder</p>
   <p>Hacking HR</p>`,
+  },
+  USER_AFTER_APPLY_BUSINESS_PARTNER: {
+    subject: `Your Application for Hacking HR’s HR Business Partners 
+    Community has been received`,
+    body: (user) =>
+      `<p>Hi ${user.firstName},</p>
+      <p>Thank you for sending your application to be part of the HR Business Partners 
+      Community.</p>
+      <p>We will review your application and you should receive a response within the next 
+      48 hours.</p> 
+      <p>Thank you so much.</p> 
+      <p>The Hacking HR Team</p>`,
   },
   JOB_POST_INVITATION_TO_APPLY: {
     subject: (jobPost) =>
