@@ -1152,7 +1152,9 @@ const UserController = () => {
         })()
       );
 
-      return res.status(HttpCodes.OK).json({ msg: `Thanks for apply` });
+      return res.status(HttpCodes.OK).json({
+        msg: `Thank you for applying. You will receive a response within  the next 48 hours`,
+      });
     } catch (error) {
       console.log(error);
       return res

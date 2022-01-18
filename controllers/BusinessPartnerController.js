@@ -170,23 +170,13 @@ const BusinessPartnerController = () => {
   };
 
   const deleteDocumentFile = async (req, res, next) => {
-    const { user, query } = req;
     const { id } = req.params;
     try {
-      if (query.fileUrl) {
-        await s3Service().deleteResume(query.fileUrl);
-        const [rows, updatedDocument] = await BusinessDocument.update(
-          {
-            documentFileName: "",
-            documentFileUrl: "",
-          },
-          {
-            where: { id: id },
-            returning: true,
-            plain: true,
-          }
-        );
-        res.status(HttpCodes.OK).json({ document: updatedDocument });
+      const documentDeleted = await BusinessDocument.destroy({
+        where: { id: id },
+      });
+      if (documentDeleted) {
+        res.status(HttpCodes.OK).json({ msg: "File deleted successfully" });
       }
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)

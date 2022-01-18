@@ -808,7 +808,7 @@ module.exports = {
 
   REJECT_USER_APPLY_PARTNER_BUSSINESS: {
     subject:
-      "Your Application for Hacking HR’s HR Business Partners Community was not approve",
+      "Your Application for Hacking HR’s HR Business Partners Community was not approved",
     body: (user) => `
   <p>
   </p>
@@ -820,15 +820,10 @@ module.exports = {
   Community. 
   </p>
   <p>
-  We will this community specifically for HR professionals who currently are HR 
-  Business Partners or, even if they don’t have the “official” HR Business Partner title,
-  are performing HR Business Partnering functions. 
+  We built this community specifically for HR professionals who currently are HR Business Partners or, even if they don’t have the “official” HR Business Partner title, are performing HR Business Partnering functions.
   </p>
   <p>
-  In reviewing your Hacking HR LAB profile we don’t see that you are either an HR 
-  Business Partner or performing those functions. We may be missing something. 
-  That happens. In that case, please let us know if we make a mistake so that we can 
-  reconsider your application.
+  In reviewing your Hacking HR LAB profile we don’t see that you are either an HR Business Partner or performing those functions. We may be missing something. That happens. In that case, please let us know if we made a mistake so that we can reconsider your application. To do this, please send the application again and make sure to add any new information in the comment box provided in the application.
   </p>
   <p>
   There are still many tools for you to enjoy in the Hacking HR LAB and we hope you 
@@ -876,8 +871,7 @@ module.exports = {
   <p>Hacking HR</p>`,
   },
   USER_AFTER_APPLY_BUSINESS_PARTNER: {
-    subject: `Your Application for Hacking HR’s HR Business Partners 
-    Community has been received`,
+    subject: `Your Application for the Hacking HR’s HR Business Partners Community has been received`,
     body: (user) =>
       `<p>Hi ${user.firstName},</p>
       <p>Thank you for sending your application to be part of the HR Business Partners 
