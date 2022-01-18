@@ -794,7 +794,7 @@ module.exports = {
   <p>
     <strong>Linkedin:</strong> ${user.personalLinks.linkedin}<br>
   </p>
-  <h3>${applyState}</h3>
+  <h3>${applyState ? applyState : ""}</h3>
   </p>
   <div>
     Accept: <a href="${link}&accepted=true">${link}</a><br>

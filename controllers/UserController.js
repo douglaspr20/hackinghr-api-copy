@@ -1123,8 +1123,8 @@ const UserController = () => {
         (() => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-            to: "morenoelba2002@gmail.com",
-            // to: "enrique@hackinghr.io",
+            // to: "morenoelba2002@gmail.com",
+            to: "enrique@hackinghr.io",
             subject: LabEmails.USER_BECOME_BUSINESS_PARTNER.subject,
             html: LabEmails.USER_BECOME_BUSINESS_PARTNER.body(
               user,
@@ -1200,7 +1200,9 @@ const UserController = () => {
               ? process.env.SEND_IN_BLUE_SMTP_USER
               : process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: user.email,
-            subject: LabEmails.USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS.subject,
+            subject: accepted
+              ? LabEmails.ACCEPT_USER_APPLY_PARTNER_BUSSINESS.subject
+              : LabEmails.REJECT_USER_APPLY_PARTNER_BUSSINESS.subject,
             html: accepted
               ? ACCEPT_USER_APPLY_PARTNER_BUSSINESS.body(user, link)
               : REJECT_USER_APPLY_PARTNER_BUSSINESS.body(user),
