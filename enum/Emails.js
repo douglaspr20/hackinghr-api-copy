@@ -836,18 +836,18 @@ module.exports = {
     `,
   },
   ACCEPT_USER_APPLY_PARTNER_BUSSINESS: {
-    subject: "Welcome to Hacking HR’s HR Business Partners Community",
+    subject: "Welcome to the HR Business Partners Community by Hacking HR",
     body: (user, link) => `
     Hi ${user.firstName}
   </p>
   <p>
-    We are excited to welcome you to the HR Business Partners Community in the 
-    Hacking HR LAB.
+  We are excited to welcome you to the HR Business Partners Community in the 
+  Hacking HR LAB. 
   </p>
   <p>
-    This space is dedicated to the community of HR Business Partners and our hope is 
-    for it to become a place for learning, collaboration, community, support and much 
-    more!
+  This space is dedicated to the community of HR Business Partners and our hope is 
+  for it to become a place for learning, collaboration, community, support and much 
+  more!
   </p>
   <p>
   In the HR Business Partners community you will be able to share resources, join 
@@ -857,14 +857,21 @@ module.exports = {
   </p>
   <p>
   We will be including more tools for collaboration, community and learning in the 
-  Community of HR Business Partners. This is just the beginning!
+  Community of HR Business Partners. This is just the beginning! 
   </p>
+  <p>
+  To access the HR Business Partners Community dashboard, please click on your 
+  profile (top right) and there will be a button: “HR Business Partners Community”. If 
+  you are a PREMIUM member of the Hacking HR LAB, you can access right away. If 
+  not, you have to UPGRADE your account first to have access to the dashboard.
+  </p> 
   <p>
   If there is anything that you believe can be of value to you and the community... 
   well... don’t hesitate to let me know!
   </p>
   <p>
-  Thank you so much! Please remember to be an active member of the community.
+  Thank you so much! And please remember to be an active member of the 
+  community. 
   </p>
   <p>Enrique Rubio</p>
   <p>Founder</p>
