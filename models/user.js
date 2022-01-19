@@ -104,7 +104,7 @@ module.exports = (sequelize, DataTypes) => {
       recentWorkArea: DataTypes.ARRAY(DataTypes.STRING),
       sizeOfOrganization: DataTypes.STRING,
       councilMember: DataTypes.BOOLEAN,
-      isBusinessPartner: DataTypes.BOOLEAN,
+      isBusinessPartner: DataTypes.STRING,
       bonfires: {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
