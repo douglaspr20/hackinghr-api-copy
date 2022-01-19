@@ -9,7 +9,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
 
-      ConversartionId: {
+      ConversationId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
