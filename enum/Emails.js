@@ -807,4 +807,13 @@ module.exports = {
       <p>Hacking HR Team</p>
     `,
   },
+  NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST: {
+    subject: () => `You are qualified for a new job post.`,
+    body: (link) => `
+      <p>
+        Visit this link: 
+        <a href="${link}" target="_blank">${link}</a>
+      </p>
+    `,
+  },
 };

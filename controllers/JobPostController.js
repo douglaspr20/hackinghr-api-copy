@@ -10,6 +10,7 @@ const smtpService = require("../services/smtp.service");
 
 const JobPost = db.JobPost;
 const User = db.User;
+const MarketPlaceProfile = db.MarketPlaceProfile;
 
 const JobPostController = () => {
   const getAll = async (req, res) => {
@@ -171,9 +172,103 @@ const JobPostController = () => {
         }
       }
 
-      await JobPost.upsert(transformedData, {
+      let [jobPost] = await JobPost.upsert(transformedData, {
         returning: true,
       });
+
+      jobPost = jobPost.dataValues;
+
+      if (jobPost.status === "active") {
+        const profiles = await MarketPlaceProfile.findAll({
+          where: {
+            isOpenReceivingEmail: true,
+            [Op.not]: [
+              {
+                jobPostIdsForEmailReceived: {
+                  [Op.contains]: [jobPost.id],
+                },
+              },
+            ],
+          },
+          include: [
+            {
+              model: User,
+              attributes: ["id", "email"],
+            },
+          ],
+        });
+
+        let promiseToBeResolved = [];
+
+        profiles.forEach((profile) => {
+          const user = profile.User;
+          profile = profile.dataValues;
+
+          let percentage = 0;
+
+          if (!isEmpty(profile.skills)) {
+            const levels = {
+              basic: 1,
+              intermediate: 2,
+              advanced: 3,
+            };
+
+            const numberOfPercentagePerSkill =
+              100 / jobPost.preferredSkills.length;
+
+            jobPost.preferredSkills.map((preferredSkill) => {
+              const profileSkillLevel = profile.skills[preferredSkill.skill];
+
+              if (profileSkillLevel) {
+                const diff =
+                  levels[profileSkillLevel] - levels[preferredSkill.level];
+
+                if (diff >= 0) {
+                  percentage += numberOfPercentagePerSkill;
+                } else if (diff === -1) {
+                  percentage += numberOfPercentagePerSkill / 2;
+                }
+              }
+            });
+          }
+
+          if (percentage >= 75) {
+            const link = `${process.env.DOMAIN_URL}talent-marketplace/job-post/${jobPost.id}`;
+
+            const mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
+              subject: LabEmails.NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST.subject(),
+              html: LabEmails.NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST.body(link),
+              contentType: "text/html",
+            };
+
+            const email = smtpService().sendMailUsingSendInBlue(mailOptions);
+
+            promiseToBeResolved.push(email);
+
+            const updateProfile = MarketPlaceProfile.update(
+              {
+                jobPostIdsForEmailReceived: [
+                  ...profile.jobPostIdsForEmailReceived,
+                  jobPost.id,
+                ],
+              },
+              {
+                where: {
+                  id: profile.id,
+                },
+                returning: true,
+                plain: true,
+              }
+            );
+
+            promiseToBeResolved.push(updateProfile);
+          }
+        });
+
+        await Promise.all(promiseToBeResolved);
+      }
 
       const myJobPosts = await JobPost.findAll({
         where: {

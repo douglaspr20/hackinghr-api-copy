@@ -19,6 +19,8 @@ module.exports = (sequelize, DataTypes) => {
       topics: DataTypes.ARRAY(DataTypes.STRING),
       location: DataTypes.ARRAY(DataTypes.STRING),
       skills: DataTypes.JSONB,
+      isOpenReceivingEmail: DataTypes.BOOLEAN,
+      jobPostIdsForEmailReceived: DataTypes.ARRAY(DataTypes.INTEGER),
     },
     {
       sequelize,
