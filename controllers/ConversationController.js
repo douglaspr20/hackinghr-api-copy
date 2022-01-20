@@ -5,7 +5,6 @@ const socketService = require("../services/socket.service");
 const SocketEventTypes = require("../enum/SocketEventTypes");
 const { Sequelize } = require("../models");
 const Conversation = db.Conversation;
-const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
 
 const ConversationController = () => {
@@ -19,6 +18,8 @@ const ConversationController = () => {
           },
         },
       });
+
+      socketService().emit(SocketEventTypes.NEW_CONVERSATION);
 
       if (prevConversation) return;
       const conversation = await Conversation.create({ members });
@@ -44,8 +45,6 @@ const ConversationController = () => {
       const conversations = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
       });
-
-      // socketService().emit(SocketEventTypes.CONVERSATIONS, conversations);
 
       return res.status(HttpCodes.OK).json({ conversations });
     } catch (error) {

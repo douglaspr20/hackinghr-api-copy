@@ -5,19 +5,14 @@ const SocketEventTypes = require("../enum/SocketEventTypes");
 const Message = db.Message;
 
 const MessageController = () => {
-  const create = async (req, res) => {
+  const create = async (message) => {
     try {
-      const message = await Message.create({ ...req.body });
-      socketService().emit(
-        SocketEventTypes.SEND_MESSAGE_GLOBAL_CONFERENCE,
-        message
-      );
-
-      return res.status(HttpCodes.OK).json({});
+      const newMessage = await Message.create(message);
+      return newMessage;
     } catch (error) {
-      res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error" });
+      // res
+      //   .status(HttpCodes.INTERNAL_SERVER_ERROR)
+      //   .json({ msg: "Internal server error" });
       console.log(error);
     }
   };

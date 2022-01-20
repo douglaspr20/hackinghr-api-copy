@@ -36,6 +36,7 @@ dotenv.config();
  */
 const routes = require("./routes");
 const SocketEventTypes = require("./enum/SocketEventTypes");
+const MessageController = require("./controllers/MessageController");
 
 /**
  * express application
@@ -417,6 +418,13 @@ io.on("connection", (socket) => {
   socket.on(SocketEventTypes.USER_OFFLINE, async ({ id }) => {
     const userOnline = await UserController().userIsOnline(id, false);
     io.emit(SocketEventTypes.USER_OFFLINE, userOnline.dataValues);
+  });
+
+  socket.on(SocketEventTypes.SEND_MESSAGE, async (message) => {
+    const newMessage = await MessageController().create(message);
+    delete newMessage.dataValues.createdAt;
+    newMessage.dataValues.messageDate = newMessage.dataValues.updatedAt;
+    io.local.emit(SocketEventTypes.MESSAGE, newMessage);
   });
 });
 
