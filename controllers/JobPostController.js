@@ -181,6 +181,9 @@ const JobPostController = () => {
       if (jobPost.status === "active") {
         const profiles = await MarketPlaceProfile.findAll({
           where: {
+            UserId: {
+              [Op.ne]: id,
+            },
             isOpenReceivingEmail: true,
             [Op.not]: [
               {
