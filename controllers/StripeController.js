@@ -415,7 +415,7 @@ const StripeController = () => {
       for (let recruiterItem of recruiterPrices) {
         if (customerInformation.subscriptions.data.length > 0) {
           for (let subRecruiterItem of customerInformation.subscriptions.data) {
-            subRecruiterItem.items.data.map((itemSubscription) => {
+            subRecruiterItem.items.data.map(async (itemSubscription) => {
               console.log(
                 `***** RECRUITER -- Price: ${itemSubscription.price.id} /`,
                 recruiterItem,
@@ -433,6 +433,21 @@ const StripeController = () => {
                 newUserData["recruiterSubscription_enddate"] = moment
                   .unix(subRecruiterItem.current_period_end)
                   .format("YYYY-MM-DD HH:mm:ss");
+
+                if (user.recruiterSubscription === false) {
+                  try {
+                    const mailOptions = {
+                      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                      to: user.email,
+                      subject: LabEmails.USER_BECOME_RECRUITER.subject(),
+                      html: LabEmails.USER_BECOME_RECRUITER.body(user),
+                    };
+
+                    await smtpService().sendMailUsingSendInBlue(mailOptions);
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }
               } else if (
                 (itemSubscription.price.id === recruiterItem &&
                   subRecruiterItem.status === "past_due") ||

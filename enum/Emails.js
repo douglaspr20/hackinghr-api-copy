@@ -914,4 +914,40 @@ module.exports = {
       <p>Hacking HR Team</p>
     `,
   },
+  USER_BECOME_RECRUITER: {
+    subject: () => `Thank you for becoming a RECRUITER in the Hacking HR LAB!`,
+    body: (user) => `
+      <p>
+      Hi ${user.firstName},
+      </p>
+      <p>
+        We are excited to welcome you as a recruiter in the Hacking HR LAB.
+      </p>
+      <p>
+        The Talent Marketplace functionality was built for recruiters like you to take full advantage of the Talent Marketplace we are building inside the LAB.
+      </p>
+      <p>
+        You can post your jobs by click on Talent Marketplace (left menu) and then going to the “My Job Postings” tab.
+      </p>
+      <p>
+        This is what we are building now and it's coming up in a few days:
+      </p>
+      <p>
+        <ul>
+          <li>Members in the LAB who match your job criteria will be notified</li>
+          <li>You will be able to access a list of recommended candidates for your job instead of looking through the entire Talent Marketplace</li>
+          <li>Your job will be posted across our social media channels (this one is coming in a few weeks)</li>
+          <li>We will find matching candidates in our social media channels and invite them to apply (this one is also coming in a few weeks)</li>
+        </ul>
+      </p>
+      <p>
+        For now, please do not hesitate to let us know if you have any questions. We are here to help you and we hope that you can find amazing talent in the Hacking HR's Talent Marketplace!
+      </p>
+      <p>
+        Thank you so much!
+      </p>
+      <br />
+      The Hacking HR Team
+    `,
+  },
 };
