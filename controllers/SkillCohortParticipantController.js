@@ -103,7 +103,10 @@ const SkillCohortParticipantController = () => {
       }
 
       const allSkillCohortParticipants = await SkillCohortParticipant.findAll({
-        where,
+        where: {
+          ...where,
+          hasAccess: true,
+        },
         include: db.User,
       });
 

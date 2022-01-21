@@ -264,8 +264,9 @@ const SkillCohortController = () => {
 
       const allOfMySkillCohorts = allParticipated.map((participated) => {
         return {
-          ParticipantId: participated.id,
           ...participated.SkillCohort.dataValues,
+          ParticipantId: participated.id,
+          hasAccess: participated.hasAccess,
           SkillCohortResourceResponses:
             participated.SkillCohortResourceResponses,
           SkillCohortResponseAssessments:
