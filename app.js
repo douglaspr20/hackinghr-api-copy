@@ -354,11 +354,21 @@ cron.schedule(
   }
 );
 
-async function test() {
-  await WeeklyDigestController().getPodcastByCreatorsThisWeek();
-}
-
-test();
+// Weekly Digest
+cron.schedule(
+  "0 0 * * *", // 12AM every day
+  // "0 0 * * 5", // 12AM every Friday
+  async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Weekly Digest****************");
+    await WeeklyDigestController().sendWeeklyDigestEmail();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
 
 // allow cross origin requests
 // configure to only allow requests from certain origins
