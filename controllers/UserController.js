@@ -1219,9 +1219,7 @@ const UserController = () => {
           );
 
           return res.status(HttpCodes.OK).json({
-            msg: accepted
-              ? "Business partner accepted"
-              : "Business partner rejected",
+            msg: "Business partner accepted",
             userUpdated: affectedRows,
           });
         } catch (error) {
@@ -1237,12 +1235,11 @@ const UserController = () => {
               where: {
                 id,
               },
+              returning: true,
             }
           );
           return res.status(HttpCodes.OK).json({
-            msg: accepted
-              ? "Business partner accepted"
-              : "Business partner rejected",
+            msg: "Business partner rejected",
             userUpdated: affectedRows,
           });
         } catch (error) {
