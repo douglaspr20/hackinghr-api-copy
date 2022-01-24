@@ -12,7 +12,7 @@ const BusinessPartnerController = () => {
     try {
       const businessPartnerMembers = await User.findAll({
         where: {
-          isBusinessPartner: true,
+          isBusinessPartner: "accepted",
         },
       });
       if (!businessPartnerMembers) {

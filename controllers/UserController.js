@@ -1118,7 +1118,15 @@ const UserController = () => {
           .json({ msg: "Host user not found" });
       }
       const link = `${process.env.DOMAIN_URL}business-partner?id=${userId}`;
-
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        { isBusinessPartner: "pending" },
+        {
+          where: {
+            id: userId,
+          },
+          returning: true,
+        }
+      );
       await Promise.resolve(
         (() => {
           let mailOptions = {
@@ -1151,9 +1159,9 @@ const UserController = () => {
           return smtpService().sendMailUsingSendInBlue(mailOptions);
         })()
       );
-
       return res.status(HttpCodes.OK).json({
         msg: `Thank you for applying. You will receive a response within  the next 48 hours`,
+        userUpdated: affectedRows,
       });
     } catch (error) {
       console.log(error);
@@ -1179,22 +1187,6 @@ const UserController = () => {
           msg: "user not found",
         });
       }
-      if (accepted) {
-        try {
-          await User.update(
-            { isBusinessPartner: true },
-            {
-              where: {
-                id,
-              },
-            }
-          );
-        } catch (error) {
-          return res
-            .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Something went wrong." });
-        }
-      }
       await Promise.resolve(
         (() => {
           let mailOptions = {
@@ -1214,12 +1206,48 @@ const UserController = () => {
           return smtpService().sendMailUsingSendInBlue(mailOptions);
         })()
       );
+      if (accepted) {
+        try {
+          const [numberOfAffectedRows, affectedRows] = await User.update(
+            { isBusinessPartner: "accepted" },
+            {
+              where: {
+                id,
+              },
+              returning: true,
+            }
+          );
 
-      return res.status(HttpCodes.OK).json({
-        msg: accepted
-          ? "Business partner accepted"
-          : "Business partner rejected",
-      });
+          return res.status(HttpCodes.OK).json({
+            msg: "Business partner accepted",
+            userUpdated: affectedRows,
+          });
+        } catch (error) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Something went wrong." });
+        }
+      } else {
+        try {
+          const [numberOfAffectedRows, affectedRows] = await User.update(
+            { isBusinessPartner: "reject" },
+            {
+              where: {
+                id,
+              },
+              returning: true,
+            }
+          );
+          return res.status(HttpCodes.OK).json({
+            msg: "Business partner rejected",
+            userUpdated: affectedRows,
+          });
+        } catch (error) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Something went wrong." });
+        }
+      }
     } catch (error) {
       console.log(error);
       return res
