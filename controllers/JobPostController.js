@@ -196,7 +196,7 @@ const JobPostController = () => {
           include: [
             {
               model: User,
-              attributes: ["id", "email"],
+              attributes: ["id", "email", "firstName"],
             },
           ],
         });
@@ -241,8 +241,13 @@ const JobPostController = () => {
             const mailOptions = {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               to: user.email,
-              subject: LabEmails.NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST.subject(),
-              html: LabEmails.NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST.body(link),
+              subject: LabEmails.NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST.subject(
+                jobPost.jobTitle
+              ),
+              html: LabEmails.NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST.body(
+                user,
+                link
+              ),
               contentType: "text/html",
             };
 
