@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
       ConversationId: DataTypes.INTEGER,
       sender: DataTypes.INTEGER,
       text: DataTypes.TEXT,
+      viewedUser: DataTypes.ARRAY(DataTypes.INTEGER),
     },
     {
       sequelize,

@@ -37,7 +37,7 @@ const ConversationController = () => {
      SELECT public."Conversations".*, public."Users".id as userId, public."Users"."abbrName", public."Users"."email", 
      public."Users".img, public."Users"."isOnline", public."Users"."firstName", public."Users"."lastName", public."Users"."timezone", 
      public."Messages".id as messageId, public."Messages".sender, public."Messages"."ConversationId", public."Messages".text,
-     public."Messages"."updatedAt" as messageDate FROM public."Conversations"
+     public."Messages"."updatedAt" as messageDate, public."Messages"."viewedUser" FROM public."Conversations"
      LEFT JOIN public."Users" ON public."Users".id = ANY (public."Conversations".members::int[])
      LEFT JOIN public."Messages" ON public."Messages"."ConversationId" = public."Conversations".id WHERE public."Conversations"."members" && ARRAY[${userId}]::int[]
      `;

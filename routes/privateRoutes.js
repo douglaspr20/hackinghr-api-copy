@@ -210,6 +210,7 @@ const privateRoutes = {
   "GET /conversations/:userId": "ConversationController.getAll",
   "POST /messages/": "MessageController.create",
   "GET /messages/:conversationId": "MessageController.getAll",
+  "PUT /messages/:ConversationId": "MessageController.readMessages",
 };
 
 module.exports = privateRoutes;
