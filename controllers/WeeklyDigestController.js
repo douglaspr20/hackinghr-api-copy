@@ -127,7 +127,7 @@ const WeeklyDigestController = () => {
 
       // users = users.map((user) => user.email);
       //  "enrique@hackinghr.io"
-      const users = ["lourencelinao13@gmail.com", "enrique@hackinghr.io"];
+      const users = ["lourencelinao13@gmail.com"];
 
       const podcastsEmailContent = podcasts.map((podcast) => {
         const link = `${process.env.DOMAIN_URL}library-item/podcast/${podcast.id}?channel=${podcast.channel}`;
