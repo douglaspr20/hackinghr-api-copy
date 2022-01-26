@@ -349,11 +349,6 @@ const LearningController = () => {
     try {
       const events = await Event.findAll({
         attributes: ["id", "title"],
-        where: {
-          users: {
-            [Op.contains]: [user.id],
-          },
-        },
         include: {
           model: Library,
           where: {
