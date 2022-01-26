@@ -209,7 +209,11 @@ const JobPostController = () => {
 
           let percentage = 0;
 
-          if (!isEmpty(profile.skills)) {
+          const isLocationMatched = profile.location.some((p) =>
+            jobPost.location.includes(p)
+          );
+
+          if (isLocationMatched && !isEmpty(profile.skills)) {
             const levels = {
               basic: 1,
               intermediate: 2,
