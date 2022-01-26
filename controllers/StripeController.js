@@ -262,14 +262,14 @@ const StripeController = () => {
                 subItemPremium.status === "active"
               ) {
                 isSubscribed = true;
+                newUserData["memberShip"] = "premium";
+                newUserData["subscription_startdate"] = moment
+                  .unix(subItemPremium.current_period_start)
+                  .format("YYYY-MM-DD HH:mm:ss");
+                newUserData["subscription_enddate"] = moment
+                  .unix(subItemPremium.current_period_end)
+                  .format("YYYY-MM-DD HH:mm:ss");
                 if (user.memberShip === "free") {
-                  newUserData["memberShip"] = "premium";
-                  newUserData["subscription_startdate"] = moment
-                    .unix(subItemPremium.current_period_start)
-                    .format("YYYY-MM-DD HH:mm:ss");
-                  newUserData["subscription_enddate"] = moment
-                    .unix(subItemPremium.current_period_end)
-                    .format("YYYY-MM-DD HH:mm:ss");
                   try {
                     const mailOptions = {
                       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
@@ -339,7 +339,7 @@ const StripeController = () => {
       for (let channelsItem of channelsPrices) {
         if (customerInformation.subscriptions.data.length > 0) {
           for (let subChannelsItem of customerInformation.subscriptions.data) {
-            subChannelsItem.items.data.map((itemSubscription) => {
+            subChannelsItem.items.data.map(async (itemSubscription) => {
               console.log(
                 `***** CHANNELS -- Price: ${itemSubscription.price.id} /`,
                 channelsItem,
@@ -360,6 +360,21 @@ const StripeController = () => {
                 newUserData["channelsSubscription_enddate"] = moment
                   .unix(subChannelsItem.current_period_end)
                   .format("YYYY-MM-DD HH:mm:ss");
+
+                if (user.channelsSubscription === false) {
+                  try {
+                    const mailOptions = {
+                      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                      to: user.email,
+                      subject: LabEmails.USER_BECOME_CREATOR.subject(),
+                      html: LabEmails.USER_BECOME_CREATOR.body(user),
+                    };
+
+                    await smtpService().sendMailUsingSendInBlue(mailOptions);
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }
               } else if (
                 (itemSubscription.price.id === channelsItem &&
                   subChannelsItem.status === "past_due") ||
