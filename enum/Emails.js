@@ -914,4 +914,72 @@ module.exports = {
       <p>Hacking HR Team</p>
     `,
   },
+  USER_BECOME_CREATOR: {
+    subject: () => `Thank you for becoming a CREATOR in the Hacking HR LAB!`,
+    body: (user) => `
+      <p>
+        Hi ${user.firstName},
+      </p>
+      <p>
+        We are excited to welcome you as a CREATOR in the Hacking HR LAB. 
+        CHANNELS functionality was built for CREATORS like you. And this is just the beginning.
+      </p>
+      <p>
+        We are firm believers in the unlimited opportunities of the creators' economy and we are planning to deliver a lot of resources for CREATORS like you.
+      </p>
+      <p>
+        In particularly, our aim is to create the technology to create, share and monetize content designed for HR professionals by our community of CREATORS!
+      </p>
+      <p>
+        For now, <a href="https://www.youtube.com/watch?app=desktop&v=DpCqM42fWRE" target="_blank" >please check out this video to learn how to use the existing CREATORS platform</a>. 
+      <p>
+      <p>
+        Please do not hesitate to let us know if you have any questions.
+      </p>
+      <p>
+        We are here to help you and we hope that this tool (what already exists and what will exist soon!).
+      </p>
+      <p>
+        Thank you so much!
+      </p>
+      <br />
+      The Hacking HR Team
+    `,
+  },
+  USER_BECOME_RECRUITER: {
+    subject: () => `Thank you for becoming a RECRUITER in the Hacking HR LAB!`,
+    body: (user) => `
+      <p>
+      Hi ${user.firstName},
+      </p>
+      <p>
+        We are excited to welcome you as a recruiter in the Hacking HR LAB.
+      </p>
+      <p>
+        The Talent Marketplace functionality was built for recruiters like you to take full advantage of the Talent Marketplace we are building inside the LAB.
+      </p>
+      <p>
+        You can post your jobs by click on Talent Marketplace (left menu) and then going to the “My Job Postings” tab.
+      </p>
+      <p>
+        This is what we are building now and it's coming up in a few days:
+      </p>
+      <p>
+        <ul>
+          <li>Members in the LAB who match your job criteria will be notified</li>
+          <li>You will be able to access a list of recommended candidates for your job instead of looking through the entire Talent Marketplace</li>
+          <li>Your job will be posted across our social media channels (this one is coming in a few weeks)</li>
+          <li>We will find matching candidates in our social media channels and invite them to apply (this one is also coming in a few weeks)</li>
+        </ul>
+      </p>
+      <p>
+        For now, please do not hesitate to let us know if you have any questions. We are here to help you and we hope that you can find amazing talent in the Hacking HR's Talent Marketplace!
+      </p>
+      <p>
+        Thank you so much!
+      </p>
+      <br />
+      The Hacking HR Team
+    `,
+  },
 };
