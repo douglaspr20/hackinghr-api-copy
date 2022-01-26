@@ -374,7 +374,7 @@ async function test() {
   await WeeklyDigestController().sendWeeklyDigestEmail();
 }
 
-test();
+// test();
 
 // allow cross origin requests
 // configure to only allow requests from certain origins

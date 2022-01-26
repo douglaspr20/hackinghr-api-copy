@@ -811,7 +811,7 @@ module.exports = {
       contentsEmailContent,
       jobPostsEmailContent
     ) => `
-      <p>
+      <p style="background-color: red; padding: 1rem;">
         New Content by our Creators <br>
       </p>
       
