@@ -17,6 +17,10 @@ const { isEmpty } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
+const {
+  ACCEPT_USER_APPLY_PARTNER_BUSSINESS,
+  REJECT_USER_APPLY_PARTNER_BUSSINESS,
+} = require("../enum/Emails");
 
 const { literal, Op, QueryTypes } = Sequelize;
 const User = db.User;
@@ -936,7 +940,6 @@ const UserController = () => {
 
     try {
       const { resume } = req.files || {};
-
       if (resume) {
         const uploadRes = await s3Service().uploadResume(resume, user);
         const [rows, updatedUser] = await User.update(
@@ -1100,6 +1103,156 @@ const UserController = () => {
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
+    }
+  };
+
+  const acceptInvitationApplyBusinessPartner = async (req, res) => {
+    const { userId, applyState } = req.body;
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: { id: userId },
+      });
+      if (!user) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Host user not found" });
+      }
+      const link = `${process.env.DOMAIN_URL}business-partner?id=${userId}`;
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        { isBusinessPartner: "pending" },
+        {
+          where: {
+            id: userId,
+          },
+          returning: true,
+        }
+      );
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            // to: "morenoelba2002@gmail.com",
+            to: "enrique@hackinghr.io",
+            subject: LabEmails.USER_BECOME_BUSINESS_PARTNER.subject,
+            html: LabEmails.USER_BECOME_BUSINESS_PARTNER.body(
+              user,
+              link,
+              applyState
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.USER_AFTER_APPLY_BUSINESS_PARTNER.subject,
+            html: LabEmails.USER_AFTER_APPLY_BUSINESS_PARTNER.body(user),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+      return res.status(HttpCodes.OK).json({
+        msg: `Thank you for applying. You will receive a response within  the next 48 hours`,
+        userUpdated: affectedRows,
+      });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const confirmInvitationApplyBusiness = async (req, res) => {
+    const { id } = req.params;
+    const { accepted } = req.body;
+    const link = `${process.env.DOMAIN_URL}business-partner`;
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!user) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "user not found",
+        });
+      }
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: accepted
+              ? process.env.SEND_IN_BLUE_SMTP_USER
+              : process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: accepted
+              ? LabEmails.ACCEPT_USER_APPLY_PARTNER_BUSSINESS.subject
+              : LabEmails.REJECT_USER_APPLY_PARTNER_BUSSINESS.subject,
+            html: accepted
+              ? ACCEPT_USER_APPLY_PARTNER_BUSSINESS.body(user, link)
+              : REJECT_USER_APPLY_PARTNER_BUSSINESS.body(user),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+      if (accepted) {
+        try {
+          const [numberOfAffectedRows, affectedRows] = await User.update(
+            { isBusinessPartner: "accepted" },
+            {
+              where: {
+                id,
+              },
+              returning: true,
+            }
+          );
+
+          return res.status(HttpCodes.OK).json({
+            msg: "Business partner accepted",
+            userUpdated: affectedRows,
+          });
+        } catch (error) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Something went wrong." });
+        }
+      } else {
+        try {
+          const [numberOfAffectedRows, affectedRows] = await User.update(
+            { isBusinessPartner: "reject" },
+            {
+              where: {
+                id,
+              },
+              returning: true,
+            }
+          );
+          return res.status(HttpCodes.OK).json({
+            msg: "Business partner rejected",
+            userUpdated: affectedRows,
+          });
+        } catch (error) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Something went wrong." });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong." });
     }
   };
 
@@ -1312,6 +1465,8 @@ const UserController = () => {
     getEditorSignature,
     createInvitation,
     acceptInvitationJoin,
+    acceptInvitationApplyBusinessPartner,
+    confirmInvitationApplyBusiness,
     confirmAccessibilityRequirements,
     changePassword,
     getLearningBadgesHoursByUser,

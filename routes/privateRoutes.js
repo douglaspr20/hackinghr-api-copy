@@ -1,5 +1,9 @@
 const privateRoutes = {
   "GET /user/": "UserController.getUser",
+  "POST /user/apply-business-partner":
+    "UserController.acceptInvitationApplyBusinessPartner",
+  "POST /user/confirm-apply-business/:id":
+    "UserController.confirmInvitationApplyBusiness",
   "GET /council/members/": "CouncilMembersController.getCouncilMembers",
   "GET /council/resources/": "CouncilMembersController.getAll",
   "GET /council/resource/:id": "CouncilMembersController.getCouncilResource",
@@ -8,6 +12,25 @@ const privateRoutes = {
   "POST /councilComments/create-comment": "CouncilCommentController.add",
   "DELETE /councilComments/delete-comment/:id":
     "CouncilCommentController.remove",
+  "GET /business-partner/members/":
+    "BusinessPartnerController.getBusinessPartnerMembers",
+  "GET /business-partner/resources/": "BusinessPartnerController.getAll",
+  "GET /business-partner/resource/:id":
+    "BusinessPartnerController.getBusinessPartnerResource",
+  "POST /business-partner/add-resources/": "BusinessPartnerController.create",
+  "GET /business-partner/documents/":
+    "BusinessPartnerController.getBusinessPartnerDocuments",
+  "POST /business-partner/create-document/":
+    "BusinessPartnerController.createDocument",
+  "PUT /business-partner/upload-document/":
+    "BusinessPartnerController.uploadDocumentFile",
+  "DELETE /business-partner/delete-document/:id":
+    "BusinessPartnerController.deleteDocumentFile",
+  "GET /business-partner-comments/": "BusinessPartnerCommentController.getAll",
+  "POST /business-partner-comments/create-comment":
+    "BusinessPartnerCommentController.add",
+  "DELETE /business-partner-comments/delete-comment/:id":
+    "BusinessPartnerCommentController.remove",
   "GET /events/": "EventController.getAllEvents",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
@@ -92,6 +115,8 @@ const privateRoutes = {
   "GET /course-classes/:course": "CourseClassController.getByCourse",
   "GET /session": "AnnualConferenceController.getAll",
   "GET /sessions-user": "AnnualConferenceController.getSessionsUser",
+  "GET /sessions-user-joined":
+    "AnnualConferenceController.getSessionsUserJoined",
   "GET /session/participants": "AnnualConferenceController.getParticipants",
   "GET /session/recommended-agenda":
     "AnnualConferenceController.recommendedAgenda",

@@ -37,16 +37,27 @@ const NotificationController = () => {
     const { num, page } = req.query;
     const { user } = req;
 
+    let where = {
+      onlyFor: {
+        [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+      },
+    };
+
+    if (user.dataValues.isBusinessPartner !== "accepted") {
+      where = {
+        ...where,
+        type: {
+          [Op.notLike]: `%BusinessPartner%`,
+        },
+      };
+    }
+
     try {
       const notifications = await Notification.findAndCountAll({
         offset: (page - 1) * num,
         limit: num,
         order: [["createdAt", "DESC"]],
-        where: {
-          onlyFor: {
-            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
-          },
-        },
+        where,
       });
 
       const readCount = await Notification.count({
@@ -65,7 +76,6 @@ const NotificationController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Bad Request: Notifications not found" });
       }
-
       return res.status(HttpCodes.OK).json({ notifications, readCount });
     } catch (error) {
       console.log(error);
@@ -194,6 +204,21 @@ const NotificationController = () => {
     const { notifications } = req.body;
     const { user } = req;
 
+    let where = {
+      onlyFor: {
+        [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+      },
+    };
+
+    if (user.dataValues.isBusinessPartner !== "accepted") {
+      where = {
+        ...where,
+        type: {
+          [Op.notLike]: `%BusinessPartner%`,
+        },
+      };
+    }
+
     try {
       await Notification.update(
         {
@@ -213,11 +238,7 @@ const NotificationController = () => {
       );
 
       const totalCount = await Notification.count({
-        where: {
-          onlyFor: {
-            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
-          },
-        },
+        where,
       });
 
       const readCount = await Notification.count({
@@ -230,7 +251,6 @@ const NotificationController = () => {
           },
         },
       });
-
       return res.status(HttpCodes.OK).json({ unread: totalCount - readCount });
     } catch (error) {
       console.log(error);
@@ -244,6 +264,20 @@ const NotificationController = () => {
     const { notifications } = req.body;
     const { user } = req;
 
+    let where = {
+      onlyFor: {
+        [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+      },
+    };
+
+    if (user.dataValues.isBusinessPartner !== "accepted") {
+      where = {
+        ...where,
+        type: {
+          [Op.notLike]: `%BusinessPartner%`,
+        },
+      };
+    }
     try {
       await Notification.update(
         {
@@ -261,13 +295,8 @@ const NotificationController = () => {
           },
         }
       );
-
       const totalCount = await Notification.count({
-        where: {
-          onlyFor: {
-            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
-          },
-        },
+        where,
       });
 
       const readCount = await Notification.count({
@@ -280,7 +309,6 @@ const NotificationController = () => {
           },
         },
       });
-
       return res.status(HttpCodes.OK).json({ unread: totalCount - readCount });
     } catch (error) {
       console.log(error);

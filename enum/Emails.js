@@ -566,11 +566,11 @@ module.exports = {
     </p>
     <p>
       Please remember to: <br> <br>
-      -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
-      -	Assess the responses provided by other cohort participants
+      -	Provide your reflection to today’s resource: go to the Cohort Dashboard, click on JOIN THE CONVERSATION in the resource, and provide your reflection on the comment section. Your reflection should include: what you learned from the resource and how you can apply it in your own HR work or practice. <br>
+      -	Provide comments on other cohort participants' reflections: check out what other participants have said and REPLY with your feedback to their reflection.
     </p>
     <p>
-      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+      Please keep in mind that providing your daily reflection and comments on others' reflections is MANDATORY. You will be removed from the program if you miss to provide your reflection two times during a given week or if you miss to assess other participants’ reflections two times during a given week. 
     </p>
     <p>
       Thank you! 
@@ -688,9 +688,6 @@ module.exports = {
         Hi ${user.firstName}, <br>
       </p>
       <p>
-        We are only one week away from the kick-off of Hacking HR's ProjectX Cohort: ${cohort.title}<br>
-      </p>
-      <p>
         This is it, folks! We are kicking off Hacking HR's ProjectX Cohort: ${cohort.title} tomorrow, ${startDate} and will last for 66 consecutive days until ${endDate}.  <br>
       </p>
       <p>
@@ -767,7 +764,7 @@ module.exports = {
   `,
   },
   USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
-    subject: `User confirm accessibility requirements`,
+    subject: `Welcome to Hacking HR’s HR Business Partners Community`,
     body: (user) => `
   <p>
   ${user.firstName} ${user.lastName} <br>
@@ -780,6 +777,116 @@ module.exports = {
     Hacking HR Team
   </p>
   `,
+  },
+
+  USER_BECOME_BUSINESS_PARTNER: {
+    subject: `User want apply to the business partner community`,
+    body: (user, link, applyState) => `
+  <p>
+   ${user.firstName} ${user.lastName} <br>
+  </p>
+  <p>
+  <strong>Email:</strong> ${user.email}<br>
+  </p>
+  <p><strong>Company:</strong> ${user.company}</p>
+  <p><strong>Company size:</strong> ${user.sizeOfOrganization}</p>
+  <p></p>
+  <p>
+    <strong>Linkedin:</strong> ${user.personalLinks.linkedin}<br>
+  </p>
+  <h3>${applyState ? applyState : ""}</h3>
+  </p>
+  <div>
+    Accept: <a href="${link}&accepted=true">${link}</a><br>
+    Reject: <a href="${link}&accepted=false">${link}</a><br>
+  </div>
+  <p>
+    Hacking HR Team
+  </p>
+  `,
+  },
+
+  REJECT_USER_APPLY_PARTNER_BUSSINESS: {
+    subject:
+      "Your Application for Hacking HR’s HR Business Partners Community was not approved",
+    body: (user) => `
+  <p>
+  </p>
+  <p>
+  Hi ${user.firstName}
+  </p>
+  <p>
+  Thank you for sending your application to be part of the HR Business Partners 
+  Community. 
+  </p>
+  <p>
+  We built this community specifically for HR professionals who currently are HR Business Partners or, even if they don’t have the “official” HR Business Partner title, are performing HR Business Partnering functions.
+  </p>
+  <p>
+  In reviewing your Hacking HR LAB profile we don’t see that you are either an HR Business Partner or performing those functions. We may be missing something. That happens. In that case, please let us know if we made a mistake so that we can reconsider your application. To do this, please send the application again and make sure to add any new information in the comment box provided in the application.
+  </p>
+  <p>
+  There are still many tools for you to enjoy in the Hacking HR LAB and we hope you 
+  do! 
+  </p>
+  <p>Thank you so much.</p>
+  <p>
+  The Hacking HR Team
+  </p> 
+    `,
+  },
+  ACCEPT_USER_APPLY_PARTNER_BUSSINESS: {
+    subject: "Welcome to the HR Business Partners Community by Hacking HR",
+    body: (user, link) => `
+    Hi ${user.firstName}
+  </p>
+  <p>
+  We are excited to welcome you to the HR Business Partners Community in the 
+  Hacking HR LAB. 
+  </p>
+  <p>
+  This space is dedicated to the community of HR Business Partners and our hope is 
+  for it to become a place for learning, collaboration, community, support and much 
+  more!
+  </p>
+  <p>
+  In the HR Business Partners community you will be able to share resources, join 
+  conversations, upload and download valuable documents created by the 
+  community, join project conversations, connect with other HR Business Partners, 
+  help each other and a lot more.
+  </p>
+  <p>
+  We will be including more tools for collaboration, community and learning in the 
+  Community of HR Business Partners. This is just the beginning! 
+  </p>
+  <p>
+  To access the HR Business Partners Community dashboard, please click on your 
+  profile (top right) and there will be a button: “HR Business Partners Community”. If 
+  you are a PREMIUM member of the Hacking HR LAB, you can access right away. If 
+  not, you have to UPGRADE your account first to have access to the dashboard.
+  </p> 
+  <p>
+  If there is anything that you believe can be of value to you and the community... 
+  well... don’t hesitate to let me know!
+  </p>
+  <p>
+  Thank you so much! And please remember to be an active member of the 
+  community. 
+  </p>
+  <p>Enrique Rubio</p>
+  <p>Founder</p>
+  <p>Hacking HR</p>`,
+  },
+  USER_AFTER_APPLY_BUSINESS_PARTNER: {
+    subject: `Your Application for the Hacking HR’s HR Business Partners Community has been received`,
+    body: (user) =>
+      `<p>Hi ${user.firstName},</p>
+      <p>Thank you for sending your application to be part of the HR Business Partners 
+      Community.</p>
+      <p>We will review your application and you should receive a response within the next 
+      48 hours.</p> 
+      <p>Thank you so much.</p> 
+      <p>The Hacking HR Team</p>`,
   },
   JOB_POST_INVITATION_TO_APPLY: {
     subject: (jobPost) =>
@@ -830,6 +937,74 @@ module.exports = {
       Thank you! <br>
     </p>
     <p>Hacking HR Team</p>
+  `,
+  },
+  USER_BECOME_CREATOR: {
+    subject: () => `Thank you for becoming a CREATOR in the Hacking HR LAB!`,
+    body: (user) => `
+      <p>
+        Hi ${user.firstName},
+      </p>
+      <p>
+        We are excited to welcome you as a CREATOR in the Hacking HR LAB. 
+        CHANNELS functionality was built for CREATORS like you. And this is just the beginning.
+      </p>
+      <p>
+        We are firm believers in the unlimited opportunities of the creators' economy and we are planning to deliver a lot of resources for CREATORS like you.
+      </p>
+      <p>
+        In particularly, our aim is to create the technology to create, share and monetize content designed for HR professionals by our community of CREATORS!
+      </p>
+      <p>
+        For now, <a href="https://www.youtube.com/watch?app=desktop&v=DpCqM42fWRE" target="_blank" >please check out this video to learn how to use the existing CREATORS platform</a>. 
+      <p>
+      <p>
+        Please do not hesitate to let us know if you have any questions.
+      </p>
+      <p>
+        We are here to help you and we hope that this tool (what already exists and what will exist soon!).
+      </p>
+      <p>
+        Thank you so much!
+      </p>
+      <br />
+      The Hacking HR Team
+    `,
+  },
+  USER_BECOME_RECRUITER: {
+    subject: () => `Thank you for becoming a RECRUITER in the Hacking HR LAB!`,
+    body: (user) => `
+      <p>
+      Hi ${user.firstName},
+      </p>
+      <p>
+        We are excited to welcome you as a recruiter in the Hacking HR LAB.
+      </p>
+      <p>
+        The Talent Marketplace functionality was built for recruiters like you to take full advantage of the Talent Marketplace we are building inside the LAB.
+      </p>
+      <p>
+        You can post your jobs by click on Talent Marketplace (left menu) and then going to the “My Job Postings” tab.
+      </p>
+      <p>
+        This is what we are building now and it's coming up in a few days:
+      </p>
+      <p>
+        <ul>
+          <li>Members in the LAB who match your job criteria will be notified</li>
+          <li>You will be able to access a list of recommended candidates for your job instead of looking through the entire Talent Marketplace</li>
+          <li>Your job will be posted across our social media channels (this one is coming in a few weeks)</li>
+          <li>We will find matching candidates in our social media channels and invite them to apply (this one is also coming in a few weeks)</li>
+        </ul>
+      </p>
+      <p>
+        For now, please do not hesitate to let us know if you have any questions. We are here to help you and we hope that you can find amazing talent in the Hacking HR's Talent Marketplace!
+      </p>
+      <p>
+        Thank you so much!
+      </p>
+      <br />
+      The Hacking HR Team
     `,
   },
 };

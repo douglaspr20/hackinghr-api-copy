@@ -9,6 +9,8 @@ const moment = require("moment-timezone");
 const SkillCohort = db.SkillCohort;
 const SkillCohortResources = db.SkillCohortResources;
 const SkillCohortParticipant = db.SkillCohortParticipant;
+const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
+const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
 
 const SkillCohortController = () => {
   /**
@@ -151,10 +153,40 @@ const SkillCohortController = () => {
   const getAll = async (req, res) => {
     try {
       const skillCohorts = await SkillCohort.findAll({
-        order: [["startDate", "ASC"]],
+        order: [["id", "ASC"]],
+        include: {
+          model: SkillCohortResources,
+        },
       });
 
       return res.status(HttpCodes.OK).json({ skillCohorts });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal Server error",
+        error,
+      });
+    }
+  };
+
+  const duplicate = async (req, res) => {
+    const { skillCohort, skillCohortResources } = req.body;
+
+    try {
+      const newSkillCohort = await SkillCohort.create(skillCohort);
+
+      const transformedSkillCohortResources = skillCohortResources.map(
+        (resource) => {
+          return {
+            ...resource,
+            SkillCohortId: newSkillCohort.id,
+          };
+        }
+      );
+
+      await SkillCohortResources.bulkCreate(transformedSkillCohortResources);
+
+      return res.status(HttpCodes.OK).json({});
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -183,23 +215,62 @@ const SkillCohortController = () => {
         where: {
           UserId,
         },
-        include: {
-          model: SkillCohort,
-          where: {
-            endDate: {
-              [Op.gt]: dateToday,
+        include: [
+          {
+            model: SkillCohort,
+            where: {
+              endDate: {
+                [Op.gt]: dateToday,
+              },
             },
+            nest: true,
+            required: true,
+            include: [
+              {
+                model: SkillCohortResources,
+                attributes: ["id", "title", "releaseDate"],
+                where: {
+                  SkillCohortId: {
+                    [Op.ne]: null,
+                  },
+                  releaseDate: {
+                    [Op.lt]: dateToday,
+                  },
+                },
+              },
+            ],
           },
-          order: [["startDate", "ASC"]],
-          required: true,
-        },
-        raw: true,
+          {
+            model: SkillCohortResourceResponse,
+            attributes: [
+              "id",
+              "SkillCohortResourceId",
+              "SkillCohortParticipantId",
+            ],
+            nest: true,
+          },
+          {
+            model: SkillCohortResponseAssessment,
+            attributes: [
+              "id",
+              "SkillCohortResourceId",
+              "SkillCohortParticipantId",
+            ],
+            nest: true,
+          },
+        ],
         nest: true,
       });
 
       const allOfMySkillCohorts = allParticipated.map((participated) => {
         return {
-          ...participated.SkillCohort,
+          ...participated.SkillCohort.dataValues,
+          ParticipantId: participated.id,
+          hasAccess: participated.hasAccess,
+          SkillCohortResourceResponses:
+            participated.SkillCohortResourceResponses,
+          SkillCohortResponseAssessments:
+            participated.SkillCohortResponseAssessments,
           hasAccess: participated.hasAccess,
         };
       });
@@ -493,6 +564,7 @@ const SkillCohortController = () => {
     getAllActiveSkillCohortsWithParticipants,
     getAllSkillCohortThatWillStartWeekLater,
     getAllSkillCohortThatWillStartTomorrow,
+    duplicate,
   };
 };
 
