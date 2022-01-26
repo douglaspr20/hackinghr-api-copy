@@ -1,9 +1,8 @@
 const db = require("../models");
 const { Op } = require("sequelize");
-const s3Service = require("../services/s3.service");
 const moment = require("moment-timezone");
-const { LabEmails } = require("../enum");
-const smtpService = require("../services/smtp.service");
+const sendInBlueService = require("../services/sendinblue.service");
+const { JOB_BOARD } = require("../enum");
 
 const Podcast = db.Podcast;
 const Library = db.Library;
@@ -125,53 +124,61 @@ const WeeklyDigestController = () => {
       //   raw: true,
       // });
 
-      // users = users.map((user) => user.email);
+      // users = users.map((user) => {
+      //   email: user.email;
+      // });
+
       //  "enrique@hackinghr.io"
-      const users = ["lourencelinao13@gmail.com"];
+      const users = [
+        {
+          email: "lourencelinao13@gmail.com",
+        },
+        {
+          email: "enrique@hackinghr.io",
+        },
+      ];
 
       const podcastsEmailContent = podcasts.map((podcast) => {
         const link = `${process.env.DOMAIN_URL}library-item/podcast/${podcast.id}?channel=${podcast.channel}`;
-        return `
-          <li>
-            <a href="${link}" target="_blank">${podcast.title}</a>
-          </li>
-        `;
+
+        return {
+          title: podcast.title,
+          link,
+        };
       });
 
       const contentsEmailContent = contents.map((content) => {
-        return `
-          <li>
-            <a href="${content.link}" target="_blank">${content.title}</a>
-          </li>
-        `;
-      });
-
-      const jobPostsEmailContent = jobPosts.map((jobPost) => {
-        const link = `${process.env.DOMAIN_URL}talent-marketplace/job-post/${jobPost.id}`;
-        return `
-          <li>
-            <a href="${link}" target="_blank">${jobPost.jobTitle} - ${jobPost.salaryRange}</a>
-          </li>
-        `;
-      });
-
-      const promiseToBeResolved = users.map((email) => {
-        const mailOptions = {
-          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-          to: email,
-          subject: LabEmails.WEEKLY_DIGEST.subject(),
-          html: LabEmails.WEEKLY_DIGEST.body(
-            podcastsEmailContent,
-            contentsEmailContent,
-            jobPostsEmailContent
-          ),
-          contentType: "text/html",
+        return {
+          title: content.title,
+          link: content.link,
         };
-
-        return smtpService().sendMailUsingSendInBlue(mailOptions);
       });
 
-      await Promise.all(promiseToBeResolved);
+      const resources = [...podcastsEmailContent, ...contentsEmailContent];
+
+      const jobs = jobPosts.map((jobPost) => {
+        const formattedLocation = jobPost.location
+          .map((location) => {
+            const data = JOB_BOARD.LOCATIONS.find(
+              (loc) => loc.value === location
+            );
+
+            return data.text;
+          })
+          .join("/");
+
+        const link = `${process.env.DOMAIN_URL}talent-marketplace/job-post/${jobPost.id}`;
+
+        return {
+          title: jobPost.jobTitle,
+          salary: jobPost.salaryRange,
+          location: formattedLocation,
+          level: jobPost.level,
+          link,
+        };
+      });
+
+      await sendInBlueService().sendWeeklyDigest(users, jobs, resources);
     } catch (error) {
       console.log(error);
     }

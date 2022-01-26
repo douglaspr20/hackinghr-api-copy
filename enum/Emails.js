@@ -804,32 +804,4 @@ module.exports = {
       <p>Hacking HR Team</p>
     `,
   },
-  WEEKLY_DIGEST: {
-    subject: () => `Weekly Digest`,
-    body: (
-      podcastsEmailContent,
-      contentsEmailContent,
-      jobPostsEmailContent
-    ) => `
-      <p style="background-color: red; padding: 1rem;">
-        New Content by our Creators <br>
-      </p>
-      
-      <ul>
-        ${podcastsEmailContent}
-      </ul>
-
-      <ul>
-        ${contentsEmailContent}
-      </ul>
-
-      <p>
-        Jobs Posted:
-      </p>
-
-      <ul>
-        ${jobPostsEmailContent}
-      </ul>
-    `,
-  },
 };

@@ -370,12 +370,6 @@ cron.schedule(
   }
 );
 
-async function test() {
-  await WeeklyDigestController().sendWeeklyDigestEmail();
-}
-
-// test();
-
 // allow cross origin requests
 // configure to only allow requests from certain origins
 app.use(cors());
