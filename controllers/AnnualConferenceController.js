@@ -4,6 +4,7 @@ const { Op, Sequelize } = require("sequelize");
 const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
 const socketService = require("../services/socket.service");
+const TimeZoneList = require("../enum/TimeZoneList");
 const SocketEventTypes = require("../enum/SocketEventTypes");
 
 const AnnualConference = db.AnnualConference;
