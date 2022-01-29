@@ -19,6 +19,7 @@ const SkillCohortController = require("./controllers/SkillCohortController");
 const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
+const WeeklyDigestController = require("./controllers/WeeklyDigestController");
 
 const moment = require("moment-timezone");
 
@@ -347,6 +348,22 @@ cron.schedule(
     );
     console.log("****************Auto Expiry****************");
     await JobPostController().jobPostAutoExpiry();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+// Weekly Digest
+cron.schedule(
+  "0 0 * * *", // 12AM every day
+  // "0 0 * * 5", // 12AM every Friday
+  async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Weekly Digest****************");
+    await WeeklyDigestController().sendWeeklyDigestEmail();
   },
   {
     timezone: "America/Los_Angeles",
