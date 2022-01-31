@@ -73,10 +73,30 @@ const MessageController = () => {
     }
   };
 
+  const getMoreMessages = (req, res) => {
+    const { ConversationId } = req.params;
+    const { offset } = req.query;
+
+    try {
+      const messages = Message.findAll({
+        where: {
+          ConversationId,
+        },
+        offset,
+        limit: 20,
+      });
+
+      return res.status(HttpCodes.OK).json({ messages });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     create,
     getAll,
     readMessages,
+    getMoreMessages,
   };
 };
 

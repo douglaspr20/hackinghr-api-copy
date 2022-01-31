@@ -40,6 +40,9 @@ const ConversationController = () => {
      public."Messages"."updatedAt" as messageDate, public."Messages"."viewedUser" FROM public."Conversations"
      LEFT JOIN public."Users" ON public."Users".id = ANY (public."Conversations".members::int[])
      LEFT JOIN public."Messages" ON public."Messages"."ConversationId" = public."Conversations".id WHERE public."Conversations"."members" && ARRAY[${userId}]::int[]
+     ORDER BY public."Messages"."updatedAt" DESC
+     LIMIT 40
+     
      `;
 
       const conversations = await db.sequelize.query(query, {

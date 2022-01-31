@@ -211,6 +211,7 @@ const privateRoutes = {
   "POST /messages/": "MessageController.create",
   "GET /messages/:conversationId": "MessageController.getAll",
   "PUT /messages/:ConversationId": "MessageController.readMessages",
+  "GET /more-messages/:ConversationId": "MessageController.getMoreMessages",
 };
 
 module.exports = privateRoutes;
