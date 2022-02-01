@@ -1441,6 +1441,31 @@ const UserController = () => {
     }
   };
 
+  const acceptTermsConditionGConference = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          acceptTermsConditionGConference: true,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -1471,6 +1496,7 @@ const UserController = () => {
     changePassword,
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
+    acceptTermsConditionGConference,
   };
 };
 
