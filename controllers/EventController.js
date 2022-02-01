@@ -9,7 +9,7 @@ const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
-const { isEmpty, flatten } = require("lodash");
+const { isEmpty, compact } = require("lodash");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
@@ -305,6 +305,7 @@ const EventController = () => {
         where: {
           id,
         },
+        raw: true,
       });
 
       if (!prevEvent) {
@@ -312,6 +313,13 @@ const EventController = () => {
           .status(HttpCodes.BAD_REQUEST)
           .json({ msg: "Bad Request: event not found." });
       }
+
+      prevEvent = prevEvent.map((event) => {
+        return {
+          ...event,
+          startAndEndTimes: compact(prevEvent.startAndEndTimes),
+        };
+      });
 
       prevEvent = prevEvent.toJSON();
 
@@ -373,8 +381,16 @@ const EventController = () => {
         };
       }
 
-      const events = await Event.findAll({
+      let events = await Event.findAll({
         where,
+        raw: true,
+      });
+
+      events = events.map((event) => {
+        return {
+          ...event,
+          startAndEndTimes: compact(event.startAndEndTimes),
+        };
       });
 
       return res.status(HttpCodes.OK).json({ events });
@@ -386,16 +402,28 @@ const EventController = () => {
     }
   };
 
-  const getEvent = async (req, res) => {
+  const getEventBase = async (id) => {
+    try {
+      let event = await Event.findOne({
+        where: {
+          id,
+        },
+        raw: true,
+      });
+
+      return event;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  };
+
+  const getEventAdmin = async (req, res) => {
     const { id } = req.params;
 
     if (id) {
       try {
-        const event = await Event.findOne({
-          where: {
-            id,
-          },
-        });
+        const event = await getEventBase(id);
 
         if (!event) {
           return res
@@ -404,8 +432,40 @@ const EventController = () => {
         }
 
         return res.status(HttpCodes.OK).json({ event });
-      } catch (err) {
-        console.log(err);
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: event id is wrong" });
+    }
+  };
+
+  const getEvent = async (req, res) => {
+    const { id } = req.params;
+
+    if (id) {
+      try {
+        let event = await getEventBase(id);
+
+        if (!event) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Bad Request: Event not found" });
+        }
+
+        event = {
+          ...event,
+          startAndEndTimes: compact(event.startAndEndTimes),
+        };
+
+        return res.status(HttpCodes.OK).json({ event });
+      } catch (error) {
+        console.log(error);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
@@ -418,6 +478,7 @@ const EventController = () => {
   };
 
   const updateEventStatus = async (req, res) => {
+    console.log("shake it off***********");
     const { id: eventId } = req.params;
     const { id: userId } = req.token;
     const { status } = req.body;
@@ -436,6 +497,11 @@ const EventController = () => {
             plain: true,
           }
         );
+
+        // const affectedRows_ = {
+        //   ...affectedRows,
+        //   startAndEndTimes: compact(affectedRows.startAndEndTimes),
+        // };
 
         return res
           .status(HttpCodes.OK)
@@ -656,8 +722,9 @@ const EventController = () => {
     const { day } = req.query;
 
     try {
-      const event = await Event.findOne({
+      let event = await Event.findOne({
         where: { id },
+        raw: true,
       });
 
       if (!event) {
@@ -666,6 +733,11 @@ const EventController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
       }
+
+      event = {
+        ...event,
+        startAndEndTimes: compact(event.startAndEndTimes),
+      };
 
       let date = moment(event.startDate).add(day, "day").format("YYYY-MM-DD");
 
@@ -736,7 +808,14 @@ const EventController = () => {
         };
       }
 
-      const channelEvents = await Event.findAll({ where });
+      let channelEvents = await Event.findAll({ where, raw: true });
+
+      channelEvents = channelEvents.map((event) => {
+        return {
+          ...event,
+          startAndEndTimes: compact(channelEvents.startAndEndTimes),
+        };
+      });
 
       return res.status(HttpCodes.OK).json({ channelEvents });
     } catch (err) {
@@ -906,6 +985,7 @@ const EventController = () => {
     create,
     getAllEvents,
     getEvent,
+    getEventAdmin,
     updateEvent,
     updateEventStatus,
     emailAfterEventThread,

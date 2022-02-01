@@ -13,7 +13,7 @@ const { getEventPeriod } = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
-const { isEmpty } = require("lodash");
+const { isEmpty, compact } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
@@ -189,13 +189,11 @@ const UserController = () => {
 
   const generateAttendEmail = async (user, tz, event) => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
-    const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
     const calendarInvite = event.startAndEndTimes.map((time, index) => {
       let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
       let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
 
-      console.log(startTime, endTime);
       return smtpService().generateCalendarInvite(
         startTime,
         endTime,
@@ -294,11 +292,16 @@ const UserController = () => {
         }
       );
 
-      generateAttendEmail(user, event.userTimezone, affectedRows);
+      const affectedRows_ = {
+        ...affectedRows.dataValues,
+        startAndEndTimes: compact(affectedRows.dataValues.startAndEndTimes),
+      };
+
+      generateAttendEmail(user, event.userTimezone, affectedRows_);
 
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
@@ -341,12 +344,18 @@ const UserController = () => {
           where: { id: event.id },
           returning: true,
           plain: true,
+          raw: true,
         }
       );
 
+      const affectedRows_ = {
+        ...affectedRows,
+        startAndEndTimes: compact(affectedRows.startAndEndTimes),
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
