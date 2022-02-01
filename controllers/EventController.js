@@ -305,7 +305,6 @@ const EventController = () => {
         where: {
           id,
         },
-        raw: true,
       });
 
       if (!prevEvent) {
@@ -313,13 +312,6 @@ const EventController = () => {
           .status(HttpCodes.BAD_REQUEST)
           .json({ msg: "Bad Request: event not found." });
       }
-
-      prevEvent = prevEvent.map((event) => {
-        return {
-          ...event,
-          startAndEndTimes: compact(prevEvent.startAndEndTimes),
-        };
-      });
 
       prevEvent = prevEvent.toJSON();
 
