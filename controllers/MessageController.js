@@ -73,15 +73,16 @@ const MessageController = () => {
     }
   };
 
-  const getMoreMessages = (req, res) => {
+  const getMoreMessages = async (req, res) => {
     const { ConversationId } = req.params;
     const { offset } = req.query;
 
     try {
-      const messages = Message.findAll({
+      const messages = await Message.findAll({
         where: {
           ConversationId,
         },
+        order: [["updatedAt", "DESC"]],
         offset,
         limit: 20,
       });

@@ -41,7 +41,7 @@ const ConversationController = () => {
      LEFT JOIN public."Users" ON public."Users".id = ANY (public."Conversations".members::int[])
      LEFT JOIN public."Messages" ON public."Messages"."ConversationId" = public."Conversations".id WHERE public."Conversations"."members" && ARRAY[${userId}]::int[]
      ORDER BY public."Messages"."updatedAt" DESC
-     LIMIT 40
+     LIMIT 50
      
      `;
 
