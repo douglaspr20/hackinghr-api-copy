@@ -394,13 +394,13 @@ const EventController = () => {
     }
   };
 
-  const getEventBase = async (id) => {
+  const getEventBase = async (id, raw = false) => {
     try {
       let event = await Event.findOne({
         where: {
           id,
         },
-        raw: true,
+        raw,
       });
 
       return event;
@@ -442,7 +442,7 @@ const EventController = () => {
 
     if (id) {
       try {
-        let event = await getEventBase(id);
+        let event = await getEventBase(id, true);
 
         if (!event) {
           return res
