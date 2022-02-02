@@ -85,6 +85,14 @@ const MessageController = () => {
         order: [["updatedAt", "DESC"]],
         offset,
         limit: 20,
+        attributes: [
+          "id",
+          "ConversationId",
+          "sender",
+          "text",
+          ["updatedAt", "messageDate"],
+          "viewedUser",
+        ],
       });
 
       return res.status(HttpCodes.OK).json({ messages });
