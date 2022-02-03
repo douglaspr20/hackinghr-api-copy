@@ -417,6 +417,25 @@ const EventController = () => {
     }
   };
 
+  const getLiveEvents = async (req, res) => {
+    const { id } = req.user;
+    try {
+      let where = {
+        usersAssistence: { [Op.overlap]: [id] },
+      };
+
+      const events = await Event.findAll({
+        where,
+      });
+      return res.status(HttpCodes.OK).json({ events });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const updateEventStatus = async (req, res) => {
     const { id: eventId } = req.params;
     const { id: userId } = req.token;
@@ -440,6 +459,37 @@ const EventController = () => {
         return res
           .status(HttpCodes.OK)
           .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(err);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
+  const updateEventUserAssistence = async (req, res) => {
+    const { title } = req.params;
+    const { id: userId } = req.token;
+    if (title && userId) {
+      try {
+        let prevEvent = await Event.findOne({ where: { title } });
+        prevEvent = prevEvent.toJSON();
+        const [numberOfAffectedRows, affectedRows] = await Event.update(
+          {
+            usersAssistence: [...prevEvent.usersAssistence, userId],
+          },
+          {
+            where: { title },
+            returning: true,
+            plain: true,
+          }
+        );
+        return res.status(HttpCodes.OK).json({ affectedRows });
       } catch (error) {
         console.log(err);
         return res
@@ -908,6 +958,8 @@ const EventController = () => {
     getEvent,
     updateEvent,
     updateEventStatus,
+    getLiveEvents,
+    updateEventUserAssistence,
     emailAfterEventThread,
     getEventUsers,
     remove,
