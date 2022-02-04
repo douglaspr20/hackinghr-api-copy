@@ -263,8 +263,8 @@ const EventController = () => {
         setEventReminders(event);
         setOrganizerReminders(event);
 
-        const startTime = convertToLocalTime(event.startDate);
-        if (startTime.isAfter(moment())) {
+        const startTime = convertToLocalTime(event?.startDate);
+        if (startTime?.isAfter(moment())) {
           await NotificationController().createNotification({
             message: `New Event "${
               event.title || eventInfo.title
@@ -719,10 +719,10 @@ const EventController = () => {
 
       let date = moment(event.startDate).add(day, "day").format("YYYY-MM-DD");
 
-      const startTime = moment(event.startAndEndTimes[day].startTime).format(
+      const startTime = moment(event.startAndEndTimes[day]?.startTime).format(
         "HH:mm:ss"
       );
-      let startDate = moment(`${date}  ${startTime}`);
+      let startDate = moment(`${date}  ${startTime ? startTime : ""}`);
 
       const endTime = moment(event.startAndEndTimes[day].endTime).format(
         "HH:mm:ss"
