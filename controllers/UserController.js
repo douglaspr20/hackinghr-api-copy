@@ -1457,6 +1457,35 @@ const UserController = () => {
         }
       );
 
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: affectedRows.email,
+            subject: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.subject,
+            html: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.body(
+              affectedRows
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      await User.update(
+        {
+          dateSendEmailTermsConditionGConference: moment(),
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
       return res.status(HttpCodes.OK).json({ user: affectedRows });
     } catch (error) {
       console.log(error);
