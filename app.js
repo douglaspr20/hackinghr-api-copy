@@ -9,7 +9,7 @@ const authPolicy = require("./policies/auth.policy");
 const { isEmpty } = require("lodash");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
-const JourneyController = require("./controllers/JourneyController");
+// const JourneyController = require("./controllers/JourneyController");
 const fileUpload = require("express-fileupload");
 const SkillCohortResourcesController = require("./controllers/SkillCohortResourcesController");
 const SkillCohortParticipantController = require("./controllers/SkillCohortParticipantController");
@@ -55,10 +55,12 @@ cron.schedule("25 * * * *", () => {
 });
 
 // Creating a cron job which runs on every day.
-cron.schedule("* 0 * * *", () => {
+// TO DO: Journey process will be reimplement.
+/*cron.schedule("* 0 * * *", () => {
   console.log("running a task every 1 day.");
   JourneyController().createNewItems();
 });
+*/
 
 // cron job that resets the assessment and comment strike to 0
 cron.schedule(
