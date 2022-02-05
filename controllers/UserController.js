@@ -195,19 +195,22 @@ const UserController = () => {
       let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
       let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
 
-      console.log(startTime, endTime);
-      return smtpService().generateCalendarInvite(
-        startTime,
-        endTime,
-        event.title,
-        getEventDescription(event.description),
-        "",
-        // event.location,
-        `${process.env.DOMAIN_URL}${event.id}`,
-        event.organizer,
-        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        userTimezone.utc[0]
-      );
+      try {
+        return smtpService().generateCalendarInvite(
+          startTime,
+          endTime,
+          event.title,
+          getEventDescription(event.description),
+          "",
+          // event.location,
+          `${process.env.DOMAIN_URL}${event.id}`,
+          event.organizer,
+          process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          userTimezone.utc[0]
+        );
+      } catch (error) {
+        console.log(error);
+      }
     });
 
     const mailOptions = {
