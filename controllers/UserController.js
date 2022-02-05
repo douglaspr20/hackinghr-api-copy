@@ -192,10 +192,9 @@ const UserController = () => {
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
 
     const calendarInvite = event.startAndEndTimes.map((time, index) => {
-      let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
-      let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
-
       try {
+        let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
+        let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
         return smtpService().generateCalendarInvite(
           startTime,
           endTime,
