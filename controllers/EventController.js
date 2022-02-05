@@ -470,7 +470,6 @@ const EventController = () => {
   };
 
   const updateEventStatus = async (req, res) => {
-    console.log("shake it off***********");
     const { id: eventId } = req.params;
     const { id: userId } = req.token;
     const { status } = req.body;
@@ -489,11 +488,6 @@ const EventController = () => {
             plain: true,
           }
         );
-
-        // const affectedRows_ = {
-        //   ...affectedRows,
-        //   startAndEndTimes: compact(affectedRows.startAndEndTimes),
-        // };
 
         return res
           .status(HttpCodes.OK)
