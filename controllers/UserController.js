@@ -257,9 +257,6 @@ const UserController = () => {
       return sentResult;
     } catch (error) {
       console.log(error);
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error" });
     }
   };
 
