@@ -409,7 +409,10 @@ const FEUrl = process.env.DOMAIN_URL || "http://localhost:3000/";
 
 const io = socketIo(server, {
   cors: {
-    origin: FEUrl.slice(0, FEUrl.length - 1),
+    origin: [
+      FEUrl.slice(0, FEUrl.length - 1),
+      FEUrl.slice(0, FEUrl.length - 1).replace("www.", ""),
+    ],
     methods: ["GET", "POST"],
   },
 });
