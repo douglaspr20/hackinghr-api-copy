@@ -190,71 +190,77 @@ const UserController = () => {
   const generateAttendEmail = async (user, tz, event) => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
-
-    const calendarInvite = event.startAndEndTimes.map((time, index) => {
-      try {
-        let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
-        let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
-        return smtpService().generateCalendarInvite(
-          startTime,
-          endTime,
-          event.title,
-          getEventDescription(event.description),
-          "",
-          // event.location,
-          `${process.env.DOMAIN_URL}${event.id}`,
-          event.organizer,
-          process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          userTimezone.utc[0]
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    });
-
-    const mailOptions = {
-      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-      to: user.email,
-      subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
-      html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
-      contentType: "text/calendar",
-    };
-
-    let icsContent = calendarInvite.map((calendar) => {
-      return calendar.toString();
-    });
-
-    icsContent = icsContent.map((content) => {
-      content = content.replace(
-        "BEGIN:VEVENT",
-        `METHOD:REQUEST\r\nBEGIN:VEVENT`
-      );
-
-      return content;
-    });
-
-    if (!isEmpty(calendarInvite)) {
-      mailOptions["attachments"] = calendarInvite.map((calendar, index) => {
-        return {
-          filename:
-            event.startAndEndTimes.length > 1
-              ? `Day-${index + 1}-invite.ics`
-              : "invite.ics",
-          content: icsContent[index],
-          contentType: "application/ics; charset=UTF-8; method=REQUEST",
-          contentDisposition: "inline",
-        };
-      });
-    }
-
-    let sentResult = null;
     try {
-      sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
-    } catch (err) {
-      console.log(err);
-    }
+      const calendarInvite = event.startAndEndTimes.map((time, index) => {
+        try {
+          let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
+          let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
+          return smtpService().generateCalendarInvite(
+            startTime,
+            endTime,
+            event.title,
+            getEventDescription(event.description),
+            "",
+            // event.location,
+            `${process.env.DOMAIN_URL}${event.id}`,
+            event.organizer,
+            process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            userTimezone.utc[0]
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      });
 
-    return sentResult;
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
+        html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
+        contentType: "text/calendar",
+      };
+
+      let icsContent = calendarInvite.map((calendar) => {
+        return calendar.toString();
+      });
+
+      icsContent = icsContent.map((content) => {
+        content = content.replace(
+          "BEGIN:VEVENT",
+          `METHOD:REQUEST\r\nBEGIN:VEVENT`
+        );
+
+        return content;
+      });
+
+      if (!isEmpty(calendarInvite)) {
+        mailOptions["attachments"] = calendarInvite.map((calendar, index) => {
+          return {
+            filename:
+              event.startAndEndTimes.length > 1
+                ? `Day-${index + 1}-invite.ics`
+                : "invite.ics",
+            content: icsContent[index],
+            contentType: "application/ics; charset=UTF-8; method=REQUEST",
+            contentDisposition: "inline",
+          };
+        });
+      }
+
+      let sentResult = null;
+      try {
+        sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
+      } catch (err) {
+        console.log(err);
+      }
+
+      return sentResult;
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
   };
 
   const addEvent = async (req, res) => {
