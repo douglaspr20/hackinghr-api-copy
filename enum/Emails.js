@@ -1002,7 +1002,7 @@ module.exports = {
     The rules of engagement include:
     </p>
     <p>
-    <strong>1. Content:</strong> the content during and post-event is free for the members of the 
+    <strong>1. Content:</strong>The content of this conference during and post-event is completely FREE for the members of the 
     Hacking HR LAB. You can get access to the content at any time. However, you 
     must not reproduce totally or partially any part of this content outside of the 
     Hacking HR LAB without our explicit approval.
@@ -1015,7 +1015,7 @@ module.exports = {
     chat you can connect individually with other participants. The networking tools 
     are for real networking conversations. If you use any of the tools for pitching, 
     marketing or selling any product or service, your account will be banned from 
-    using the tools again for the duration of the conference
+    using the tools again for the duration of the conference.
     </p>
 
     <p>
@@ -1026,15 +1026,14 @@ module.exports = {
     </p>
 
     <p>
-    <strong>4. HR Credits:</strong> the conference offers more than 500 SHRM+HRCI credits. The 
-    credits ARE NOT FREE. You MUST UPGRADE your account and become a 
-    PREMIUM member to get access to the credits. Please do not email us asking for 
-    credit codes if you are not a PREMIUM user. If you are a PREMIUM user, this is 
-    how it’ll work: two weeks after the conference you will receive an email to 
-    download your personalized conference participation report. This report will 
-    include the sessions you joined and ONLY the corresponding HRCI/SHRM codes 
-    to those sessions. There is no need to email us asking for the codes. Please wait 
-    until the report is ready no later than March 28th. 
+    <strong>4. HR Credits:</strong> The conference offers more than 500 SHRM+HRCI credits. 
+    The credits ARE NOT FREE. You MUST UPGRADE your account and become a PREMIUM member to get access to the credits. 
+    Please do not email us asking for credit codes if you are not a PREMIUM user. If you are a PREMIUM user, 
+    this is how it’ll work: two weeks after the conference you will receive an email to download your personalized conference participation report. 
+    This report will include the sessions you joined and ONLY the corresponding HRCI/SHRM codes to those sessions. 
+    There is no need to email us asking for the codes. Please wait until the report is ready no later than March 28th. 
+    After the conference, you can continue watching sessions and claiming the credits of those sessions. 
+    These codes won't show in your report (as it will be post-event) but a button "CLAIM CREDITS" will show next to the session.
     </p>
 
     <p>
