@@ -1460,7 +1460,7 @@ const UserController = () => {
       await Promise.resolve(
         (() => {
           let mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
             to: affectedRows.email,
             subject: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.subject,
             html: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.body(
