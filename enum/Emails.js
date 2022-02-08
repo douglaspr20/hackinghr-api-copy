@@ -914,6 +914,31 @@ module.exports = {
       <p>Hacking HR Team</p>
     `,
   },
+  NOTIFY_QUALIFIED_USERS_OF_A_JOB_POST: {
+    subject: (jobTitle) => `Maybe this job is of your interest: ${jobTitle}`,
+    body: (user, link) => `
+    <p>
+      Hi ${user.firstName}<br>
+    </p>
+    <p>
+      Thank you for being part of the Hacking HR’s Talent Marketplace! <br>
+    </p>
+    <p>
+      Based on the criteria and skills you selected in Hacking HR’s Talent Marketplace, we think this job may be of your interest: 
+      <a href="${link}" target="_blank">${link}</a>
+    </p>
+    <p>
+      We hope this is a good match for you and we wish you not just good luck… but the BEST luck in process! <br>
+    </p>
+    <p>
+      Please do not hesitate to let us know if there is anything we can do to help you. We are here for you! <br>
+    </p>
+    <p>
+      Thank you! <br>
+    </p>
+    <p>Hacking HR Team</p>
+  `,
+  },
   USER_BECOME_CREATOR: {
     subject: () => `Thank you for becoming a CREATOR in the Hacking HR LAB!`,
     body: (user) => `

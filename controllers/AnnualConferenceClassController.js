@@ -13,9 +13,9 @@ const AnnualConferenceClassController = () => {
   const getAll = async (req, res) => {
     try {
       let annualConferenceClass = await AnnualConferenceClass.findAll({
-        order: [["createdAt", "DESC"]],
+        order: [["AnnualConferenceId", "DESC"]],
       });
-      if (!courseClass) {
+      if (!annualConferenceClass) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });

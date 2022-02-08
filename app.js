@@ -9,7 +9,7 @@ const authPolicy = require("./policies/auth.policy");
 const { isEmpty } = require("lodash");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
-const JourneyController = require("./controllers/JourneyController");
+// const JourneyController = require("./controllers/JourneyController");
 const fileUpload = require("express-fileupload");
 const SkillCohortResourcesController = require("./controllers/SkillCohortResourcesController");
 const SkillCohortParticipantController = require("./controllers/SkillCohortParticipantController");
@@ -19,6 +19,7 @@ const SkillCohortController = require("./controllers/SkillCohortController");
 const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
+const WeeklyDigestController = require("./controllers/WeeklyDigestController");
 
 const moment = require("moment-timezone");
 
@@ -54,10 +55,12 @@ cron.schedule("25 * * * *", () => {
 });
 
 // Creating a cron job which runs on every day.
-cron.schedule("* 0 * * *", () => {
+// TO DO: Journey process will be reimplement.
+/*cron.schedule("* 0 * * *", () => {
   console.log("running a task every 1 day.");
   JourneyController().createNewItems();
 });
+*/
 
 // cron job that resets the assessment and comment strike to 0
 cron.schedule(
@@ -353,6 +356,22 @@ cron.schedule(
   }
 );
 
+// Weekly Digest
+cron.schedule(
+  "0 0 * * *", // 12AM every day
+  // "0 0 * * 5", // 12AM every Friday
+  async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Weekly Digest****************");
+    await WeeklyDigestController().sendWeeklyDigestEmail();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
 // allow cross origin requests
 // configure to only allow requests from certain origins
 app.use(cors());
@@ -390,7 +409,10 @@ const FEUrl = process.env.DOMAIN_URL || "http://localhost:3000/";
 
 const io = socketIo(server, {
   cors: {
-    origin: FEUrl.slice(0, FEUrl.length - 1),
+    origin: [
+      FEUrl.slice(0, FEUrl.length - 1),
+      FEUrl.slice(0, FEUrl.length - 1).replace("www.", ""),
+    ],
     methods: ["GET", "POST"],
   },
 });
