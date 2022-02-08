@@ -2,6 +2,7 @@ const adminRoutes = {
   "POST /event/": "EventController.create",
   "PUT /event/:id": "EventController.updateEvent",
   "GET /event/:id/users": "EventController.getEventUsers",
+  "GET /event/:id/": "EventController.getEventAdmin",
   "DELETE /event/:id": "EventController.remove",
   "PUT /event/send-message/:id": "EventController.sendMessageToParticipants",
   "PUT /event/send-test-message/:id": "EventController.sendTestMessage",
