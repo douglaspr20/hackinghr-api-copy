@@ -392,6 +392,8 @@ const server = http.createServer(app);
 
 const FEUrl = process.env.DOMAIN_URL || "http://localhost:3000/";
 
+const usersOnline = {};
+
 const io = socketIo(server, {
   cors: {
     origin: FEUrl.slice(0, FEUrl.length - 1),
@@ -402,7 +404,11 @@ const io = socketIo(server, {
 io.on("connection", (socket) => {
   socketService().addSocket(socket);
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
+    const id = usersOnline[socket.id];
+    const userOnline = await UserController().userIsOnline(id, false);
+    io.emit(SocketEventTypes.USER_OFFLINE, userOnline.dataValues);
+    delete usersOnline[socket.id];
     socketService().removeSocket(socket);
   });
 
@@ -412,6 +418,7 @@ io.on("connection", (socket) => {
 
   socket.on(SocketEventTypes.USER_ONLINE, async ({ id }) => {
     const userOnline = await UserController().userIsOnline(id, true);
+    usersOnline[socket.id] = id;
     io.emit(SocketEventTypes.USER_ONLINE, userOnline.dataValues);
   });
 

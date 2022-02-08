@@ -19,10 +19,14 @@ const ConversationController = () => {
         },
       });
 
-      socketService().emit(SocketEventTypes.NEW_CONVERSATION);
-
-      if (prevConversation) return;
+      if (prevConversation) {
+        return socketService().emit(
+          SocketEventTypes.NEW_CONVERSATION,
+          prevConversation.id
+        );
+      }
       const conversation = await Conversation.create({ members });
+      socketService().emit(SocketEventTypes.NEW_CONVERSATION, conversation.id);
       return conversation;
     } catch (error) {
       console.log(error);
