@@ -764,7 +764,7 @@ module.exports = {
   `,
   },
   USER_CONFIRM_ACCESSIBILITY_REQUIREMENTS: {
-    subject: `Welcome to Hacking HR’s HR Business Partners Community`,
+    subject: `User confirm accessibility requiriments`,
     body: (user) => `
   <p>
   ${user.firstName} ${user.lastName} <br>
