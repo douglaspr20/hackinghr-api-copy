@@ -197,11 +197,13 @@ const NotificationController = () => {
         raw: true,
       });
 
-      await Notification.destroy({
-        where: {
-          id: lastElement.id,
-        },
-      });
+      if (lastElement) {
+        await Notification.destroy({
+          where: {
+            id: lastElement.id,
+          },
+        });
+      }
     }
 
     socketService().emit(SocketEventType.NEW_EVENT, newNotification);
