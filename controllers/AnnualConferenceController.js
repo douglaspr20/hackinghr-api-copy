@@ -6,6 +6,7 @@ const smtpService = require("../services/smtp.service");
 const socketService = require("../services/socket.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const SocketEventTypes = require("../enum/SocketEventTypes");
+const { convertToLocalTime } = require("../utils/format");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
@@ -326,19 +327,21 @@ const AnnualConferenceController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
       }
-
       const timezone = TimeZoneList.find(
         (timezone) =>
           timezone.value === userTimezone || timezone.text === userTimezone
       );
 
-      const targetBonfireStartDate = moment
+      let targetBonfireStartDate = moment
         .utc(annualConference.startTime)
         .tz(timezone.utc[0]);
 
-      const targetBonfireEndDate = moment
+      let targetBonfireEndDate = moment
         .utc(annualConference.endTime)
         .tz(timezone.utc[0]);
+
+      targetBonfireStartDate = convertToLocalTime(targetBonfireStartDate);
+      targetBonfireEndDate = convertToLocalTime(targetBonfireEndDate);
 
       let startDate = targetBonfireStartDate.format("YYYY-MM-DD");
 

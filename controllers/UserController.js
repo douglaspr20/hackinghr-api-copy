@@ -13,7 +13,7 @@ const { getEventPeriod } = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
-const { isEmpty } = require("lodash");
+const { isEmpty, compact } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
@@ -299,11 +299,16 @@ const UserController = () => {
         }
       );
 
-      generateAttendEmail(user, event.userTimezone, affectedRows);
+      const affectedRows_ = {
+        ...affectedRows.dataValues,
+        startAndEndTimes: compact(affectedRows.dataValues.startAndEndTimes),
+      };
+
+      generateAttendEmail(user, event.userTimezone, affectedRows_);
 
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
@@ -346,12 +351,18 @@ const UserController = () => {
           where: { id: event.id },
           returning: true,
           plain: true,
+          raw: true,
         }
       );
 
+      const affectedRows_ = {
+        ...affectedRows,
+        startAndEndTimes: compact(affectedRows.startAndEndTimes),
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
