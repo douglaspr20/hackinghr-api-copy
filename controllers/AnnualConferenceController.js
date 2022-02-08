@@ -329,16 +329,17 @@ const AnnualConferenceController = () => {
       }
       const timezone = TimeZoneList.find(
         (timezone) =>
-          timezone.value === userTimezone || timezone.text === userTimezone
+          timezone.value === annualConference.timezone ||
+          timezone.text === annualConference.timezone
       );
 
-      let targetBonfireStartDate = moment
-        .utc(annualConference.startTime)
-        .tz(timezone.utc[0]);
+      let targetBonfireStartDate = moment(annualConference.startTime)
+        .tz(timezone.utc[0])
+        .utcOffset(timezone.offset, true);
 
-      let targetBonfireEndDate = moment
-        .utc(annualConference.endTime)
-        .tz(timezone.utc[0]);
+      let targetBonfireEndDate = moment(annualConference.endTime)
+        .tz(timezone.utc[0])
+        .utcOffset(timezone.offset, true);
 
       targetBonfireStartDate = convertToLocalTime(targetBonfireStartDate);
       targetBonfireEndDate = convertToLocalTime(targetBonfireEndDate);
