@@ -179,7 +179,6 @@ const NotificationController = () => {
   const createNotification = async (notification) => {
     const newNotification = await Notification.create(notification);
 
-    console.log(notification.onlyFor, "notif**");
     const totalCount = await Notification.count();
 
     if (totalCount > MAX_NUMBER_OF_NOTIFICATION) {
