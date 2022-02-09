@@ -201,12 +201,15 @@ const StripeController = () => {
         const { customer } = data.object;
         console.log(`***** Customer: ${customer} ******`);
         const customerInformation = await stripe.customers.retrieve(customer);
+        const email = customerInformation.email.toLowerCase();
 
         const user = await User.findOne({
           where: {
-            email: customerInformation.email.toLowerCase(),
+            email,
           },
         });
+
+        newUserData = { ...newUserData, email };
 
         console.log(`***** memberShip: ${user.memberShip} ******`);
 
@@ -224,7 +227,7 @@ const StripeController = () => {
 
         console.log(`***** newUserData:`, newUserData);
         await User.update(newUserData, {
-          where: { email: customerInformation.email.toLowerCase() },
+          where: { email },
         });
       }
       return res.status(HttpCodes.OK).json({ newUserData });
