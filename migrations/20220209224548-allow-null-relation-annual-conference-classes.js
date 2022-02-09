@@ -15,10 +15,6 @@ module.exports = {
         {
           type: Sequelize.INTEGER,
           allowNull: true,
-          // references: {
-          //   model: "AnnualConferences",
-          //   key: "id",
-          // },
         }
       ),
     ]);
@@ -38,10 +34,6 @@ module.exports = {
         {
           type: Sequelize.INTEGER,
           allowNull: false,
-          // references: {
-          //   model: "AnnualConferences",
-          //   key: "id",
-          // },
         }
       ),
     ]);
