@@ -31,17 +31,20 @@ module.exports = {
   `,
   EVENT_ATTEND_EMAIL: (user, event, getEventPeriod) => `
     <p>
-    Hi, ${user.firstName}
+      Hi ${user.firstName},
     </p>
     <p>
-    Thank you for registering for ${event.title} organized by ${event.organizer}
-    <br/>
-    <br/>
-    We look forward to seeing you on: <br> ${getEventPeriod(
-      event.startDate,
-      event.startAndEndTimes,
-      event.timezone
-    )}. 
+      Thank you for registering for ${event.title} organized by ${
+    event.organizer
+  }!
+      <br/>
+      <br/>
+      We look forward to seeing you on: <br> 
+      ${getEventPeriod(
+        event.startDate,
+        event.startAndEndTimes,
+        event.timezone
+      )}. 
     </p>
     <p>
     Please connect in this link at the time of the event: <a target="_blank" href="${
@@ -49,10 +52,11 @@ module.exports = {
     }">${event.link || ""}</a>
     </p>
     <p>
-    Please remember to go back to the Hacking HR LAB the day after the event and certify that you attended. If you are a PREMIUM MEMBER you will be able to claim your digital certificate of participation and (if applicable) HR recertification credits.
-    <br />
+      Please upgrade your account to premium if you want to earn HR certification credits offered by this event (if applicable). 
+      After the event you will get an email to let you know how to get access to the credit codes. <br>
     </p>
     Thank you! 
+    <br />
     <br />
     Hacking HR Team
     <br/>
