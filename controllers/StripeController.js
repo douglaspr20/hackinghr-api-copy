@@ -269,6 +269,28 @@ const StripeController = () => {
                 newUserData["subscription_enddate"] = moment
                   .unix(subItemPremium.current_period_end)
                   .format("YYYY-MM-DD HH:mm:ss");
+
+                if (user.subscription_startdate != null) {
+                  if (
+                    moment.unix(subItemPremium.current_period_start) >
+                      user.subscription_startdate &&
+                    user.memberShip === "premium"
+                  ) {
+                    try {
+                      const mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: user.email,
+                        subject: LabEmails.USER_RENEW_PREMIUM.subject(),
+                        html: LabEmails.USER_RENEW_PREMIUM.body(user),
+                      };
+
+                      await smtpService().sendMailUsingSendInBlue(mailOptions);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                }
+
                 if (user.memberShip === "free") {
                   try {
                     const mailOptions = {
