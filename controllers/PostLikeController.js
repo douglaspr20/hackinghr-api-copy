@@ -1,5 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const NotificationController = require("../controllers/NotificationController");
 
 const PostLike = db.PostLike;
 
@@ -13,7 +14,18 @@ const PostLikeController = () => {
     try {
       let data = { ...req.body };
       data.UserId = req.user.id;
-      await PostLike.create(data);
+      const postLike = await PostLike.create(data);
+
+      if (data.UserId !== data.postOwnerUserId) {
+        await NotificationController().createNotification({
+          message: `Someone liked your post.`,
+          type: "post",
+          meta: {
+            ...postLike,
+          },
+          onlyFor: [data.postOwnerUserId],
+        });
+      }
 
       return res.status(HttpCodes.OK).send();
     } catch (error) {
