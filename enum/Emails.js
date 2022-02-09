@@ -1007,6 +1007,33 @@ module.exports = {
       The Hacking HR Team
     `,
   },
+  USER_RENEW_PREMIUM: {
+    subject: () =>
+      `Thank you for renewing your annual subscription to the Hacking HR LAB!`,
+    body: (user) => `
+      <p>
+      Hi, ${user.firstName}
+      </p>
+      <p>
+        Thank you so much for renewing your annual subscription to the Hacking HR LAB. 
+      </p>
+      <p>
+        You can find your invoice by logging in the Hacking HR LAB and clicking Billing Information under your profile.
+      </p>
+      <p>
+        We have added several exciting features over the past few months and many more tools are in the making. 
+      </p>
+      <p>
+        Please make sure you take full advantage of our learning tools, our events and all the learning content that we have put together for you. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      The Hacking HR Team
+      <br />
+    `,
+  },
   USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE: {
     subject: `Thank you for acknowledging and accepting the rules of engagement as 
     part of the Hacking HR 2022 Global Online Conference`,
