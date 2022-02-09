@@ -13,7 +13,7 @@ const { getEventPeriod } = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
-const { isEmpty } = require("lodash");
+const { isEmpty, compact } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
@@ -299,11 +299,16 @@ const UserController = () => {
         }
       );
 
-      generateAttendEmail(user, event.userTimezone, affectedRows);
+      const affectedRows_ = {
+        ...affectedRows.dataValues,
+        startAndEndTimes: compact(affectedRows.dataValues.startAndEndTimes),
+      };
+
+      generateAttendEmail(user, event.userTimezone, affectedRows_);
 
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
@@ -346,12 +351,18 @@ const UserController = () => {
           where: { id: event.id },
           returning: true,
           plain: true,
+          raw: true,
         }
       );
 
+      const affectedRows_ = {
+        ...affectedRows,
+        startAndEndTimes: compact(affectedRows.startAndEndTimes),
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
@@ -1446,6 +1457,60 @@ const UserController = () => {
     }
   };
 
+  const acceptTermsConditionGConference = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          acceptTermsConditionGConference: true,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            to: affectedRows.email,
+            subject: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.subject,
+            html: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.body(
+              affectedRows
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      await User.update(
+        {
+          dateSendEmailTermsConditionGConference: moment(),
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -1476,6 +1541,7 @@ const UserController = () => {
     changePassword,
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
+    acceptTermsConditionGConference,
   };
 };
 

@@ -229,6 +229,8 @@ const privateRoutes = {
   "POST /marketplace-profiles": "MarketplaceProfileController.add",
   "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
+  "PUT /user/accept-terms-condition-g-conference/:id":
+    "UserController.acceptTermsConditionGConference",
 };
 
 module.exports = privateRoutes;
