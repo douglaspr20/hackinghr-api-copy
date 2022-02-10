@@ -1035,8 +1035,7 @@ module.exports = {
     `,
   },
   USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE: {
-    subject: `Thank you for acknowledging and accepting the rules of engagement as 
-    part of the Hacking HR 2022 Global Online Conference`,
+    subject: `Thank you for acknowledging and accepting the rules of engagement as part of the Hacking HR 2022 Global Online Conference`,
     body: (user) => `
     <p>
     Hi ${user.firstName},
