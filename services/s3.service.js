@@ -214,6 +214,23 @@ const s3Service = () => {
     return;
   };
 
+  const uploadFile = async (file, mimetype, title) => {
+    const fileName = `${title}_${
+      process.env.S3_RESUME_BUCKET || "local"
+    }_resume`;
+    const params = {
+      Key: fileName,
+      Body: file,
+      ContentType: mimetype,
+      ACL: "public-read",
+    };
+    return new Promise((resolve, reject) => {
+      resumeBucket.upload(params, (err, data) =>
+        err === null ? resolve(data) : reject(err)
+      );
+    });
+  };
+
   const getSkillCohortImageUrl = async (prevImg, base64Image) => {
     const url = await getImageUrl(
       S3.SKILL_COHORT_IMAGE_FOLDER,
@@ -252,6 +269,7 @@ const s3Service = () => {
     uploadResume,
     deleteResume,
     getJobPostImageUrl,
+    uploadFile,
   };
 };
 

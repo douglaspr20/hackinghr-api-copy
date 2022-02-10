@@ -12,7 +12,7 @@ module.exports = {
       "AnnualConferenceClasses",
       "documentFileName",
       {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: true,
       }
     );
@@ -20,16 +20,16 @@ module.exports = {
       "AnnualConferenceClasses",
       "documentFileUrl",
       {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: true,
       }
     );
     await queryInterface.addColumn("AnnualConferenceClasses", "audioFileName", {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: true,
     });
     await queryInterface.addColumn("AnnualConferenceClasses", "audioFileUrl", {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: true,
     });
   },
