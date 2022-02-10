@@ -409,8 +409,8 @@ io.on("connection", (socket) => {
     if (id) {
       const userOnline = await UserController().userIsOnline(id, false);
       io.emit(SocketEventTypes.USER_OFFLINE, userOnline.dataValues);
-      delete usersOnline[socket.id];
     }
+    delete usersOnline[socket.id];
     socketService().removeSocket(socket);
   });
 
