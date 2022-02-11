@@ -9,10 +9,14 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
     return Promise.all([
-      queryInterface.addColumn("Users", "language", {
-        type: Sequelize.STRING,
-        allowNull: true,
-      }),
+      queryInterface.changeColumn(
+        "BusinessPartnerComments",
+        "BusinessPartnerId",
+        {
+          type: Sequelize.INTEGER,
+          allowNull: true,
+        }
+      ),
     ]);
   },
 
@@ -23,5 +27,11 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
+    return Promise.all([
+      queryInterface.changeColumn(
+        "BusinessPartnerComments",
+        "BusinessPartnerId"
+      ),
+    ]);
   },
 };
