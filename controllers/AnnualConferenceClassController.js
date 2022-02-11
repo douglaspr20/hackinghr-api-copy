@@ -126,11 +126,11 @@ const AnnualConferenceClassController = () => {
 
     if (id) {
       try {
-        const audioFileType = body.audioFile.match(
+        const audioFileType = body.audioFileUrl.match(
           /[^:]\w+\/[\w-+\d.]+(?=;|,)/
         )[0];
 
-        const documentFileType = body.documentFile.match(
+        const documentFileType = body.documentFileUrl.match(
           /[^:]\w+\/[\w-+\d.]+(?=;|,)/
         )[0];
 

@@ -215,9 +215,12 @@ const s3Service = () => {
   };
 
   const uploadFile = async (file, mimetype, title) => {
+    const extensionFile = mimetype.match(/[/]\w+/)[0];
+
     const fileName = `${title}_${
       process.env.S3_RESUME_BUCKET || "local"
-    }_resume`;
+    }.${extensionFile.slice(1, extensionFile.length)}`;
+
     const params = {
       Key: fileName,
       Body: file,
