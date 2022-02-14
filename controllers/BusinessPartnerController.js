@@ -33,19 +33,20 @@ const BusinessPartnerController = () => {
   const getBusinessPartnerResource = async (req, res) => {
     const { id } = req.params;
     try {
-      const businessResource = await BusinessPartner.findOne({
-        where: {
-          id,
-        },
-      });
+      if (id) {
+        const businessResource = await BusinessPartner.findOne({
+          where: {
+            id,
+          },
+        });
 
-      if (!businessResource) {
-        return res
-          .status(HttpCodes.BAD_REQUEST)
-          .json({ msg: "Bad Request: channel not found." });
+        if (!businessResource) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: channel not found." });
+        }
+        return res.status(HttpCodes.OK).json({ businessResource });
       }
-
-      return res.status(HttpCodes.OK).json({ businessResource });
     } catch (error) {
       console.log(error);
       return res
@@ -77,47 +78,47 @@ const BusinessPartnerController = () => {
     const { id } = req.params;
     const resource = req.body.payload;
     try {
-      let resourceInfo = {
-        ...resource,
-      };
+      if (id) {
+        let resourceInfo = {
+          ...resource,
+        };
 
-      let prevResource = await BusinessPartner.findOne({
-        where: {
-          id,
-        },
-      });
+        let prevResource = await BusinessPartner.findOne({
+          where: {
+            id,
+          },
+        });
 
-      if (!prevResource) {
-        return res
-          .status(HttpCodes.BAD_REQUEST)
-          .json({ msg: "Bad Request: event not found." });
-      }
+        if (!prevResource) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: event not found." });
+        }
 
-      prevResource = prevResource.toJSON();
+        prevResource = prevResource.toJSON();
 
-      if (resource.image && !isValidURL(resource.image)) {
-        resourceInfo.image = await s3Service().getEventImageUrl(
-          "",
-          resource.image
-        );
+        if (resource.image && !isValidURL(resource.image)) {
+          resourceInfo.image = await s3Service().getEventImageUrl(
+            "",
+            resource.image
+          );
 
-        if (prevResource.image) {
+          if (prevResource.image) {
+            await s3Service().deleteUserPicture(prevResource.image);
+          }
+        }
+        if (prevResource.image && !resource.image) {
           await s3Service().deleteUserPicture(prevResource.image);
         }
-      }
-      if (prevResource.image && !resource.image) {
-        await s3Service().deleteUserPicture(prevResource.image);
-      }
 
-      const [numberOfAffectedRows, affectedRows] = await BusinessPartner.update(
-        resourceInfo,
-        {
-          where: { id },
-          returning: true,
-          plain: true,
-        }
-      );
-      return res.status(HttpCodes.OK).json({ affectedRows });
+        const [numberOfAffectedRows, affectedRows] =
+          await BusinessPartner.update(resourceInfo, {
+            where: { id },
+            returning: true,
+            plain: true,
+          });
+        return res.status(HttpCodes.OK).json({ affectedRows });
+      }
     } catch (error) {
       console.log(error);
       return res
@@ -127,11 +128,12 @@ const BusinessPartnerController = () => {
   };
 
   const create = async (req, res) => {
-    const { body } = req;
+    const { body, user } = req;
     if (body.title) {
       try {
         let businessInfo = {
           ...body,
+          UserId: user.dataValues.id,
           link: body.link ? `https://${body.link}` : "",
         };
 

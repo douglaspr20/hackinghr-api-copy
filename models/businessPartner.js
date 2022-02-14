@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
    */
   class BusinessPartner extends Model {
     static associate(models) {
+      BusinessPartner.belongsTo(models.User, { foreignKey: "UserId" });
       BusinessPartner.hasOne(models.BusinessPartnerComment);
     }
   }
