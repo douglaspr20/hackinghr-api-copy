@@ -1511,6 +1511,19 @@ const UserController = () => {
     }
   };
 
+  const countAllUsers = async (req, res) => {
+    try {
+      const userCount = await User.count();
+
+      return res.status(HttpCodes.OK).json({ userCount });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -1542,6 +1555,7 @@ const UserController = () => {
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
     acceptTermsConditionGConference,
+    countAllUsers,
   };
 };
 

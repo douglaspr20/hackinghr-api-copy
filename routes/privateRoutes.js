@@ -231,6 +231,12 @@ const privateRoutes = {
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
   "PUT /user/accept-terms-condition-g-conference/:id":
     "UserController.acceptTermsConditionGConference",
+  "GET /users/count-all": "UserController.countAllUsers",
+  "GET /advertisements-by-page":
+    "AdvertisementController.getAdvertisementsByPage",
+  "GET /advertisements/:UserId":
+    "AdvertisementController.getAdvertisementByAdvertiser",
+  "POST /advertisement": "AdvertisementController.createAdvertisement",
 };
 
 module.exports = privateRoutes;

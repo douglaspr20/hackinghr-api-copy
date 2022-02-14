@@ -27,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.SkillCohortParticipant);
       User.hasMany(models.SkillCohortGroupingMember);
       User.hasMany(models.JobPost);
+      User.hasMany(models.Advertisement);
       User.hasOne(models.MarketPlaceProfile);
     }
   }
