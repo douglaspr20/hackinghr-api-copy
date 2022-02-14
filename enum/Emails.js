@@ -1007,4 +1007,15 @@ module.exports = {
       The Hacking HR Team
     `,
   },
+  USER_CONFIRM_LIVE_ASSISTENCE: {
+    subject: () => "Your assistance has been confirmed",
+    body: (user) => `
+    <p>
+    Hi ${user.firstName},
+    </p>
+    <p>
+    Your assistance has been confirmed.
+    </p>
+  `,
+  },
 };

@@ -477,6 +477,16 @@ const EventController = () => {
     const { id: userId } = req.token;
     if (title && userId) {
       try {
+        const { dataValues: user } = await User.findOne({
+          where: { id: userId },
+        });
+
+        if (!user) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Host user not found" });
+        }
+
         let prevEvent = await Event.findOne({ where: { title } });
         prevEvent = prevEvent.toJSON();
         const [numberOfAffectedRows, affectedRows] = await Event.update(
@@ -489,6 +499,20 @@ const EventController = () => {
             plain: true,
           }
         );
+        await Promise.resolve(
+          (() => {
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              // to: "morenoelba2002@gmail.com",
+              to: user.email,
+              subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject(),
+              html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user),
+            };
+            console.log("***** mailOptions ", mailOptions);
+            smtpService().sendMailUsingSendInBlue(mailOptions);
+          })()
+        );
+
         return res.status(HttpCodes.OK).json({ affectedRows });
       } catch (error) {
         console.log(err);
