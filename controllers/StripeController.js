@@ -201,12 +201,15 @@ const StripeController = () => {
         const { customer } = data.object;
         console.log(`***** Customer: ${customer} ******`);
         const customerInformation = await stripe.customers.retrieve(customer);
+        const email = customerInformation.email.toLowerCase();
 
         const user = await User.findOne({
           where: {
-            email: customerInformation.email.toLowerCase(),
+            email,
           },
         });
+
+        newUserData = { ...newUserData, email };
 
         console.log(`***** memberShip: ${user.memberShip} ******`);
 
@@ -224,7 +227,7 @@ const StripeController = () => {
 
         console.log(`***** newUserData:`, newUserData);
         await User.update(newUserData, {
-          where: { email: customerInformation.email.toLowerCase() },
+          where: { email },
         });
       }
       return res.status(HttpCodes.OK).json({ newUserData });
@@ -269,6 +272,28 @@ const StripeController = () => {
                 newUserData["subscription_enddate"] = moment
                   .unix(subItemPremium.current_period_end)
                   .format("YYYY-MM-DD HH:mm:ss");
+
+                if (user.subscription_startdate != null) {
+                  if (
+                    moment.unix(subItemPremium.current_period_start) >
+                      user.subscription_startdate &&
+                    user.memberShip === "premium"
+                  ) {
+                    try {
+                      const mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: user.email,
+                        subject: LabEmails.USER_RENEW_PREMIUM.subject(),
+                        html: LabEmails.USER_RENEW_PREMIUM.body(user),
+                      };
+
+                      await smtpService().sendMailUsingSendInBlue(mailOptions);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                }
+
                 if (user.memberShip === "free") {
                   try {
                     const mailOptions = {

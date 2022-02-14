@@ -1007,4 +1007,111 @@ module.exports = {
       The Hacking HR Team
     `,
   },
+  USER_RENEW_PREMIUM: {
+    subject: () =>
+      `Thank you for renewing your annual subscription to the Hacking HR LAB!`,
+    body: (user) => `
+      <p>
+      Hi, ${user.firstName}
+      </p>
+      <p>
+        Thank you so much for renewing your annual subscription to the Hacking HR LAB. 
+      </p>
+      <p>
+        You can find your invoice by logging in the Hacking HR LAB and clicking Billing Information under your profile.
+      </p>
+      <p>
+        We have added several exciting features over the past few months and many more tools are in the making. 
+      </p>
+      <p>
+        Please make sure you take full advantage of our learning tools, our events and all the learning content that we have put together for you. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      The Hacking HR Team
+      <br />
+    `,
+  },
+  USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE: {
+    subject: `Thank you for acknowledging and accepting the rules of engagement as part of the Hacking HR 2022 Global Online Conference`,
+    body: (user) => `
+    <p>
+    Hi ${user.firstName},
+    </p>
+    <p>
+    We appreciate you taking the time to carefully read, acknowledge and accept the 
+    rules of engagement as part of the learning experience at the Hacking HR 2022 
+    Global Online Conference. 
+    </p>
+    <p>
+    We do this to make sure you know from the beginning what to expect from our 
+    global online conference.
+    </p>
+    <p>
+    The rules of engagement include:
+    </p>
+    <p>
+    <strong>1. Content:</strong>The content of this conference during and post-event is completely FREE for the members of the 
+    Hacking HR LAB. You can get access to the content at any time. However, you 
+    must not reproduce totally or partially any part of this content outside of the 
+    Hacking HR LAB without our explicit approval.
+    </p>
+
+    <p>
+    <strong>2. Networking tools:</strong> there are several networking tools in the conference 
+    application. Two in particular are very useful: Bonfires and Chat. Bonfires allow 
+    you to create conversations with participants of the conference, and with the 
+    chat you can connect individually with other participants. The networking tools 
+    are for real networking conversations. If you use any of the tools for pitching, 
+    marketing or selling any product or service, your account will be banned from 
+    using the tools again for the duration of the conference.
+    </p>
+
+    <p>
+    <strong>3. Conference sessions:</strong> you can’t join more than one session simultaneously 
+    with other sessions. As soon as you click on JOIN a session, the option to join any
+    other session at the same time and same date will be deactivated. You can join 
+    more sessions at other times/dates.
+    </p>
+
+    <p>
+    <strong>4. HR Credits:</strong> The conference offers more than 500 SHRM+HRCI credits. 
+    The credits ARE NOT FREE. You MUST UPGRADE your account and become a PREMIUM member to get access to the credits. 
+    Please do not email us asking for credit codes if you are not a PREMIUM user. If you are a PREMIUM user, 
+    this is how it’ll work: two weeks after the conference you will receive an email to download your personalized conference participation report. 
+    This report will include the sessions you joined and ONLY the corresponding HRCI/SHRM codes to those sessions. 
+    There is no need to email us asking for the codes. Please wait until the report is ready no later than March 28th. 
+    After the conference, you can continue watching sessions and claiming the credits of those sessions. 
+    These codes won't show in your report (as it will be post-event) but a button "CLAIM CREDITS" will show next to the session.
+    </p>
+
+    <p>
+    <strong>5. Certificate of participation:</strong> a personalized certificate of participation will be 
+    available to all members of the Hacking HR LAB. You can download it and also 
+    share it in your social media. This certificate of participation will include all the 
+    sessions you joined and the amount of hours you invested in your learning. The 
+    certificate of participation will be available at the same time as your conference 
+    participation report no later than March 28th.
+    </p>
+
+    <p>
+    Thank you so much and enjoy the conference! We would love to hear your feedback
+    afterward!
+    </p>
+
+    <p>
+    THANK YOU!
+    </p>
+    <p>
+    <br />
+    Enrique Rubio
+    <br />
+    Founder
+    <br />
+    Hacking HR
+    <br />
+    `,
+  },
 };
