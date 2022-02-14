@@ -725,7 +725,9 @@ const EventController = () => {
         startAndEndTimes: compact(event.startAndEndTimes),
       };
 
-      let date = moment(event.startDate).add(day, "day").format("YYYY-MM-DD");
+      let date = moment(event.startAndEndTimes[day].startTime).format(
+        "YYYY-MM-DD"
+      );
 
       const startTime = moment(event.startAndEndTimes[day].startTime).format(
         "HH:mm:ss"
