@@ -1078,13 +1078,14 @@ module.exports = {
 
     <p>
     <strong>4. HR Credits:</strong> The conference offers more than 500 SHRM+HRCI credits. 
-    The credits ARE NOT FREE. You MUST UPGRADE your account and become a PREMIUM member to get access to the credits. 
-    Please do not email us asking for credit codes if you are not a PREMIUM user. If you are a PREMIUM user, 
-    this is how it’ll work: two weeks after the conference you will receive an email to download your personalized conference participation report. 
+    The credits ARE NOT FREE and NOT transferable or shareable. 
+    You MUST UPGRADE your account and become a PREMIUM member to get access to the credits. 
+    Please do not email us asking for credit codes if you are not a PREMIUM user. 
+    If you are a PREMIUM user, this is how it’ll work: two weeks after the conference 
+    you will receive an email to download your personalized conference participation report. 
     This report will include the sessions you joined and ONLY the corresponding HRCI/SHRM codes to those sessions. 
-    There is no need to email us asking for the codes. Please wait until the report is ready no later than March 28th. 
-    After the conference, you can continue watching sessions and claiming the credits of those sessions. 
-    These codes won't show in your report (as it will be post-event) but a button "CLAIM CREDITS" will show next to the session.
+    There is no need to email us asking for the codes. Also, please note that you SHOULD NOT share the codes with anyone. 
+    Please wait until the report is ready no later than March 28th.
     </p>
 
     <p>
