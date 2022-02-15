@@ -976,6 +976,23 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
+  //Returning meta tags to the digital certificate view
+  const eventCertificateMetaData = async (req, res) => {
+    const { metadata } = req.body;
+    res.send(`
+      <meta name="description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true" />
+      <meta property="og:title" content="Hacking HR's Certificate of Participation" data-react-helmet="true" />
+      <meta property="og:description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true" />
+      <meta property="og:type" content="webpage" data-react-helmet="true" />
+      <meta property="og:url" content="https://www.hackinghrlab.io/" data-react-helmet="true" />
+      <meta property="twitter:url" content="https://www.hackinghrlab.io/" data-react-helmet="true" />
+      <meta property="image" content="${metadata.metadata}" data-react-helmet="true" /></head>
+      <meta property="og:image" content="${metadata.metadata}" data-react-helmet="true" /></head>
+      <meta property="twitter:title" content="Hacking HR's Certificate of Participation" data-react-helmet="true" /></head>
+      <meta property="twitter:image" content="${metadata.metadata}" data-react-helmet="true" />
+      `);
+  };
+
   return {
     create,
     getAllEvents,
@@ -995,6 +1012,7 @@ const EventController = () => {
     resetEmailReminders,
     claimCredit,
     claimAttendance,
+    eventCertificateMetaData,
   };
 };
 

@@ -32,6 +32,7 @@ const privateRoutes = {
   "DELETE /business-partner-comments/delete-comment/:id":
     "BusinessPartnerCommentController.remove",
   "GET /events/": "EventController.getAllEvents",
+  "POST /events/metadata": "EventController.eventCertificateMetaData",
   "GET /events-live/": "EventController.getLiveEvents",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
