@@ -9,7 +9,11 @@ const TimeZoneList = require("../enum/TimeZoneList");
 const { readExcelFile, progressLog } = require("../utils/excel");
 const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
-const { getEventPeriod } = require("../utils/format");
+const {
+  getEventPeriod,
+  convertToLocalTime,
+  convertToCertainTime,
+} = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
@@ -190,12 +194,19 @@ const UserController = () => {
   const generateAttendEmail = async (user, tz, event) => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
+    const offset = timezone.offset;
 
     try {
       const calendarInvite = event.startAndEndTimes.map((time, index) => {
         try {
-          let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
-          let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
+          let startTime = convertToCertainTime(time.startTime, timezone.value);
+          let endTime = convertToCertainTime(time.endTime, timezone.value);
+
+          startTime = convertToLocalTime(
+            moment(startTime).utcOffset(offset, true)
+          );
+          endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+
           return smtpService().generateCalendarInvite(
             startTime,
             endTime,
