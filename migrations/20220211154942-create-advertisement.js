@@ -24,7 +24,7 @@ module.exports = {
       advertisementLink: {
         type: Sequelize.STRING,
       },
-      adTotalCost: {
+      adCostPerDay: {
         type: Sequelize.INTEGER,
       },
       adDurationByDays: {
@@ -32,6 +32,9 @@ module.exports = {
       },
       startDate: {
         type: Sequelize.DATE,
+      },
+      page: {
+        type: Sequelize.STRING,
       },
       endDate: {
         type: Sequelize.DATE,

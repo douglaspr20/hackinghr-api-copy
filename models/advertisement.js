@@ -16,8 +16,9 @@ module.exports = (sequelize, DataTypes) => {
     {
       advertisementLink: DataTypes.STRING,
       // adBannerSize: DataTypes.STRING,
-      adTotalCost: DataTypes.STRING,
+      adCostPerDay: DataTypes.STRING,
       adDurationByDays: DataTypes.INTEGER,
+      page: DataTypes.STRING,
       startDate: DataTypes.DATE,
       endDate: DataTypes.DATE,
       datesBetweenStartDateAndEndDate: DataTypes.ARRAY(DataTypes.DATE),
