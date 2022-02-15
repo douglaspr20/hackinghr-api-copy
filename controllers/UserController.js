@@ -190,6 +190,7 @@ const UserController = () => {
   const generateAttendEmail = async (user, tz, event) => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
+
     try {
       const calendarInvite = event.startAndEndTimes.map((time, index) => {
         try {
