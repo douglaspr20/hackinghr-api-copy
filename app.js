@@ -343,19 +343,19 @@ cron.schedule(
 );
 
 // Job Post Auto Expiry
-cron.schedule(
-  "0 0 * * *", // 12AM every day
-  async () => {
-    console.log(
-      "****************Running task at 12AM everyday****************"
-    );
-    console.log("****************Auto Expiry****************");
-    await JobPostController().jobPostAutoExpiry();
-  },
-  {
-    timezone: "America/Los_Angeles",
-  }
-);
+// cron.schedule(
+//   "0 0 * * *", // 12AM every day
+//   async () => {
+//     console.log(
+//       "****************Running task at 12AM everyday****************"
+//     );
+//     console.log("****************Auto Expiry****************");
+//     await JobPostController().jobPostAutoExpiry();
+//   },
+//   {
+//     timezone: "America/Los_Angeles",
+//   }
+// );
 
 // allow cross origin requests
 // configure to only allow requests from certain origins
