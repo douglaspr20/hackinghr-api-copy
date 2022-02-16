@@ -22,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
       startDate: DataTypes.DATE,
       endDate: DataTypes.DATE,
       datesBetweenStartDateAndEndDate: DataTypes.ARRAY(DataTypes.DATE),
+      adContentLink: DataTypes.STRING,
     },
     {
       sequelize,

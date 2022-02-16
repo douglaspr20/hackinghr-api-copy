@@ -91,7 +91,7 @@ const AdvertisementController = () => {
       transformedData["adCostPerDay"] = adBracket["price"] || 0;
 
       if (transformedData.image) {
-        transformedData.advertisementLink =
+        transformedData.adContentLink =
           await s3Service().getAdvertisementImageUrl("", transformedData.image);
       }
 
@@ -107,10 +107,38 @@ const AdvertisementController = () => {
     }
   };
 
+  const getAdvertisementById = async (req, res) => {
+    const { advertisementId } = req.params;
+
+    try {
+      const advertisement = await Advertisement.findOne({
+        where: {
+          id: advertisementId,
+        },
+      });
+
+      if (!advertisement) {
+        return res.status(HttpCodes.NOT_FOUND).json({
+          msg: "Advertisement not found.",
+          error,
+        });
+      }
+
+      return res.status(HttpCodes.OK).json({ advertisement });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
   return {
     getAdvertisementsByPage,
     getAdvertisementByAdvertiser,
     createAdvertisement,
+    getAdvertisementById,
   };
 };
 

@@ -232,11 +232,10 @@ const privateRoutes = {
   "PUT /user/accept-terms-condition-g-conference/:id":
     "UserController.acceptTermsConditionGConference",
   "GET /users/count-all": "UserController.countAllUsers",
-  "GET /advertisements-by-page":
-    "AdvertisementController.getAdvertisementsByPage",
-  "GET /advertisements/:UserId":
-    "AdvertisementController.getAdvertisementByAdvertiser",
-  "POST /advertisement": "AdvertisementController.createAdvertisement",
+  "GET /ads-by-page": "AdvertisementController.getAdvertisementsByPage",
+  "GET /ads/:UserId": "AdvertisementController.getAdvertisementByAdvertiser",
+  "POST /ad": "AdvertisementController.createAdvertisement",
+  "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
 };
 
 module.exports = privateRoutes;
