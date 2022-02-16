@@ -14,6 +14,7 @@ const PostCommentController = () => {
   const add = async (req, res) => {
     try {
       let data = { ...req.body };
+      const { firstName, lastName } = req.user;
       data.UserId = req.user.id;
       const postComment = await PostComment.create(data);
 
@@ -21,7 +22,7 @@ const PostCommentController = () => {
 
       if (data.isAComment && data.postOwnerUserId !== data.UserId) {
         const notif = NotificationController().createNotification({
-          message: `Someone commented on your post.`,
+          message: `${firstName} ${lastName} commented on your post.`,
           type: "post",
           meta: {
             ...postComment,
@@ -36,7 +37,7 @@ const PostCommentController = () => {
         if (data.postCommentUserId !== data.UserId) {
           const commentOwnerNotif = NotificationController().createNotification(
             {
-              message: `Someone replied to your comment.`,
+              message: `${firstName} ${lastName} replied to your comment.`,
               type: "post",
               meta: {
                 ...postComment,
