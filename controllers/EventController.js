@@ -505,6 +505,37 @@ const EventController = () => {
     }
   };
 
+  const updateEventUserAssistence = async (req, res) => {
+    const { id } = req.params;
+    const { id: userId } = req.token;
+    if (id && userId) {
+      try {
+        let prevEvent = await Event.findOne({ where: { id } });
+        prevEvent = prevEvent.toJSON();
+        const [numberOfAffectedRows, affectedRows] = await Event.update(
+          {
+            usersAssistence: [...prevEvent.usersAssistence, userId],
+          },
+          {
+            where: { id },
+            returning: true,
+            plain: true,
+          }
+        );
+        return res.status(HttpCodes.OK).json({ affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
   const sendEmailAfterEvent = async (event) => {
     try {
       let requests = event.users.map((user) => {
@@ -974,6 +1005,7 @@ const EventController = () => {
     getAllEvents,
     getEvent,
     getEventAdmin,
+    updateEventUserAssistence,
     updateEvent,
     updateEventStatus,
     emailAfterEventThread,

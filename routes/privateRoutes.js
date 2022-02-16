@@ -18,6 +18,10 @@ const privateRoutes = {
   "GET /business-partner/resource/:id":
     "BusinessPartnerController.getBusinessPartnerResource",
   "POST /business-partner/add-resources/": "BusinessPartnerController.create",
+  "DELETE /business-partner/resource/:id":
+    "BusinessPartnerController.deleteResource",
+  "PUT /business-partner/resource/:id":
+    "BusinessPartnerController.updateResource",
   "GET /business-partner/documents/":
     "BusinessPartnerController.getBusinessPartnerDocuments",
   "POST /business-partner/create-document/":
@@ -104,6 +108,7 @@ const privateRoutes = {
   "PUT /podcast/viewed": "PodcastController.markAsViewed",
   "PUT /podcast/:id/save-for-later": "PodcastController.saveForLater",
   "DELETE /event/channel/:id": "EventController.deleteChannelEvent",
+  "PUT /event/:id": "EventController.updateEventUserAssistence",
   "PUT /event/channel/:id": "EventController.updateEvent",
   "PUT /channel/follow/:id": "ChannelController.setFollow",
   "PUT /channel/unfollow/:id": "ChannelController.unsetFollow",

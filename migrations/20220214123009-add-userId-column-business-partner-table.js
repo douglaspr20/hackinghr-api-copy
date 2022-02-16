@@ -9,8 +9,8 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
     return Promise.all([
-      queryInterface.addColumn("Users", "language", {
-        type: Sequelize.STRING,
+      queryInterface.addColumn("BusinessPartners", "UserId", {
+        type: Sequelize.INTEGER,
         allowNull: true,
       }),
     ]);
@@ -23,5 +23,6 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
+    return Promise.all([queryInterface.drop("BusinessPartners", "UserId")]);
   },
 };
