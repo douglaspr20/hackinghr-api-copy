@@ -18,6 +18,8 @@ module.exports = {
     INSTRUCTOR_IMAGE_FOLDER: "instructor",
     POST_IMAGE_FOLDER: "post",
     SKILL_COHORT_IMAGE_FOLDER: "skill-cohort",
+    //FILES
+    UPLOAD_FILES_LAB: "upload-files-lab",
     // Resume
     RESUME_BUCKET_NAME: "user-resume-bucket",
     // Editor

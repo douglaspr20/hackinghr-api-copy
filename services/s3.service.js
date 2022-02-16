@@ -13,6 +13,10 @@ const resumeBucket = new AWS.S3({
   params: { Bucket: S3.RESUME_BUCKET_NAME },
 });
 
+const fileBucket = new AWS.S3({
+  params: { Bucket: S3.UPLOAD_FILES_LAB },
+});
+
 const s3Service = () => {
   const imageUpload = (path, buffer) => {
     const data = {
@@ -57,6 +61,12 @@ const s3Service = () => {
 
   const getImgBuffer = (base64) => {
     const base64str = base64.replace(/^data:image\/\w+;base64,/, "");
+
+    return Buffer.from(base64str, "base64");
+  };
+
+  const getFileBuffer = (base64, mimetype) => {
+    const base64str = base64.replace(`data:${mimetype};base64,`, "");
 
     return Buffer.from(base64str, "base64");
   };
@@ -216,6 +226,7 @@ const s3Service = () => {
 
   const uploadFile = async (file, mimetype, title) => {
     const extensionFile = mimetype.match(/[/]\w+/)[0];
+    const buffer = getFileBuffer(file, mimetype);
 
     const fileName = `${title}_${
       process.env.S3_RESUME_BUCKET || "local"
@@ -223,12 +234,12 @@ const s3Service = () => {
 
     const params = {
       Key: fileName,
-      Body: file,
+      Body: buffer,
       ContentType: mimetype,
       ACL: "public-read",
     };
     return new Promise((resolve, reject) => {
-      resumeBucket.upload(params, (err, data) =>
+      fileBucket.upload(params, (err, data) =>
         err === null ? resolve(data) : reject(err)
       );
     });
