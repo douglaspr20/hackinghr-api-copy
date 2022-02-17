@@ -21,8 +21,13 @@ const sendInBlueService = () => {
       </html>
     `;
 
+    const templateId = process.env.NODE_ENV === "production" ? 214 : 237;
+
     try {
-      const data = await apiInstance.updateSmtpTemplate(214, smtpTemplate);
+      const data = await apiInstance.updateSmtpTemplate(
+        templateId,
+        smtpTemplate
+      );
       console.log(
         "API called successfully. Returned data: " + JSON.stringify(data)
       );
