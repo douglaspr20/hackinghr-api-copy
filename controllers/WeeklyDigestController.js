@@ -135,7 +135,7 @@ const WeeklyDigestController = () => {
     }
   };
 
-  const sendWeeklyDigestEmail = async () => {
+  const updateWeeklyDigestEmail = async () => {
     const dateToday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
@@ -160,41 +160,18 @@ const WeeklyDigestController = () => {
       );
       const jobPosts = await getActiveJobPosts();
 
-      // let users = await User.findAll({
-      //   attributes: ["email"],
-      //   raw: true,
-      // });
-
-      // users = users.map((user) => {
-      //   email: user.email;
-      // });
-
-      //  "enrique@hackinghr.io"
-      const users = [
-        {
-          email: "lourencelinao13@gmail.com",
-        },
-        {
-          email: "enrique@hackinghr.io",
-        },
-      ];
-
       const podcastsEmailContent = podcasts.map((podcast) => {
         const link = `${process.env.DOMAIN_URL}library-item/podcast/${podcast.id}?channel=${podcast.channelId}`;
 
-        return {
-          title: podcast.title,
-          channel: podcast.channel,
-          link,
-        };
+        return `
+          <p>${podcast.channel}: "${podcast.title}", <a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a></p>
+        `;
       });
 
       const contentsEmailContent = contents.map((content) => {
-        return {
-          title: content.title,
-          channel: content.channel,
-          link: content.link,
-        };
+        return `
+          <p>${content.channel}: "${content.title}", <a href="${content.link}" target="_blank" rel="noopener noreferrer">${content.link}</a></p>
+        `;
       });
 
       const resources = [...podcastsEmailContent, ...contentsEmailContent];
@@ -212,23 +189,22 @@ const WeeklyDigestController = () => {
 
         const link = `${process.env.DOMAIN_URL}talent-marketplace/job-post/${jobPost.id}`;
 
-        return {
-          title: jobPost.jobTitle,
-          salary: jobPost.salaryRange,
-          location: formattedLocation,
-          level: jobPost.level,
-          link,
-        };
+        return `
+          <p>${jobPost.jobTitle}, ${jobPost.salaryRange}, ${formattedLocation}, ${jobPost.level}, <a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a></p>
+        `;
       });
 
-      await sendInBlueService().sendWeeklyDigest(users, jobs, resources);
+      await sendInBlueService().updateWeeklyDigestEmailTemplate(
+        jobs,
+        resources
+      );
     } catch (error) {
       console.log(error);
     }
   };
 
   return {
-    sendWeeklyDigestEmail,
+    updateWeeklyDigestEmail,
   };
 };
 
