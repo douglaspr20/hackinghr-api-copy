@@ -31,7 +31,7 @@ const AdvertisementController = () => {
     const dateToday = moment().tz("America/Los_Angeles").startOf("day");
 
     try {
-      const advertisement = await Advertisement.findOne({
+      const advertisement = await Advertisement.findAll({
         where: {
           startDate: {
             [Op.lte]: dateToday,
@@ -43,7 +43,6 @@ const AdvertisementController = () => {
         },
       });
 
-      console.log(advertisement, "advertisements");
       return res.status(HttpCodes.OK).json({ advertisement });
     } catch (error) {
       console.log(error);
@@ -84,6 +83,28 @@ const AdvertisementController = () => {
         ...data,
         UserId: id,
       };
+
+      // const advertisementsCount = await Advertisement.count({
+      //   where: {
+      //     [Op.or]: [
+      //       {
+      //         datesBetweenStartDateAndEndDate: {
+      //           [Op.contains]: [transformedData.startDate],
+      //         },
+      //       },
+      //       {
+      //         datesBetweenStartDateAndEndDate: {
+      //           [Op.contains]: [transformedData.endDate],
+      //         },
+      //       },
+      //     ],
+      //     page: transformedData.page,
+      //   },
+      // });
+
+      // if (advertisementsCount === 3) {
+      //   return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Already full" });
+      // }
 
       const adBracket = price.find(
         (p) => p.min <= data.adDurationByDays && p.max >= data.adDurationByDays
