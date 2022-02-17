@@ -8,9 +8,13 @@ const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
-const { Settings, EmailContent, USER_ROLE } = require("../enum");
+const { Settings, EmailContent, USER_ROLE, TimeZoneList } = require("../enum");
 const { isEmpty, compact } = require("lodash");
-const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
+const {
+  convertToLocalTime,
+  convertJSONToExcel,
+  convertToCertainTime,
+} = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
@@ -505,6 +509,37 @@ const EventController = () => {
     }
   };
 
+  const updateEventUserAssistence = async (req, res) => {
+    const { id } = req.params;
+    const { id: userId } = req.token;
+    if (id && userId) {
+      try {
+        let prevEvent = await Event.findOne({ where: { id } });
+        prevEvent = prevEvent.toJSON();
+        const [numberOfAffectedRows, affectedRows] = await Event.update(
+          {
+            usersAssistence: [...prevEvent.usersAssistence, userId],
+          },
+          {
+            where: { id },
+            returning: true,
+            plain: true,
+          }
+        );
+        return res.status(HttpCodes.OK).json({ affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
   const sendEmailAfterEvent = async (event) => {
     try {
       let requests = event.users.map((user) => {
@@ -705,7 +740,7 @@ const EventController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
-    const { day } = req.query;
+    const { day, userTimezone } = req.query;
 
     try {
       let event = await Event.findOne({
@@ -725,27 +760,29 @@ const EventController = () => {
         startAndEndTimes: compact(event.startAndEndTimes),
       };
 
-      let date = moment(event.startDate).add(day, "day").format("YYYY-MM-DD");
-
-      const startTime = moment(event.startAndEndTimes[day].startTime).format(
-        "HH:mm:ss"
+      const _userTimezone = TimeZoneList.find((item) =>
+        item.utc.includes(userTimezone)
       );
-      let startDate = moment(`${date}  ${startTime}`);
-
-      const endTime = moment(event.startAndEndTimes[day].endTime).format(
-        "HH:mm:ss"
+      const timezone = TimeZoneList.find(
+        (item) => item.value === event.timezone
       );
-      let endDate = moment(`${date}  ${endTime}`);
+      const offset = timezone.offset;
 
-      startDate = convertToLocalTime(startDate, "YYYY-MM-DD h:mm a");
+      let startTime = convertToCertainTime(
+        event.startAndEndTimes[day].startTime,
+        event.timezone
+      );
+      let endTime = convertToCertainTime(
+        event.startAndEndTimes[day].endTime,
+        event.timezone
+      );
 
-      endDate = convertToLocalTime(endDate, "YYYY-MM-DD h:mm a");
-
-      const localTimezone = moment.tz.guess();
+      startTime = convertToLocalTime(moment(startTime).utcOffset(offset, true));
+      endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
       const calendarInvite = smtpService().generateCalendarInvite(
-        startDate,
-        endDate,
+        startTime,
+        endTime,
         event.title,
         "",
         "",
@@ -753,7 +790,7 @@ const EventController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        localTimezone
+        _userTimezone.utc[0]
       );
 
       let icsContent = calendarInvite.toString();
@@ -972,6 +1009,7 @@ const EventController = () => {
     getAllEvents,
     getEvent,
     getEventAdmin,
+    updateEventUserAssistence,
     updateEvent,
     updateEventStatus,
     emailAfterEventThread,
