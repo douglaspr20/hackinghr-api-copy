@@ -5,23 +5,29 @@ const sendInBlueService = () => {
   let apiKey = defaultClient.authentications["api-key"];
   apiKey["apiKey"] = process.env.SEND_IN_BLUE_API_KEY;
 
-  const sendWeeklyDigest = async (emails, jobs, resources) => {
+  const updateWeeklyDigestEmailTemplate = async (jobs, resources) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    let smtpTemplate = new SibApiV3Sdk.UpdateSmtpTemplate();
 
-    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
+    smtpTemplate.htmlContent = `
+      <html>
+        <body>
+          <h3>Jobs in the Talent Marketplace</h3>
+          ${jobs}
 
-    sendSmtpEmail.sender = {
-      email: process.env.SEND_IN_BLUE_SMTP_SENDER,
-    };
-    sendSmtpEmail.to = emails;
-    sendSmtpEmail.params = {
-      jobs,
-      resources,
-    };
-    sendSmtpEmail.templateId = 214;
+          <h3>Creator's Content</h3>
+          ${resources}
+        </body>
+      </html>
+    `;
+
+    const templateId = process.env.NODE_ENV === "production" ? 214 : 237;
 
     try {
-      const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+      const data = await apiInstance.updateSmtpTemplate(
+        templateId,
+        smtpTemplate
+      );
       console.log(
         "API called successfully. Returned data: " + JSON.stringify(data)
       );
@@ -31,7 +37,7 @@ const sendInBlueService = () => {
   };
 
   return {
-    sendWeeklyDigest,
+    updateWeeklyDigestEmailTemplate,
   };
 };
 
