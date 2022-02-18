@@ -25,7 +25,7 @@ const price = [
 ];
 
 const AdvertisementController = () => {
-  const getAdvertisementsByPage = async (req, res) => {
+  const getAdvertisementsTodayByPage = async (req, res) => {
     const { page } = req.query;
 
     const dateToday = moment().tz("America/Los_Angeles").startOf("day");
@@ -128,6 +128,28 @@ const AdvertisementController = () => {
     }
   };
 
+  const getAllActiveAdvertisements = async (req, res) => {
+    const dateToday = moment().tz("America/Los_Angeles").startOf("day");
+
+    try {
+      const advertisements = await Advertisement.findAll({
+        where: {
+          startDate: {
+            [Op.lt]: dateToday,
+          },
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({ advertisements });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
   const getAdvertisementById = async (req, res) => {
     const { advertisementId } = req.params;
 
@@ -156,10 +178,11 @@ const AdvertisementController = () => {
   };
 
   return {
-    getAdvertisementsByPage,
+    getAdvertisementsTodayByPage,
     getAdvertisementByAdvertiser,
     createAdvertisement,
     getAdvertisementById,
+    getAllActiveAdvertisements,
   };
 };
 

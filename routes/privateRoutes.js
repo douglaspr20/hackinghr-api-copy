@@ -232,7 +232,8 @@ const privateRoutes = {
   "PUT /user/accept-terms-condition-g-conference/:id":
     "UserController.acceptTermsConditionGConference",
   "GET /users/count-all": "UserController.countAllUsers",
-  "GET /ads-by-page": "AdvertisementController.getAdvertisementsByPage",
+  "GET /ads-by-page": "AdvertisementController.getAdvertisementsTodayByPage",
+  "GET /ads/active": "AdvertisementController.getAllActiveAdvertisements",
   "GET /ads/:UserId": "AdvertisementController.getAdvertisementByAdvertiser",
   "POST /ad": "AdvertisementController.createAdvertisement",
   "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
