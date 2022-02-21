@@ -9,7 +9,7 @@ const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
-const { isEmpty, flatten, head } = require("lodash");
+const { isEmpty, flatten, head, compact } = require("lodash");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
@@ -373,8 +373,16 @@ const EventController = () => {
         };
       }
 
-      const events = await Event.findAll({
+      let events = await Event.findAll({
         where,
+        raw: true,
+      });
+
+      events = events.map((event) => {
+        return {
+          ...event,
+          startAndEndTimes: compact(event.startAndEndTimes),
+        };
       });
 
       return res.status(HttpCodes.OK).json({ events });
@@ -386,16 +394,28 @@ const EventController = () => {
     }
   };
 
-  const getEvent = async (req, res) => {
+  const getEventBase = async (id, raw = false) => {
+    try {
+      let event = await Event.findOne({
+        where: {
+          id,
+        },
+        raw,
+      });
+
+      return event;
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
+  };
+
+  const getEventAdmin = async (req, res) => {
     const { id } = req.params;
 
     if (id) {
       try {
-        const event = await Event.findOne({
-          where: {
-            id,
-          },
-        });
+        const event = await getEventBase(id);
 
         if (!event) {
           return res
@@ -404,8 +424,40 @@ const EventController = () => {
         }
 
         return res.status(HttpCodes.OK).json({ event });
-      } catch (err) {
-        console.log(err);
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: event id is wrong" });
+    }
+  };
+
+  const getEvent = async (req, res) => {
+    const { id } = req.params;
+
+    if (id) {
+      try {
+        let event = await getEventBase(id, true);
+
+        if (!event) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Bad Request: Event not found" });
+        }
+
+        event = {
+          ...event,
+          startAndEndTimes: compact(event.startAndEndTimes),
+        };
+
+        return res.status(HttpCodes.OK).json({ event });
+      } catch (error) {
+        console.log(error);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
@@ -727,11 +779,12 @@ const EventController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
-    const { day } = req.query;
+    const { day, userTimezone } = req.query;
 
     try {
-      const event = await Event.findOne({
+      let event = await Event.findOne({
         where: { id },
+        raw: true,
       });
 
       if (!event) {
@@ -741,27 +794,36 @@ const EventController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      let date = moment(event.startDate).add(day, "day").format("YYYY-MM-DD");
+      event = {
+        ...event,
+        startAndEndTimes: compact(event.startAndEndTimes),
+      };
 
-      const startTime = moment(event.startAndEndTimes[day]?.startTime).format(
-        "HH:mm:ss"
-      );
+      // const startTime = moment(event.startAndEndTimes[day]?.startTime).format(
+      //   "HH:mm:ss"
+      // );
       let startDate = moment(`${date}  ${startTime ? startTime : ""}`);
 
-      const endTime = moment(event.startAndEndTimes[day].endTime).format(
-        "HH:mm:ss"
+      // const endTime = moment(event.startAndEndTimes[day].endTime).format(
+      //   "HH:mm:ss"
+      // );
+      const offset = timezone.offset;
+
+      let startTime = convertToCertainTime(
+        event.startAndEndTimes[day].startTime,
+        event.timezone
       );
-      let endDate = moment(`${date}  ${endTime}`);
+      let endTime = convertToCertainTime(
+        event.startAndEndTimes[day].endTime,
+        event.timezone
+      );
 
-      startDate = convertToLocalTime(startDate, "YYYY-MM-DD h:mm a");
-
-      endDate = convertToLocalTime(endDate, "YYYY-MM-DD h:mm a");
-
-      const localTimezone = moment.tz.guess();
+      startTime = convertToLocalTime(moment(startTime).utcOffset(offset, true));
+      endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
       const calendarInvite = smtpService().generateCalendarInvite(
-        startDate,
-        endDate,
+        startTime,
+        endTime,
         event.title,
         "",
         "",
@@ -769,7 +831,7 @@ const EventController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        localTimezone
+        _userTimezone.utc[0]
       );
 
       let icsContent = calendarInvite.toString();
@@ -810,7 +872,14 @@ const EventController = () => {
         };
       }
 
-      const channelEvents = await Event.findAll({ where });
+      let channelEvents = await Event.findAll({ where, raw: true });
+
+      channelEvents = channelEvents.map((event) => {
+        return {
+          ...event,
+          startAndEndTimes: compact(channelEvents.startAndEndTimes),
+        };
+      });
 
       return res.status(HttpCodes.OK).json({ channelEvents });
     } catch (err) {
@@ -979,61 +1048,25 @@ const EventController = () => {
   //Returning meta tags to the digital certificate view
   const eventCertificateMetaData = async (req, res) => {
     const { metadata } = req.body;
-    const app = `
-      <meta
-      name="description"
-      content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants."
-      data-react-helmet="true"
-    />
-    <meta
-      property="og:title"
-      content="Hacking HR's Certificate of Participation"
-      data-react-helmet="true"
-    />
-    <meta
-      property="og:description"
-      content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants."
-      data-react-helmet="true"
-    />
+    const metaTags = `<meta name="description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true"/>
+    <meta property="og:title" content="Hacking HR's Certificate of Participation" data-react-helmet="true"/>
+    <meta property="og:description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true"/>
     <meta property="og:type" content="webpage" data-react-helmet="true" />
-    <meta
-      property="og:url"
-      content="https://www.hackinghrlab.io/"
-      data-react-helmet="true"
-    />
-    <meta
-      property="twitter:url"
-      content="https://www.hackinghrlab.io/"
-      data-react-helmet="true"
-    />
-    <meta
-      property="image"
-      content="${metadata.metadata}"
-      data-react-helmet="true"
-    />
-    <meta
-      property="og:image"
-      content="${metadata.metadata}"
-      data-react-helmet="true"
-    />
-    <meta
-      property="twitter:title"
-      content="Hacking HR's Certificate of Participation"
-      data-react-helmet="true"
-    />
-    <meta
-      property="twitter:image"
-      content="${metadata.metadata}"
-      data-react-helmet="true"
-    />
-      `;
-    res.send(app);
+    <meta property="og:url" content="https://www.hackinghrlab.io/" data-react-helmet="true"/>
+    <meta property="twitter:url" content="https://www.hackinghrlab.io/" data-react-helmet="true"/>
+    <meta property="image" content="${metadata.metadata}" data-react-helmet="true" />
+    <meta property="og:image" content="${metadata.metadata}" data-react-helmet="true"/>
+    <meta property="twitter:title" content="Hacking HR's Certificate of Participation" data-react-helmet="true"/>
+    <meta property="twitter:image" content="${metadata.metadata}" data-react-helmet="true"/>`;
+    res.send(metaTags);
   };
 
   return {
     create,
     getAllEvents,
     getEvent,
+    getEventAdmin,
+    updateEventUserAssistence,
     updateEvent,
     updateEventStatus,
     getLiveEvents,

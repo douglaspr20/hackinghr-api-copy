@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
       videoUrl: DataTypes.STRING,
       duration: DataTypes.STRING,
       topics: DataTypes.ARRAY(DataTypes.STRING),
+      documentFileName: DataTypes.STRING,
+      documentFileUrl: DataTypes.STRING,
+      audioFileName: DataTypes.STRING,
+      audioFileUrl: DataTypes.STRING,
     },
     {
       sequelize,

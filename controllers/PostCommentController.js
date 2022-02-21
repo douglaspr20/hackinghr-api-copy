@@ -4,7 +4,6 @@ const HttpCodes = require("http-codes");
 const NotificationController = require("../controllers/NotificationController");
 
 const PostComment = db.PostComment;
-const PostFollow = db.PostFollow;
 
 const PostCommentController = () => {
   /**
@@ -15,28 +14,59 @@ const PostCommentController = () => {
   const add = async (req, res) => {
     try {
       let data = { ...req.body };
+      const { firstName, lastName } = req.user;
       data.UserId = req.user.id;
       const postComment = await PostComment.create(data);
 
-      const follow = await PostFollow.findAll({
-        where: { PostId: data.PostId, UserId: req.user.id },
-      });
+      const notifications = [];
 
-      const ids = follow.map((follow) => {
-        return follow.dataValues.UserId;
-      });
-
-      if (follow.length > 0) {
-        await NotificationController().createNotification({
-          message: `New Comment "${postComment.comment}" was created.`,
-          type: "comment",
+      if (data.isAComment && data.postOwnerUserId !== data.UserId) {
+        const notif = NotificationController().createNotification({
+          message: `${firstName} ${lastName} commented on your post.`,
+          type: "post",
           meta: {
             ...postComment,
           },
-          UserId: req.user.id,
-          onlyFor: ids,
+          onlyFor: [data.postOwnerUserId],
         });
+
+        notifications.push(notif);
       }
+
+      if (!data.isAComment) {
+        if (data.postCommentUserId !== data.UserId) {
+          const commentOwnerNotif = NotificationController().createNotification(
+            {
+              message: `${firstName} ${lastName} replied to your comment.`,
+              type: "post",
+              meta: {
+                ...postComment,
+              },
+              onlyFor: [data.postCommentUserId],
+            }
+          );
+
+          notifications.push(commentOwnerNotif);
+        }
+
+        if (
+          data.postOwnerUserId !== data.postCommentUserId &&
+          data.postOwnerUserId !== data.UserId
+        ) {
+          const postOwnerNotif = NotificationController().createNotification({
+            message: `Someone replied to a comment on your post.`,
+            type: "post",
+            meta: {
+              ...postComment,
+            },
+            onlyFor: [data.postOwnerUserId],
+          });
+
+          notifications.push(postOwnerNotif);
+        }
+      }
+
+      await Promise.all(notifications);
 
       return res.status(HttpCodes.OK).send();
     } catch (error) {

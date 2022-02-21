@@ -201,10 +201,11 @@ const StripeController = () => {
         const { customer } = data.object;
         console.log(`***** Customer: ${customer} ******`);
         const customerInformation = await stripe.customers.retrieve(customer);
+        const email = customerInformation.email.toLowerCase();
 
         const user = await User.findOne({
           where: {
-            email: customerInformation.email.toLowerCase(),
+            email,
           },
         });
 
@@ -220,12 +221,10 @@ const StripeController = () => {
           user,
           customerInformation
         );
-        newUserData = { ...newUserData, ...recruiterData };
+        newUserData = { ...newUserData, ...recruiterData, email };
+        newUserData = { ...newUserData, email };
 
         console.log(`***** newUserData:`, newUserData);
-        await User.update(newUserData, {
-          where: { email: customerInformation.email.toLowerCase() },
-        });
       }
       return res.status(HttpCodes.OK).json({ newUserData });
     } catch (err) {
@@ -269,6 +268,28 @@ const StripeController = () => {
                 newUserData["subscription_enddate"] = moment
                   .unix(subItemPremium.current_period_end)
                   .format("YYYY-MM-DD HH:mm:ss");
+
+                if (user.subscription_startdate != null) {
+                  if (
+                    moment.unix(subItemPremium.current_period_start) >
+                      user.subscription_startdate &&
+                    user.memberShip === "premium"
+                  ) {
+                    try {
+                      const mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: user.email,
+                        subject: LabEmails.USER_RENEW_PREMIUM.subject(),
+                        html: LabEmails.USER_RENEW_PREMIUM.body(user),
+                      };
+
+                      await smtpService().sendMailUsingSendInBlue(mailOptions);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                }
+
                 if (user.memberShip === "free") {
                   try {
                     const mailOptions = {
@@ -309,6 +330,10 @@ const StripeController = () => {
       if (!isSubscribed && user.memberShip === "premium") {
         newUserData["memberShip"] = "free";
       }
+
+      await User.update(newUserData, {
+        where: { email: user.email },
+      });
 
       return newUserData;
     } catch (error) {
@@ -403,6 +428,11 @@ const StripeController = () => {
       if (!isSubscribed && user.channelsSubscription === true) {
         newUserData["channelsSubscription"] = false;
       }
+
+      await User.update(newUserData, {
+        where: { email: user.email },
+      });
+
       return newUserData;
     } catch (error) {
       console.log(error);
@@ -489,6 +519,11 @@ const StripeController = () => {
       if (!isSubscribed && user.recruiterSubscription === true) {
         newUserData["recruiterSubscription"] = false;
       }
+
+      await User.update(newUserData, {
+        where: { email: user.email },
+      });
+
       return newUserData;
     } catch (error) {
       console.log(error);

@@ -8,12 +8,15 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    return Promise.all([
-      queryInterface.addColumn("Users", "language", {
-        type: Sequelize.STRING,
+    await queryInterface.changeColumn(
+      "AnnualConferences",
+      "recertification_credits",
+      {
+        type: Sequelize.TEXT,
+        defaultValue: null,
         allowNull: true,
-      }),
-    ]);
+      }
+    );
   },
 
   down: async (queryInterface, Sequelize) => {
@@ -23,5 +26,13 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
+    await queryInterface.changeColumn(
+      "AnnualConferences",
+      "recertification_credits",
+      {
+        type: Sequelize.STRING,
+        allowNull: true,
+      }
+    );
   },
 };

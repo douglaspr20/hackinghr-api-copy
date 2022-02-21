@@ -9,11 +9,15 @@ const TimeZoneList = require("../enum/TimeZoneList");
 const { readExcelFile, progressLog } = require("../utils/excel");
 const { USER_ROLE, EmailContent } = require("../enum");
 const bcryptService = require("../services/bcrypt.service");
-const { getEventPeriod } = require("../utils/format");
+const {
+  getEventPeriod,
+  convertToLocalTime,
+  convertToCertainTime,
+} = require("../utils/format");
 const omit = require("lodash/omit");
 const { AWSConfig } = require("../enum");
 const FroalaEditor = require("wysiwyg-editor-node-sdk/lib/froalaEditor");
-const { isEmpty } = require("lodash");
+const { isEmpty, compact } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
@@ -190,69 +194,82 @@ const UserController = () => {
   const generateAttendEmail = async (user, tz, event) => {
     const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
     const timezone = TimeZoneList.find((item) => item.value === event.timezone);
+    const offset = timezone.offset;
 
-    const calendarInvite = event.startAndEndTimes.map((time, index) => {
-      let startTime = moment.tz(time.startTime, userTimezone.utc[0]);
-      let endTime = moment.tz(time.endTime, userTimezone.utc[0]);
-
-      console.log(startTime, endTime);
-      return smtpService().generateCalendarInvite(
-        startTime,
-        endTime,
-        event.title,
-        getEventDescription(event.description),
-        "",
-        // event.location,
-        `${process.env.DOMAIN_URL}${event.id}`,
-        event.organizer,
-        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        userTimezone.utc[0]
-      );
-    });
-
-    const mailOptions = {
-      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-      to: user.email,
-      subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
-      html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
-      contentType: "text/calendar",
-    };
-
-    let icsContent = calendarInvite.map((calendar) => {
-      return calendar.toString();
-    });
-
-    icsContent = icsContent.map((content) => {
-      content = content.replace(
-        "BEGIN:VEVENT",
-        `METHOD:REQUEST\r\nBEGIN:VEVENT`
-      );
-
-      return content;
-    });
-
-    if (!isEmpty(calendarInvite)) {
-      mailOptions["attachments"] = calendarInvite.map((calendar, index) => {
-        return {
-          filename:
-            event.startAndEndTimes.length > 1
-              ? `Day-${index + 1}-invite.ics`
-              : "invite.ics",
-          content: icsContent[index],
-          contentType: "application/ics; charset=UTF-8; method=REQUEST",
-          contentDisposition: "inline",
-        };
-      });
-    }
-
-    let sentResult = null;
     try {
-      sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
-    } catch (err) {
-      console.log(err);
-    }
+      const calendarInvite = event.startAndEndTimes.map((time, index) => {
+        try {
+          let startTime = convertToCertainTime(time.startTime, timezone.value);
+          let endTime = convertToCertainTime(time.endTime, timezone.value);
 
-    return sentResult;
+          startTime = convertToLocalTime(
+            moment(startTime).utcOffset(offset, true)
+          );
+          endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+
+          return smtpService().generateCalendarInvite(
+            startTime,
+            endTime,
+            event.title,
+            getEventDescription(event.description),
+            "",
+            // event.location,
+            `${process.env.DOMAIN_URL}${event.id}`,
+            event.organizer,
+            process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            userTimezone.utc[0]
+          );
+        } catch (error) {
+          console.log(error);
+        }
+      });
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject: `CONFIRMATION – You Are Attending: "${event.title}"`,
+        html: EmailContent.EVENT_ATTEND_EMAIL(user, event, getEventPeriod),
+        contentType: "text/calendar",
+      };
+
+      let icsContent = calendarInvite.map((calendar) => {
+        return calendar.toString();
+      });
+
+      icsContent = icsContent.map((content) => {
+        content = content.replace(
+          "BEGIN:VEVENT",
+          `METHOD:REQUEST\r\nBEGIN:VEVENT`
+        );
+
+        return content;
+      });
+
+      if (!isEmpty(calendarInvite)) {
+        mailOptions["attachments"] = calendarInvite.map((calendar, index) => {
+          return {
+            filename:
+              event.startAndEndTimes.length > 1
+                ? `Day-${index + 1}-invite.ics`
+                : "invite.ics",
+            content: icsContent[index],
+            contentType: "application/ics; charset=UTF-8; method=REQUEST",
+            contentDisposition: "inline",
+          };
+        });
+      }
+
+      let sentResult = null;
+      try {
+        sentResult = await smtpService().sendMailUsingSendInBlue(mailOptions);
+      } catch (err) {
+        console.log(err);
+      }
+
+      return sentResult;
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const addEvent = async (req, res) => {
@@ -294,11 +311,16 @@ const UserController = () => {
         }
       );
 
-      generateAttendEmail(user, event.userTimezone, affectedRows);
+      const affectedRows_ = {
+        ...affectedRows.dataValues,
+        startAndEndTimes: compact(affectedRows.dataValues.startAndEndTimes),
+      };
+
+      generateAttendEmail(user, event.userTimezone, affectedRows_);
 
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
@@ -341,12 +363,18 @@ const UserController = () => {
           where: { id: event.id },
           returning: true,
           plain: true,
+          raw: true,
         }
       );
 
+      const affectedRows_ = {
+        ...affectedRows,
+        startAndEndTimes: compact(affectedRows.startAndEndTimes),
+      };
+
       return res
         .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
     } catch (error) {
       console.log(error);
       return res
@@ -1441,6 +1469,60 @@ const UserController = () => {
     }
   };
 
+  const acceptTermsConditionGConference = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          acceptTermsConditionGConference: true,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            to: affectedRows.email,
+            subject: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.subject,
+            html: LabEmails.USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE.body(
+              affectedRows
+            ),
+          };
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      await User.update(
+        {
+          dateSendEmailTermsConditionGConference: moment(),
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -1471,6 +1553,7 @@ const UserController = () => {
     changePassword,
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
+    acceptTermsConditionGConference,
   };
 };
 

@@ -18,6 +18,10 @@ const privateRoutes = {
   "GET /business-partner/resource/:id":
     "BusinessPartnerController.getBusinessPartnerResource",
   "POST /business-partner/add-resources/": "BusinessPartnerController.create",
+  "DELETE /business-partner/resource/:id":
+    "BusinessPartnerController.deleteResource",
+  "PUT /business-partner/resource/:id":
+    "BusinessPartnerController.updateResource",
   "GET /business-partner/documents/":
     "BusinessPartnerController.getBusinessPartnerDocuments",
   "POST /business-partner/create-document/":
@@ -232,6 +236,8 @@ const privateRoutes = {
   "POST /marketplace-profiles": "MarketplaceProfileController.add",
   "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
+  "PUT /user/accept-terms-condition-g-conference/:id":
+    "UserController.acceptTermsConditionGConference",
 };
 
 module.exports = privateRoutes;

@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       title: DataTypes.STRING,
       url: DataTypes.STRING,
       description: DataTypes.STRING,
+      isFree: DataTypes.BOOLEAN,
     },
     {
       sequelize,

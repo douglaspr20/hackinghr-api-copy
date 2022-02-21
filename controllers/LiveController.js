@@ -80,6 +80,7 @@ const LiveController = () => {
         "event",
         "title",
         "description",
+        "isFree",
       ];
       for (let item of fields) {
         if (params.hasOwnProperty(item)) {
