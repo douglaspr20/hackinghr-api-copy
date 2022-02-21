@@ -84,27 +84,27 @@ const AdvertisementController = () => {
         UserId: id,
       };
 
-      // const advertisementsCount = await Advertisement.count({
-      //   where: {
-      //     [Op.or]: [
-      //       {
-      //         datesBetweenStartDateAndEndDate: {
-      //           [Op.contains]: [transformedData.startDate],
-      //         },
-      //       },
-      //       {
-      //         datesBetweenStartDateAndEndDate: {
-      //           [Op.contains]: [transformedData.endDate],
-      //         },
-      //       },
-      //     ],
-      //     page: transformedData.page,
-      //   },
-      // });
+      const advertisementsCount = await Advertisement.count({
+        where: {
+          [Op.or]: [
+            {
+              datesBetweenStartDateAndEndDate: {
+                [Op.contains]: [transformedData.startDate],
+              },
+            },
+            {
+              datesBetweenStartDateAndEndDate: {
+                [Op.contains]: [transformedData.endDate],
+              },
+            },
+          ],
+          page: transformedData.page,
+        },
+      });
 
-      // if (advertisementsCount === 3) {
-      //   return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Already full" });
-      // }
+      if (advertisementsCount === 3 && data.page === "home") {
+        return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Already full" });
+      }
 
       const adBracket = price.find(
         (p) => p.min <= data.adDurationByDays && p.max >= data.adDurationByDays
@@ -118,6 +118,13 @@ const AdvertisementController = () => {
 
       const advertisement = await Advertisement.create(transformedData);
 
+      // const advertisements = await Advertisement.findAll({
+      //   where: {
+      //     UserId: id,
+      //   },
+      //   order: [["createdAt", "ASC"]],
+      // });
+
       return res.status(HttpCodes.OK).json({ advertisement });
     } catch (error) {
       console.log(error);
@@ -129,16 +136,10 @@ const AdvertisementController = () => {
   };
 
   const getAllActiveAdvertisements = async (req, res) => {
-    const dateToday = moment().tz("America/Los_Angeles").startOf("day");
+    // const dateToday = moment().tz("America/Los_Angeles").startOf("day");
 
     try {
-      const advertisements = await Advertisement.findAll({
-        where: {
-          startDate: {
-            [Op.lt]: dateToday,
-          },
-        },
-      });
+      const advertisements = await Advertisement.findAll();
 
       return res.status(HttpCodes.OK).json({ advertisements });
     } catch (error) {
