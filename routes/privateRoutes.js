@@ -237,6 +237,7 @@ const privateRoutes = {
   "GET /ads/:UserId": "AdvertisementController.getAdvertisementByAdvertiser",
   "POST /ad": "AdvertisementController.createAdvertisement",
   "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
+  "GET /matchmake": "MatchmakingController.getMatchmake",
 };
 
 module.exports = privateRoutes;
