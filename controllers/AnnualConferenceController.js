@@ -129,10 +129,11 @@ const AnnualConferenceController = () => {
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
-        public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
-        FROM public."AnnualConferences"
-        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker, COUNT(public."Users".id) AS totalUsersJoined
+      FROM public."AnnualConferences"
+      LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
+      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where} GROUP BY public."AnnualConferences".id, public."Instructors".id`;
 
       const sessionList = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
