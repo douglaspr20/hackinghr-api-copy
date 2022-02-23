@@ -3,6 +3,7 @@ const moment = require("moment-timezone");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
+const { isValidURL } = require("../utils/profile");
 
 const Advertisement = db.Advertisement;
 
@@ -61,6 +62,7 @@ const AdvertisementController = () => {
         where: {
           UserId,
         },
+        order: [["createdAt", "ASC"]],
       });
 
       return res.status(HttpCodes.OK).json({ advertisements });
@@ -84,27 +86,27 @@ const AdvertisementController = () => {
         UserId: id,
       };
 
-      const advertisementsCount = await Advertisement.count({
-        where: {
-          [Op.or]: [
-            {
-              datesBetweenStartDateAndEndDate: {
-                [Op.contains]: [transformedData.startDate],
-              },
-            },
-            {
-              datesBetweenStartDateAndEndDate: {
-                [Op.contains]: [transformedData.endDate],
-              },
-            },
-          ],
-          page: transformedData.page,
-        },
-      });
+      // const advertisementsCount = await Advertisement.count({
+      //   where: {
+      //     [Op.or]: [
+      //       {
+      //         datesBetweenStartDateAndEndDate: {
+      //           [Op.contains]: [transformedData.startDate],
+      //         },
+      //       },
+      //       {
+      //         datesBetweenStartDateAndEndDate: {
+      //           [Op.contains]: [transformedData.endDate],
+      //         },
+      //       },
+      //     ],
+      //     page: transformedData.page,
+      //   },
+      // });
 
-      if (advertisementsCount === 3 && data.page === "home") {
-        return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Already full" });
-      }
+      // if (advertisementsCount === 3 && data.page === "home") {
+      //   return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Already full" });
+      // }
 
       const adBracket = price.find(
         (p) => p.min <= data.adDurationByDays && p.max >= data.adDurationByDays
@@ -126,6 +128,51 @@ const AdvertisementController = () => {
       // });
 
       return res.status(HttpCodes.OK).json({ advertisement });
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
+  const editAdvertisement = async (req, res) => {
+    const _advertisement = req.body;
+    const { AdvertisementId } = req.params;
+
+    try {
+      const advertisement = await Advertisement.findOne({
+        where: {
+          id: AdvertisementId,
+        },
+      });
+
+      if (!advertisement) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Advertisement not found." });
+      }
+
+      if (_advertisement.image && !isValidURL(_advertisement.image)) {
+        _advertisement.adContentLink =
+          await s3Service().getAdvertisementImageUrl("", _advertisement.image);
+      }
+
+      const [numberOfAffectedRows, affectedRows] = await Advertisement.update(
+        _advertisement,
+        {
+          where: {
+            id: AdvertisementId,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -184,6 +231,7 @@ const AdvertisementController = () => {
     createAdvertisement,
     getAdvertisementById,
     getAllActiveAdvertisements,
+    editAdvertisement,
   };
 };
 
