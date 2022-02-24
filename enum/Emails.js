@@ -1115,4 +1115,8 @@ module.exports = {
     <br />
     `,
   },
+  MATCHMAKE_USERS: {
+    subject: () => `Match user`,
+    body: () => `Match test`,
+  },
 };

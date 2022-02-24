@@ -239,6 +239,7 @@ const privateRoutes = {
   "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
   "GET /matchmake": "MatchmakingController.getMatchmake",
   "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
+  "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
 };
 
 module.exports = privateRoutes;
