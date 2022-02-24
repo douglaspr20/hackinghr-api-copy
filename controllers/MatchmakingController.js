@@ -4,6 +4,7 @@ const { isEmpty } = require("lodash");
 const HttpCodes = require("http-codes");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
+const moment = require("moment-timezone");
 
 const User = db.User;
 
@@ -11,7 +12,12 @@ const MatchmakingController = () => {
   const getMatchmake = async (req, res) => {
     const filters = req.query;
 
-    let where = { percentOfCompletion: 100 };
+    let where = {
+      percentOfCompletion: 100,
+      matchedCount: {
+        [Op.lt]: 5,
+      },
+    };
 
     try {
       if (!isEmpty(filters)) {
@@ -71,6 +77,19 @@ const MatchmakingController = () => {
         where,
       });
 
+      const matchedUserIds = matchmakingUsers.map((user) => user.id);
+
+      await User.increment(
+        {
+          matchedCount: +1,
+        },
+        {
+          where: {
+            id: matchedUserIds,
+          },
+        }
+      );
+
       return res.status(HttpCodes.OK).json({ matchmakingUsers });
     } catch (error) {
       console.log(error);
@@ -119,9 +138,25 @@ const MatchmakingController = () => {
     }
   };
 
+  const resetMatchedCount = async () => {
+    try {
+      await User.update(
+        { matchedCount: 0 },
+        {
+          where: {
+            percentOfCompletion: 100,
+          },
+        }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     getMatchmake,
     sendMatchEmail,
+    resetMatchedCount,
   };
 };
 
