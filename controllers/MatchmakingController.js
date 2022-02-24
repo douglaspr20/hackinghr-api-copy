@@ -19,6 +19,8 @@ const MatchmakingController = () => {
       },
     };
 
+    console.log(filters, "filters");
+
     try {
       if (!isEmpty(filters)) {
         if (!isEmpty(JSON.parse(filters.countries))) {
