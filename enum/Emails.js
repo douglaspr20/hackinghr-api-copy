@@ -1121,4 +1121,8 @@ module.exports = {
     subject: () => `Match user`,
     body: () => `Match test`,
   },
+  USER_BECOME_ADVERTISER: {
+    subject: () => `Advertiser`,
+    body: () => `You are now an advertiser`,
+  },
 };
