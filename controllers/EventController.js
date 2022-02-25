@@ -472,14 +472,31 @@ const EventController = () => {
   const getLiveEvents = async (req, res) => {
     const { id } = req.user;
     try {
-      let where = {
-        usersAssistence: { [Op.overlap]: [id] },
-      };
-
       const events = await Event.findAll({
-        where,
+        // where: where2,
       });
-      return res.status(HttpCodes.OK).json({ events });
+      const eventsId = [];
+      const eventsToShowFilter = [];
+      const filterEvents = events.filter(
+        (item) => item.usersAssistence.length !== 0
+      );
+      const usersAssistenceSelected = filterEvents.map((item) => {
+        eventsId.push(item.id);
+        return item.usersAssistence[0];
+      });
+      const usersAssistence = usersAssistenceSelected.map((el) =>
+        el.map((item) => JSON.parse(item))
+      );
+      usersAssistence[0].map(
+        (item) =>
+          item.usersAssistence?.length > 0 &&
+          item.usersAssistence.map((el) => el === id && item)
+      );
+
+      events.map((item) =>
+        eventsId.map((el) => el === item.id && eventsToShowFilter.push(item))
+      );
+      return res.status(HttpCodes.OK).json({ events: eventsToShowFilter });
     } catch (err) {
       console.log(err);
       return res
@@ -525,9 +542,11 @@ const EventController = () => {
   };
 
   const updateEventUserAssistence = async (req, res) => {
-    const { title } = req.params;
+    const { id: eventId } = req.params;
     const { id: userId } = req.token;
-    if (title && userId) {
+    const { body } = req;
+    const EventId = Number(eventId);
+    if (EventId && userId) {
       try {
         const { dataValues: user } = await User.findOne({
           where: { id: userId },
@@ -539,14 +558,14 @@ const EventController = () => {
             .json({ msg: "Host user not found" });
         }
 
-        let prevEvent = await Event.findOne({ where: { title } });
+        let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
-            usersAssistence: [...prevEvent.usersAssistence, userId],
+            usersAssistence: [body.usersAssistence],
           },
           {
-            where: { title },
+            where: { id: EventId },
             returning: true,
             plain: true,
           }
@@ -567,7 +586,7 @@ const EventController = () => {
 
         return res.status(HttpCodes.OK).json({ affectedRows });
       } catch (error) {
-        console.log(err);
+        console.log(error);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
