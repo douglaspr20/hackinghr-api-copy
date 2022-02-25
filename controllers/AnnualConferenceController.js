@@ -4,7 +4,9 @@ const { Op, Sequelize } = require("sequelize");
 const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
 const socketService = require("../services/socket.service");
+const TimeZoneList = require("../enum/TimeZoneList");
 const SocketEventTypes = require("../enum/SocketEventTypes");
+const { convertToLocalTime } = require("../utils/format");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
@@ -120,17 +122,19 @@ const AnnualConferenceController = () => {
       }
 
       if (meta) {
-        where += `AND (public."AnnualConferences"."title" LIKE '%${meta}%' OR public."AnnualConferences"."description" LIKE '%${meta}%' 
-        OR public."AnnualConferences"."type" LIKE '%${meta}%' OR public."Instructors"."name" LIKE '%${meta}%' 
-        OR public."Instructors"."description" LIKE '%${meta}%' OR public."AnnualConferences".categories::text LIKE '%${meta}%' 
-        OR public."AnnualConferences".meta LIKE '%${meta}%')`;
+        where += `AND (public."AnnualConferences"."title" ILIKE '%${meta}%' OR public."AnnualConferences"."description" ILIKE '%${meta}%' 
+        OR public."AnnualConferences"."type" ILIKE '%${meta}%' OR public."Instructors"."name" ILIKE '%${meta}%' 
+        OR public."Instructors"."description" ILIKE '%${meta}%' OR public."AnnualConferences".categories::text ILIKE '%${meta}%' 
+        OR public."AnnualConferences".meta ILIKE '%${meta}%')`;
       }
 
       const query = `
-        SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
-        public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
-        FROM public."AnnualConferences"
-        LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[]) ${where}`;
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker, COUNT(public."Users".id) AS totalUsersJoined
+      FROM public."AnnualConferences"
+      LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
+      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where} 
+      GROUP BY public."AnnualConferences".id, public."Instructors".id`;
 
       const sessionList = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
@@ -335,19 +339,22 @@ const AnnualConferenceController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
       }
-
       const timezone = TimeZoneList.find(
         (timezone) =>
-          timezone.value === userTimezone || timezone.text === userTimezone
+          timezone.value === annualConference.timezone ||
+          timezone.text === annualConference.timezone
       );
 
-      const targetBonfireStartDate = moment
-        .utc(annualConference.startTime)
-        .tz(timezone.utc[0]);
+      let targetBonfireStartDate = moment(annualConference.startTime)
+        .tz(timezone.utc[0])
+        .utcOffset(timezone.offset, true);
 
-      const targetBonfireEndDate = moment
-        .utc(annualConference.endTime)
-        .tz(timezone.utc[0]);
+      let targetBonfireEndDate = moment(annualConference.endTime)
+        .tz(timezone.utc[0])
+        .utcOffset(timezone.offset, true);
+
+      targetBonfireStartDate = convertToLocalTime(targetBonfireStartDate);
+      targetBonfireEndDate = convertToLocalTime(targetBonfireEndDate);
 
       let startDate = targetBonfireStartDate.format("YYYY-MM-DD");
 

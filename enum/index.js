@@ -3,9 +3,11 @@ const AWSConfig = require("./AWSConfig");
 const FilterSettings = require("./FilterSettings");
 const ReviewStatus = require("./ReviewStatus");
 const EmailContent = require("./EmailContent");
-const LabEmails = require("./Emails") ;
+const LabEmails = require("./Emails");
 const Settings = require("./Settings");
 const ConferenceType = require("./ConferenceType");
+const JOB_BOARD = require("./JobBoard");
+const TimeZoneList = require("./TimeZoneList");
 
 module.exports = {
   USER_ROLE,
@@ -16,4 +18,6 @@ module.exports = {
   LabEmails,
   Settings,
   ConferenceType,
+  JOB_BOARD,
+  TimeZoneList,
 };

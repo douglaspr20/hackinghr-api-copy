@@ -37,16 +37,27 @@ const NotificationController = () => {
     const { num, page } = req.query;
     const { user } = req;
 
+    let where = {
+      onlyFor: {
+        [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+      },
+    };
+
+    if (user.dataValues.isBusinessPartner !== "accepted") {
+      where = {
+        ...where,
+        type: {
+          [Op.notLike]: `%BusinessPartner%`,
+        },
+      };
+    }
+
     try {
       const notifications = await Notification.findAndCountAll({
         offset: (page - 1) * num,
         limit: num,
         order: [["createdAt", "DESC"]],
-        where: {
-          onlyFor: {
-            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
-          },
-        },
+        where,
       });
 
       const readCount = await Notification.count({
@@ -65,7 +76,6 @@ const NotificationController = () => {
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Bad Request: Notifications not found" });
       }
-
       return res.status(HttpCodes.OK).json({ notifications, readCount });
     } catch (error) {
       console.log(error);
@@ -172,17 +182,28 @@ const NotificationController = () => {
     const totalCount = await Notification.count();
 
     if (totalCount > MAX_NUMBER_OF_NOTIFICATION) {
-      const lastElement = await Notification.findAll({
+      const [lastElement] = await Notification.findAll({
         where: {
           onlyFor: {
-            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+            [Op.or]: [
+              { [Op.contains]: notification.onlyFor },
+              { [Op.contains]: [-1] },
+            ],
           },
         },
         offset: 0,
         limit: 1,
-        order: ["createdAt", "ASC"],
+        order: [["createdAt", "ASC"]],
+        raw: true,
       });
-      await lastElement.destroy();
+
+      if (lastElement) {
+        await Notification.destroy({
+          where: {
+            id: lastElement.id,
+          },
+        });
+      }
     }
 
     socketService().emit(SocketEventType.NEW_EVENT, newNotification);
@@ -193,6 +214,21 @@ const NotificationController = () => {
   const setNotificationsRead = async (req, res) => {
     const { notifications } = req.body;
     const { user } = req;
+
+    let where = {
+      onlyFor: {
+        [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+      },
+    };
+
+    if (user.dataValues.isBusinessPartner !== "accepted") {
+      where = {
+        ...where,
+        type: {
+          [Op.notLike]: `%BusinessPartner%`,
+        },
+      };
+    }
 
     try {
       await Notification.update(
@@ -213,11 +249,7 @@ const NotificationController = () => {
       );
 
       const totalCount = await Notification.count({
-        where: {
-          onlyFor: {
-            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
-          },
-        },
+        where,
       });
 
       const readCount = await Notification.count({
@@ -230,7 +262,6 @@ const NotificationController = () => {
           },
         },
       });
-
       return res.status(HttpCodes.OK).json({ unread: totalCount - readCount });
     } catch (error) {
       console.log(error);
@@ -244,6 +275,20 @@ const NotificationController = () => {
     const { notifications } = req.body;
     const { user } = req;
 
+    let where = {
+      onlyFor: {
+        [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
+      },
+    };
+
+    if (user.dataValues.isBusinessPartner !== "accepted") {
+      where = {
+        ...where,
+        type: {
+          [Op.notLike]: `%BusinessPartner%`,
+        },
+      };
+    }
     try {
       await Notification.update(
         {
@@ -261,13 +306,8 @@ const NotificationController = () => {
           },
         }
       );
-
       const totalCount = await Notification.count({
-        where: {
-          onlyFor: {
-            [Op.or]: [{ [Op.contains]: [user.id] }, { [Op.contains]: [-1] }],
-          },
-        },
+        where,
       });
 
       const readCount = await Notification.count({
@@ -280,7 +320,6 @@ const NotificationController = () => {
           },
         },
       });
-
       return res.status(HttpCodes.OK).json({ unread: totalCount - readCount });
     } catch (error) {
       console.log(error);

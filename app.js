@@ -9,7 +9,7 @@ const authPolicy = require("./policies/auth.policy");
 const { isEmpty } = require("lodash");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
-const JourneyController = require("./controllers/JourneyController");
+// const JourneyController = require("./controllers/JourneyController");
 const fileUpload = require("express-fileupload");
 const SkillCohortResourcesController = require("./controllers/SkillCohortResourcesController");
 const SkillCohortParticipantController = require("./controllers/SkillCohortParticipantController");
@@ -21,6 +21,8 @@ const SkillCohortResourceResponseAssessmentController = require("./controllers/S
 const JobPostController = require("./controllers/JobPostController");
 const UserController = require("./controllers/UserController");
 const ConversationController = require("./controllers/ConversationController");
+const WeeklyDigestController = require("./controllers/WeeklyDigestController");
+const MatchmakingController = require("./controllers/MatchmakingController");
 
 const moment = require("moment-timezone");
 
@@ -58,10 +60,12 @@ cron.schedule("25 * * * *", () => {
 });
 
 // Creating a cron job which runs on every day.
-cron.schedule("* 0 * * *", () => {
+// TO DO: Journey process will be reimplement.
+/*cron.schedule("* 0 * * *", () => {
   console.log("running a task every 1 day.");
   JourneyController().createNewItems();
 });
+*/
 
 // cron job that resets the assessment and comment strike to 0
 cron.schedule(
@@ -357,6 +361,41 @@ cron.schedule(
 //   }
 // );
 
+// Weekly Digest
+cron.schedule(
+  "0 0 * * *", // 12AM every day
+  // "0 0 * * 5", // 12AM every Friday
+  async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Weekly Digest****************");
+    await WeeklyDigestController().updateWeeklyDigestEmail();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+// User Matchmaking Count Reset
+cron.schedule(
+  "0 0 1 * *", // run every month
+  async () => {
+    const month = moment().format("M");
+
+    // checks if the current month is an odd number and executes the reset, basically reset every 2 months
+    if (+month % 2 === 1) {
+      console.log(
+        "****************User Matchmaking Count Reset****************"
+      );
+      await MatchmakingController().resetMatchedCount();
+    }
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
 // allow cross origin requests
 // configure to only allow requests from certain origins
 app.use(cors());
@@ -396,7 +435,10 @@ const usersOnline = {};
 
 const io = socketIo(server, {
   cors: {
-    origin: FEUrl.slice(0, FEUrl.length - 1),
+    origin: [
+      FEUrl.slice(0, FEUrl.length - 1),
+      FEUrl.slice(0, FEUrl.length - 1).replace("www.", ""),
+    ],
     methods: ["GET", "POST"],
   },
 });

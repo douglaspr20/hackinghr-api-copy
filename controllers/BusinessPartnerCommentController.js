@@ -1,72 +1,33 @@
 const db = require("../models");
 const { literal } = require("sequelize");
 const HttpCodes = require("http-codes");
-const NotificationController = require("../controllers/NotificationController");
+const NotificationController = require("./NotificationController");
 
-const PostComment = db.PostComment;
+const BusinessPartnerComment = db.BusinessPartnerComment;
 
-const PostCommentController = () => {
+const BusinessPartnerCommentController = () => {
   /**
-   * Method to add PostComment object
+   * Method to add BusinessPartnerComment object
    * @param {*} req
    * @param {*} res
    */
   const add = async (req, res) => {
     try {
       let data = { ...req.body };
-      const { firstName, lastName } = req.user;
       data.UserId = req.user.id;
-      const postComment = await PostComment.create(data);
+      const businessPartnerComment = await BusinessPartnerComment.create(data);
 
-      const notifications = [];
-
-      if (data.isAComment && data.postOwnerUserId !== data.UserId) {
-        const notif = NotificationController().createNotification({
-          message: `${firstName} ${lastName} commented on your post.`,
-          type: "post",
+      if (businessPartnerComment) {
+        await NotificationController().createNotification({
+          message: `New Comment "${businessPartnerComment.comment}" was created.`,
+          type: "comment",
           meta: {
-            ...postComment,
+            ...businessPartnerComment,
           },
-          onlyFor: [data.postOwnerUserId],
+          UserId: req.user.id,
+          onlyFor: [-1],
         });
-
-        notifications.push(notif);
       }
-
-      if (!data.isAComment) {
-        if (data.postCommentUserId !== data.UserId) {
-          const commentOwnerNotif = NotificationController().createNotification(
-            {
-              message: `${firstName} ${lastName} replied to your comment.`,
-              type: "post",
-              meta: {
-                ...postComment,
-              },
-              onlyFor: [data.postCommentUserId],
-            }
-          );
-
-          notifications.push(commentOwnerNotif);
-        }
-
-        if (
-          data.postOwnerUserId !== data.postCommentUserId &&
-          data.postOwnerUserId !== data.UserId
-        ) {
-          const postOwnerNotif = NotificationController().createNotification({
-            message: `Someone replied to a comment on your post.`,
-            type: "post",
-            meta: {
-              ...postComment,
-            },
-            onlyFor: [data.postOwnerUserId],
-          });
-
-          notifications.push(postOwnerNotif);
-        }
-      }
-
-      await Promise.all(notifications);
 
       return res.status(HttpCodes.OK).send();
     } catch (error) {
@@ -78,23 +39,23 @@ const PostCommentController = () => {
   };
 
   /**
-   * Method to get comments bu post
+   * Method to get comments bu businessPartners
    * @param {*} req
    * @param {*} res
    */
   const getAll = async (req, res) => {
     const filter = req.query;
     try {
-      let where = { PostCommentId: null };
+      let where = {};
 
-      if (filter.postId) {
+      if (filter.businessPartnerId) {
         where = {
           ...where,
-          PostId: filter.postId,
+          BusinessPartnerId: filter.businessPartnerId,
         };
       }
 
-      let comments = await PostComment.findAndCountAll({
+      let comments = await BusinessPartnerComment.findAndCountAll({
         where,
         limit: filter.num,
         order: [["createdAt", "DESC"]],
@@ -105,7 +66,7 @@ const PostCommentController = () => {
                     SELECT UserFN."img"
                     FROM "Users" as UserFN
                     WHERE
-                      UserFN.id = "PostComment"."UserId"
+                      UserFN.id = "BusinessPartnerComment"."UserId"
                 )`),
               "userImg",
             ],
@@ -114,7 +75,7 @@ const PostCommentController = () => {
                     SELECT UserFN."firstName"
                     FROM "Users" as UserFN
                     WHERE
-                      UserFN.id = "PostComment"."UserId"
+                      UserFN.id = "BusinessPartnerComment"."UserId"
                 )`),
               "userFirstName",
             ],
@@ -123,7 +84,7 @@ const PostCommentController = () => {
                     SELECT UserFN."lastName"
                     FROM "Users" as UserFN
                     WHERE
-                      UserFN.id = "PostComment"."UserId"
+                      UserFN.id = "BusinessPartnerComment"."UserId"
                 )`),
               "userLastName",
             ],
@@ -132,8 +93,11 @@ const PostCommentController = () => {
       });
 
       let requests = comments.rows.map((pc) =>
-        PostComment.findAll({
-          where: { PostCommentId: pc.dataValues.id, PostId: filter.postId },
+        BusinessPartnerComment.findAll({
+          where: {
+            // businessPartnerCommentId: pc.dataValues.id,
+            BusinessPartnerId: filter.businessPartnerId,
+          },
           order: [["createdAt", "DESC"]],
           attributes: {
             include: [
@@ -142,7 +106,7 @@ const PostCommentController = () => {
                     SELECT UserFN."img"
                     FROM "Users" as UserFN
                     WHERE
-                      UserFN.id = "PostComment"."UserId"
+                      UserFN.id = "BusinessPartnerComment"."UserId"
                 )`),
                 "userImg",
               ],
@@ -151,7 +115,7 @@ const PostCommentController = () => {
                     SELECT UserFN."firstName"
                     FROM "Users" as UserFN
                     WHERE
-                      UserFN.id = "PostComment"."UserId"
+                      UserFN.id = "BusinessPartnerComment"."UserId"
                 )`),
                 "userFirstName",
               ],
@@ -160,7 +124,7 @@ const PostCommentController = () => {
                     SELECT UserFN."lastName"
                     FROM "Users" as UserFN
                     WHERE
-                      UserFN.id = "PostComment"."UserId"
+                      UserFN.id = "BusinessPartnerComment"."UserId"
                 )`),
                 "userLastName",
               ],
@@ -170,7 +134,7 @@ const PostCommentController = () => {
       );
       let results = await Promise.all(requests);
       results.map((item, index) => {
-        comments.rows[index].dataValues["PostComments"] = item;
+        comments.rows[index].dataValues["BusinessPartnerComments"] = item;
       });
 
       if (!comments) {
@@ -189,19 +153,15 @@ const PostCommentController = () => {
   };
 
   /**
-   * Method to delete PostComment object
+   * Method to delete BusinessPartnerComment object
    * @param {*} req
    * @param {*} res
    */
   const remove = async (req, res) => {
     let { id } = req.params;
-
     if (id) {
       try {
-        await PostComment.destroy({
-          where: { PostCommentId: id },
-        });
-        await PostComment.destroy({
+        await BusinessPartnerComment.destroy({
           where: { id },
         });
         return res.status(HttpCodes.OK).send();
@@ -225,4 +185,4 @@ const PostCommentController = () => {
   };
 };
 
-module.exports = PostCommentController;
+module.exports = BusinessPartnerCommentController;

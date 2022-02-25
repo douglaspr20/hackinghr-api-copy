@@ -27,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.SkillCohortParticipant);
       User.hasMany(models.SkillCohortGroupingMember);
       User.hasMany(models.JobPost);
+      User.hasMany(models.Advertisement);
       User.hasOne(models.MarketPlaceProfile);
     }
   }
@@ -104,6 +105,7 @@ module.exports = (sequelize, DataTypes) => {
       recentWorkArea: DataTypes.ARRAY(DataTypes.STRING),
       sizeOfOrganization: DataTypes.STRING,
       councilMember: DataTypes.BOOLEAN,
+      isBusinessPartner: DataTypes.STRING,
       bonfires: {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
@@ -128,6 +130,12 @@ module.exports = (sequelize, DataTypes) => {
       recruiterSubscription_startdate: DataTypes.DATE,
       recruiterSubscription_enddate: DataTypes.DATE,
       isOnline: DataTypes.BOOLEAN,
+      acceptTermsConditionGConference: DataTypes.BOOLEAN,
+      dateSendEmailTermsConditionGConference: DataTypes.DATE,
+      matchedCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,

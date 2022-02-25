@@ -41,6 +41,7 @@
     "request": "^2.88.2",
     "sequelize": "^6.3.5",
     "sequelize-cli": "^6.2.0",
+    "sib-api-v3-sdk": "^8.2.1",
     "socket.io": "^4.1.2",
     "stripe": "^8.130.0",
     "wysiwyg-editor-node-sdk": "^4.0.3",

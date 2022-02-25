@@ -345,42 +345,25 @@ const LearningController = () => {
 
   const getAllEventVideos = async (req, res) => {
     const user = req.user;
-    const query = req.query;
-
-    let where = {
-      EventId: {
-        [Op.not]: null,
-      },
-    };
 
     try {
-      if (query.category && !isEmpty(JSON.parse(query.category))) {
-        where = {
-          ...where,
-          topics: {
-            [Op.overlap]: JSON.parse(query.category),
-          },
-        };
-      }
-
-      const libraries = await Library.findAndCountAll({
-        where,
-        offset: (query.page - 1) * query.num,
-        limit: query.num,
-        order: [["createdAt", "DESC"]],
+      const events = await Event.findAll({
+        attributes: ["id", "title", "ticket"],
         include: {
-          attributes: [],
-          model: Event,
+          model: Library,
           where: {
-            users: {
-              [Op.contains]: [user.id],
+            EventId: {
+              [Op.not]: null,
             },
+            contentType: "video",
           },
           required: true,
+          order: [["createdAt", "DESC"]],
         },
+        order: [["createdAt", "DESC"]],
       });
 
-      return res.status(HttpCodes.OK).json({ libraries });
+      return res.status(HttpCodes.OK).json({ events });
     } catch (error) {
       console.error(error);
       return res

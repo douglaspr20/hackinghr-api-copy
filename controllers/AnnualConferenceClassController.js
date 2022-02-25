@@ -1,5 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const s3Service = require("../services/s3.service");
 const Sequelize = require("sequelize");
 
 const AnnualConferenceClass = db.AnnualConferenceClass;
@@ -13,9 +14,9 @@ const AnnualConferenceClassController = () => {
   const getAll = async (req, res) => {
     try {
       let annualConferenceClass = await AnnualConferenceClass.findAll({
-        order: [["createdAt", "DESC"]],
+        order: [["AnnualConferenceId", "DESC"]],
       });
-      if (!courseClass) {
+      if (!annualConferenceClass) {
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
@@ -125,13 +126,36 @@ const AnnualConferenceClassController = () => {
 
     if (id) {
       try {
-        let data = {};
-        let fields = ["title", "description", "videoUrl", "duration", "topics"];
-        for (let item of fields) {
-          if (body[item]) {
-            data = { ...data, [item]: body[item] };
-          }
-        }
+        const audioFileType = body.audioFileUrl.match(
+          /[^:]\w+\/[\w-+\d.]+(?=;|,)/
+        )[0];
+
+        const documentFileType = body.documentFileUrl.match(
+          /[^:]\w+\/[\w-+\d.]+(?=;|,)/
+        )[0];
+
+        const { Location: audioFileUrl, key: documentFileName } =
+          await s3Service().uploadFile(
+            body.audioFileUrl,
+            audioFileType,
+            body.title
+          );
+
+        const { Location: documentFileUrl, key: audioFileName } =
+          await s3Service().uploadFile(
+            body.documentFileUrl,
+            documentFileType,
+            body.title
+          );
+
+        const data = {
+          ...body,
+          documentFileUrl,
+          audioFileUrl,
+          documentFileName,
+          audioFileName,
+        };
+
         await AnnualConferenceClass.update(data, {
           where: { id },
         });

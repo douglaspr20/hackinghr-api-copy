@@ -6,7 +6,6 @@ const SocketEventType = require("../enum/SocketEventTypes");
 const Live = db.Live;
 
 const LiveController = () => {
-
   /**
    * Method to get Live object
    * @param {*} req
@@ -15,7 +14,7 @@ const LiveController = () => {
   const get = async (req, res) => {
     try {
       const live = await Live.findAll({
-        limit: 1
+        limit: 1,
       });
 
       if (live.length > 0) {
@@ -33,32 +32,30 @@ const LiveController = () => {
 
   /**
    * Method to save Live object
-   * @param {*} req 
-   * @param {*} res 
+   * @param {*} req
+   * @param {*} res
    */
   const save = async (req, res) => {
     try {
       const live = await Live.findAll({
-        limit: 1
+        limit: 1,
       });
       if (live.length > 0) {
         update(live[0].id, req.body);
       } else {
         add(req.body);
       }
-      
+
       socketService().emit(SocketEventType.LIVE_CHANGE);
 
-      return res
-        .status(HttpCodes.OK)
-        .send();
+      return res.status(HttpCodes.OK).send();
     } catch (error) {
       console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
     }
-  }
+  };
 
   /**
    * Method to add Live object
@@ -76,21 +73,15 @@ const LiveController = () => {
   const update = async (id, params) => {
     try {
       let data = {};
-      let fields = [
-        "live",
-        "url",
-        "title",
-        "description",
-      ];
+      let fields = ["live", "url", "title", "description", "isFree"];
       for (let item of fields) {
         if (params.hasOwnProperty(item)) {
           data = { ...data, [item]: params[item] };
         }
       }
       await Live.update(data, {
-        where: { id }
+        where: { id },
       });
-
     } catch (error) {
       console.log(error);
     }
