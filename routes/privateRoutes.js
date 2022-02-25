@@ -236,6 +236,15 @@ const privateRoutes = {
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
   "PUT /user/accept-terms-condition-g-conference/:id":
     "UserController.acceptTermsConditionGConference",
+  "GET /users/count-all": "UserController.countAllUsers",
+  "GET /ads-by-page": "AdvertisementController.getAdvertisementsTodayByPage",
+  "GET /ads/active": "AdvertisementController.getAllActiveAdvertisements",
+  "GET /ads/:UserId": "AdvertisementController.getAdvertisementByAdvertiser",
+  "POST /ad": "AdvertisementController.createAdvertisement",
+  "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
+  "GET /matchmake": "MatchmakingController.getMatchmake",
+  "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
+  "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
 };
 
 module.exports = privateRoutes;

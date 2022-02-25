@@ -265,6 +265,16 @@ const s3Service = () => {
     return url;
   };
 
+  const getAdvertisementImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(
+      S3.ADVERTISEMENT_FOLDER,
+      prevImg,
+      base64Image
+    );
+
+    return url;
+  };
+
   return {
     getImageUrl,
     getUserImageUrl,
@@ -283,6 +293,7 @@ const s3Service = () => {
     uploadResume,
     deleteResume,
     getJobPostImageUrl,
+    getAdvertisementImageUrl,
     uploadFile,
   };
 };

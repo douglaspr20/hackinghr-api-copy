@@ -27,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.SkillCohortParticipant);
       User.hasMany(models.SkillCohortGroupingMember);
       User.hasMany(models.JobPost);
+      User.hasMany(models.Advertisement);
       User.hasOne(models.MarketPlaceProfile);
     }
   }
@@ -130,6 +131,10 @@ module.exports = (sequelize, DataTypes) => {
       recruiterSubscription_enddate: DataTypes.DATE,
       acceptTermsConditionGConference: DataTypes.BOOLEAN,
       dateSendEmailTermsConditionGConference: DataTypes.DATE,
+      matchedCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,

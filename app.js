@@ -20,6 +20,7 @@ const SkillCohortResourceResponseController = require("./controllers/SkillCohort
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
 const WeeklyDigestController = require("./controllers/WeeklyDigestController");
+const MatchmakingController = require("./controllers/MatchmakingController");
 
 const moment = require("moment-timezone");
 
@@ -366,6 +367,25 @@ cron.schedule(
     );
     console.log("****************Weekly Digest****************");
     await WeeklyDigestController().updateWeeklyDigestEmail();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+// User Matchmaking Count Reset
+cron.schedule(
+  "0 0 1 * *", // run every month
+  async () => {
+    const month = moment().format("M");
+
+    // checks if the current month is an odd number and executes the reset, basically reset every 2 months
+    if (+month % 2 === 1) {
+      console.log(
+        "****************User Matchmaking Count Reset****************"
+      );
+      await MatchmakingController().resetMatchedCount();
+    }
   },
   {
     timezone: "America/Los_Angeles",
