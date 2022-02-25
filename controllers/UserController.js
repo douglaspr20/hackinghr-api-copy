@@ -704,6 +704,32 @@ const UserController = () => {
     const { id } = req.params;
 
     try {
+      const session = await AnnualConference.findOne({
+        where: {
+          id,
+        },
+      });
+
+      let totalUsers;
+
+      if (session.type === "Roundtable") {
+        totalUsers = await User.findAndCountAll({
+          where: {
+            sessionsJoined: {
+              [Op.overlap]: [id],
+            },
+          },
+          offset: 10,
+          limit: 2,
+        });
+      }
+
+      if (totalUsers.count >= 30) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "This session has reached the limit of users that can join",
+        });
+      }
+
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessionsJoined: Sequelize.fn(
