@@ -133,7 +133,8 @@ const AnnualConferenceController = () => {
       public."Instructors".image, public."Instructors"."description" as descriptionSpeaker, COUNT(public."Users".id) AS totalUsersJoined
       FROM public."AnnualConferences"
       LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
-      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where} GROUP BY public."AnnualConferences".id, public."Instructors".id`;
+      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where} 
+      GROUP BY public."AnnualConferences".id, public."Instructors".id`;
 
       const sessionList = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
