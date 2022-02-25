@@ -21,6 +21,8 @@ const { isEmpty, compact } = require("lodash");
 const { LabEmails } = require("../enum");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const StripeController = require("./StripeController");
+const SocketEventTypes = require("../enum/SocketEventTypes");
+const socketService = require("../services/socket.service");
 const {
   ACCEPT_USER_APPLY_PARTNER_BUSSINESS,
   REJECT_USER_APPLY_PARTNER_BUSSINESS,
@@ -1495,6 +1497,37 @@ const UserController = () => {
     }
   };
 
+  const userIsOnline = async (id, online) => {
+    try {
+      const prevUser = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!prevUser) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request: data is wrong" });
+      }
+
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          isOnline: online,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return affectedRows;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  };
   const acceptTermsConditionGConference = async (req, res) => {
     const { id } = req.params;
     try {
@@ -1540,25 +1573,10 @@ const UserController = () => {
         }
       );
 
-      return res.status(HttpCodes.OK).json({ user: affectedRows });
+      return affectedRows;
     } catch (error) {
       console.log(error);
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Something went wrong" });
-    }
-  };
-
-  const countAllUsers = async (req, res) => {
-    try {
-      const userCount = await User.count();
-
-      return res.status(HttpCodes.OK).json({ userCount });
-    } catch (error) {
-      console.log(error);
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Something went wrong" });
+      return error;
     }
   };
 
@@ -1592,8 +1610,8 @@ const UserController = () => {
     changePassword,
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
+    userIsOnline,
     acceptTermsConditionGConference,
-    countAllUsers,
   };
 };
 
