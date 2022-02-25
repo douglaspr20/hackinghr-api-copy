@@ -8,6 +8,7 @@ const Podcast = db.Podcast;
 const Library = db.Library;
 const JobPost = db.JobPost;
 const User = db.User;
+const Channel = db.Channel;
 
 const WeeklyDigestController = () => {
   const getThisWeeksPodcastsByCreators = async (
@@ -15,7 +16,7 @@ const WeeklyDigestController = () => {
     dateSevenDaysFromDateToday
   ) => {
     try {
-      const podcasts = await Podcast.findAll({
+      let podcasts = await Podcast.findAll({
         attributes: ["id", "title", "channel"],
         where: {
           channel: {
@@ -37,6 +38,26 @@ const WeeklyDigestController = () => {
         raw: true,
       });
 
+      let channels = podcasts.map((podcast) => {
+        return Channel.findOne({
+          attributes: ["id", "name"],
+          where: {
+            id: podcast.channel,
+          },
+          raw: true,
+        });
+      });
+
+      channels = await Promise.all(channels);
+
+      podcasts = podcasts.map((podcast, index) => {
+        return {
+          ...podcast,
+          channel: channels[index].name,
+          channelId: channels[index].id,
+        };
+      });
+
       return podcasts;
     } catch (error) {
       console.log(error);
@@ -49,8 +70,8 @@ const WeeklyDigestController = () => {
     dateSevenDaysFromDateToday
   ) => {
     try {
-      const contents = await Library.findAll({
-        attributes: ["title", "link"],
+      let contents = await Library.findAll({
+        attributes: ["title", "link", "channel"],
         where: {
           channel: {
             [Op.ne]: null,
@@ -69,6 +90,26 @@ const WeeklyDigestController = () => {
           ],
         },
         raw: true,
+      });
+
+      let channels = contents.map((content) => {
+        return Channel.findOne({
+          attributes: ["id", "name"],
+          where: {
+            id: content.channel,
+          },
+          raw: true,
+        });
+      });
+
+      channels = await Promise.all(channels);
+
+      contents = contents.map((content, index) => {
+        return {
+          ...content,
+          channel: channels[index].name,
+          channelId: channels[index].id,
+        };
       });
 
       return contents;
@@ -94,7 +135,7 @@ const WeeklyDigestController = () => {
     }
   };
 
-  const sendWeeklyDigestEmail = async () => {
+  const updateWeeklyDigestEmail = async () => {
     const dateToday = moment()
       .tz("America/Los_Angeles")
       .startOf("day")
@@ -119,39 +160,18 @@ const WeeklyDigestController = () => {
       );
       const jobPosts = await getActiveJobPosts();
 
-      // let users = await User.findAll({
-      //   attributes: ["email"],
-      //   raw: true,
-      // });
-
-      // users = users.map((user) => {
-      //   email: user.email;
-      // });
-
-      //  "enrique@hackinghr.io"
-      const users = [
-        {
-          email: "lourencelinao13@gmail.com",
-        },
-        {
-          email: "enrique@hackinghr.io",
-        },
-      ];
-
       const podcastsEmailContent = podcasts.map((podcast) => {
-        const link = `${process.env.DOMAIN_URL}library-item/podcast/${podcast.id}?channel=${podcast.channel}`;
+        const link = `${process.env.DOMAIN_URL}library-item/podcast/${podcast.id}?channel=${podcast.channelId}`;
 
-        return {
-          title: podcast.title,
-          link,
-        };
+        return `
+          <p>${podcast.channel}: "${podcast.title}", <a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a></p>
+        `;
       });
 
       const contentsEmailContent = contents.map((content) => {
-        return {
-          title: content.title,
-          link: content.link,
-        };
+        return `
+          <p>${content.channel}: "${content.title}", <a href="${content.link}" target="_blank" rel="noopener noreferrer">${content.link}</a></p>
+        `;
       });
 
       const resources = [...podcastsEmailContent, ...contentsEmailContent];
@@ -169,23 +189,22 @@ const WeeklyDigestController = () => {
 
         const link = `${process.env.DOMAIN_URL}talent-marketplace/job-post/${jobPost.id}`;
 
-        return {
-          title: jobPost.jobTitle,
-          salary: jobPost.salaryRange,
-          location: formattedLocation,
-          level: jobPost.level,
-          link,
-        };
+        return `
+          <p>${jobPost.jobTitle}, ${jobPost.salaryRange}, ${formattedLocation}, ${jobPost.level}, <a href="${link}" target="_blank" rel="noopener noreferrer">${link}</a></p>
+        `;
       });
 
-      await sendInBlueService().sendWeeklyDigest(users, jobs, resources);
+      await sendInBlueService().updateWeeklyDigestEmailTemplate(
+        jobs,
+        resources
+      );
     } catch (error) {
       console.log(error);
     }
   };
 
   return {
-    sendWeeklyDigestEmail,
+    updateWeeklyDigestEmail,
   };
 };
 

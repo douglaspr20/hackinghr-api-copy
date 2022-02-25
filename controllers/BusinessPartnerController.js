@@ -8,6 +8,7 @@ const BusinessDocument = db.BusinessPartnerDocument;
 const User = db.User;
 
 const BusinessPartnerController = () => {
+  //Business partner members
   const getBusinessPartnerMembers = async (req, res) => {
     try {
       const businessPartnerMembers = await User.findAll({
@@ -28,23 +29,24 @@ const BusinessPartnerController = () => {
         .json({ msg: "Internal server error" });
     }
   };
-
+  //business paartners resources
   const getBusinessPartnerResource = async (req, res) => {
     const { id } = req.params;
     try {
-      const businessResource = await BusinessPartner.findOne({
-        where: {
-          id,
-        },
-      });
+      if (id) {
+        const businessResource = await BusinessPartner.findOne({
+          where: {
+            id,
+          },
+        });
 
-      if (!businessResource) {
-        return res
-          .status(HttpCodes.BAD_REQUEST)
-          .json({ msg: "Bad Request: channel not found." });
+        if (!businessResource) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: channel not found." });
+        }
+        return res.status(HttpCodes.OK).json({ businessResource });
       }
-
-      return res.status(HttpCodes.OK).json({ businessResource });
     } catch (error) {
       console.log(error);
       return res
@@ -72,6 +74,122 @@ const BusinessPartnerController = () => {
     }
   };
 
+  const updateResource = async (req, res) => {
+    const { id } = req.params;
+    const resource = req.body.payload;
+    try {
+      if (id) {
+        let resourceInfo = {
+          ...resource,
+        };
+
+        let prevResource = await BusinessPartner.findOne({
+          where: {
+            id,
+          },
+        });
+
+        if (!prevResource) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: event not found." });
+        }
+
+        prevResource = prevResource.toJSON();
+
+        if (resource.image && !isValidURL(resource.image)) {
+          resourceInfo.image = await s3Service().getEventImageUrl(
+            "",
+            resource.image
+          );
+
+          if (prevResource.image) {
+            await s3Service().deleteUserPicture(prevResource.image);
+          }
+        }
+        if (prevResource.image && !resource.image) {
+          await s3Service().deleteUserPicture(prevResource.image);
+        }
+
+        const [numberOfAffectedRows, affectedRows] =
+          await BusinessPartner.update(resourceInfo, {
+            where: { id },
+            returning: true,
+            plain: true,
+          });
+        return res.status(HttpCodes.OK).json({ affectedRows });
+      }
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const create = async (req, res) => {
+    const { body, user } = req;
+    if (body.title) {
+      try {
+        let businessInfo = {
+          ...body,
+          UserId: user.dataValues.id,
+          link: body.link ? `https://${body.link}` : "",
+        };
+
+        const newBusinessPartner = await BusinessPartner.create(businessInfo);
+
+        if (!newBusinessPartner) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        await NotificationController().createNotification({
+          message: `New Business Partner "${
+            newBusinessPartner.title || newBusinessPartner.title
+          }" was created.`,
+          type: "BusinessPartner",
+          meta: {
+            ...newBusinessPartner,
+          },
+          onlyFor: [-1],
+        });
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ businessPartner: newBusinessPartner });
+      } catch (error) {
+        console.log(error);
+        res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error", error: error });
+      }
+    }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Title is needed." });
+  };
+
+  const deleteResource = async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const resourceDeleted = await BusinessPartner.destroy({
+        where: { id },
+      });
+      if (resourceDeleted) {
+        res.status(HttpCodes.OK).json({ msg: "File deleted successfully" });
+      }
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "File not found!" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  //Business partner documents
   const getBusinessPartnerDocuments = async (req, res) => {
     try {
       const businessPartnerDocuments = await BusinessDocument.findAll({
@@ -186,59 +304,17 @@ const BusinessPartnerController = () => {
     }
   };
 
-  const create = async (req, res) => {
-    const { body } = req;
-    if (body.title) {
-      try {
-        let businessInfo = {
-          ...body,
-          link: body.link ? `https://${body.link}` : "",
-        };
-
-        const newBusinessPartner = await BusinessPartner.create(businessInfo);
-
-        if (!newBusinessPartner) {
-          return res
-            .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Internal server error" });
-        }
-
-        await NotificationController().createNotification({
-          message: `New Business Partner "${
-            newBusinessPartner.title || newBusinessPartner.title
-          }" was created.`,
-          type: "BusinessPartner",
-          meta: {
-            ...newBusinessPartner,
-          },
-          onlyFor: [-1],
-        });
-
-        return res
-          .status(HttpCodes.OK)
-          .json({ businessPartner: newBusinessPartner });
-      } catch (error) {
-        console.log(error);
-        res
-          .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Internal server error", error: error });
-      }
-    }
-
-    return res
-      .status(HttpCodes.BAD_REQUEST)
-      .json({ msg: "Bad Request: Title is needed." });
-  };
-
   return {
     getBusinessPartnerMembers,
-    getBusinessPartnerResource,
-    getBusinessPartnerDocuments,
     getAll,
+    getBusinessPartnerResource,
+    updateResource,
+    create,
+    deleteResource,
     createDocument,
+    getBusinessPartnerDocuments,
     uploadDocumentFile,
     deleteDocumentFile,
-    create,
   };
 };
 

@@ -550,7 +550,7 @@ module.exports = {
   },
   DAILY_RESOURCE: {
     subject: (cohort, resource) => `
-    Today’s Resource for Hacking HR’s Project X ${cohort.title} is ${resource.title}
+    Today’s Resource is: "${resource.title}"
     `,
     body: (user, cohort, resource) => `
     <p>
@@ -562,15 +562,17 @@ module.exports = {
       - Type: ${resource.type} <br>
       - Link: ${resource.resourceLink} <br>
       - Estimated duration: ${resource.duration} minutes <br>
-      -	You can enter the cohort dashboard here: https://www.hackinghrlab.io/projectx/${cohort.id}/resources
     </p>
     <p>
       Please remember to: <br> <br>
-      -	Provide your reflection to today’s resource: go to the Cohort Dashboard, click on JOIN THE CONVERSATION in the resource, and provide your reflection on the comment section. Your reflection should include: what you learned from the resource and how you can apply it in your own HR work or practice. <br>
-      -	Provide comments on other cohort participants' reflections: check out what other participants have said and REPLY with your feedback to their reflection.
+      -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
+      -	Assess the responses provided by other cohort participants
     </p>
     <p>
-      Please keep in mind that providing your daily reflection and comments on others' reflections is MANDATORY. You will be removed from the program if you miss to provide your reflection two times during a given week or if you miss to assess other participants’ reflections two times during a given week. 
+      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+    </p>
+    <p>
+      Please note: whether you receive the daily email or not, the resource will be posted in the Cohort dashboard in the Hacking HR LAB. Sometimes our emails get stuck somewhere in the strange world of the Internet. If that’s the case, please GO to the Cohort dashboard and review the resource. You still have to complete the daily activity, even if you don’t receive the daily resource email on a given day.  
     </p>
     <p>
       Thank you! 
@@ -1035,8 +1037,7 @@ module.exports = {
     `,
   },
   USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE: {
-    subject: `Thank you for acknowledging and accepting the rules of engagement as 
-    part of the Hacking HR 2022 Global Online Conference`,
+    subject: `Thank you for acknowledging and accepting the rules of engagement as part of the Hacking HR 2022 Global Online Conference`,
     body: (user) => `
     <p>
     Hi ${user.firstName},
@@ -1079,13 +1080,14 @@ module.exports = {
 
     <p>
     <strong>4. HR Credits:</strong> The conference offers more than 500 SHRM+HRCI credits. 
-    The credits ARE NOT FREE. You MUST UPGRADE your account and become a PREMIUM member to get access to the credits. 
-    Please do not email us asking for credit codes if you are not a PREMIUM user. If you are a PREMIUM user, 
-    this is how it’ll work: two weeks after the conference you will receive an email to download your personalized conference participation report. 
+    The credits ARE NOT FREE and NOT transferable or shareable. 
+    You MUST UPGRADE your account and become a PREMIUM member to get access to the credits. 
+    Please do not email us asking for credit codes if you are not a PREMIUM user. 
+    If you are a PREMIUM user, this is how it’ll work: two weeks after the conference 
+    you will receive an email to download your personalized conference participation report. 
     This report will include the sessions you joined and ONLY the corresponding HRCI/SHRM codes to those sessions. 
-    There is no need to email us asking for the codes. Please wait until the report is ready no later than March 28th. 
-    After the conference, you can continue watching sessions and claiming the credits of those sessions. 
-    These codes won't show in your report (as it will be post-event) but a button "CLAIM CREDITS" will show next to the session.
+    There is no need to email us asking for the codes. Also, please note that you SHOULD NOT share the codes with anyone. 
+    Please wait until the report is ready no later than March 28th.
     </p>
 
     <p>

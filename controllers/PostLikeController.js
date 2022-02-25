@@ -13,12 +13,13 @@ const PostLikeController = () => {
   const add = async (req, res) => {
     try {
       let data = { ...req.body };
+      const { firstName, lastName } = req.user;
       data.UserId = req.user.id;
       const postLike = await PostLike.create(data);
 
       if (data.UserId !== data.postOwnerUserId) {
         await NotificationController().createNotification({
-          message: `Someone liked your post.`,
+          message: `${firstName} ${lastName} liked your post.`,
           type: "post",
           meta: {
             ...postLike,

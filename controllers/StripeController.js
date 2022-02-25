@@ -209,8 +209,6 @@ const StripeController = () => {
           },
         });
 
-        newUserData = { ...newUserData, email };
-
         console.log(`***** memberShip: ${user.memberShip} ******`);
 
         const premiumData = await premiumValidation(user, customerInformation);
@@ -223,12 +221,10 @@ const StripeController = () => {
           user,
           customerInformation
         );
-        newUserData = { ...newUserData, ...recruiterData };
+        newUserData = { ...newUserData, ...recruiterData, email };
+        newUserData = { ...newUserData, email };
 
         console.log(`***** newUserData:`, newUserData);
-        await User.update(newUserData, {
-          where: { email },
-        });
       }
       return res.status(HttpCodes.OK).json({ newUserData });
     } catch (err) {
@@ -335,6 +331,10 @@ const StripeController = () => {
         newUserData["memberShip"] = "free";
       }
 
+      await User.update(newUserData, {
+        where: { email: user.email },
+      });
+
       return newUserData;
     } catch (error) {
       console.log(error);
@@ -428,6 +428,11 @@ const StripeController = () => {
       if (!isSubscribed && user.channelsSubscription === true) {
         newUserData["channelsSubscription"] = false;
       }
+
+      await User.update(newUserData, {
+        where: { email: user.email },
+      });
+
       return newUserData;
     } catch (error) {
       console.log(error);
@@ -514,6 +519,11 @@ const StripeController = () => {
       if (!isSubscribed && user.recruiterSubscription === true) {
         newUserData["recruiterSubscription"] = false;
       }
+
+      await User.update(newUserData, {
+        where: { email: user.email },
+      });
+
       return newUserData;
     } catch (error) {
       console.log(error);

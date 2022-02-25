@@ -348,7 +348,7 @@ const LearningController = () => {
 
     try {
       const events = await Event.findAll({
-        attributes: ["id", "title"],
+        attributes: ["id", "title", "ticket"],
         include: {
           model: Library,
           where: {

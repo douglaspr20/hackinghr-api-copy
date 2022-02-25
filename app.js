@@ -366,7 +366,7 @@ cron.schedule(
       "****************Running task at 12AM everyday****************"
     );
     console.log("****************Weekly Digest****************");
-    await WeeklyDigestController().sendWeeklyDigestEmail();
+    await WeeklyDigestController().updateWeeklyDigestEmail();
   },
   {
     timezone: "America/Los_Angeles",

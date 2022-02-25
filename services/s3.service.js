@@ -13,6 +13,10 @@ const resumeBucket = new AWS.S3({
   params: { Bucket: S3.RESUME_BUCKET_NAME },
 });
 
+const fileBucket = new AWS.S3({
+  params: { Bucket: S3.UPLOAD_FILES_LAB },
+});
+
 const s3Service = () => {
   const imageUpload = (path, buffer) => {
     const data = {
@@ -57,6 +61,12 @@ const s3Service = () => {
 
   const getImgBuffer = (base64) => {
     const base64str = base64.replace(/^data:image\/\w+;base64,/, "");
+
+    return Buffer.from(base64str, "base64");
+  };
+
+  const getFileBuffer = (base64, mimetype) => {
+    const base64str = base64.replace(`data:${mimetype};base64,`, "");
 
     return Buffer.from(base64str, "base64");
   };
@@ -214,6 +224,27 @@ const s3Service = () => {
     return;
   };
 
+  const uploadFile = async (file, mimetype, title) => {
+    const extensionFile = mimetype.match(/[/]\w+/)[0];
+    const buffer = getFileBuffer(file, mimetype);
+
+    const fileName = `${title}_${
+      process.env.S3_RESUME_BUCKET || "local"
+    }.${extensionFile.slice(1, extensionFile.length)}`;
+
+    const params = {
+      Key: fileName,
+      Body: buffer,
+      ContentType: mimetype,
+      ACL: "public-read",
+    };
+    return new Promise((resolve, reject) => {
+      fileBucket.upload(params, (err, data) =>
+        err === null ? resolve(data) : reject(err)
+      );
+    });
+  };
+
   const getSkillCohortImageUrl = async (prevImg, base64Image) => {
     const url = await getImageUrl(
       S3.SKILL_COHORT_IMAGE_FOLDER,
@@ -263,6 +294,7 @@ const s3Service = () => {
     deleteResume,
     getJobPostImageUrl,
     getAdvertisementImageUrl,
+    uploadFile,
   };
 };
 
