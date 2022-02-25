@@ -280,7 +280,15 @@ const StripeController = () => {
       await smtpService().sendMailUsingSendInBlue(mailOptions);
 
       newUserData["isAdvertiser"] = true;
-      newUserData["advertiserSubscriptionDate"] = moment();
+      newUserData["advertiserSubscriptionDate"] = moment().format(
+        "YYYY-MM-DD HH:mm:ss"
+      );
+
+      await User.update(newUserData, {
+        where: {
+          email: user.email,
+        },
+      });
 
       return newUserData;
     } catch (error) {
