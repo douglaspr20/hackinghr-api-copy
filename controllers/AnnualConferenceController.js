@@ -204,27 +204,17 @@ const AnnualConferenceController = () => {
         [Op.and]: [{ attendedToConference: 1 }],
       };
 
-      if (topics) {
-        where[Op.and].push({ topicsOfInterest: { [Op.overlap]: topics } });
+      if (topics && userId) {
+        where[Op.and].push(
+          { topicsOfInterest: { [Op.overlap]: topics } },
+          { id: { [Op.ne]: userId } }
+        );
       }
 
-      if (userId) {
-        where[Op.and].push({ id: { [Op.ne]: userId } });
-      }
-
-      let options = {
-        where: where,
-        order: order ? [order] : [[Sequelize.fn("RANDOM")]],
-      };
-
-      if (num) {
-        options = {
-          ...options,
-          limit: +num,
-        };
-      }
       let participants = await User.findAll({
-        ...options,
+        where,
+        order: order ? [order] : [[Sequelize.fn("RANDOM")]],
+        limit: +num,
       });
 
       return res.status(HttpCodes.OK).json({ participants });
