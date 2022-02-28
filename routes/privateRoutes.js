@@ -234,17 +234,12 @@ const privateRoutes = {
   "POST /marketplace-profiles": "MarketplaceProfileController.add",
   "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
-  "PUT /user/accept-terms-condition-g-conference/:id":
-    "UserController.acceptTermsConditionGConference",
-  "GET /users/count-all": "UserController.countAllUsers",
-  "GET /ads-by-page": "AdvertisementController.getAdvertisementsTodayByPage",
-  "GET /ads/active": "AdvertisementController.getAllActiveAdvertisements",
-  "GET /ads/:UserId": "AdvertisementController.getAdvertisementByAdvertiser",
-  "POST /ad": "AdvertisementController.createAdvertisement",
-  "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
-  "GET /matchmake": "MatchmakingController.getMatchmake",
-  "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
-  "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
+  "POST /conversations": "ConversationController.create",
+  "GET /conversations/:userId": "ConversationController.getAll",
+  "POST /messages/": "MessageController.create",
+  "GET /messages/:conversationId": "MessageController.getAll",
+  "PUT /messages/:ConversationId": "MessageController.readMessages",
+  "GET /more-messages/:ConversationId": "MessageController.getMoreMessages",
 };
 
 module.exports = privateRoutes;
