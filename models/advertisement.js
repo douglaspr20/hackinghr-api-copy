@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       endDate: DataTypes.DATE,
       datesBetweenStartDateAndEndDate: DataTypes.ARRAY(DataTypes.DATE),
       adContentLink: DataTypes.STRING,
+      status: DataTypes.ENUM("active", "draft"),
     },
     {
       sequelize,
