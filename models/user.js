@@ -135,6 +135,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      isAdvertiser: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      advertiserSubscriptionDate: DataTypes.DATE,
     },
     {
       sequelize,
