@@ -129,7 +129,7 @@ const MatchmakingController = () => {
 
       const mailOptions = {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-        to: "enrique@hackinghr.com",
+        to: "enrique@hackinghr.io",
         subject: LabEmails.MATCHMAKE_USERS.subject(),
         html: LabEmails.MATCHMAKE_USERS.body(user, advertiser, message),
         contentType: "text/html",
