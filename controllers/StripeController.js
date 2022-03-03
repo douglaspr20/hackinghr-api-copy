@@ -21,13 +21,13 @@ const StripeController = () => {
    * @param {*} res
    */
   const createCheckoutSession = async (req, res) => {
-    const { prices, user } = req.body;
+    const { prices, user, isAdvertisement = false } = req.body;
     const { id } = req.token;
 
     if (prices) {
-      let checkoutSessionPrinces = [];
+      let checkoutSessionPrices = [];
       prices.map((item) =>
-        checkoutSessionPrinces.push({ price: item, quantity: 1 })
+        checkoutSessionPrices.push({ price: item, quantity: 1 })
       );
 
       const user = await User.findOne({
@@ -41,10 +41,23 @@ const StripeController = () => {
           success_url: process.env.STRIPE_CALLBACK_URL,
           cancel_url: process.env.STRIPE_CALLBACK_URL,
           payment_method_types: ["card"],
-          line_items: checkoutSessionPrinces,
+          line_items: checkoutSessionPrices,
           mode: "subscription",
           allow_promotion_codes: true,
         };
+
+        if (isAdvertisement) {
+          sessionData = {
+            ...sessionData,
+            mode: "payment",
+            payment_intent_data: {
+              metadata: {
+                isAdvertisement: true,
+              },
+            },
+          };
+        }
+
         const customers = await stripe.customers.list({
           email: user.email,
           limit: 1,
@@ -190,13 +203,16 @@ const StripeController = () => {
    */
   const webhook = async (req, res) => {
     const { type, data } = req.body;
+
     try {
       let newUserData = {};
       if (
         type === "customer.subscription.updated" ||
-        type === "customer.subscription.deleted"
+        type === "invoice.payment_succeeded" ||
+        type === "customer.subscription.deleted" ||
+        type === "charge.succeeded"
       ) {
-        const { customer } = data.object;
+        const { customer, metadata, paid, status } = data.object;
 
         const customerInformation = await stripe.customers.retrieve(customer);
         const email = customerInformation.email.toLowerCase();
@@ -219,6 +235,20 @@ const StripeController = () => {
         );
         newUserData = { ...newUserData, ...recruiterData, email };
         newUserData = { ...newUserData, email };
+
+        if (
+          metadata.isAdvertisement === "true" &&
+          paid &&
+          status === "succeeded"
+        ) {
+          const advertiserData = await advertiserValidation(
+            user,
+            customerInformation
+          );
+          newUserData = { ...newUserData, ...advertiserData };
+        }
+
+        console.log(`***** newUserData:`, newUserData);
       }
       return res.status(HttpCodes.OK).json({ newUserData });
     } catch (err) {
@@ -228,6 +258,42 @@ const StripeController = () => {
         .json({ msg: "Internal server error" });
     }
   };
+
+  const advertiserValidation = async (user, customerInformation) => {
+    let newUserData = {};
+
+    try {
+      await stripe.customers.update(customerInformation.id, {
+        metadata: { isAdvertiser: true },
+      });
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject: LabEmails.USER_BECOME_ADVERTISER.subject(),
+        html: LabEmails.USER_BECOME_ADVERTISER.body(),
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      newUserData["isAdvertiser"] = true;
+      newUserData["advertiserSubscriptionDate"] = moment().format(
+        "YYYY-MM-DD HH:mm:ss"
+      );
+
+      await User.update(newUserData, {
+        where: {
+          email: user.email,
+        },
+      });
+
+      return newUserData;
+    } catch (error) {
+      console.log(error);
+      return {};
+    }
+  };
+
   /**
    * Function to validate premium subscription status
    * @param {*} user

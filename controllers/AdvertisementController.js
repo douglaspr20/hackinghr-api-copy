@@ -41,6 +41,7 @@ const AdvertisementController = () => {
             [Op.gte]: dateToday,
           },
           page,
+          status: "active",
         },
       });
 
@@ -186,7 +187,11 @@ const AdvertisementController = () => {
     // const dateToday = moment().tz("America/Los_Angeles").startOf("day");
 
     try {
-      const advertisements = await Advertisement.findAll();
+      const advertisements = await Advertisement.findAll({
+        where: {
+          status: "active",
+        },
+      });
 
       return res.status(HttpCodes.OK).json({ advertisements });
     } catch (error) {

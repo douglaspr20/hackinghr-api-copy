@@ -218,11 +218,11 @@ const SkillCohortController = () => {
         include: [
           {
             model: SkillCohort,
-            where: {
-              endDate: {
-                [Op.gt]: dateToday,
-              },
-            },
+            // where: {
+            //   endDate: {
+            //     [Op.gt]: dateToday,
+            //   },
+            // },
             nest: true,
             required: true,
             include: [

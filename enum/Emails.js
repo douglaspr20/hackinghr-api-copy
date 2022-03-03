@@ -1119,6 +1119,23 @@ module.exports = {
   },
   MATCHMAKE_USERS: {
     subject: () => `Match user`,
-    body: () => `Match test`,
+    body: (matchedUser, advertiser, message) => `
+      <p>
+        Advertiser: ${advertiser.firstName} ${advertiser.lastName} <br/>
+        Advertiser Email: ${advertiser.email} <br />
+        Advertiser Message: ${message} <br />
+      </p>
+
+      <p>
+        Matched User: ${matchedUser.firstName} ${matchedUser.lastName} <br/>
+        Matched User Title: ${matchedUser.titleProfessions} <br/>
+        Matched User Company: ${matchedUser.company} <br/>
+        Matched User LinkedIn: ${matchedUser.personalLinks.linkedin} <br/>
+      </p>
+    `,
+  },
+  USER_BECOME_ADVERTISER: {
+    subject: () => `Advertiser`,
+    body: () => `You are now an advertiser`,
   },
 };
