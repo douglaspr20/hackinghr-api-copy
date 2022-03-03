@@ -5,7 +5,9 @@ const smtpService = require("../services/smtp.service");
 const { LabEmails } = require("../enum");
 
 const Stripe = require("stripe");
-const stripe = Stripe(process.env.STRIPE_SK_KEY);
+const stripe = Stripe(process.env.STRIPE_SK_KEY, {
+  maxNetworkRetries: 3,
+});
 
 const moment = require("moment");
 
@@ -205,16 +207,13 @@ const StripeController = () => {
     try {
       let newUserData = {};
       if (
-        type === "customer.subscription.created" ||
         type === "customer.subscription.updated" ||
         type === "invoice.payment_succeeded" ||
         type === "customer.subscription.deleted" ||
         type === "charge.succeeded"
       ) {
-        console.log("********* STRIPE Webhook *************");
-        console.log(`********* Type ${type} *************`);
         const { customer, metadata, paid, status } = data.object;
-        console.log(`***** Customer: ${customer} ******`);
+
         const customerInformation = await stripe.customers.retrieve(customer);
         const email = customerInformation.email.toLowerCase();
 
@@ -224,9 +223,7 @@ const StripeController = () => {
           },
         });
 
-        console.log(`***** memberShip: ${user.memberShip} ******`);
-
-        const premiumData = await premiumValidation(user, customerInformation);
+        const premiumData = await premiumValidation(user, customer);
         newUserData = { ...newUserData, ...premiumData };
 
         const channelData = await channelsValidation(user, customerInformation);
@@ -302,91 +299,58 @@ const StripeController = () => {
    * @param {*} user
    * @param {*} customerInformation
    */
-  const premiumValidation = async (user, customerInformation) => {
+  const premiumValidation = async (user, customer) => {
     let newUserData = {};
     let isSubscribed = false;
+    let sendPremiumEmail = false;
+    let sendRenewEmail = false;
     try {
-      let premiumPrices = [
-        process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
-        process.env.REACT_APP_STRIPE_YEARLY_INR_PRICE_ID,
-        process.env.REACT_APP_STRIPE_YEARLY_NGN_PRICE_ID,
-      ];
+      const subscriptionInformation = await stripe.subscriptions.list({
+        customer,
+        price: process.env.REACT_APP_STRIPE_YEARLY_USD_PRICE_ID,
+        status: "all",
+      });
 
-      for (let itemPremium of premiumPrices) {
-        if (customerInformation.subscriptions.data.length > 0) {
-          for (let subItemPremium of customerInformation.subscriptions.data) {
-            subItemPremium.items.data.map(async (itemSubscription) => {
-              console.log(
-                `***** PREMIUM -- Price: ${itemSubscription.price.id} / ${itemPremium} - status: ${subItemPremium.status} ******`
-              );
-              if (
-                itemSubscription.price.id === itemPremium &&
-                subItemPremium.status === "active"
-              ) {
-                isSubscribed = true;
-                newUserData["memberShip"] = "premium";
-                newUserData["subscription_startdate"] = moment
-                  .unix(subItemPremium.current_period_start)
-                  .format("YYYY-MM-DD HH:mm:ss");
-                newUserData["subscription_enddate"] = moment
-                  .unix(subItemPremium.current_period_end)
-                  .format("YYYY-MM-DD HH:mm:ss");
+      if (subscriptionInformation.data.length > 0) {
+        if (subscriptionInformation.data[0].status === "active") {
+          isSubscribed = true;
+          newUserData["memberShip"] = "premium";
+          newUserData["subscription_startdate"] = moment
+            .unix(subscriptionInformation.data[0].current_period_start)
+            .format("YYYY-MM-DD HH:mm:ss");
+          newUserData["subscription_enddate"] = moment
+            .unix(subscriptionInformation.data[0].current_period_end)
+            .format("YYYY-MM-DD HH:mm:ss");
 
-                if (user.subscription_startdate != null) {
-                  if (
-                    moment.unix(subItemPremium.current_period_start) >
-                      user.subscription_startdate &&
-                    user.memberShip === "premium"
-                  ) {
-                    try {
-                      const mailOptions = {
-                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                        to: user.email,
-                        subject: LabEmails.USER_RENEW_PREMIUM.subject(),
-                        html: LabEmails.USER_RENEW_PREMIUM.body(user),
-                      };
-
-                      await smtpService().sendMailUsingSendInBlue(mailOptions);
-                    } catch (error) {
-                      console.log(error);
-                    }
-                  }
-                }
-
-                if (user.memberShip === "free") {
-                  try {
-                    const mailOptions = {
-                      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                      to: user.email,
-                      subject: LabEmails.USER_BECOME_PREMIUM.subject(),
-                      html: LabEmails.USER_BECOME_PREMIUM.body(user),
-                    };
-
-                    await smtpService().sendMailUsingSendInBlue(mailOptions);
-                  } catch (error) {
-                    console.log(error);
-                  }
-                }
-              } else if (
-                (itemSubscription.price.id === itemPremium &&
-                  subItemPremium.status === "past_due") ||
-                (itemSubscription.price.id === itemPremium &&
-                  subItemPremium.status === "canceled")
-              ) {
-                isSubscribed = true;
-                newUserData["memberShip"] = "free";
-                if (
-                  user.memberShip === "premium" &&
-                  subItemPremium.status === "past_due"
-                ) {
-                  stripe.subscriptions.update(subItemPremium.id, {
-                    proration_behavior: "none",
-                    cancel_at: moment().add(1, "minutes").unix(),
-                  });
-                }
-              }
-            });
+          if (user.subscription_enddate != null) {
+            if (
+              moment
+                .unix(subscriptionInformation.data[0].current_period_end)
+                .format("YYYY-MM-DD") >
+                moment(user.subscription_enddate).format("YYYY-MM-DD") &&
+              user.memberShip === "premium"
+            ) {
+              sendRenewEmail = true;
+            }
           }
+          if (user.memberShip === "free") {
+            sendPremiumEmail = true;
+          }
+        }
+      } else if (
+        subscriptionInformation.data[0].status === "past_due" ||
+        subscriptionInformation.data[0].status === "canceled"
+      ) {
+        isSubscribed = true;
+        newUserData["memberShip"] = "free";
+        if (
+          user.memberShip === "premium" &&
+          subscriptionInformation.data[0].status === "past_due"
+        ) {
+          stripe.subscriptions.update(subscriptionInformation.data[0].id, {
+            proration_behavior: "none",
+            cancel_at: moment().add(1, "minutes").unix(),
+          });
         }
       }
 
@@ -395,13 +359,41 @@ const StripeController = () => {
       }
 
       await User.update(newUserData, {
-        where: { email: user.email },
+        where: { id: user.id },
       });
+
+      if (sendPremiumEmail === true) {
+        try {
+          const mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.USER_BECOME_PREMIUM.subject(),
+            html: LabEmails.USER_BECOME_PREMIUM.body(user),
+          };
+          await smtpService().sendMailUsingSendInBlue(mailOptions);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      if (sendRenewEmail === true) {
+        try {
+          const mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.USER_RENEW_PREMIUM.subject(),
+            html: LabEmails.USER_RENEW_PREMIUM.body(user),
+          };
+          await smtpService().sendMailUsingSendInBlue(mailOptions);
+        } catch (error) {
+          console.log(error);
+        }
+      }
 
       return newUserData;
     } catch (error) {
       console.log(error);
-      return {};
+      return { error };
     }
   };
 
