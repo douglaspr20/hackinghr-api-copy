@@ -275,8 +275,6 @@ const SkillCohortController = () => {
         };
       });
 
-      console.log(allOfMySkillCohorts.length, "allOfMySkillCohorts");
-
       return res.status(HttpCodes.OK).json({ allOfMySkillCohorts });
     } catch (error) {
       console.log(error);
