@@ -307,15 +307,6 @@ const StripeController = () => {
         metadata: { totalCreditsPurchased },
       });
 
-      const mailOptions = {
-        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-        to: user.email,
-        subject: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.subject(credits),
-        html: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.body(),
-      };
-
-      await smtpService().sendMailUsingSendInBlue(mailOptions);
-
       await User.increment(
         {
           advertisementCredits: +credits,
@@ -326,6 +317,15 @@ const StripeController = () => {
           },
         }
       );
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.subject(credits),
+        html: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.body(),
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
 
       return newUserData;
     } catch (error) {
