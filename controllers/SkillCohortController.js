@@ -218,11 +218,11 @@ const SkillCohortController = () => {
         include: [
           {
             model: SkillCohort,
-            where: {
-              endDate: {
-                [Op.gt]: dateToday,
-              },
-            },
+            // where: {
+            //   endDate: {
+            //     [Op.gt]: dateToday,
+            //   },
+            // },
             nest: true,
             required: true,
             include: [
@@ -274,6 +274,8 @@ const SkillCohortController = () => {
           hasAccess: participated.hasAccess,
         };
       });
+
+      console.log(allOfMySkillCohorts.length, "allOfMySkillCohorts");
 
       return res.status(HttpCodes.OK).json({ allOfMySkillCohorts });
     } catch (error) {
