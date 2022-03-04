@@ -236,6 +236,8 @@ const privateRoutes = {
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
   "PUT /user/accept-terms-condition-g-conference/:id":
     "UserController.acceptTermsConditionGConference",
+  "PUT /user/view-rules-g-conference/:id":
+    "UserController.viewRulesGConference",
   "GET /users/count-all": "UserController.countAllUsers",
   "GET /ads-by-page": "AdvertisementController.getAdvertisementsTodayByPage",
   "GET /ads/active": "AdvertisementController.getAllActiveAdvertisements",
