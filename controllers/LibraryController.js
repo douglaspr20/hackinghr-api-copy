@@ -102,7 +102,7 @@ const LibraryController = () => {
 
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-          to: "lourencelinao13@gmail.com",
+          to: "enrique@hackinghr.io",
           subject: LabEmails.NEW_LIBRARY_CONTENT_FOR_APPROVAL.subject(),
           html: LabEmails.NEW_LIBRARY_CONTENT_FOR_APPROVAL.body(
             newLibrary.title,
