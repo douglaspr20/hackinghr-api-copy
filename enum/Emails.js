@@ -1138,4 +1138,16 @@ module.exports = {
     subject: () => `Advertiser`,
     body: () => `You are now an advertiser`,
   },
+  NEW_LIBRARY_CONTENT_FOR_APPROVAL: {
+    subject: () => `New Library Content for Approval`,
+    body: (title, user) => `
+      <p>
+        Title: ${title}
+      </p>
+
+      <p>
+        User: ${user.firstName} ${user.lastName}
+      </p>
+    `,
+  },
 };
