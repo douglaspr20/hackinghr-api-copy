@@ -130,6 +130,7 @@ module.exports = (sequelize, DataTypes) => {
       recruiterSubscription_startdate: DataTypes.DATE,
       recruiterSubscription_enddate: DataTypes.DATE,
       acceptTermsConditionGConference: DataTypes.BOOLEAN,
+      viewRulesGConference: DataTypes.BOOLEAN,
       dateSendEmailTermsConditionGConference: DataTypes.DATE,
       matchedCount: {
         type: DataTypes.INTEGER,
