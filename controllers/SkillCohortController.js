@@ -206,7 +206,7 @@ const SkillCohortController = () => {
 
     const dateToday = moment()
       .tz("America/Los_Angeles")
-      .startOf("day")
+      // .startOf("day")
       .utc()
       .format("YYYY-MM-DD HH:mm:ssZ");
 
