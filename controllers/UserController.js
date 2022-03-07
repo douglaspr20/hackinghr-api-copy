@@ -724,7 +724,7 @@ const UserController = () => {
         });
       }
 
-      if (totalUsers.count >= 30) {
+      if (totalUsers?.count >= 30) {
         return res.status(HttpCodes.BAD_REQUEST).json({
           msg: "This session has reached the limit of users that can join",
         });
