@@ -314,6 +314,26 @@ const AnnualConferenceController = () => {
     }
   };
 
+  const getUsersJoinedSession = async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const users = await User.findAll({
+        where: {
+          sessionsJoined: { [Op.overlap]: [id] },
+        },
+        attributes: ["firstName", "lastName", "email"],
+      });
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const downloadICS = async (req, res) => {
     const { id } = req.params;
     const { userTimezone } = req.query;
@@ -403,6 +423,7 @@ const AnnualConferenceController = () => {
     getAll,
     getSessionsUser,
     getSessionsUserJoined,
+    getUsersJoinedSession,
     getParticipants,
     get,
     update,
