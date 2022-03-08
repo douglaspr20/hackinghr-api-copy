@@ -172,18 +172,26 @@ const SkillCohortController = () => {
   const duplicate = async (req, res) => {
     const { skillCohort, skillCohortResources } = req.body;
 
-    console.log(skillCohortResources, "skillCohortResources");
-
     try {
       const newSkillCohort = await SkillCohort.create(skillCohort);
 
-      const transformedSkillCohortResources = skillCohortResources.map(
+      const sortedSkillCohortResources = skillCohortResources.sort(
+        (left, right) =>
+          moment.utc(left.timeStamp).diff(moment.utc(right.timeStamp))
+      );
+
+      const transformedSkillCohortResources = sortedSkillCohortResources.map(
         (resource) => {
           return {
             ...resource,
             SkillCohortId: newSkillCohort.id,
           };
         }
+      );
+
+      console.log(
+        transformedSkillCohortResources,
+        "transformedSkillCohortResources"
       );
 
       await SkillCohortResources.bulkCreate(transformedSkillCohortResources);
