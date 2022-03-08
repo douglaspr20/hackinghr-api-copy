@@ -1,6 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const isEmpty = require("lodash/isEmpty");
+const { isEmpty, orderBy } = require("lodash");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
@@ -177,10 +177,14 @@ const SkillCohortController = () => {
     try {
       const newSkillCohort = await SkillCohort.create(skillCohort);
 
-      const sortedSkillCohortResources = skillCohortResources.sort(
-        (left, right) =>
-          moment(left.releaseDate).diff(moment(right.releaseDate))
-      );
+      // const sortedSkillCohortResources = skillCohortResources.sort(
+      //   (left, right) =>
+      //     moment(left.releaseDate).diff(moment(right.releaseDate))
+      // );
+
+      const sortedSkillCohortResources = orderBy(skillCohortResources, [
+        "releaseDate",
+      ]);
 
       console.log(sortedSkillCohortResources, "sortedSkillCohortResources");
 
@@ -191,10 +195,10 @@ const SkillCohortController = () => {
         })
       );
 
-      console.log(
-        transformedSkillCohortResources,
-        "transformedSkillCohortResources"
-      );
+      // console.log(
+      //   transformedSkillCohortResources,
+      //   "transformedSkillCohortResources"
+      // );
 
       // console.log(
       //   transformedSkillCohortResources,
