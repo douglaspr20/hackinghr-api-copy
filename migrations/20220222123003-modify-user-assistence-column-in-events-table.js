@@ -8,7 +8,6 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    Promise.all([queryInterface.removeColumn("Events", "usersAssistence")]);
     return Promise.all([
       queryInterface.addColumn("Events", "usersAssistence", {
         type: Sequelize.ARRAY(Sequelize.JSONB),
