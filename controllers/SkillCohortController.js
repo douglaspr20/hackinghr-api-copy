@@ -177,7 +177,7 @@ const SkillCohortController = () => {
 
       const sortedSkillCohortResources = skillCohortResources.sort(
         (left, right) =>
-          moment.utc(left.timeStamp).diff(moment.utc(right.timeStamp))
+          moment.utc(left.releaseDate).diff(moment.utc(right.releaseDate))
       );
 
       const transformedSkillCohortResources = sortedSkillCohortResources.map(
