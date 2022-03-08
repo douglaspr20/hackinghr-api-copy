@@ -153,7 +153,10 @@ const SkillCohortController = () => {
   const getAll = async (req, res) => {
     try {
       const skillCohorts = await SkillCohort.findAll({
-        order: [["id", "ASC"]],
+        order: [
+          ["id", "ASC"],
+          [SkillCohortResources, "releaseDate", "ASC"],
+        ],
         include: {
           model: SkillCohortResources,
         },
