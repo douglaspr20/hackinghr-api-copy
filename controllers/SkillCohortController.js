@@ -182,18 +182,18 @@ const SkillCohortController = () => {
       //     moment(left.releaseDate).diff(moment(right.releaseDate))
       // );
 
-      const sortedSkillCohortResources = orderBy(skillCohortResources, [
-        "releaseDate",
-      ]);
-
-      console.log(sortedSkillCohortResources, "sortedSkillCohortResources");
-
-      const transformedSkillCohortResources = sortedSkillCohortResources.map(
+      const transformedSkillCohortResources = skillCohortResources.map(
         (resource) => ({
           ...resource,
           SkillCohortId: newSkillCohort.id,
         })
       );
+      // const transformedSkillCohortResources = sortedSkillCohortResources.map(
+      //   (resource) => ({
+      //     ...resource,
+      //     SkillCohortId: newSkillCohort.id,
+      //   })
+      // );
 
       // console.log(
       //   transformedSkillCohortResources,
