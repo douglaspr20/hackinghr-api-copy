@@ -178,18 +178,17 @@ const SkillCohortController = () => {
       const newSkillCohort = await SkillCohort.create(skillCohort);
 
       const sortedSkillCohortResources = skillCohortResources.sort(
-        (left, right) => moment(left).diff(moment(right))
+        (left, right) =>
+          moment(left.releaseDate).diff(moment(right.releaseDate))
       );
 
       console.log(sortedSkillCohortResources, "sortedSkillCohortResources");
 
       const transformedSkillCohortResources = sortedSkillCohortResources.map(
-        (resource) => {
-          return {
-            ...resource,
-            SkillCohortId: newSkillCohort.id,
-          };
-        }
+        (resource) => ({
+          ...resource,
+          SkillCohortId: newSkillCohort.id,
+        })
       );
 
       console.log(
