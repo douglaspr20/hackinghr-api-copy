@@ -304,12 +304,24 @@ const BusinessPartnerController = () => {
     }
   };
 
+  const changePendingStatusToReject = async (req, res) => {
+    try {
+      await User.update(
+        { isBusinessPartner: "reject" },
+        { where: { isBusinessPartner: "pending" } }
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     getBusinessPartnerMembers,
     getAll,
     getBusinessPartnerResource,
     updateResource,
     create,
+    changePendingStatusToReject,
     deleteResource,
     createDocument,
     getBusinessPartnerDocuments,
