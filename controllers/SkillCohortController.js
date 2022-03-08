@@ -172,6 +172,8 @@ const SkillCohortController = () => {
   const duplicate = async (req, res) => {
     const { skillCohort, skillCohortResources } = req.body;
 
+    console.log(skillCohortResources, "skillCohortResources");
+
     try {
       const newSkillCohort = await SkillCohort.create(skillCohort);
 
