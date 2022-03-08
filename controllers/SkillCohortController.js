@@ -1,6 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const { isEmpty, orderBy } = require("lodash");
+const { isEmpty } = require("lodash");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
@@ -175,15 +175,8 @@ const SkillCohortController = () => {
   const duplicate = async (req, res) => {
     const { skillCohort, skillCohortResources } = req.body;
 
-    // console.log(skillCohortResources, "skillCohortResources");
-
     try {
       const newSkillCohort = await SkillCohort.create(skillCohort);
-
-      // const sortedSkillCohortResources = skillCohortResources.sort(
-      //   (left, right) =>
-      //     moment(left.releaseDate).diff(moment(right.releaseDate))
-      // );
 
       const transformedSkillCohortResources = skillCohortResources.map(
         (resource) => ({
@@ -191,22 +184,6 @@ const SkillCohortController = () => {
           SkillCohortId: newSkillCohort.id,
         })
       );
-      // const transformedSkillCohortResources = sortedSkillCohortResources.map(
-      //   (resource) => ({
-      //     ...resource,
-      //     SkillCohortId: newSkillCohort.id,
-      //   })
-      // );
-
-      // console.log(
-      //   transformedSkillCohortResources,
-      //   "transformedSkillCohortResources"
-      // );
-
-      // console.log(
-      //   transformedSkillCohortResources,
-      //   "transformedSkillCohortResources"
-      // );
 
       await SkillCohortResources.bulkCreate(transformedSkillCohortResources);
 
