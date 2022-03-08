@@ -178,8 +178,7 @@ const SkillCohortController = () => {
       const newSkillCohort = await SkillCohort.create(skillCohort);
 
       const sortedSkillCohortResources = skillCohortResources.sort(
-        (left, right) =>
-          moment.utc(left.releaseDate).diff(moment.utc(right.releaseDate))
+        (left, right) => moment(left).diff(moment(right))
       );
 
       console.log(sortedSkillCohortResources, "sortedSkillCohortResources");
