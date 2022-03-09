@@ -362,7 +362,6 @@ const SkillCohortResourcesController = () => {
 
         releaseDate = moment
           .tz(releaseDate, "MM-DD-YYYY", "America/Los_Angeles")
-          .utcOffset(-8)
           .startOf("day");
 
         return {
