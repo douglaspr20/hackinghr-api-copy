@@ -95,6 +95,8 @@ const adminRoutes = {
   "POST /partner/": "PartnerController.add",
   "PUT /partner/:id": "PartnerController.update",
   "DELETE /partner/:id": "PartnerController.remove",
+  "GET /session/get-users-joined/:id":
+    "AnnualConferenceController.getUsersJoinedSession",
 };
 
 module.exports = adminRoutes;
