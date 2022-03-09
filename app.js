@@ -114,7 +114,7 @@ cron.schedule(
             );
 
           if (!hasResponded) {
-            if (participant.numberOfCommentStrike >= 1) {
+            if (participant.numberOfCommentStrike >= 2) {
               await SkillCohortParticipantController().removeParticipantAccess(
                 participant,
                 skillCohort.id
