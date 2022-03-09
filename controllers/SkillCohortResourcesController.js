@@ -355,15 +355,15 @@ const SkillCohortResourcesController = () => {
 
   const batchWrite = async (req, res) => {
     const { skillCohortResources } = req.body;
+
     const transformedSkillCohortResources = skillCohortResources.map(
       (resource) => {
         let releaseDate = resource.releaseDate.replace(/\//g, "-");
 
-        releaseDate = moment.tz(
-          `${releaseDate} 00:00:00`,
-          "MM-DD-YYYY",
-          "America/Los_Angeles"
-        );
+        releaseDate = moment
+          .tz(releaseDate, "MM-DD-YYYY", "America/Los_Angeles")
+          .utcOffset(-8)
+          .startOf("day");
 
         return {
           ...resource,
@@ -376,6 +376,7 @@ const SkillCohortResourcesController = () => {
       const allSkillCohortResources = SkillCohortResources.bulkCreate(
         transformedSkillCohortResources
       );
+      // const allSkillCohortResources = [];
 
       return res.status(HttpCodes.OK).json({ allSkillCohortResources });
     } catch (error) {

@@ -1,6 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const isEmpty = require("lodash/isEmpty");
+const { isEmpty } = require("lodash");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
@@ -153,7 +153,10 @@ const SkillCohortController = () => {
   const getAll = async (req, res) => {
     try {
       const skillCohorts = await SkillCohort.findAll({
-        order: [["id", "ASC"]],
+        order: [
+          ["id", "ASC"],
+          [SkillCohortResources, "releaseDate", "ASC"],
+        ],
         include: {
           model: SkillCohortResources,
         },
@@ -176,12 +179,10 @@ const SkillCohortController = () => {
       const newSkillCohort = await SkillCohort.create(skillCohort);
 
       const transformedSkillCohortResources = skillCohortResources.map(
-        (resource) => {
-          return {
-            ...resource,
-            SkillCohortId: newSkillCohort.id,
-          };
-        }
+        (resource) => ({
+          ...resource,
+          SkillCohortId: newSkillCohort.id,
+        })
       );
 
       await SkillCohortResources.bulkCreate(transformedSkillCohortResources);
