@@ -35,6 +35,7 @@ dotenv.config();
  * server configuration
  */
 const routes = require("./routes");
+const BusinessPartnerController = require("./controllers/BusinessPartnerController");
 
 /**
  * express application
@@ -48,6 +49,14 @@ const mappedAdminRoutes = mapRoutes(routes.adminRoutes, "controllers/", [
   authPolicy.validate,
   authPolicy.checkAdminRole,
 ]);
+
+// Creating a cron which runs on every sunday
+
+// cron.schedule("0 16 * * SUN", () => {
+cron.schedule("0 8 * * SUN", () => {
+  console.log("running a task every sunday");
+  BusinessPartnerController().changePendingStatusToReject();
+});
 
 // Creating a cron job which runs on every an hour.
 cron.schedule("25 * * * *", () => {
