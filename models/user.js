@@ -141,6 +141,10 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: false,
       },
       advertiserSubscriptionDate: DataTypes.DATE,
+      projectXFreeTrialAvailability: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
     },
     {
       sequelize,
