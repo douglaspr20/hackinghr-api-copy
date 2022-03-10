@@ -128,33 +128,45 @@ const AnnualConferenceClassController = () => {
       try {
         const audioFileType = body.audioFileUrl.match(
           /[^:]\w+\/[\w-+\d.]+(?=;|,)/
-        )[0];
+        );
 
         const documentFileType = body.documentFileUrl.match(
           /[^:]\w+\/[\w-+\d.]+(?=;|,)/
-        )[0];
+        );
 
-        const { Location: audioFileUrl, key: documentFileName } =
-          await s3Service().uploadFile(
-            body.audioFileUrl,
-            audioFileType,
-            body.title
-          );
-
-        const { Location: documentFileUrl, key: audioFileName } =
-          await s3Service().uploadFile(
-            body.documentFileUrl,
-            documentFileType,
-            body.title
-          );
-
-        const data = {
+        let data = {
           ...body,
-          documentFileUrl,
-          audioFileUrl,
-          documentFileName,
-          audioFileName,
         };
+
+        if (audioFileType) {
+          const { Location: audioFileUrl, key: audioFileName } =
+            await s3Service().uploadFile(
+              body.audioFileUrl,
+              audioFileType[0],
+              body.title
+            );
+
+          data = {
+            ...data,
+            audioFileUrl,
+            audioFileName,
+          };
+        }
+
+        if (documentFileType) {
+          const { Location: documentFileUrl, key: documentFileName } =
+            await s3Service().uploadFile(
+              body.documentFileUrl,
+              documentFileType[0],
+              body.title
+            );
+
+          data = {
+            ...data,
+            documentFileUrl,
+            documentFileName,
+          };
+        }
 
         await AnnualConferenceClass.update(data, {
           where: { id },
