@@ -373,7 +373,7 @@ const SkillCohortParticipantController = () => {
         include: [
           {
             model: db.SkillCohort,
-            attributes: ["title", "id"],
+            attributes: ["title", "id", "startDate"],
           },
           {
             model: db.User,
