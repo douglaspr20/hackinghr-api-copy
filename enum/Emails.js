@@ -564,12 +564,7 @@ module.exports = {
       - Estimated duration: ${resource.duration} minutes <br>
     </p>
     <p>
-      Please remember to: <br> <br>
-      -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
-      -	Assess the responses provided by other cohort participants
-    </p>
-    <p>
-      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+      Please remember to provide your response to today’s question about this resource in the cohort dashboard. This is a mandatory requirement to continue to participate in the program. We assess your completion of this requirement every Sunday. If you have missed two or more activities you will not be able to join this cohort anymore.
     </p>
     <p>
       Please note: whether you receive the daily email or not, the resource will be posted in the Cohort dashboard in the Hacking HR LAB. Sometimes our emails get stuck somewhere in the strange world of the Internet. If that’s the case, please GO to the Cohort dashboard and review the resource. You still have to complete the daily activity, even if you don’t receive the daily resource email on a given day.  
