@@ -113,27 +113,33 @@ const AnnualConferenceController = () => {
   };
 
   const getAll = async (req, res) => {
-    const { startTime, endTime, meta } = req.query;
+    const { startTime, endTime, meta, type } = req.query;
     try {
       let where = "";
 
       if (startTime && endTime) {
-        where = `WHERE (public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}')`;
+        where += `WHERE (public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}')`;
+      }
+
+      if (type === "conference" && startTime) {
+        where += `AND (public."AnnualConferences"."type" = 'Certificate Track and Panels' OR public."AnnualConferences"."type" = 'Presentation')`;
+      } else if (type === "conference") {
+        where += `WHERE (public."AnnualConferences"."type" = 'Certificate Track and Panels' OR public."AnnualConferences"."type" = 'Presentation')`;
       }
 
       if (meta) {
-        where += `AND (public."AnnualConferences"."title" ILIKE '%${meta}%' OR public."AnnualConferences"."description" ILIKE '%${meta}%' 
-        OR public."AnnualConferences"."type" ILIKE '%${meta}%' OR public."Instructors"."name" ILIKE '%${meta}%' 
-        OR public."Instructors"."description" ILIKE '%${meta}%' OR public."AnnualConferences".categories::text ILIKE '%${meta}%' 
+        where += `AND (public."AnnualConferences"."title" ILIKE '%${meta}%' OR public."AnnualConferences"."description" ILIKE '%${meta}%'
+        OR public."AnnualConferences"."type" ILIKE '%${meta}%' OR public."Instructors"."name" ILIKE '%${meta}%'
+        OR public."Instructors"."description" ILIKE '%${meta}%' OR public."AnnualConferences".categories::text ILIKE '%${meta}%'
         OR public."AnnualConferences".meta ILIKE '%${meta}%')`;
       }
 
       const query = `
-      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker,
       public."Instructors".image, public."Instructors"."description" as descriptionSpeaker, COUNT(public."Users".id) AS totalUsersJoined
       FROM public."AnnualConferences"
       LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
-      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where} 
+      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where}
       GROUP BY public."AnnualConferences".id, public."Instructors".id`;
 
       const sessionList = await db.sequelize.query(query, {
@@ -334,6 +340,101 @@ const AnnualConferenceController = () => {
     }
   };
 
+  const saveForLater = async (req, res) => {
+    const { id } = req.params;
+    const { UserId, status } = req.body;
+
+    try {
+      const session = await AnnualConference.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!session) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Session not found." });
+      }
+
+      const [numberOfAffectedRows, affectedRows] =
+        await AnnualConference.update(
+          {
+            saveForLater:
+              status === "saved"
+                ? Sequelize.fn(
+                    "array_append",
+                    Sequelize.col("saveForLater"),
+                    UserId
+                  )
+                : Sequelize.fn(
+                    "array_remove",
+                    Sequelize.col("saveForLater"),
+                    UserId
+                  ),
+          },
+          {
+            where: {
+              id,
+            },
+            returning: true,
+            plain: true,
+          }
+        );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const markAsViewed = async (req, res) => {
+    const { id, mark } = req.body;
+    const { UserId } = req.body;
+
+    if (id) {
+      try {
+        let prevSession = await AnnualConference.findOne({
+          where: { id },
+        });
+
+        const [numberOfAffectedRows, affectedRows] =
+          await AnnualConference.update(
+            {
+              viewed: { ...prevSession.viewed, [userId]: mark },
+              saveForLater: Sequelize.fn(
+                "array_remove",
+                Sequelize.col("saveForLater"),
+                UserId
+              ),
+            },
+            {
+              where: { id },
+              returning: true,
+              plain: true,
+            }
+          );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Session not found" });
+  };
+
   const downloadICS = async (req, res) => {
     const { id } = req.params;
     const { userTimezone } = req.query;
@@ -430,6 +531,8 @@ const AnnualConferenceController = () => {
     remove,
     sendMessage,
     recommendedAgenda,
+    saveForLater,
+    markAsViewed,
     downloadICS,
   };
 };
