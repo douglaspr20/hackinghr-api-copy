@@ -44,7 +44,7 @@ module.exports = {
         event.startDate,
         event.startAndEndTimes,
         event.timezone
-      )}. 
+      ).join("")}. 
     </p>
     <p>
     Please connect in this link at the time of the event: <a target="_blank" href="${
