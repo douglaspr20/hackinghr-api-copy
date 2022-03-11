@@ -187,54 +187,37 @@ cron.schedule(
     const skillCohortResources =
       await SkillCohortResourcesController().getResourcesToBeReleasedToday();
 
-    const jaggedListOfParticipants =
-      await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(
-        skillCohortResources
-      );
+    const notifications = skillCohortResources.map((res) => {
+      const skillCohort = res.SkillCohort || {};
+      const participants = skillCohort?.SkillCohortParticipants || [];
 
-    const notifications = skillCohortResources.map((resource, indx) => {
-      let participantIds = jaggedListOfParticipants[indx].map(
-        (participants) => {
-          return participants.UserId;
-        }
-      );
-
-      if (isEmpty(participantIds)) {
-        participantIds = [-2];
-      }
-
-      return NotificationController().createNotification({
-        message: `${resource.SkillCohort.title} - New resource available`,
-        type: "resource",
-        meta: resource,
-        onlyFor: participantIds,
-      });
-    });
-
-    await Promise.all(notifications);
-
-    const emailToBeSent = jaggedListOfParticipants.map((participants) => {
-      return participants.map((participant) => {
-        const cohort = participant.SkillCohort;
-        const resource = skillCohortResources.find((resource) => {
-          return resource.SkillCohortId === cohort.id;
-        });
-
+      const participantIds = participants.map((participant) => {
         const user = participant.User;
 
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-          to: participant.User.email,
-          subject: LabEmails.DAILY_RESOURCE.subject(cohort, resource),
-          html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
+          to: user.email,
+          subject: LabEmails.DAILY_RESOURCE.subject(skillCohort, res),
+          html: LabEmails.DAILY_RESOURCE.body(user, skillCohort, res),
           contentType: "text/html",
         };
 
-        return smtpService().sendMailUsingSendInBlue(mailOptions);
+        // send email
+        smtpService().sendMailUsingSendInBlue(mailOptions);
+
+        return user.id;
+      });
+
+      // notifications
+      return NotificationController().createNotification({
+        message: `${res.SkillCohort.title} - New resource available`,
+        type: "resource",
+        meta: res,
+        onlyFor: participantIds,
       });
     });
 
-    await Promise.all(emailToBeSent.flat());
+    await Promise.all(notifications.flat());
   },
   {
     timezone: "America/Los_Angeles",

@@ -7,6 +7,8 @@ const SkillCohortResources = db.SkillCohortResources;
 const SkillCohort = db.SkillCohort;
 const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
+const SkillCohortParticipant = db.SkillCohortParticipant;
+const User = db.User;
 
 const SkillCohortResourcesController = () => {
   /**
@@ -311,6 +313,18 @@ const SkillCohortResourcesController = () => {
       },
       include: {
         model: SkillCohort,
+        required: true,
+        include: {
+          model: SkillCohortParticipant,
+          required: true,
+          where: {
+            hasAccess: "TRUE",
+          },
+          include: {
+            model: User,
+            attributes: ["id", "email"],
+          },
+        },
       },
     });
   };
