@@ -9,6 +9,7 @@ const PodcastSeries = db.PodcastSeries;
 const Library = db.Library;
 const ConferenceLibrary = db.ConferenceLibrary;
 const Event = db.Event;
+const AnnualConference = db.AnnualConference;
 
 const LearningController = () => {
   const getAllSaved = async (req, res) => {
@@ -63,25 +64,33 @@ const LearningController = () => {
         raw: true,
       });
 
+      const allSessions = await AnnualConference.findAll({
+        where,
+        order: [["updatedAt", "DESC"]],
+        raw: true,
+      });
+
       let allSaved = [
         allLibraries,
         allConferenceLibraries,
         allPodcasts,
         allPodcastSeries,
+        allSessions,
       ];
 
       allSaved = allSaved.map((items, itemsIndex) => {
         return items.map((item) => {
           let type;
-
           if (itemsIndex === 0) {
             type = "libraries";
           } else if (itemsIndex === 1) {
             type = "conferences";
           } else if (itemsIndex === 2) {
             type = "podcasts";
-          } else {
+          } else if (itemsIndex === 3) {
             type = "podcastSeries";
+          } else {
+            type = "sessions";
           }
 
           return {
@@ -171,11 +180,20 @@ const LearningController = () => {
         raw: true,
       });
 
+      console.log(where);
+
+      const allSessions = await AnnualConference.findAll({
+        where,
+        order: [["updatedAt", "DESC"]],
+        raw: true,
+      });
+
       let allCompleted = [
         allLibraries,
         allConferenceLibraries,
         allPodcasts,
         allPodcastSeries,
+        allSessions,
       ];
 
       allCompleted = allCompleted.map((items, itemsIndex) => {
@@ -188,8 +206,10 @@ const LearningController = () => {
             type = "conferences";
           } else if (itemsIndex === 2) {
             type = "podcasts";
-          } else {
+          } else if (itemsIndex === 3) {
             type = "podcastSeries";
+          } else {
+            type = "sessions";
           }
 
           return {

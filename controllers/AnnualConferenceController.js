@@ -394,8 +394,7 @@ const AnnualConferenceController = () => {
   };
 
   const markAsViewed = async (req, res) => {
-    const { id, mark } = req.body;
-    const { UserId } = req.body;
+    const { id, UserId, mark } = req.body;
 
     if (id) {
       try {
@@ -406,7 +405,7 @@ const AnnualConferenceController = () => {
         const [numberOfAffectedRows, affectedRows] =
           await AnnualConference.update(
             {
-              viewed: { ...prevSession.viewed, [userId]: mark },
+              viewed: { ...prevSession.viewed, [UserId]: mark },
               saveForLater: Sequelize.fn(
                 "array_remove",
                 Sequelize.col("saveForLater"),

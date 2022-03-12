@@ -8,7 +8,7 @@ module.exports = {
         defaultValue: [],
       }),
       queryInterface.addColumn("AnnualConferences", "viewed", {
-        type: Sequelize.JSON,
+        type: Sequelize.JSONB,
         defaultValue: {},
       }),
     ]);
