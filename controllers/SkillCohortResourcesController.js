@@ -322,7 +322,7 @@ const SkillCohortResourcesController = () => {
           },
           include: {
             model: User,
-            attributes: ["id", "email"],
+            attributes: ["id", "email", "firstName"],
           },
         },
       },
