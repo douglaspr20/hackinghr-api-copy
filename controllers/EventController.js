@@ -485,6 +485,7 @@ const EventController = () => {
         return item.usersAssistence[0];
       });
       const usersAssistence = JSON.parse(usersAssistenceSelected[0]);
+      console.log("avehhh", usersAssistence);
       usersAssistence.map(
         (item) =>
           item.usersAssistence?.length > 0 &&
