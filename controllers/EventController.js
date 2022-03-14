@@ -484,10 +484,8 @@ const EventController = () => {
         eventsId.push(item.id);
         return item.usersAssistence[0];
       });
-      const usersAssistence = usersAssistenceSelected.map((el) =>
-        el.map((item) => JSON.parse(item))
-      );
-      usersAssistence[0].map(
+      const usersAssistence = JSON.parse(usersAssistenceSelected[0]);
+      usersAssistence.map(
         (item) =>
           item.usersAssistence?.length > 0 &&
           item.usersAssistence.map((el) => el === id && item)
