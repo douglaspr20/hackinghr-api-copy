@@ -486,7 +486,7 @@ const EventController = () => {
       });
       const usersAssistence = JSON.parse(usersAssistenceSelected[0]);
       console.log("avehhh", usersAssistence);
-      usersAssistence.map(
+      usersAssistence.usersAssistence.map(
         (item) =>
           item.usersAssistence?.length > 0 &&
           item.usersAssistence.map((el) => el === id && item)
@@ -495,6 +495,7 @@ const EventController = () => {
       events.map((item) =>
         eventsId.map((el) => el === item.id && eventsToShowFilter.push(item))
       );
+      console.log("events", eventsToShowFilter);
       return res.status(HttpCodes.OK).json({ events: eventsToShowFilter });
     } catch (err) {
       console.log(err);
