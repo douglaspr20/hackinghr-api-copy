@@ -263,11 +263,6 @@ const SkillCohortController = () => {
         nest: true,
       });
 
-      console.log(
-        allParticipated[0].SkillCohort.SkillCohortResources,
-        "allParticipated"
-      );
-
       const allOfMySkillCohorts = allParticipated.map((participated) => {
         return {
           ...participated.SkillCohort.dataValues,
