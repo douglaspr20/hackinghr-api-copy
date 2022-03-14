@@ -7,6 +7,7 @@ const socketService = require("../services/socket.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const SocketEventTypes = require("../enum/SocketEventTypes");
 const { convertToLocalTime } = require("../utils/format");
+const { LabEmails } = require("../enum");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
@@ -122,9 +123,9 @@ const AnnualConferenceController = () => {
       }
 
       if (type === "conference" && startTime) {
-        where += `AND (public."AnnualConferences"."type" = 'Certificate Track and Panels' OR public."AnnualConferences"."type" = 'Presentation')`;
+        where += `AND (public."AnnualConferences"."type" = 'Certificate Track and Panels')`;
       } else if (type === "conference") {
-        where += `WHERE (public."AnnualConferences"."type" = 'Certificate Track and Panels' OR public."AnnualConferences"."type" = 'Presentation')`;
+        where += `WHERE (public."AnnualConferences"."type" = 'Certificate Track and Panels')`;
       }
 
       if (meta) {
@@ -340,6 +341,45 @@ const AnnualConferenceController = () => {
     }
   };
 
+  const claim = async (req, res) => {
+    const { id } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let session = await AnnualConference.findOne({
+          where: {
+            id,
+          },
+        });
+
+        session = {
+          ...session,
+          shrmCode: session.recertification_credits.match(/\d{2}\-\w{5}/)[0],
+          hrciCode: session.recertification_credits.match(/\d{2,8}/)[0],
+        };
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: user.email,
+          subject: LabEmails.LIBRARY_CLAIM.subject(session.title),
+          html: LabEmails.LIBRARY_CLAIM.body(user, session),
+        };
+
+        await smtpService().sendMail(mailOptions);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Conference library id is wrong" });
+  };
+
   const saveForLater = async (req, res) => {
     const { id } = req.params;
     const { UserId, status } = req.body;
@@ -530,6 +570,7 @@ const AnnualConferenceController = () => {
     remove,
     sendMessage,
     recommendedAgenda,
+    claim,
     saveForLater,
     markAsViewed,
     downloadICS,

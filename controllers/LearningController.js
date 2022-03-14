@@ -90,7 +90,7 @@ const LearningController = () => {
           } else if (itemsIndex === 3) {
             type = "podcastSeries";
           } else {
-            type = "sessions";
+            type = item.type;
           }
 
           return {
@@ -209,7 +209,7 @@ const LearningController = () => {
           } else if (itemsIndex === 3) {
             type = "podcastSeries";
           } else {
-            type = "sessions";
+            type = item.type;
           }
 
           return {
