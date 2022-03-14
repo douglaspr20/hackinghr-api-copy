@@ -234,9 +234,9 @@ const SkillCohortController = () => {
                   SkillCohortId: {
                     [Op.ne]: null,
                   },
-                  releaseDate: {
-                    [Op.lt]: dateToday,
-                  },
+                  // releaseDate: {
+                  //   [Op.lt]: dateToday,
+                  // },
                 },
               },
             ],
@@ -262,6 +262,11 @@ const SkillCohortController = () => {
         ],
         nest: true,
       });
+
+      console.log(
+        allParticipated[0].SkillCohort.SkillCohortResources,
+        "allParticipated"
+      );
 
       const allOfMySkillCohorts = allParticipated.map((participated) => {
         return {
