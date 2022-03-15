@@ -53,6 +53,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
+      active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
     },
 
     {

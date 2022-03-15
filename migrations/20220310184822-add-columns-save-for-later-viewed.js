@@ -11,6 +11,10 @@ module.exports = {
         type: Sequelize.JSONB,
         defaultValue: {},
       }),
+      queryInterface.addColumn("AnnualConferences", "active", {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+      }),
     ]);
   },
 
@@ -18,6 +22,7 @@ module.exports = {
     return Promise.all([
       queryInterface.removeColumn("AnnualConferences", "saveForLater"),
       queryInterface.removeColumn("AnnualConferences", "viewed"),
+      queryInterface.removeColumn("AnnualConferences", "active"),
     ]);
   },
 };
