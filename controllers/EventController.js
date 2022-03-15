@@ -484,6 +484,8 @@ const EventController = () => {
         eventsId.push(item.id);
         return item.usersAssistence[0];
       });
+      console.log("events", events);
+      console.log("users assistence selected", usersAssistenceSelected);
       const usersAssistence = JSON.parse(usersAssistenceSelected[0]);
       console.log("avehhh", usersAssistence);
       usersAssistence.map(
@@ -556,7 +558,6 @@ const EventController = () => {
             .status(HttpCodes.BAD_REQUEST)
             .json({ msg: "Host user not found" });
         }
-        console.log(body.usersAssistence);
         let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
         const [numberOfAffectedRows, affectedRows] = await Event.update(
