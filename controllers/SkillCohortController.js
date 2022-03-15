@@ -234,9 +234,9 @@ const SkillCohortController = () => {
                   SkillCohortId: {
                     [Op.ne]: null,
                   },
-                  releaseDate: {
-                    [Op.lt]: dateToday,
-                  },
+                  // releaseDate: {
+                  //   [Op.lt]: dateToday,
+                  // },
                 },
               },
             ],
