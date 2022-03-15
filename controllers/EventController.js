@@ -484,9 +484,10 @@ const EventController = () => {
         eventsId.push(item.id);
         return item.usersAssistence[0];
       });
-      console.log("events", events);
       console.log("users assistence selected", usersAssistenceSelected);
-      const usersAssistence = JSON.parse(usersAssistenceSelected[0]);
+      const usersAssistence = usersAssistenceSelected.map((el) =>
+        JSON.parse(el)
+      );
       console.log("avehhh", usersAssistence);
       usersAssistence.map(
         (item) =>
