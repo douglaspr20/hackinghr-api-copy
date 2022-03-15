@@ -545,7 +545,6 @@ const EventController = () => {
     const { id: userId } = req.token;
     const { body } = req;
     const EventId = Number(eventId);
-    console.log("updating", EventId);
     if (EventId && userId) {
       try {
         const { dataValues: user } = await User.findOne({
@@ -557,7 +556,7 @@ const EventController = () => {
             .status(HttpCodes.BAD_REQUEST)
             .json({ msg: "Host user not found" });
         }
-
+        console.log(body.usersAssistence);
         let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
         const [numberOfAffectedRows, affectedRows] = await Event.update(
