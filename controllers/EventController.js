@@ -485,12 +485,12 @@ const EventController = () => {
         return item.usersAssistence[0];
       });
       const usersAssistence = JSON.parse(usersAssistenceSelected[0]);
+      console.log("avehhh", usersAssistence);
       usersAssistence.map(
         (item) =>
           item.usersAssistence?.length > 0 &&
           item.usersAssistence.map((el) => el === id && item)
       );
-      console.log("avehhh", usersAssistence);
 
       events.map((item) =>
         eventsId.map((el) => el === item.id && eventsToShowFilter.push(item))
