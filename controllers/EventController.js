@@ -545,6 +545,7 @@ const EventController = () => {
     const { id: userId } = req.token;
     const { body } = req;
     const EventId = Number(eventId);
+    console.log("updating", EventId);
     if (EventId && userId) {
       try {
         const { dataValues: user } = await User.findOne({
