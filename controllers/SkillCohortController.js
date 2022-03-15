@@ -11,6 +11,7 @@ const SkillCohortResources = db.SkillCohortResources;
 const SkillCohortParticipant = db.SkillCohortParticipant;
 const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
+const User = db.User;
 
 const SkillCohortController = () => {
   /**
@@ -552,6 +553,39 @@ const SkillCohortController = () => {
     }
   };
 
+  const getAllCohortsThatFinishedTheDayBefore = async (dateToday) => {
+    try {
+      const cohorts = await SkillCohort.findAll({
+        where: {
+          endDate: {
+            [Op.lt]: dateToday,
+          },
+        },
+        include: [
+          {
+            model: SkillCohortParticipant,
+            where: {
+              hasAccess: "TRUE",
+            },
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
+      });
+
+      const finishedCohorts = cohorts.filter((cohort) =>
+        moment(cohort.endDate).add(1, "day").isSame(dateToday)
+      );
+
+      return finishedCohorts;
+    } catch (err) {
+      return [];
+    }
+  };
+
   return {
     create,
     getAllActiveUserSide,
@@ -566,6 +600,7 @@ const SkillCohortController = () => {
     getAllSkillCohortThatWillStartWeekLater,
     getAllSkillCohortThatWillStartTomorrow,
     duplicate,
+    getAllCohortsThatFinishedTheDayBefore,
   };
 };
 

@@ -1150,4 +1150,37 @@ module.exports = {
       </p>
     `,
   },
+  THANK_YOU_PARTICIPATION_PROJECT_X: {
+    subject: (cohort, date) =>
+      `Thank you for joining Hacking HR’s ProjectX: ${cohort.title}. Your Digital Certificate of Completion will be available on ${date}`,
+    body: (cohort, user, date) => `
+      <p>
+      Hi, ${user.firstName}
+      </p>
+      <p>
+      Thank you for joining Hacking HR’s ProjectX ${cohort.title}.  
+      </p>
+      <p>
+      You are almost there! Please remember to complete this week’s required activities!  
+      </p>
+      <p>
+      Upon completion of the last activities of the program, your Digital Certificate of Completion will be available on ${date}
+      </p>
+      <p>
+        We have many more cohorts focused on other skills that are open now or will open soon! Please join us and continue your learning journey with Hacking HR!.
+      </p>
+      <p>
+      Also, we would love to hear your feedback. Please let us know how we can make this program better for you and the rest of the participants. Just respond to this email letting us know your suggestions! 
+      </p>
+      <p>
+      By next Monday ${date} you will have access to a Digital Certificate of Completion if you complete the rest of this week’s activities. Just go back to the Hacking HR LAB ProjectX’s module, and in the dashboard click on Digital Certificate in the completed cohort. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      Hacking HR LAB
+      <br />
+      `,
+  },
 };
