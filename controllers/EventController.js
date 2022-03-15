@@ -489,7 +489,7 @@ const EventController = () => {
       usersAssistence.map(
         (item) =>
           item.usersAssistence?.length > 0 &&
-          item.usersAssistence.usersAssistence.map((el) => el === id && item)
+          item.usersAssistence.map((el) => el === id && item)
       );
 
       events.map((item) =>
