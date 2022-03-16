@@ -250,6 +250,9 @@ const privateRoutes = {
   "GET /matchmake": "MatchmakingController.getMatchmake",
   "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
   "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
+  "POST /council/event": "CouncilEventController.upsert",
+  "GET /council/events": "CouncilEventController.getAll",
+  "DELETE /council/event/:id": "CouncilEventController.destroy",
 };
 
 module.exports = privateRoutes;
