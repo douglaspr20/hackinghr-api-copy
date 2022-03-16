@@ -384,6 +384,51 @@ cron.schedule(
   }
 );
 
+// Send email to those who finish the project X
+cron.schedule(
+  "0 5 * * *", // 5AM Everyday
+  async () => {
+    console.log("****************Post Cohort****************");
+    const dateToday = moment().tz("America/Los_Angeles").startOf("day");
+
+    const cohorts =
+      await SkillCohortController().getAllCohortsThatFinishedTheDayBefore(
+        dateToday
+      );
+
+    cohorts.forEach((cohort) => {
+      const nextMonday = moment(cohort.endDate)
+        .tz("America/Los_Angeles")
+        .startOf("isoWeek")
+        .add(1, "week")
+        .format("LL");
+
+      cohort.SkillCohortParticipants.forEach((participant) => {
+        const user = participant.User;
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: user.email,
+          subject: LabEmails.THANK_YOU_PARTICIPATION_PROJECT_X.subject(
+            cohort,
+            nextMonday
+          ),
+          html: LabEmails.THANK_YOU_PARTICIPATION_PROJECT_X.body(
+            cohort,
+            user,
+            nextMonday
+          ),
+          contentType: "text/html",
+        };
+        smtpService().sendMailUsingSendInBlue(mailOptions);
+      });
+    });
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
 // allow cross origin requests
 // configure to only allow requests from certain origins
 app.use(cors());

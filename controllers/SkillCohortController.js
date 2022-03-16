@@ -11,6 +11,7 @@ const SkillCohortResources = db.SkillCohortResources;
 const SkillCohortParticipant = db.SkillCohortParticipant;
 const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
+const User = db.User;
 
 const SkillCohortController = () => {
   /**
@@ -356,6 +357,7 @@ const SkillCohortController = () => {
    */
   const remove = async (req, res) => {
     const { id } = req.params;
+    const user = req.user;
 
     if (id) {
       try {
@@ -364,6 +366,21 @@ const SkillCohortController = () => {
             id,
           },
         });
+
+        let isFreeTrial = user.memberShip === "free";
+
+        if (isFreeTrial) {
+          await User.update(
+            {
+              projectXFreeTrialAvailability: "TRUE",
+            },
+            {
+              where: {
+                id: user.id,
+              },
+            }
+          );
+        }
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
@@ -552,6 +569,39 @@ const SkillCohortController = () => {
     }
   };
 
+  const getAllCohortsThatFinishedTheDayBefore = async (dateToday) => {
+    try {
+      const cohorts = await SkillCohort.findAll({
+        where: {
+          endDate: {
+            [Op.lt]: dateToday,
+          },
+        },
+        include: [
+          {
+            model: SkillCohortParticipant,
+            where: {
+              hasAccess: "TRUE",
+            },
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
+      });
+
+      const finishedCohorts = cohorts.filter((cohort) =>
+        moment(cohort.endDate).add(1, "day").isSame(dateToday)
+      );
+
+      return finishedCohorts;
+    } catch (err) {
+      return [];
+    }
+  };
+
   return {
     create,
     getAllActiveUserSide,
@@ -566,6 +616,7 @@ const SkillCohortController = () => {
     getAllSkillCohortThatWillStartWeekLater,
     getAllSkillCohortThatWillStartTomorrow,
     duplicate,
+    getAllCohortsThatFinishedTheDayBefore,
   };
 };
 
