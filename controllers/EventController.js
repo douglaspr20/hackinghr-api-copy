@@ -484,7 +484,6 @@ const EventController = () => {
         eventsId.push(item.id);
         return item.usersAssistence[0];
       });
-      console.log("users assistence selected", usersAssistenceSelected);
       const usersAssistence = usersAssistenceSelected.map((el) =>
         JSON.parse(el)
       );
@@ -561,6 +560,7 @@ const EventController = () => {
         }
         let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
+        console.log("users assistence", body.usersAssistence);
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
             usersAssistence: [body.usersAssistence],
