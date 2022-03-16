@@ -357,14 +357,33 @@ const SkillCohortController = () => {
    */
   const remove = async (req, res) => {
     const { id } = req.params;
+    const user = req.user;
 
     if (id) {
       try {
-        await SkillCohort.destroy({
+        const destroy = SkillCohort.destroy({
           where: {
             id,
           },
         });
+
+        let isFreeTrial = user.memberShip === "free";
+        let removeFreeTrial;
+
+        if (isFreeTrial) {
+          removeFreeTrial = User.update(
+            {
+              projectXFreeTrialAvailability: "TRUE",
+            },
+            {
+              where: {
+                id: user.id,
+              },
+            }
+          );
+        }
+
+        await Promise.all([destroy, removeFreeTrial]);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
