@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       endDate: DataTypes.DATE,
       description: DataTypes.TEXT,
       numberOfPanels: DataTypes.INTEGER,
+      timezone: DataTypes.STRING,
       status: DataTypes.ENUM("draft", "active"),
     },
     {
