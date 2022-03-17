@@ -186,12 +186,17 @@ const AnnualConferenceController = () => {
     const { sessionsId } = req.query;
 
     try {
-      const sessionUserJoined = await AnnualConference.findAll({
-        where: {
-          id: {
-            [Op.in]: sessionsId,
-          },
-        },
+      const query = `
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker,
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+      FROM public."AnnualConferences"
+      LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
+      WHERE public."AnnualConferences"."id" IN (${sessionsId}) AND public."AnnualConferences".type = 'Certificate Track and Panels'
+      GROUP BY public."AnnualConferences".id, public."Instructors".id
+    `;
+
+      const sessionUserJoined = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
 
       return res.status(HttpCodes.OK).json({ sessionUserJoined });
