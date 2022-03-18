@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const { LabEmails, TimeZoneList } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const moment = require("moment-timezone");
+const { convertToCertainTime, convertToLocalTime } = require("../utils/format");
 
 const CouncilEvent = db.CouncilEvent;
 const CouncilEventPanel = db.CouncilEventPanel;
@@ -133,6 +134,11 @@ const CouncilEventController = () => {
           where: {
             id: councilEventPanelId,
           },
+          include: [
+            {
+              model: CouncilEvent,
+            },
+          ],
         });
 
         const councilEventPanelistsCount = await CouncilEventPanelist.count({
@@ -153,21 +159,35 @@ const CouncilEventController = () => {
           UserId: id,
         });
 
-        const startTime = councilEventPanel.panelStartAndEndDate[0];
-        const endTime = councilEventPanel.panelStartAndEndDate[1];
+        let timezone = councilEventPanel.CouncilEvent.timezone;
+        timezone = TimeZoneList.find((tz) => tz.value === timezone);
 
-        const convertedStartTimeToLocalTimezone = moment.tz(
-          startTime,
-          userTimezone
+        const _userTimezone = TimeZoneList.find((item) =>
+          item.utc.includes(userTimezone)
         );
-        const convertedEndTimeToLocalTimezone = moment.tz(
-          endTime,
-          userTimezone
+
+        const offset = timezone.offset;
+
+        let startTime = councilEventPanel.panelStartAndEndDate[0];
+        let endTime = councilEventPanel.panelStartAndEndDate[1];
+
+        startTime = convertToCertainTime(
+          moment(startTime),
+          councilEventPanel.CouncilEvent.timezone
         );
+        endTime = convertToCertainTime(
+          moment(endTime),
+          councilEventPanel.CouncilEvent.timezone
+        );
+
+        startTime = convertToLocalTime(
+          moment(startTime).utcOffset(offset, true)
+        );
+        endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
         const calendarInvite = smtpService().generateCalendarInvite(
-          convertedStartTimeToLocalTimezone,
-          convertedEndTimeToLocalTimezone,
+          startTime,
+          endTime,
           councilEventPanel.panelName,
           `Link to join: ${councilEventPanel.linkToJoin}`,
           "",
@@ -175,7 +195,7 @@ const CouncilEventController = () => {
           "",
           "Hacking HR",
           process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          userTimezone
+          _userTimezone.utc[0]
         );
 
         let icsContent = calendarInvite.toString();
@@ -183,7 +203,6 @@ const CouncilEventController = () => {
           "BEGIN:VEVENT",
           `METHOD:REQUEST\r\nBEGIN:VEVENT`
         );
-        console.log(icsContent, "icsContent");
 
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
@@ -242,6 +261,11 @@ const CouncilEventController = () => {
     try {
       let councilEventPanel = await CouncilEventPanel.findOne({
         where: { id },
+        include: [
+          {
+            model: CouncilEvent,
+          },
+        ],
       });
 
       if (!councilEventPanel) {
@@ -251,23 +275,33 @@ const CouncilEventController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      const startDate = councilEventPanel.panelStartAndEndDate[0];
-      const endDate = councilEventPanel.panelStartAndEndDate[1];
+      let timezone = councilEventPanel.CouncilEvent.timezone;
+      timezone = TimeZoneList.find((tz) => tz.value === timezone);
 
-      console.log(
-        moment
-          .tz(startDate, "America/Los_Angeles")
-          .format("YYYY-MM-DD HH:mm:ssZ")
+      const _userTimezone = TimeZoneList.find((item) =>
+        item.utc.includes(userTimezone)
       );
-      const convertedStartDateToLocalTimezone = moment.tz(
-        startDate,
-        userTimezone
+
+      const offset = timezone.offset;
+
+      let startTime = councilEventPanel.panelStartAndEndDate[0];
+      let endTime = councilEventPanel.panelStartAndEndDate[1];
+
+      startTime = convertToCertainTime(
+        moment(startTime),
+        councilEventPanel.CouncilEvent.timezone
       );
-      const convertedEndDateToLocalTimezone = moment.tz(endDate, userTimezone);
+      endTime = convertToCertainTime(
+        moment(endTime),
+        councilEventPanel.CouncilEvent.timezone
+      );
+
+      startTime = convertToLocalTime(moment(startTime).utcOffset(offset, true));
+      endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
       const calendarInvite = smtpService().generateCalendarInvite(
-        convertedStartDateToLocalTimezone,
-        convertedEndDateToLocalTimezone,
+        startTime,
+        endTime,
         councilEventPanel.panelName,
         "",
         "",
@@ -275,7 +309,7 @@ const CouncilEventController = () => {
         "",
         "Hacking HR",
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-        userTimezone
+        _userTimezone.utc[0]
       );
 
       let icsContent = calendarInvite.toString();
