@@ -54,6 +54,11 @@ const CouncilEventController = () => {
               include: [
                 {
                   model: CouncilEventPanelist,
+                  include: [
+                    {
+                      model: User,
+                    },
+                  ],
                 },
               ],
             },
