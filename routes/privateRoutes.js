@@ -125,7 +125,10 @@ const privateRoutes = {
   "GET /session/participants": "AnnualConferenceController.getParticipants",
   "GET /session/recommended-agenda":
     "AnnualConferenceController.recommendedAgenda",
+  "POST /session/claim": "AnnualConferenceController.claim",
+  "PUT /session/viewed": "AnnualConferenceController.markAsViewed",
   "GET /session/:id": "AnnualConferenceController.get",
+  "PUT /session/:id/save-for-later": "AnnualConferenceController.saveForLater",
   "GET /conference-classes/:conference":
     "AnnualConferenceClassController.getByAnnualConference",
   "GET /conference-classes-user/:conference":
