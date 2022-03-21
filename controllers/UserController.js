@@ -589,6 +589,21 @@ const UserController = () => {
                     [Op.iLike]: `%${search}%`,
                   },
                 },
+                {
+                  company: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  titleProfessions: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  city: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
               ],
             }
           : {},
