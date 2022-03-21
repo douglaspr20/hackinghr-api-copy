@@ -7,6 +7,7 @@ const socketService = require("../services/socket.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const SocketEventTypes = require("../enum/SocketEventTypes");
 const { convertToLocalTime } = require("../utils/format");
+const { LabEmails } = require("../enum");
 
 const AnnualConference = db.AnnualConference;
 const User = db.User;
@@ -113,27 +114,33 @@ const AnnualConferenceController = () => {
   };
 
   const getAll = async (req, res) => {
-    const { startTime, endTime, meta } = req.query;
+    const { startTime, endTime, meta, type } = req.query;
     try {
       let where = "";
 
       if (startTime && endTime) {
-        where = `WHERE (public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}')`;
+        where += `WHERE (public."AnnualConferences"."startTime" >= '${startTime}' AND public."AnnualConferences"."startTime" <= '${endTime}')`;
+      }
+
+      if (type === "conference" && startTime) {
+        where += `AND (public."AnnualConferences"."type" = 'Certificate Track and Panels')`;
+      } else if (type === "conference") {
+        where += `WHERE (public."AnnualConferences"."type" = 'Certificate Track and Panels')`;
       }
 
       if (meta) {
-        where += `AND (public."AnnualConferences"."title" ILIKE '%${meta}%' OR public."AnnualConferences"."description" ILIKE '%${meta}%' 
-        OR public."AnnualConferences"."type" ILIKE '%${meta}%' OR public."Instructors"."name" ILIKE '%${meta}%' 
-        OR public."Instructors"."description" ILIKE '%${meta}%' OR public."AnnualConferences".categories::text ILIKE '%${meta}%' 
+        where += `AND (public."AnnualConferences"."title" ILIKE '%${meta}%' OR public."AnnualConferences"."description" ILIKE '%${meta}%'
+        OR public."AnnualConferences"."type" ILIKE '%${meta}%' OR public."Instructors"."name" ILIKE '%${meta}%'
+        OR public."Instructors"."description" ILIKE '%${meta}%' OR public."AnnualConferences".categories::text ILIKE '%${meta}%'
         OR public."AnnualConferences".meta ILIKE '%${meta}%')`;
       }
 
       const query = `
-      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker, 
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker,
       public."Instructors".image, public."Instructors"."description" as descriptionSpeaker, COUNT(public."Users".id) AS totalUsersJoined
       FROM public."AnnualConferences"
       LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
-      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where} 
+      LEFT JOIN public."Users" ON public."AnnualConferences".id = ANY (public."Users"."sessionsJoined"::int[]) ${where}
       GROUP BY public."AnnualConferences".id, public."Instructors".id`;
 
       const sessionList = await db.sequelize.query(query, {
@@ -179,12 +186,17 @@ const AnnualConferenceController = () => {
     const { sessionsId } = req.query;
 
     try {
-      const sessionUserJoined = await AnnualConference.findAll({
-        where: {
-          id: {
-            [Op.in]: sessionsId,
-          },
-        },
+      const query = `
+      SELECT public."AnnualConferences".*, public."Instructors".id as instructorId, public."Instructors"."name", public."Instructors"."link" as linkSpeaker,
+      public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
+      FROM public."AnnualConferences"
+      LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
+      WHERE public."AnnualConferences"."id" IN (${sessionsId}) AND public."AnnualConferences".type = 'Certificate Track and Panels'
+      GROUP BY public."AnnualConferences".id, public."Instructors".id
+    `;
+
+      const sessionUserJoined = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
 
       return res.status(HttpCodes.OK).json({ sessionUserJoined });
@@ -314,6 +326,159 @@ const AnnualConferenceController = () => {
     }
   };
 
+  const getUsersJoinedSession = async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const users = await User.findAll({
+        where: {
+          sessionsJoined: { [Op.overlap]: [id] },
+        },
+        attributes: ["firstName", "lastName", "email"],
+      });
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const claim = async (req, res) => {
+    const { id } = req.body;
+    const { user } = req;
+
+    if (id) {
+      try {
+        let session = await AnnualConference.findOne({
+          where: {
+            id,
+          },
+        });
+
+        session = {
+          ...session,
+          shrmCode: session.recertification_credits.match(/\d{2}\-\w{5}/)[0],
+          hrciCode: session.recertification_credits.match(/\d{2,8}/)[0],
+        };
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          to: user.email,
+          subject: LabEmails.LIBRARY_CLAIM.subject(session.title),
+          html: LabEmails.LIBRARY_CLAIM.body(user, session),
+        };
+
+        await smtpService().sendMail(mailOptions);
+
+        return res.status(HttpCodes.OK).json({});
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Conference library id is wrong" });
+  };
+
+  const saveForLater = async (req, res) => {
+    const { id } = req.params;
+    const { UserId, status } = req.body;
+
+    try {
+      const session = await AnnualConference.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!session) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Session not found." });
+      }
+
+      const [numberOfAffectedRows, affectedRows] =
+        await AnnualConference.update(
+          {
+            saveForLater:
+              status === "saved"
+                ? Sequelize.fn(
+                    "array_append",
+                    Sequelize.col("saveForLater"),
+                    UserId
+                  )
+                : Sequelize.fn(
+                    "array_remove",
+                    Sequelize.col("saveForLater"),
+                    UserId
+                  ),
+          },
+          {
+            where: {
+              id,
+            },
+            returning: true,
+            plain: true,
+          }
+        );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const markAsViewed = async (req, res) => {
+    const { id, UserId, mark } = req.body;
+
+    if (id) {
+      try {
+        let prevSession = await AnnualConference.findOne({
+          where: { id },
+        });
+
+        const [numberOfAffectedRows, affectedRows] =
+          await AnnualConference.update(
+            {
+              viewed: { ...prevSession.viewed, [UserId]: mark },
+              saveForLater: Sequelize.fn(
+                "array_remove",
+                Sequelize.col("saveForLater"),
+                UserId
+              ),
+            },
+            {
+              where: { id },
+              returning: true,
+              plain: true,
+            }
+          );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Session not found" });
+  };
+
   const downloadICS = async (req, res) => {
     const { id } = req.params;
     const { userTimezone } = req.query;
@@ -403,12 +568,16 @@ const AnnualConferenceController = () => {
     getAll,
     getSessionsUser,
     getSessionsUserJoined,
+    getUsersJoinedSession,
     getParticipants,
     get,
     update,
     remove,
     sendMessage,
     recommendedAgenda,
+    claim,
+    saveForLater,
+    markAsViewed,
     downloadICS,
   };
 };

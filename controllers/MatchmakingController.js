@@ -11,11 +11,15 @@ const User = db.User;
 const MatchmakingController = () => {
   const getMatchmake = async (req, res) => {
     const filters = req.query;
+    const { id } = req.token;
 
     let where = {
       percentOfCompletion: 100,
       matchedCount: {
         [Op.lt]: 5,
+      },
+      id: {
+        [Op.ne]: id,
       },
     };
 
@@ -79,19 +83,6 @@ const MatchmakingController = () => {
         where,
       });
 
-      const matchedUserIds = matchmakingUsers.map((user) => user.id);
-
-      await User.increment(
-        {
-          matchedCount: +1,
-        },
-        {
-          where: {
-            id: matchedUserIds,
-          },
-        }
-      );
-
       return res.status(HttpCodes.OK).json({ matchmakingUsers });
     } catch (error) {
       console.log(error);
@@ -104,12 +95,28 @@ const MatchmakingController = () => {
   };
 
   const sendMatchEmail = async (req, res) => {
-    const { id } = req.body;
+    const { id, message } = req.body;
+    const { id: advertiserId } = req.token;
 
     try {
       const user = await User.findOne({
+        attributes: [
+          "firstName",
+          "lastName",
+          "email",
+          "titleProfessions",
+          "company",
+          "personalLinks",
+        ],
         where: {
           id,
+        },
+      });
+
+      const advertiser = await User.findOne({
+        attributes: ["firstName", "lastName", "email"],
+        where: {
+          id: advertiserId,
         },
       });
 
@@ -124,11 +131,22 @@ const MatchmakingController = () => {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: "enrique@hackinghr.io",
         subject: LabEmails.MATCHMAKE_USERS.subject(),
-        html: LabEmails.MATCHMAKE_USERS.body(),
+        html: LabEmails.MATCHMAKE_USERS.body(user, advertiser, message),
         contentType: "text/html",
       };
 
       await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      // await User.increment(
+      //   {
+      //     matchedCount: +1,
+      //   },
+      //   {
+      //     where: {
+      //       id,
+      //     },
+      //   }
+      // );
 
       return res.status(HttpCodes.OK).json({});
     } catch (error) {

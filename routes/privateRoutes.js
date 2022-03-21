@@ -125,7 +125,10 @@ const privateRoutes = {
   "GET /session/participants": "AnnualConferenceController.getParticipants",
   "GET /session/recommended-agenda":
     "AnnualConferenceController.recommendedAgenda",
+  "POST /session/claim": "AnnualConferenceController.claim",
+  "PUT /session/viewed": "AnnualConferenceController.markAsViewed",
   "GET /session/:id": "AnnualConferenceController.get",
+  "PUT /session/:id/save-for-later": "AnnualConferenceController.saveForLater",
   "GET /conference-classes/:conference":
     "AnnualConferenceClassController.getByAnnualConference",
   "GET /conference-classes-user/:conference":
@@ -240,6 +243,19 @@ const privateRoutes = {
   "GET /messages/:conversationId": "MessageController.getAll",
   "PUT /messages/:ConversationId": "MessageController.readMessages",
   "GET /more-messages/:ConversationId": "MessageController.getMoreMessages",
+  "PUT /user/accept-terms-condition-g-conference/:id":
+    "UserController.acceptTermsConditionGConference",
+  "PUT /user/view-rules-g-conference/:id":
+    "UserController.viewRulesGConference",
+  "GET /users/count-all": "UserController.countAllUsers",
+  "GET /ads-by-page": "AdvertisementController.getAdvertisementsTodayByPage",
+  "GET /ads/active": "AdvertisementController.getAllActiveAdvertisements",
+  "GET /ads/:UserId": "AdvertisementController.getAdvertisementByAdvertiser",
+  "POST /ad": "AdvertisementController.createAdvertisement",
+  "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
+  "GET /matchmake": "MatchmakingController.getMatchmake",
+  "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
+  "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
 };
 
 module.exports = privateRoutes;

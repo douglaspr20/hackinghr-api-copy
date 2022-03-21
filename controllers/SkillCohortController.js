@@ -1,6 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const isEmpty = require("lodash/isEmpty");
+const { isEmpty } = require("lodash");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
@@ -11,6 +11,7 @@ const SkillCohortResources = db.SkillCohortResources;
 const SkillCohortParticipant = db.SkillCohortParticipant;
 const SkillCohortResourceResponse = db.SkillCohortResourceResponse;
 const SkillCohortResponseAssessment = db.SkillCohortResponseAssessment;
+const User = db.User;
 
 const SkillCohortController = () => {
   /**
@@ -153,7 +154,10 @@ const SkillCohortController = () => {
   const getAll = async (req, res) => {
     try {
       const skillCohorts = await SkillCohort.findAll({
-        order: [["id", "ASC"]],
+        order: [
+          ["id", "ASC"],
+          [SkillCohortResources, "releaseDate", "ASC"],
+        ],
         include: {
           model: SkillCohortResources,
         },
@@ -176,12 +180,10 @@ const SkillCohortController = () => {
       const newSkillCohort = await SkillCohort.create(skillCohort);
 
       const transformedSkillCohortResources = skillCohortResources.map(
-        (resource) => {
-          return {
-            ...resource,
-            SkillCohortId: newSkillCohort.id,
-          };
-        }
+        (resource) => ({
+          ...resource,
+          SkillCohortId: newSkillCohort.id,
+        })
       );
 
       await SkillCohortResources.bulkCreate(transformedSkillCohortResources);
@@ -206,7 +208,7 @@ const SkillCohortController = () => {
 
     const dateToday = moment()
       .tz("America/Los_Angeles")
-      .startOf("day")
+      // .startOf("day")
       .utc()
       .format("YYYY-MM-DD HH:mm:ssZ");
 
@@ -218,11 +220,11 @@ const SkillCohortController = () => {
         include: [
           {
             model: SkillCohort,
-            where: {
-              endDate: {
-                [Op.gt]: dateToday,
-              },
-            },
+            // where: {
+            //   endDate: {
+            //     [Op.gt]: dateToday,
+            //   },
+            // },
             nest: true,
             required: true,
             include: [
@@ -233,9 +235,9 @@ const SkillCohortController = () => {
                   SkillCohortId: {
                     [Op.ne]: null,
                   },
-                  releaseDate: {
-                    [Op.lt]: dateToday,
-                  },
+                  // releaseDate: {
+                  //   [Op.lt]: dateToday,
+                  // },
                 },
               },
             ],
@@ -355,6 +357,7 @@ const SkillCohortController = () => {
    */
   const remove = async (req, res) => {
     const { id } = req.params;
+    const user = req.user;
 
     if (id) {
       try {
@@ -363,6 +366,21 @@ const SkillCohortController = () => {
             id,
           },
         });
+
+        let isFreeTrial = user.memberShip === "free";
+
+        if (isFreeTrial) {
+          await User.update(
+            {
+              projectXFreeTrialAvailability: "TRUE",
+            },
+            {
+              where: {
+                id: user.id,
+              },
+            }
+          );
+        }
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
@@ -551,6 +569,39 @@ const SkillCohortController = () => {
     }
   };
 
+  const getAllCohortsThatFinishedTheDayBefore = async (dateToday) => {
+    try {
+      const cohorts = await SkillCohort.findAll({
+        where: {
+          endDate: {
+            [Op.lt]: dateToday,
+          },
+        },
+        include: [
+          {
+            model: SkillCohortParticipant,
+            where: {
+              hasAccess: "TRUE",
+            },
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
+      });
+
+      const finishedCohorts = cohorts.filter((cohort) =>
+        moment(cohort.endDate).add(1, "day").isSame(dateToday)
+      );
+
+      return finishedCohorts;
+    } catch (err) {
+      return [];
+    }
+  };
+
   return {
     create,
     getAllActiveUserSide,
@@ -565,6 +616,7 @@ const SkillCohortController = () => {
     getAllSkillCohortThatWillStartWeekLater,
     getAllSkillCohortThatWillStartTomorrow,
     duplicate,
+    getAllCohortsThatFinishedTheDayBefore,
   };
 };
 

@@ -6,6 +6,7 @@ const moment = require("moment");
 
 const SkillCohortParticipant = db.SkillCohortParticipant;
 const SkillCohort = db.SkillCohort;
+const User = db.User;
 
 const SkillCohortParticipantController = () => {
   /**
@@ -18,34 +19,62 @@ const SkillCohortParticipantController = () => {
     const { user } = req;
 
     try {
-      const skillCohortParticipant = await SkillCohortParticipant.create({
-        SkillCohortId,
-        UserId,
-      });
-      const skillCohort = await SkillCohort.findOne({
-        where: {
-          id: SkillCohortId,
-        },
-      });
+      const hasProjectXFreeTrial = user.projectXFreeTrialAvailability;
+      const isUserPremium = user.memberShip === "premium";
 
-      if (skillCohort) {
-        const startDate = moment(skillCohort.startDate).format("LL");
-        const mailOptions = {
-          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-          to: user.email,
-          subject: LabEmails.JOIN_COHORT_EMAIL.subject(skillCohort, startDate),
-          html: LabEmails.JOIN_COHORT_EMAIL.body(user, skillCohort, startDate),
-        };
+      if (hasProjectXFreeTrial || isUserPremium) {
+        const skillCohortParticipant = await SkillCohortParticipant.create({
+          SkillCohortId,
+          UserId,
+        });
+        const skillCohort = await SkillCohort.findOne({
+          where: {
+            id: SkillCohortId,
+          },
+        });
 
-        await smtpService().sendMailUsingSendInBlue(mailOptions);
+        if (hasProjectXFreeTrial) {
+          await User.update(
+            {
+              projectXFreeTrialAvailability: false,
+            },
+            {
+              where: {
+                id: user.id,
+              },
+            }
+          );
+        }
 
-        return res.status(HttpCodes.OK).json({ skillCohortParticipant });
+        if (skillCohort) {
+          const startDate = moment(skillCohort.startDate).format("LL");
+          const mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.JOIN_COHORT_EMAIL.subject(
+              skillCohort,
+              startDate
+            ),
+            html: LabEmails.JOIN_COHORT_EMAIL.body(
+              user,
+              skillCohort,
+              startDate
+            ),
+          };
+
+          await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+          return res.status(HttpCodes.OK).json({ skillCohortParticipant });
+        }
+
+        return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+          msg: "Internal server error",
+        });
+      } else {
+        return res
+          .status(HttpCodes.FORBIDDEN)
+          .json({ msg: "Your one-time free trial is consumed." });
       }
-
-      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
-        msg: "Internal server error",
-        error,
-      });
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -373,7 +402,7 @@ const SkillCohortParticipantController = () => {
         include: [
           {
             model: db.SkillCohort,
-            attributes: ["title", "id"],
+            attributes: ["title", "id", "startDate"],
           },
           {
             model: db.User,

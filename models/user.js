@@ -130,10 +130,20 @@ module.exports = (sequelize, DataTypes) => {
       recruiterSubscription_startdate: DataTypes.DATE,
       recruiterSubscription_enddate: DataTypes.DATE,
       acceptTermsConditionGConference: DataTypes.BOOLEAN,
+      viewRulesGConference: DataTypes.BOOLEAN,
       dateSendEmailTermsConditionGConference: DataTypes.DATE,
       matchedCount: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
+      },
+      isAdvertiser: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      advertiserSubscriptionDate: DataTypes.DATE,
+      projectXFreeTrialAvailability: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
       },
     },
     {

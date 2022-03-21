@@ -45,7 +45,20 @@ module.exports = (sequelize, DataTypes) => {
       },
       link: DataTypes.STRING,
       recertification_credits: DataTypes.STRING,
+      viewed: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+      },
+      saveForLater: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
+      active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
     },
+
     {
       sequelize,
       modelName: "AnnualConference",

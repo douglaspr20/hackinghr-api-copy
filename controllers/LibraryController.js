@@ -74,6 +74,7 @@ const LibraryController = () => {
 
   const share = async (req, res) => {
     const { body } = req;
+    const user = req.user;
 
     if (body.title) {
       try {
@@ -98,6 +99,18 @@ const LibraryController = () => {
         }
 
         // send email to admin user.
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: "enrique@hackinghr.io",
+          subject: LabEmails.NEW_LIBRARY_CONTENT_FOR_APPROVAL.subject(),
+          html: LabEmails.NEW_LIBRARY_CONTENT_FOR_APPROVAL.body(
+            newLibrary.title,
+            user
+          ),
+        };
+
+        await smtpService().sendMailUsingSendInBlue(mailOptions);
 
         return res.status(HttpCodes.OK).json({ library: newLibrary });
       } catch (error) {
@@ -149,6 +162,7 @@ const LibraryController = () => {
 
       const libraries = await Library.findAndCountAll({
         where,
+        order: [["createdAt", "ASC"]],
       });
 
       return res.status(HttpCodes.OK).json({ libraries });

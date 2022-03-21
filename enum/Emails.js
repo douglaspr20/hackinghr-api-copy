@@ -564,12 +564,7 @@ module.exports = {
       - Estimated duration: ${resource.duration} minutes <br>
     </p>
     <p>
-      Please remember to: <br> <br>
-      -	Provide your response to today’s question about this resource in the cohort dashboard. <br>
-      -	Assess the responses provided by other cohort participants
-    </p>
-    <p>
-      Don’t forget that you will be removed from the program if you miss to provide your response two times during a given week or if you miss to assess other participants’ responses two times during a given week. 
+      Please remember to provide your response to today’s question about this resource in the cohort dashboard. This is a mandatory requirement to continue to participate in the program. We assess your completion of this requirement every Sunday. If you have missed two or more activities you will not be able to join this cohort anymore.
     </p>
     <p>
       Please note: whether you receive the daily email or not, the resource will be posted in the Cohort dashboard in the Hacking HR LAB. Sometimes our emails get stuck somewhere in the strange world of the Internet. If that’s the case, please GO to the Cohort dashboard and review the resource. You still have to complete the daily activity, even if you don’t receive the daily resource email on a given day.  
@@ -1119,6 +1114,68 @@ module.exports = {
   },
   MATCHMAKE_USERS: {
     subject: () => `Match user`,
-    body: () => `Match test`,
+    body: (matchedUser, advertiser, message) => `
+      <p>
+        Advertiser: ${advertiser.firstName} ${advertiser.lastName} <br/>
+        Advertiser Email: ${advertiser.email} <br />
+        Advertiser Message: ${message} <br />
+      </p>
+
+      <p>
+        Matched User: ${matchedUser.firstName} ${matchedUser.lastName} <br/>
+        Matched User Title: ${matchedUser.titleProfessions} <br/>
+        Matched User Company: ${matchedUser.company} <br/>
+        Matched User LinkedIn: ${matchedUser.personalLinks.linkedin} <br/>
+      </p>
+    `,
+  },
+  USER_BECOME_ADVERTISER: {
+    subject: () => `Advertiser`,
+    body: () => `You are now an advertiser`,
+  },
+  NEW_LIBRARY_CONTENT_FOR_APPROVAL: {
+    subject: () => `New Library Content for Approval`,
+    body: (title, user) => `
+      <p>
+        Title: ${title}
+      </p>
+
+      <p>
+        User: ${user.firstName} ${user.lastName}
+      </p>
+    `,
+  },
+  THANK_YOU_PARTICIPATION_PROJECT_X: {
+    subject: (cohort, date) =>
+      `Thank you for joining Hacking HR’s ProjectX: ${cohort.title}. Your Digital Certificate of Completion will be available on ${date}`,
+    body: (cohort, user, date) => `
+      <p>
+      Hi, ${user.firstName}
+      </p>
+      <p>
+      Thank you for joining Hacking HR’s ProjectX ${cohort.title}.  
+      </p>
+      <p>
+      You are almost there! Please remember to complete this week’s required activities!  
+      </p>
+      <p>
+      Upon completion of the last activities of the program, your Digital Certificate of Completion will be available on ${date}
+      </p>
+      <p>
+        We have many more cohorts focused on other skills that are open now or will open soon! Please join us and continue your learning journey with Hacking HR!.
+      </p>
+      <p>
+      Also, we would love to hear your feedback. Please let us know how we can make this program better for you and the rest of the participants. Just respond to this email letting us know your suggestions! 
+      </p>
+      <p>
+      By next Monday ${date} you will have access to a Digital Certificate of Completion if you complete the rest of this week’s activities. Just go back to the Hacking HR LAB ProjectX’s module, and in the dashboard click on Digital Certificate in the completed cohort. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      Hacking HR LAB
+      <br />
+      `,
   },
 };

@@ -724,7 +724,7 @@ const UserController = () => {
         });
       }
 
-      if (totalUsers.count >= 30) {
+      if (totalUsers && totalUsers?.count >= 30) {
         return res.status(HttpCodes.BAD_REQUEST).json({
           msg: "This session has reached the limit of users that can join",
         });
@@ -1549,6 +1549,31 @@ const UserController = () => {
     }
   };
 
+  const viewRulesGConference = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          viewRulesGConference: true,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   const countAllUsers = async (req, res) => {
     try {
       const userCount = await User.count();
@@ -1593,6 +1618,7 @@ const UserController = () => {
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
     acceptTermsConditionGConference,
+    viewRulesGConference,
     countAllUsers,
   };
 };
