@@ -1495,6 +1495,38 @@ const UserController = () => {
     }
   };
 
+  const userIsOnline = async (id, online) => {
+    try {
+      const prevUser = await User.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!prevUser) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "Bad Request: data is wrong" });
+      }
+
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          isOnline: online,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return affectedRows;
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  };
+
   const acceptTermsConditionGConference = async (req, res) => {
     const { id } = req.params;
     try {
@@ -1618,6 +1650,7 @@ const UserController = () => {
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
     acceptTermsConditionGConference,
+    userIsOnline,
     viewRulesGConference,
     countAllUsers,
   };
