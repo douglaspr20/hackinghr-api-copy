@@ -8,6 +8,7 @@ const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
+const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
 const { isEmpty, flatten, head, compact } = require("lodash");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
@@ -482,12 +483,13 @@ const EventController = () => {
       );
       const usersAssistenceSelected = filterEvents.map((item) => {
         eventsId.push(item.id);
-        return item.usersAssistence[0];
+        return item.usersAssistence[0].map((el) => JSON.parse(el));
       });
+
       const usersAssistence = usersAssistenceSelected.map((el) =>
-        JSON.parse(el)
+        el.map((item) => item)
       );
-      console.log("avehhh", usersAssistence);
+
       usersAssistence.map(
         (item) =>
           item.usersAssistence?.length > 0 &&
@@ -560,7 +562,6 @@ const EventController = () => {
         }
         let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
-        console.log("users assistence", body.usersAssistence);
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
             usersAssistence: [body.usersAssistence],
@@ -571,14 +572,55 @@ const EventController = () => {
             plain: true,
           }
         );
+
+        let dayOfMail;
+        const days = body.usersAssistence.map((el) => JSON.parse(el));
+        const timezone = TimeZoneList.find(
+          (item) => item.value === affectedRows.timezone
+        );
+        days.map((time) => {
+          const convertedStartEventTime = moment(time.start)
+            .tz(timezone.utc[0])
+            .utcOffset(timezone.offset, true)
+            .format();
+          const convertedEndEventTime = moment(time.end)
+            .tz(timezone.utc[0])
+            .utcOffset(timezone.offset, true)
+            .format();
+
+          const localDate = moment()
+            .utc()
+            .tz(timezone.utc[0])
+            .utcOffset(timezone.offset, true)
+            .format();
+
+          const isTodayEvent =
+            moment(convertedStartEventTime).format("MM DD") <=
+              moment(localDate).format("MM DD") &&
+            moment(convertedEndEventTime).format("MM DD") ===
+              moment(localDate).format("MM DD");
+
+          if (isTodayEvent) {
+            dayOfMail = days.findIndex((el) => isTodayEvent);
+          }
+        });
+
         await Promise.resolve(
           (() => {
             let mailOptions = {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               // to: "morenoelba2002@gmail.com",
               to: user.email,
-              subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject(),
-              html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user),
+              subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
+              html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
             };
             console.log("***** mailOptions ", mailOptions);
             smtpService().sendMailUsingSendInBlue(mailOptions);

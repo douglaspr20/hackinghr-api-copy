@@ -1010,13 +1010,33 @@ module.exports = {
     `,
   },
   USER_CONFIRM_LIVE_ASSISTENCE: {
-    subject: () => "Your assistance has been confirmed",
-    body: (user) => `
+    subject: (event) =>
+      `Thank you for confirming your participation to Day ${event.firstDay} of ${event.allDays} at Hacking HR’s ${event.name}`,
+    body: (user, event) => `
     <p>
     Hi ${user.firstName},
     </p>
     <p>
-    Your assistance has been confirmed.
+    Thank you for confirming your participation today.
+    </p>
+    <p>
+    Please keep in mind that this event lasts Y days and you must attend to all the 
+    sessions and days during the event to claim a Digital Certificate of Participation. 
+    Watching the recorded videos after the event is not conducive to a Digital 
+    Certificate of Participation.
+    </p>
+    <p>
+    Today is Day  ${event.firstDay} of ${event.allDays} days of the event!.
+    </p>
+    <p>
+    Your Digital Certificate of Participation will be available at the end of the event 
+    (after the last session!) if you CONFIRM your participation in all days of this event.
+    </p>
+    <p>
+    Thank you!
+    </p>
+    <p>
+    Hacking HR Team
     </p>
   `,
   },
