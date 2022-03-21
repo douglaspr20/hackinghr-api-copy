@@ -191,7 +191,7 @@ const AnnualConferenceController = () => {
       public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
       FROM public."AnnualConferences"
       LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
-      WHERE public."AnnualConferences"."id" IN (${sessionsId}) AND public."AnnualConferences".type = 'Certificate Track and Panels'
+      WHERE public."AnnualConferences"."id" IN (${sessionsId})
       GROUP BY public."AnnualConferences".id, public."Instructors".id
     `;
 
