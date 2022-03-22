@@ -608,6 +608,7 @@ const EventController = () => {
         console.log("avee");
         console.log(dayOfMail);
         console.log(days.length);
+        console.log(body.usersAssistence);
 
         await Promise.resolve(
           (() => {
