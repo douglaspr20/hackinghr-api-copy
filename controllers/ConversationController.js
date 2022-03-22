@@ -1,10 +1,10 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const socketService = require("../services/socket.service");
 const SocketEventTypes = require("../enum/SocketEventTypes");
-const { Sequelize } = require("../models");
 const Conversation = db.Conversation;
+const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
 
 const ConversationController = () => {
@@ -46,7 +46,6 @@ const ConversationController = () => {
      LEFT JOIN public."Messages" ON public."Messages"."ConversationId" = public."Conversations".id WHERE public."Conversations"."members" && ARRAY[${userId}]::int[]
      ORDER BY public."Messages"."updatedAt" DESC
      LIMIT 50
-     
      `;
 
       const conversations = await db.sequelize.query(query, {
@@ -63,15 +62,35 @@ const ConversationController = () => {
   };
 
   const get = async (req, res) => {
-    const { id } = req.params;
+    const { conversationId } = req.params;
+
     try {
-      const conversations = await Conversation.findOne({
-        where: {
-          id,
-        },
+      const query = `
+      SELECT public."Conversations".*, public."Users".id as userId, public."Users"."abbrName", public."Users"."email", 
+      public."Users".img, public."Users"."isOnline", public."Users"."firstName", public."Users"."lastName", public."Users"."timezone",
+      public."Users"."isOnline" FROM public."Conversations"
+      LEFT JOIN public."Users" ON public."Users".id = ANY (public."Conversations".members::int[]) WHERE public."Conversations".id = ${conversationId}
+      `;
+
+      const conversation = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
       });
 
-      return res.status(HttpCodes.OK).json({ conversations });
+      //  const conversation = await Conversation.findOne({
+      //   where: {
+      //     id: conversationId,
+      //   },
+      //   include: {
+      //     model: User,
+      //     where: {
+      //       id: {
+      //         [Op.in]: Sequelize.col("members"),
+      //       },
+      //     },
+      //   },
+      // });
+
+      return res.status(HttpCodes.OK).json({ conversation });
     } catch (error) {
       res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
         msg: "Internal Server Error",

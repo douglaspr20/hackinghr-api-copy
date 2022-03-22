@@ -238,6 +238,7 @@ const privateRoutes = {
   "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
   "POST /conversations": "ConversationController.create",
+  "GET /conversation/:conversationId": "ConversationController.get",
   "GET /conversations/:userId": "ConversationController.getAll",
   "POST /messages/": "MessageController.create",
   "GET /messages/:conversationId": "MessageController.getAll",

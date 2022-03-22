@@ -506,6 +506,8 @@ io.on("connection", (socket) => {
   socket.on(SocketEventTypes.USER_OFFLINE, async ({ id }) => {
     const userOnline = await UserController().userIsOnline(id, false);
     io.emit(SocketEventTypes.USER_OFFLINE, userOnline.dataValues);
+    delete usersOnline[socket.id];
+    socketService().removeSocket(socket);
   });
 
   socket.on(SocketEventTypes.SEND_MESSAGE, async (message) => {
