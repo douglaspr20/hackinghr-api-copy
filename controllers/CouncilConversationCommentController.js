@@ -12,6 +12,8 @@ const CouncilConversationCommentController = () => {
     const data = req.body;
     const { id } = req.token;
 
+    console.log("cringe", data);
+
     try {
       await CouncilConversationComment.upsert({
         ...data,
