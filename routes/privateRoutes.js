@@ -255,6 +255,21 @@ const privateRoutes = {
   "DELETE /council/event/:id": "CouncilEventController.destroy",
   "POST /council/event/panelist":
     "CouncilEventController.joinCouncilEventPanelist",
+  "POST /council-conversation": "CouncilConversationController.upsert",
+  "GET /council-conversations": "CouncilConversationController.getAll",
+  "GET /council-conversation/:id": "CouncilConversationController.get",
+  "DELETE /council-conversation/:id": "CouncilConversationController.destroy",
+  "POST /council-conversation/comment":
+    "CouncilConversationCommentController.upsert",
+  "POST /council-conversation/reply":
+    "CouncilConversationReplyController.upsert",
+  "PUT /council-conversation/comment/:id":
+    "CouncilConversationCommentController.destroy",
+  "PUT /council-conversation/reply/:id":
+    "CouncilConversationReplyController.destroy",
+  "POST /council-conversation/like": "CouncilConversationLikeController.create",
+  "DELETE /council-conversation/like/:id":
+    "CouncilConversationLikeController.destroy",
 };
 
 module.exports = privateRoutes;

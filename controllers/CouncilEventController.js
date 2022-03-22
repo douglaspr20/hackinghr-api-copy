@@ -280,13 +280,13 @@ const CouncilEventController = () => {
           .json({ msg: "Internal server error" });
       }
 
-      let timezone = councilEventPanel.CouncilEvent.timezone;
-      timezone = TimeZoneList.find((tz) => tz.value === timezone);
-
       const _userTimezone = TimeZoneList.find((item) =>
         item.utc.includes(userTimezone)
       );
 
+      const timezone = TimeZoneList.find(
+        (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
+      );
       const offset = timezone.offset;
 
       let startTime = councilEventPanel.panelStartAndEndDate[0];
