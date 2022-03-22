@@ -562,6 +562,7 @@ const EventController = () => {
         }
         let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
+        console.log("users assistence", body.usersAssistence);
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
             usersAssistence: [body.usersAssistence],
@@ -607,7 +608,7 @@ const EventController = () => {
         console.log("avee");
         console.log(dayOfMail);
         console.log(days.length);
-        console.log(body.usersAssistence);
+
         await Promise.resolve(
           (() => {
             let mailOptions = {
