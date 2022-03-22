@@ -608,6 +608,7 @@ const EventController = () => {
         console.log(dayOfMail);
         console.log(days.length);
         console.log(body.usersAssistence);
+
         await Promise.resolve(
           (() => {
             let mailOptions = {
