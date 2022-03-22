@@ -253,6 +253,8 @@ const privateRoutes = {
   "POST /council/event": "CouncilEventController.upsert",
   "GET /council/events": "CouncilEventController.getAll",
   "DELETE /council/event/:id": "CouncilEventController.destroy",
+  "POST /council/event/panelist":
+    "CouncilEventController.joinCouncilEventPanelist",
 };
 
 module.exports = privateRoutes;

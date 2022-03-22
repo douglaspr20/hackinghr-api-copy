@@ -1178,4 +1178,8 @@ module.exports = {
       <br />
       `,
   },
+  COUNCIL_EVENT_JOIN: {
+    subject: () => `You have joined a council event`,
+    body: () => `Test`,
+  },
 };

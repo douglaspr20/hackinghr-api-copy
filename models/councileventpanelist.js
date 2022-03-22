@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class CouncilEvent extends Model {
+  class CouncilEventPanelist extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -9,22 +9,21 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      CouncilEvent.hasMany(models.CouncilEventPanel);
+      CouncilEventPanelist.belongsTo(models.User, { foreignKey: "UserId" });
+      CouncilEventPanelist.belongsTo(models.CouncilEventPanel, {
+        foreignKey: "CouncilEventPanelId",
+        onDelete: "CASCADE",
+      });
     }
   }
-  CouncilEvent.init(
+  CouncilEventPanelist.init(
     {
-      eventName: DataTypes.STRING,
-      startDate: DataTypes.DATE,
-      endDate: DataTypes.DATE,
-      description: DataTypes.TEXT,
-      numberOfPanels: DataTypes.INTEGER,
-      status: DataTypes.ENUM("draft", "active"),
+      // panelName: DataTypes.STRING,
     },
     {
       sequelize,
-      modelName: "CouncilEvent",
+      modelName: "CouncilEventPanelist",
     }
   );
-  return CouncilEvent;
+  return CouncilEventPanelist;
 };

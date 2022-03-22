@@ -1,7 +1,12 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const { LabEmails, TimeZoneList } = require("../enum");
+const smtpService = require("../services/smtp.service");
+const moment = require("moment-timezone");
 
 const CouncilEvent = db.CouncilEvent;
+const CouncilEventPanel = db.CouncilEventPanel;
+const CouncilEventPanelist = db.CouncilEventPanelist;
 const User = db.User;
 
 const CouncilEventController = () => {
@@ -9,50 +14,53 @@ const CouncilEventController = () => {
     const data = req.body;
 
     try {
-      if (data.isJoining) {
-        const councilEvent = await CouncilEvent.findOne({
-          where: {
-            id: data.id,
+      const councilEvent = await db.sequelize.transaction(async (t) => {
+        const [councilEvent] = await CouncilEvent.upsert(
+          data,
+          {
+            returning: true,
+            raw: true,
           },
-        });
+          {
+            transaction: t,
+          }
+        );
 
-        const isFull =
-          councilEvent.panels[data.panelIndex].panelists.length >=
-          +councilEvent.panels[data.panelIndex].numberOfPanelists;
-
-        if (isFull) {
-          return res
-            .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Internal server error" });
+        const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
+        if (isPanelFull) {
+          throw new Error();
         }
-      }
 
-      let [councilEvent] = await CouncilEvent.upsert(data, {
-        returning: true,
-        raw: true,
-      });
-      councilEvent = councilEvent.dataValues;
-
-      const panelists = councilEvent.panels.map((panel) => {
-        return User.findAll({
-          where: {
-            id: panel.panelists || [],
-          },
+        const councilEventPanels = data.panels.map((panel) => {
+          return CouncilEventPanel.upsert(
+            {
+              ...panel,
+              CouncilEventId: councilEvent.id,
+            },
+            { returning: true, raw: true }
+          );
         });
-      });
 
-      const panelistsData = await Promise.all(panelists);
-      const panels = councilEvent.panels.map((panel, panelIndex) => {
-        return {
-          ...panel,
-          panelistsData: panelistsData[panelIndex],
-        };
-      });
+        await Promise.all(councilEventPanels);
 
-      councilEvent = {
-        ...councilEvent,
-        panels,
-      };
+        const _councilEvent = await CouncilEvent.findOne({
+          where: {
+            id: councilEvent.id,
+          },
+          include: [
+            {
+              model: CouncilEventPanel,
+              include: [
+                {
+                  model: CouncilEventPanelist,
+                },
+              ],
+            },
+          ],
+        });
+
+        return _councilEvent;
+      });
 
       return res.status(HttpCodes.OK).json({ councilEvent });
     } catch (err) {
@@ -67,38 +75,21 @@ const CouncilEventController = () => {
     try {
       let councilEvents = await CouncilEvent.findAll({
         order: [["createdAt", "ASC"]],
-        raw: true,
-      });
-
-      const jaggeredCouncilEvents = councilEvents.map((event) => {
-        const events = event.panels.map((panel) => {
-          return User.findAll({
-            where: {
-              id: panel.panelists || [],
-            },
-          });
-        });
-
-        return events;
-      });
-
-      let data = jaggeredCouncilEvents.map(
-        async (event) => await Promise.all(event)
-      );
-      data = await Promise.all(data);
-
-      councilEvents = councilEvents.map((event, eventIndex) => {
-        const panels = event.panels.map((panel, panelIndex) => {
-          return {
-            ...panel,
-            panelistsData: data[eventIndex][panelIndex],
-          };
-        });
-
-        return {
-          ...event,
-          panels,
-        };
+        include: [
+          {
+            model: CouncilEventPanel,
+            include: [
+              {
+                model: CouncilEventPanelist,
+                include: [
+                  {
+                    model: User,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       });
 
       return res.status(HttpCodes.OK).json({ councilEvents });
@@ -131,10 +122,191 @@ const CouncilEventController = () => {
     }
   };
 
+  const joinCouncilEventPanelist = async (req, res) => {
+    const { id, email } = req.user;
+    const { councilEventPanelId, status } = req.body;
+    const { userTimezone } = req.query;
+
+    try {
+      if (status === "Join") {
+        const councilEventPanel = await CouncilEventPanel.findOne({
+          where: {
+            id: councilEventPanelId,
+          },
+        });
+
+        const councilEventPanelistsCount = await CouncilEventPanelist.count({
+          where: { CouncilEventPanelId: councilEventPanelId },
+        });
+
+        const isFull =
+          councilEventPanelistsCount >= councilEventPanel.numberOfPanelists;
+
+        if (isFull) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+
+        await CouncilEventPanelist.create({
+          CouncilEventPanelId: councilEventPanelId,
+          UserId: id,
+        });
+
+        const startTime = councilEventPanel.panelStartAndEndDate[0];
+        const endTime = councilEventPanel.panelStartAndEndDate[1];
+
+        const convertedStartTimeToLocalTimezone = moment.tz(
+          startTime,
+          userTimezone
+        );
+        const convertedEndTimeToLocalTimezone = moment.tz(
+          endTime,
+          userTimezone
+        );
+
+        const calendarInvite = smtpService().generateCalendarInvite(
+          convertedStartTimeToLocalTimezone,
+          convertedEndTimeToLocalTimezone,
+          councilEventPanel.panelName,
+          `Link to join: ${councilEventPanel.linkToJoin}`,
+          "",
+          // event.location,
+          "",
+          "Hacking HR",
+          process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          userTimezone
+        );
+
+        let icsContent = calendarInvite.toString();
+        icsContent = icsContent.replace(
+          "BEGIN:VEVENT",
+          `METHOD:REQUEST\r\nBEGIN:VEVENT`
+        );
+        console.log(icsContent, "icsContent");
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: email,
+          subject: LabEmails.COUNCIL_EVENT_JOIN.subject(),
+          html: LabEmails.COUNCIL_EVENT_JOIN.body(),
+          contentType: "text/calendar",
+          attachments: [
+            {
+              filename: `${councilEventPanel.panelName}.ics`,
+              content: icsContent,
+              contentType: "application/ics; charset=UTF-8; method=REQUEST",
+              contentDisposition: "inline",
+            },
+          ],
+        };
+
+        smtpService().sendMailUsingSendInBlue(mailOptions);
+      } else {
+        await CouncilEventPanelist.destroy({
+          where: {
+            UserId: id,
+          },
+        });
+      }
+
+      const councilEventPanel = await CouncilEventPanel.findOne({
+        where: {
+          id: councilEventPanelId,
+        },
+        include: [
+          {
+            model: CouncilEventPanelist,
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
+      });
+
+      return res.status(HttpCodes.OK).json({ councilEventPanel });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const downloadICS = async (req, res) => {
+    const { id } = req.params;
+    const { userTimezone } = req.query;
+
+    try {
+      let councilEventPanel = await CouncilEventPanel.findOne({
+        where: { id },
+      });
+
+      if (!councilEventPanel) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      const startDate = councilEventPanel.panelStartAndEndDate[0];
+      const endDate = councilEventPanel.panelStartAndEndDate[1];
+
+      console.log(
+        moment
+          .tz(startDate, "America/Los_Angeles")
+          .format("YYYY-MM-DD HH:mm:ssZ")
+      );
+      const convertedStartDateToLocalTimezone = moment.tz(
+        startDate,
+        userTimezone
+      );
+      const convertedEndDateToLocalTimezone = moment.tz(endDate, userTimezone);
+
+      const calendarInvite = smtpService().generateCalendarInvite(
+        convertedStartDateToLocalTimezone,
+        convertedEndDateToLocalTimezone,
+        councilEventPanel.panelName,
+        "",
+        "",
+        // event.location,
+        "",
+        "Hacking HR",
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        userTimezone
+      );
+
+      let icsContent = calendarInvite.toString();
+      icsContent = icsContent.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
+
+      res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${encodeURIComponent(
+          councilEventPanel.panelName
+        )}.ics`
+      );
+      res.setHeader("Content-Length", icsContent.length);
+      return res.end(icsContent);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     upsert,
     getAll,
     destroy,
+    joinCouncilEventPanelist,
+    downloadICS,
   };
 };
 
