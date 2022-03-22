@@ -604,7 +604,10 @@ const EventController = () => {
             dayOfMail = days.findIndex((el) => isTodayEvent);
           }
         });
-
+        console.log("avee");
+        console.log(dayOfMail);
+        console.log(days.length);
+        console.log(body.usersAssistence);
         await Promise.resolve(
           (() => {
             let mailOptions = {

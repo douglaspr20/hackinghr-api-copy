@@ -6,4 +6,7 @@
       "source.fixAll.eslint": true
   },
   "files.eol": "\n",
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
 }
