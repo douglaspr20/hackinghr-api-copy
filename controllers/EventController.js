@@ -33,17 +33,14 @@ const EventController = () => {
       45,
       "minutes"
     );
-    console.log("month", dateAfterEventEnd.month());
-    console.log("month", dateAfterEventEnd.month() + 1);
 
     const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
-    const interval3 = `0 ${dateAfterEventEnd.minutes()} ${dateAfterEventEnd.hours()} ${dateAfterEventEnd.date()} ${
-      dateAfterEventEnd.month() + 1
-    } *`;
+    const interval3 = `0 ${dateAfterEventEnd.minutes()} ${dateAfterEventEnd.hours()} ${dateAfterEventEnd.date()} ${dateAfterEventEnd.month()} *`;
 
     console.log("////////////////////////////////////////////");
     console.log("/////// setEventReminders //////");
+
     if (dateBefore24Hours.isAfter(moment())) {
       cronService().addTask(`${event.id}-24`, interval1, true, async () => {
         let targetEvent = await Event.findOne({ where: { id: event.id } });
@@ -115,27 +112,25 @@ const EventController = () => {
         );
       });
     }
-    console.log("dateeee", dateAfterEventEnd);
-    console.log("intervla ", interval3);
 
     if (dateAfterEventEnd.isAfter(moment())) {
       cronService().addTask(`${event.id}-5`, interval3, true, async () => {
-        // let targetEvent = await Event.findOne({ where: { id: event.id } });
-        // targetEvent = targetEvent.toJSON();
-        // const eventUsers = await Promise.all(
-        //   (targetEvent.users || []).map((user) => {
-        //     return User.findOne({
-        //       where: {
-        //         id: user,
-        //       },
-        //     });
-        //   })
-        // );
+        let targetEvent = await Event.findOne({ where: { id: event.id } });
+        targetEvent = targetEvent.toJSON();
+        const eventUsers = await Promise.all(
+          (targetEvent.users || []).map((user) => {
+            return User.findOne({
+              where: {
+                id: user,
+              },
+            });
+          })
+        );
         console.log("entra a la promise?");
         await Promise.all(
           eventUsers.map((user) => {
-            // const _user = user.toJSON();
-            // const targetEventDate = moment(targetEvent.startDate);
+            const _user = user.toJSON();
+            const targetEventDate = moment(targetEvent.startDate);
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
               // to: _user.email,
@@ -156,6 +151,7 @@ const EventController = () => {
   const removeEventReminders = (event) => {
     cronService().stopTask(`${event.id}-24`);
     cronService().stopTask(`${event.id}-45`);
+    cronService().stopTask(`${event.id}-5`);
   };
 
   const removeOrganizerReminders = (event) => {
@@ -520,32 +516,43 @@ const EventController = () => {
     const { id } = req.user;
     try {
       const events = await Event.findAll({
-        // where: where2,
+        // where: id,
       });
       const eventsId = [];
+      const eventsFilteredId = [];
       const eventsToShowFilter = [];
       const filterEvents = events.filter(
         (item) => item.usersAssistence.length !== 0
       );
+
       const usersAssistenceSelected = filterEvents.map((item) => {
         eventsId.push(item.id);
         return item.usersAssistence[0].map((el) => JSON.parse(el));
       });
 
-      const usersAssistence = usersAssistenceSelected.map((el) =>
-        el.map((item) => item)
-      );
-
-      usersAssistence.map(
-        (item) =>
-          item.usersAssistence?.length > 0 &&
-          item.usersAssistence.map((el) => el === id && item)
-      );
+      const usersAssistence = usersAssistenceSelected.map((el, index) => {
+        return el.map(
+          (item) =>
+            item.usersAssistence?.length > 0 &&
+            item.usersAssistence.map((el) => el === id && el)
+        );
+      });
+      eventsId.map((item, index) => {
+        if (!usersAssistence[index].includes(false)) {
+          console.log(usersAssistence[index]);
+          usersAssistence[index].map((el) => {
+            el.includes(id) && eventsFilteredId.push(item);
+          });
+        }
+      });
 
       events.map((item) =>
-        eventsId.map((el) => el === item.id && eventsToShowFilter.push(item))
+        eventsFilteredId.map(
+          (el) => el === item.id && eventsToShowFilter.push(item)
+        )
       );
-      return res.status(HttpCodes.OK).json({ events: eventsToShowFilter });
+      const notRepeatEvents = [...new Set(eventsToShowFilter)];
+      return res.status(HttpCodes.OK).json({ events: notRepeatEvents });
     } catch (err) {
       console.log(err);
       return res
@@ -609,7 +616,6 @@ const EventController = () => {
         }
         let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
-        console.log("users assistence", body.usersAssistence);
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
             usersAssistence: [body.usersAssistence],
@@ -652,31 +658,28 @@ const EventController = () => {
             dayOfMail = days.findIndex((el) => isTodayEvent);
           }
         });
-        console.log("avee");
-        console.log(dayOfMail);
-        console.log(days.length);
 
-        // await Promise.resolve(
-        //   (() => {
-        //     let mailOptions = {
-        //       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-        //       // to: "morenoelba2002@gmail.com",
-        //       to: user.email,
-        //       subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
-        //         firstDay: dayOfMail + 1,
-        //         allDays: days.length,
-        //         name: affectedRows.title,
-        //       }),
-        //       html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
-        //         firstDay: dayOfMail + 1,
-        //         allDays: days.length,
-        //         name: affectedRows.title,
-        //       }),
-        //     };
-        //     console.log("***** mailOptions ", mailOptions);
-        //     smtpService().sendMailUsingSendInBlue(mailOptions);
-        //   })()
-        // );
+        await Promise.resolve(
+          (() => {
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              // to: "morenoelba2002@gmail.com",
+              to: user.email,
+              subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
+              html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
+            };
+            console.log("***** mailOptions ", mailOptions);
+            smtpService().sendMailUsingSendInBlue(mailOptions);
+          })()
+        );
 
         return res.status(HttpCodes.OK).json({ affectedRows });
       } catch (error) {
