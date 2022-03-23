@@ -4,7 +4,6 @@ const { Op, Sequelize } = require("sequelize");
 const socketService = require("../services/socket.service");
 const SocketEventTypes = require("../enum/SocketEventTypes");
 const Conversation = db.Conversation;
-const User = db.User;
 const QueryTypes = Sequelize.QueryTypes;
 
 const ConversationController = () => {
@@ -75,20 +74,6 @@ const ConversationController = () => {
       const conversation = await db.sequelize.query(query, {
         type: QueryTypes.SELECT,
       });
-
-      //  const conversation = await Conversation.findOne({
-      //   where: {
-      //     id: conversationId,
-      //   },
-      //   include: {
-      //     model: User,
-      //     where: {
-      //       id: {
-      //         [Op.in]: Sequelize.col("members"),
-      //       },
-      //     },
-      //   },
-      // });
 
       return res.status(HttpCodes.OK).json({ conversation });
     } catch (error) {
