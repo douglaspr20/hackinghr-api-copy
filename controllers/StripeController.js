@@ -32,9 +32,9 @@ const StripeController = () => {
 
     if (prices) {
       let checkoutSessionPrices = [];
-      prices.map((item) =>
-        checkoutSessionPrices.push({ price: item, quantity: 1 })
-      );
+      prices.map((item) => {
+        checkoutSessionPrices.push({ price: item, quantity: 1 });
+      });
 
       const user = await User.findOne({
         where: {
@@ -44,12 +44,14 @@ const StripeController = () => {
 
       try {
         let sessionData = {
-          success_url: isBuyingCredits
-            ? process.env.STRIPE_ADVERTISEMENT_CREDITS_CALLBACK
-            : process.env.STRIPE_CALLBACK_URL,
-          cancel_url: isBuyingCredits
-            ? process.env.STRIPE_ADVERTISEMENT_CREDITS_CALLBACK
-            : process.env.STRIPE_CALLBACK_URL,
+          success_url:
+            isBuyingCredits || isAdvertisement
+              ? process.env.STRIPE_ADVERTISEMENT_CREDITS_CALLBACK
+              : process.env.STRIPE_CALLBACK_URL,
+          cancel_url:
+            isBuyingCredits || isAdvertisement
+              ? process.env.STRIPE_ADVERTISEMENT_CREDITS_CALLBACK
+              : process.env.STRIPE_CALLBACK_URL,
           payment_method_types: ["card"],
           line_items: checkoutSessionPrices,
           mode: "subscription",
@@ -355,16 +357,27 @@ const StripeController = () => {
 
       await smtpService().sendMailUsingSendInBlue(mailOptions);
 
-      newUserData["isAdvertiser"] = true;
+      newUserData["isAdvertiser"] = "TRUE";
       newUserData["advertiserSubscriptionDate"] = moment().format(
         "YYYY-MM-DD HH:mm:ss"
       );
 
-      await User.update(newUserData, {
+      const update = User.update(newUserData, {
         where: {
           email: user.email,
         },
       });
+
+      const increment = User.increment(
+        {
+          advertisementCredits: 40,
+        },
+        {
+          where: { email: user.email },
+        }
+      );
+
+      await Promise.all([update, increment]);
 
       return newUserData;
     } catch (error) {
