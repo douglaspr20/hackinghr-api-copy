@@ -131,7 +131,6 @@ const CouncilEventController = () => {
   };
 
   const joinCouncilEventPanelist = async (req, res) => {
-    const { email } = req.user;
     const { councilEventPanelId, status, UserId } = req.body;
     const { userTimezone } = req.query;
 
@@ -200,11 +199,13 @@ const CouncilEventController = () => {
         });
 
         const user = await User.findOne({
-          attributes: ["timezone", "firstName"],
+          attributes: ["timezone", "firstName", "email"],
           where: {
             id: UserId,
           },
         });
+
+        console.log("owee");
 
         let _userTimezone;
 
@@ -282,7 +283,7 @@ const CouncilEventController = () => {
 
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-          to: email,
+          to: user.email,
           subject: LabEmails.COUNCIL_EVENT_JOIN.subject(
             user.firstName,
             councilEventPanel.panelName,
