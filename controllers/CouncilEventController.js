@@ -48,6 +48,7 @@ const CouncilEventController = () => {
           where: {
             id: councilEvent.id,
           },
+          order: [[CouncilEventPanel, "panelStartAndEndDate", "ASC"]],
           include: [
             {
               model: CouncilEventPanel,
@@ -80,7 +81,7 @@ const CouncilEventController = () => {
   const getAll = async (req, res) => {
     try {
       let councilEvents = await CouncilEvent.findAll({
-        order: [["createdAt", "ASC"]],
+        order: [[CouncilEventPanel, "panelStartAndEndDate", "ASC"]],
         include: [
           {
             model: CouncilEventPanel,
@@ -235,6 +236,7 @@ const CouncilEventController = () => {
       }
 
       const councilEventPanel = await CouncilEventPanel.findOne({
+        order: [["panelStartAndEndDate", "ASC"]],
         where: {
           id: councilEventPanelId,
         },
