@@ -1020,7 +1020,7 @@ module.exports = {
     Thank you for confirming your participation today.
     </p>
     <p>
-    Please keep in mind that this event lasts Y days and you must attend to all the 
+    Please keep in mind that this event lasts ${event.allDays} days and you must attend to all the 
     sessions and days during the event to claim a Digital Certificate of Participation. 
     Watching the recorded videos after the event is not conducive to a Digital 
     Certificate of Participation.
@@ -1143,5 +1143,16 @@ module.exports = {
     Hacking HR
     <br />
     `,
+  },
+  EVENT_JUST_END: {
+    subject: (event) => `evento acabado`,
+    body: (user, event) => `
+    <p>
+    Hi ${user.firstName},
+    </p>
+    <p>
+    Thank you for confirming your participation in this event.
+    </p>
+  `,
   },
 };
