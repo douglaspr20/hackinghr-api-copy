@@ -272,6 +272,7 @@ const privateRoutes = {
     "CouncilConversationLikeController.destroy",
   "DELETE /council/event/panel/:CouncilEventPanelId/panelist/:CouncilEventPanelistId":
     "CouncilEventController.removePanelist",
+  "GET /council/event/search-user": "CouncilEventController.search",
 };
 
 module.exports = privateRoutes;

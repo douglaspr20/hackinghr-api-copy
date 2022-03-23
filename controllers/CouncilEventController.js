@@ -1,5 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const { Op } = require("sequelize");
 const { LabEmails, TimeZoneList } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const moment = require("moment-timezone");
@@ -130,28 +131,12 @@ const CouncilEventController = () => {
   };
 
   const joinCouncilEventPanelist = async (req, res) => {
-    const { id, email } = req.user;
-    const { councilEventPanelId, status } = req.body;
+    const { email } = req.user;
+    const { councilEventPanelId, status, UserId } = req.body;
     const { userTimezone } = req.query;
 
     try {
       if (status === "Join") {
-        const councilEvent = await CouncilEvent.findOne({
-          include: [
-            {
-              model: CouncilEventPanel,
-              include: [
-                {
-                  model: CouncilEventPanelist,
-                  where: {
-                    UserId: id,
-                  },
-                },
-              ],
-            },
-          ],
-        });
-
         const councilEventPanel = await CouncilEventPanel.findOne({
           where: {
             id: councilEventPanelId,
@@ -176,6 +161,26 @@ const CouncilEventController = () => {
             .json({ msg: "Internal server error" });
         }
 
+        const councilEvent = await CouncilEvent.findOne({
+          where: {
+            id: councilEventPanel.CouncilEvent.id,
+          },
+          include: [
+            {
+              model: CouncilEventPanel,
+              include: [
+                {
+                  attributes: [],
+                  model: CouncilEventPanelist,
+                  where: {
+                    UserId,
+                  },
+                },
+              ],
+            },
+          ],
+        });
+
         const maxNumberOfPanelsUsersCanJoin =
           councilEvent?.maxNumberOfPanelsUsersCanJoin || 0;
 
@@ -191,15 +196,28 @@ const CouncilEventController = () => {
 
         await CouncilEventPanelist.create({
           CouncilEventPanelId: councilEventPanelId,
-          UserId: id,
+          UserId,
         });
+
+        const user = await User.findOne({
+          attributes: ["timezone"],
+          where: {
+            id: UserId,
+          },
+        });
+
+        let _userTimezone;
+
+        if (user) {
+          _userTimezone = TimeZoneList.find((tz) => tz.value === user.timezone);
+        } else {
+          _userTimezone = TimeZoneList.find((item) =>
+            item.utc.includes(userTimezone)
+          );
+        }
 
         let timezone = councilEventPanel.CouncilEvent.timezone;
         timezone = TimeZoneList.find((tz) => tz.value === timezone);
-
-        const _userTimezone = TimeZoneList.find((item) =>
-          item.utc.includes(userTimezone)
-        );
 
         const offset = timezone.offset;
 
@@ -255,11 +273,11 @@ const CouncilEventController = () => {
           ],
         };
 
-        // smtpService().sendMailUsingSendInBlue(mailOptions);
+        smtpService().sendMailUsingSendInBlue(mailOptions);
       } else {
         await CouncilEventPanelist.destroy({
           where: {
-            UserId: id,
+            UserId,
             CouncilEventPanelId: councilEventPanelId,
           },
         });
@@ -408,6 +426,50 @@ const CouncilEventController = () => {
     }
   };
 
+  const search = async (req, res) => {
+    const { keyword } = req.query;
+
+    let where = {};
+
+    try {
+      if (keyword) {
+        where = {
+          [Op.or]: [
+            {
+              firstName: {
+                [Op.iLike]: keyword,
+              },
+            },
+            {
+              lastName: {
+                [Op.iLike]: keyword,
+              },
+            },
+            {
+              email: {
+                [Op.iLike]: keyword,
+              },
+            },
+          ],
+        };
+
+        const users = await User.findAll({
+          where,
+          attributes: ["id", "firstName", "lastName", "email"],
+        });
+
+        return res.status(HttpCodes.OK).json({ users });
+      }
+
+      return res.status(HttpCodes.OK).json({ users: [] });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     upsert,
     getAll,
@@ -415,6 +477,7 @@ const CouncilEventController = () => {
     joinCouncilEventPanelist,
     downloadICS,
     removePanelist,
+    search,
   };
 };
 
