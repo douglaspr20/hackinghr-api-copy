@@ -62,7 +62,7 @@ const ConversationController = () => {
 
             return {
               ...conversation,
-              messages: messages,
+              messages: messages.reverse(),
             };
           })
         );
