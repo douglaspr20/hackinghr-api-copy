@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
       numberOfPanels: DataTypes.INTEGER,
       timezone: DataTypes.STRING,
       status: DataTypes.ENUM("draft", "active"),
+      maxNumberOfPanelsUsersCanJoin: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,

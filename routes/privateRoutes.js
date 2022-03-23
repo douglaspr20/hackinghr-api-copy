@@ -270,6 +270,8 @@ const privateRoutes = {
   "POST /council-conversation/like": "CouncilConversationLikeController.create",
   "DELETE /council-conversation/like/:id":
     "CouncilConversationLikeController.destroy",
+  "DELETE /council/event/panel/:CouncilEventPanelId/panelist/:CouncilEventPanelistId":
+    "CouncilEventController.removePanelist",
 };
 
 module.exports = privateRoutes;

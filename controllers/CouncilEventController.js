@@ -136,6 +136,22 @@ const CouncilEventController = () => {
 
     try {
       if (status === "Join") {
+        const councilEvent = await CouncilEvent.findOne({
+          include: [
+            {
+              model: CouncilEventPanel,
+              include: [
+                {
+                  model: CouncilEventPanelist,
+                  where: {
+                    UserId: id,
+                  },
+                },
+              ],
+            },
+          ],
+        });
+
         const councilEventPanel = await CouncilEventPanel.findOne({
           where: {
             id: councilEventPanelId,
@@ -158,6 +174,19 @@ const CouncilEventController = () => {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
+        }
+
+        const maxNumberOfPanelsUsersCanJoin =
+          councilEvent?.maxNumberOfPanelsUsersCanJoin || 0;
+
+        const hasExceededMaxNumberOfPanelsUsersCanJoin =
+          (councilEvent?.CouncilEventPanels?.length || 0) >=
+          maxNumberOfPanelsUsersCanJoin;
+
+        if (hasExceededMaxNumberOfPanelsUsersCanJoin) {
+          return res.status(HttpCodes.ACCEPTED).json({
+            msg: `You can only join up to ${maxNumberOfPanelsUsersCanJoin} panels.`,
+          });
         }
 
         await CouncilEventPanelist.create({
@@ -226,11 +255,12 @@ const CouncilEventController = () => {
           ],
         };
 
-        smtpService().sendMailUsingSendInBlue(mailOptions);
+        // smtpService().sendMailUsingSendInBlue(mailOptions);
       } else {
         await CouncilEventPanelist.destroy({
           where: {
             UserId: id,
+            CouncilEventPanelId: councilEventPanelId,
           },
         });
       }
@@ -342,12 +372,49 @@ const CouncilEventController = () => {
     }
   };
 
+  const removePanelist = async (req, res) => {
+    const { CouncilEventPanelistId, CouncilEventPanelId } = req.params;
+
+    try {
+      await CouncilEventPanelist.destroy({
+        where: {
+          id: CouncilEventPanelistId,
+        },
+      });
+
+      const councilEventPanel = await CouncilEventPanel.findOne({
+        order: [["panelStartAndEndDate", "ASC"]],
+        where: {
+          id: CouncilEventPanelId,
+        },
+        include: [
+          {
+            model: CouncilEventPanelist,
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
+      });
+
+      return res.status(HttpCodes.OK).json({ councilEventPanel });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     upsert,
     getAll,
     destroy,
     joinCouncilEventPanelist,
     downloadICS,
+    removePanelist,
   };
 };
 
