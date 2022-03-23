@@ -200,7 +200,7 @@ const CouncilEventController = () => {
         });
 
         const user = await User.findOne({
-          attributes: ["timezone"],
+          attributes: ["timezone", "firstName"],
           where: {
             id: UserId,
           },
@@ -257,11 +257,38 @@ const CouncilEventController = () => {
           `METHOD:REQUEST\r\nBEGIN:VEVENT`
         );
 
+        const event = {
+          startDate: moment(councilEvent.startDate).format("LL"),
+          endDate: moment(councilEvent.endDate).format("LL"),
+          eventName: councilEvent.eventName,
+        };
+
+        const panel = {
+          panelName: councilEventPanel.panelName,
+          startDate: moment(councilEventPanel.panelStartAndEndDate[0]).format(
+            "LL"
+          ),
+          endDate: moment(councilEventPanel.panelStartAndEndDate[1]).format(
+            "LL"
+          ),
+          startTime: moment(councilEventPanel.panelStartAndEndDate[0]).format(
+            "HH:mm"
+          ),
+          endTime: moment(councilEventPanel.panelStartAndEndDate[1]).format(
+            "HH:mm"
+          ),
+          linkToJoin: councilEventPanel.linkToJoin,
+        };
+
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: email,
-          subject: LabEmails.COUNCIL_EVENT_JOIN.subject(),
-          html: LabEmails.COUNCIL_EVENT_JOIN.body(),
+          subject: LabEmails.COUNCIL_EVENT_JOIN.subject(
+            user.firstName,
+            councilEventPanel.panelName,
+            councilEvent.eventName
+          ),
+          html: LabEmails.COUNCIL_EVENT_JOIN.body(user.firstName, event, panel),
           contentType: "text/calendar",
           attachments: [
             {
