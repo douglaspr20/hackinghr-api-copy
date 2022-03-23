@@ -275,6 +275,16 @@ const s3Service = () => {
     return url;
   };
 
+  const getCouncilConversationImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(
+      S3.COUNCIL_CONVERSATION_FOLDER,
+      prevImg,
+      base64Image
+    );
+
+    return url;
+  };
+
   return {
     getImageUrl,
     getUserImageUrl,
@@ -295,6 +305,7 @@ const s3Service = () => {
     getJobPostImageUrl,
     getAdvertisementImageUrl,
     uploadFile,
+    getCouncilConversationImageUrl,
   };
 };
 

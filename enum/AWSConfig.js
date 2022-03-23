@@ -26,5 +26,6 @@ module.exports = {
     EDITOR_BUCKET_NAME: "lab-user-images",
     JOB_POST_IMAGE_FOLDER: "job-post-image-folder",
     ADVERTISEMENT_FOLDER: "advertisement",
+    COUNCIL_CONVERSATION_FOLDER: "council-conversation-folder",
   },
 };
