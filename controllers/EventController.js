@@ -133,9 +133,9 @@ const EventController = () => {
             const targetEventDate = moment(targetEvent.startDate);
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              // to: _user.email,
-              to: "morenoelba2002@gmail.com",
-              subject: LabEmails.EVENT_JUST_END.subject(targetEvent),
+              to: _user.email,
+              // to: "morenoelba2002@gmail.com",
+              subject: LabEmails.EVENT_JUST_END.subject(),
               html: LabEmails.EVENT_JUST_END.body(),
             };
 
