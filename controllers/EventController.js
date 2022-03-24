@@ -115,23 +115,23 @@ const EventController = () => {
 
     if (dateAfterEventEnd.isAfter(moment())) {
       cronService().addTask(`${event.id}-5`, interval3, true, async () => {
-        let targetEvent = await Event.findOne({ where: { id: event.id } });
-        targetEvent = targetEvent.toJSON();
-        const eventUsers = await Promise.all(
-          (targetEvent.users || []).map((user) => {
-            return User.findOne({
-              where: {
-                id: user,
-              },
-            });
-          })
-        );
+        // let targetEvent = await Event.findOne({ where: { id: event.id } });
+        // targetEvent = targetEvent.toJSON();
+        // const eventUsers = await Promise.all(
+        //   (targetEvent.users || []).map((user) => {
+        //     return User.findOne({
+        //       where: {
+        //         id: user,
+        //       },
+        //     });
+        //   })
+        // );
         console.log(eventUsers);
         console.log("entra a la promise?");
         // await Promise.all(
         // eventUsers.map((user) => {
-        const _user = user.toJSON();
-        const targetEventDate = moment(targetEvent.startDate);
+        // const _user = user.toJSON();
+        // const targetEventDate = moment(targetEvent.startDate);
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           // to: _user.email,
