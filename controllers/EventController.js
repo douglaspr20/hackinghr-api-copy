@@ -126,6 +126,7 @@ const EventController = () => {
             });
           })
         );
+        console.log(_user);
         console.log("entra a la promise?");
         await Promise.all(
           eventUsers.map((user) => {
@@ -658,7 +659,7 @@ const EventController = () => {
             dayOfMail = days.findIndex((el) => isTodayEvent);
           }
         });
-
+        console.log(body.usersAssistence);
         await Promise.resolve(
           (() => {
             let mailOptions = {
