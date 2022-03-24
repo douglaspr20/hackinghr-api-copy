@@ -116,21 +116,20 @@ const EventController = () => {
         let targetEvent = await Event.findOne({ where: { id: event.id } });
         targetEvent = targetEvent.toJSON();
         const users = targetEvent.usersAssistence.map((el) => JSON.parse(el));
+        const usersId = users.map((el) => el.usersAssistence);
         const eventUsers = await Promise.all(
-          (users || []).map((user) => {
-            for (const userAssistence of user.usersAssistence) {
-              return User.findOne({
-                where: {
-                  id: userAssistence,
-                },
-              });
-            }
+          (usersId[0] || []).map((user) => {
+            return User.findOne({
+              where: {
+                id: user,
+              },
+            });
           })
         );
         await Promise.all(
           eventUsers.map((user) => {
             const _user = user.toJSON();
-            console.log("_user", _user);
+            console.log("_user", _user.email);
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
               to: _user.email,
@@ -664,25 +663,25 @@ const EventController = () => {
           }
         });
         console.log(body.usersAssistence);
-        // await Promise.resolve(
-        //   (() => {
-        //     let mailOptions = {
-        //       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-        //       subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
-        //         firstDay: dayOfMail + 1,
-        //         allDays: days.length,
-        //         name: affectedRows.title,
-        //       }),
-        //       html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
-        //         firstDay: dayOfMail + 1,
-        //         allDays: days.length,
-        //         name: affectedRows.title,
-        //       }),
-        //     };
-        //     console.log("***** mailOptions ", mailOptions);
-        //     smtpService().sendMailUsingSendInBlue(mailOptions);
-        //   })()
-        // );
+        await Promise.resolve(
+          (() => {
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
+              html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
+            };
+            console.log("***** mailOptions ", mailOptions);
+            smtpService().sendMailUsingSendInBlue(mailOptions);
+          })()
+        );
 
         return res.status(HttpCodes.OK).json({ affectedRows });
       } catch (error) {
