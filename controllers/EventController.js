@@ -129,7 +129,6 @@ const EventController = () => {
         await Promise.all(
           eventUsers.map((user) => {
             const _user = user.toJSON();
-            console.log("_user", _user.email);
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
               to: _user.email,
@@ -679,7 +678,7 @@ const EventController = () => {
               }),
             };
             console.log("***** mailOptions ", mailOptions);
-            smtpService().sendMailUsingSendInBlue(mailOptions);
+            smtpService().sendMail(mailOptions);
           })()
         );
 
