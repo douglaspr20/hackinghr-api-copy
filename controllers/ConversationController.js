@@ -52,7 +52,7 @@ const ConversationController = () => {
       if (conversations) {
         conversations = await Promise.all(
           conversations.map(async (conversation) => {
-            const query2 = `SELECT public."Messages".id as messageId, public."Messages".sender, public."Messages"."ConversationId", public."Messages".text,
+            const query2 = `SELECT public."Messages".id, public."Messages".sender, public."Messages"."ConversationId", public."Messages".text,
           public."Messages"."updatedAt" as "messageDate", public."Messages"."viewedUser" FROM public."Messages" WHERE public."Messages"."ConversationId" = ${conversation.id} 
           ORDER BY public."Messages"."updatedAt" DESC LIMIT 50`;
 
