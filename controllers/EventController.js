@@ -126,7 +126,7 @@ const EventController = () => {
         //     });
         //   })
         // );
-        console.log(eventUsers);
+        // console.log(eventUsers);
         console.log("entra a la promise?");
         // await Promise.all(
         // eventUsers.map((user) => {
