@@ -61,7 +61,6 @@ const EventController = () => {
             const targetEventDate = moment(targetEvent.startDate);
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              to: _user.email,
               subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_24_HOURS.body(
                 _user,
@@ -98,7 +97,6 @@ const EventController = () => {
             const _user = user.toJSON();
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              to: _user.email,
               subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_45_MINUTES.body(
                 _user,
@@ -115,36 +113,36 @@ const EventController = () => {
 
     if (dateAfterEventEnd.isAfter(moment())) {
       cronService().addTask(`${event.id}-5`, interval3, true, async () => {
-        // let targetEvent = await Event.findOne({ where: { id: event.id } });
-        // targetEvent = targetEvent.toJSON();
-        // const eventUsers = await Promise.all(
-        //   (targetEvent.users || []).map((user) => {
-        //     return User.findOne({
-        //       where: {
-        //         id: user,
-        //       },
-        //     });
-        //   })
-        // );
-        // console.log(eventUsers);
-        console.log("entra a la promise?");
-        // await Promise.all(
-        // eventUsers.map((user) => {
-        // const _user = user.toJSON();
-        // const targetEventDate = moment(targetEvent.startDate);
-        let mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          // to: _user.email,
-          to: "morenoelba2002@gmail.com",
-          subject: LabEmails.EVENT_JUST_END.subject(),
-          html: LabEmails.EVENT_JUST_END.body(),
-        };
+        let targetEvent = await Event.findOne({ where: { id: event.id } });
+        targetEvent = targetEvent.toJSON();
+        const users = targetEvent.usersAssistence.map((el) => JSON.parse(el));
+        const eventUsers = await Promise.all(
+          (users || []).map((user) => {
+            for (const userAssistence of user.usersAssistence) {
+              return User.findOne({
+                where: {
+                  id: userAssistence,
+                },
+              });
+            }
+          })
+        );
+        await Promise.all(
+          eventUsers.map((user) => {
+            const _user = user.toJSON();
+            console.log("_user", _user);
+            let mailOptions = {
+              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+              to: _user.email,
+              subject: LabEmails.EVENT_JUST_END.subject(),
+              html: LabEmails.EVENT_JUST_END.body(_user),
+            };
 
-        console.log("***** mailOptions ", mailOptions);
+            console.log("***** mailOptions ", mailOptions);
 
-        return smtpService().sendMail(mailOptions);
-        // })
-        // );
+            return smtpService().sendMail(mailOptions);
+          })
+        );
       });
     }
   };
@@ -202,7 +200,6 @@ const EventController = () => {
 
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-      to: event.organizerEmail,
       subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
       attachments: [
         {
@@ -254,7 +251,6 @@ const EventController = () => {
       users.map((user) => {
         mailOptions = {
           ...mailOptions,
-          to: user.email,
         };
 
         return smtpService().sendMail(mailOptions);
@@ -660,27 +656,25 @@ const EventController = () => {
           }
         });
         console.log(body.usersAssistence);
-        await Promise.resolve(
-          (() => {
-            let mailOptions = {
-              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-              // to: "morenoelba2002@gmail.com",
-              to: user.email,
-              subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
-                firstDay: dayOfMail + 1,
-                allDays: days.length,
-                name: affectedRows.title,
-              }),
-              html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
-                firstDay: dayOfMail + 1,
-                allDays: days.length,
-                name: affectedRows.title,
-              }),
-            };
-            console.log("***** mailOptions ", mailOptions);
-            smtpService().sendMailUsingSendInBlue(mailOptions);
-          })()
-        );
+        // await Promise.resolve(
+        //   (() => {
+        //     let mailOptions = {
+        //       from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        //       subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
+        //         firstDay: dayOfMail + 1,
+        //         allDays: days.length,
+        //         name: affectedRows.title,
+        //       }),
+        //       html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
+        //         firstDay: dayOfMail + 1,
+        //         allDays: days.length,
+        //         name: affectedRows.title,
+        //       }),
+        //     };
+        //     console.log("***** mailOptions ", mailOptions);
+        //     smtpService().sendMailUsingSendInBlue(mailOptions);
+        //   })()
+        // );
 
         return res.status(HttpCodes.OK).json({ affectedRows });
       } catch (error) {
@@ -713,7 +707,6 @@ const EventController = () => {
       };
 
       requests = users.map((user) => {
-        mailOptions.to = user.email;
         mailOptions.html = EmailContent.CLAIM_EMAIL(user, event);
 
         return smtpService().sendMail(mailOptions);
@@ -846,7 +839,6 @@ const EventController = () => {
         emailList.map((email) => {
           mailOptions = {
             ...mailOptions,
-            to: email,
           };
 
           return smtpService().sendMail(mailOptions);
@@ -1085,7 +1077,6 @@ const EventController = () => {
         if (event.showClaim === 1) {
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-            to: user.email,
             subject: LabEmails.EVENT_CLAIM_CREDIT.subject(event.title),
             html: LabEmails.EVENT_CLAIM_CREDIT.body(user, event),
             attachments: [
@@ -1105,9 +1096,7 @@ const EventController = () => {
           return res.status(HttpCodes.OK).json({});
         }
 
-        return res.status(HttpCodes.BAD_REQUEST).json({
-          msg: "Bad Request: This Event is not allowed to confirm",
-        });
+        return res.status(HttpCodes.BAD_REQUEST).json({});
       } catch (error) {
         console.log(error);
         return res
@@ -1142,7 +1131,6 @@ const EventController = () => {
 
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          to: user.email,
           subject: LabEmails.EVENT_CLAIM_ATTENDANCE.subject(event.title),
           html: LabEmails.EVENT_CLAIM_ATTENDANCE.body(user, event),
         };
@@ -1162,7 +1150,6 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
-  //Returning meta tags to the digital certificate view
   const eventCertificateMetaData = async (req, res) => {
     const { metadata } = req.body;
     const metaTags = `<meta name="description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true"/>

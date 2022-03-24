@@ -1148,7 +1148,7 @@ module.exports = {
     subject: (event) => `evento acabado`,
     body: (user, event) => `
     <p>
-    Hi,
+    Hi ${user.firstName},
     </p>
     <p>
     Thank you for confirming your participation in this event.
