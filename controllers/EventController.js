@@ -527,27 +527,35 @@ const EventController = () => {
         return item.usersAssistence[0].map((el) => JSON.parse(el));
       });
 
-      const usersAssistence = usersAssistenceSelected.map((el, index) => {
+      const usersAssistence = usersAssistenceSelected.map((el) => {
         return el.map(
           (item) =>
             item.usersAssistence?.length > 0 &&
             item.usersAssistence.map((el) => el === id && el)
         );
       });
-      eventsId.map((item, index) => {
+
+      eventsId.forEach((item, index) => {
         if (!usersAssistence[index].includes(false)) {
-          console.log(usersAssistence[index]);
-          usersAssistence[index].map((el) => {
-            el.includes(id) && eventsFilteredId.push(item);
-          });
+          if (usersAssistence[index].length > 1) {
+            const isUserAllDays = usersAssistence[index].reduce((prev, act) => {
+              if (!prev) return prev;
+              return act.includes(id);
+            }, true);
+            isUserAllDays && eventsFilteredId.push(item);
+          } else {
+            for (const user of usersAssistence[index]) {
+              user.includes(id) && eventsFilteredId.push(item);
+            }
+          }
+        }
+      });
+      events.forEach((event) => {
+        for (const idsFiltered of eventsFilteredId) {
+          idsFiltered === event.id && eventsToShowFilter.push(event);
         }
       });
 
-      events.map((item) =>
-        eventsFilteredId.map(
-          (el) => el === item.id && eventsToShowFilter.push(item)
-        )
-      );
       const notRepeatEvents = [...new Set(eventsToShowFilter)];
       return res.status(HttpCodes.OK).json({ events: notRepeatEvents });
     } catch (err) {
