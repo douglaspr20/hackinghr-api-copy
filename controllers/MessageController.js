@@ -40,7 +40,6 @@ const MessageController = () => {
   const readMessages = async (req, res) => {
     const { userId } = req.body;
     const { ConversationId } = req.params;
-
     try {
       const [numberOfAffectedRows, affectedRows] = await Message.update(
         {
