@@ -666,6 +666,7 @@ const EventController = () => {
           (() => {
             let mailOptions = {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
               subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
                 firstDay: dayOfMail + 1,
                 allDays: days.length,
