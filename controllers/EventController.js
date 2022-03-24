@@ -128,23 +128,23 @@ const EventController = () => {
         );
         console.log(eventUsers);
         console.log("entra a la promise?");
-        await Promise.all(
-          eventUsers.map((user) => {
-            const _user = user.toJSON();
-            const targetEventDate = moment(targetEvent.startDate);
-            let mailOptions = {
-              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              to: _user.email,
-              // to: "morenoelba2002@gmail.com",
-              subject: LabEmails.EVENT_JUST_END.subject(),
-              html: LabEmails.EVENT_JUST_END.body(),
-            };
+        // await Promise.all(
+        // eventUsers.map((user) => {
+        const _user = user.toJSON();
+        const targetEventDate = moment(targetEvent.startDate);
+        let mailOptions = {
+          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          // to: _user.email,
+          to: "morenoelba2002@gmail.com",
+          subject: LabEmails.EVENT_JUST_END.subject(),
+          html: LabEmails.EVENT_JUST_END.body(),
+        };
 
-            console.log("***** mailOptions ", mailOptions);
+        console.log("***** mailOptions ", mailOptions);
 
-            return smtpService().sendMail(mailOptions);
-          })
-        );
+        return smtpService().sendMail(mailOptions);
+        // })
+        // );
       });
     }
   };
