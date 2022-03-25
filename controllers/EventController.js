@@ -117,6 +117,7 @@ const EventController = () => {
         targetEvent = targetEvent.toJSON();
         const users = targetEvent.usersAssistence.map((el) => JSON.parse(el));
         const usersId = users.map((el) => el.usersAssistence);
+        const link = `${process.env.DOMAIN_URL}`;
         const eventUsers = await Promise.all(
           (usersId[0] || []).map((user) => {
             return User.findOne({
@@ -132,8 +133,8 @@ const EventController = () => {
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
               to: _user.email,
-              subject: LabEmails.EVENT_JUST_END.subject(),
-              html: LabEmails.EVENT_JUST_END.body(_user),
+              subject: LabEmails.EVENT_JUST_END.subject(targetEvent),
+              html: LabEmails.EVENT_JUST_END.body(_user, targetEvent, link),
             };
 
             console.log("***** mailOptions ", mailOptions);
@@ -661,7 +662,6 @@ const EventController = () => {
             dayOfMail = days.findIndex((el) => isTodayEvent);
           }
         });
-        console.log(body.usersAssistence);
         await Promise.resolve(
           (() => {
             let mailOptions = {

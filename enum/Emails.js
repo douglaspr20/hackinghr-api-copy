@@ -1145,13 +1145,29 @@ module.exports = {
     `,
   },
   EVENT_JUST_END: {
-    subject: (event) => `evento acabado`,
-    body: (user, event) => `
+    subject: (event) =>
+      `Your Digital Certificate of Participation for joining Hacking HR’s ${event.title} is available for download`,
+    body: (user, event, link) => `
     <p>
     Hi ${user.firstName},
     </p>
     <p>
-    Thank you for confirming your participation in this event.
+    Thank you for joining us during all the sessions at Hacking HR’s ${event.title}.
+    </p>
+    <p>
+      We hope that it was an exciting learning experience for you and that you took away 
+      great and actionable insights to put into practice in your role.
+    </p>
+    <p>
+      You can now download your Digital Certificate of Participation. Go to the 
+      <a href="${link}" target="_blank">Hacking HR LAB</a>, click on your profile and then on My Learning. Then go to the tab “Digital 
+      Certificates” to download.
+    </p>
+    <p>
+      Thank you! We hope to see you in future events!
+    </p>
+    <p>
+      Hacking HR Team
     </p>
   `,
   },
