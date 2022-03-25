@@ -5,11 +5,13 @@ const { LabEmails, TimeZoneList } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const moment = require("moment-timezone");
 const { convertToCertainTime, convertToLocalTime } = require("../utils/format");
+const { isEmpty } = require("lodash");
 
 const CouncilEvent = db.CouncilEvent;
 const CouncilEventPanel = db.CouncilEventPanel;
 const CouncilEventPanelist = db.CouncilEventPanelist;
 const User = db.User;
+const CouncilEventPanelComment = db.CouncilEventPanelComment;
 
 const CouncilEventController = () => {
   const upsert = async (req, res) => {
@@ -28,12 +30,15 @@ const CouncilEventController = () => {
           }
         );
 
-        const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
-        if (isPanelFull) {
-          throw new Error();
+        if (!isEmpty(data.panels)) {
+          const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
+
+          if (isPanelFull) {
+            throw new Error();
+          }
         }
 
-        const councilEventPanels = data.panels.map((panel) => {
+        const councilEventPanels = data.panels?.map((panel) => {
           return CouncilEventPanel.upsert(
             {
               ...panel,
@@ -43,7 +48,9 @@ const CouncilEventController = () => {
           );
         });
 
-        await Promise.all(councilEventPanels);
+        if (!isEmpty(councilEventPanels)) {
+          await Promise.all(councilEventPanels);
+        }
 
         const _councilEvent = await CouncilEvent.findOne({
           where: {
@@ -87,6 +94,21 @@ const CouncilEventController = () => {
           {
             model: CouncilEventPanel,
             include: [
+              {
+                model: CouncilEventPanelComment,
+                separate: true,
+                include: [
+                  {
+                    model: CouncilEventPanelist,
+                    duplicating: true,
+                    include: [
+                      {
+                        model: User,
+                      },
+                    ],
+                  },
+                ],
+              },
               {
                 model: CouncilEventPanelist,
                 include: [
@@ -205,8 +227,6 @@ const CouncilEventController = () => {
           },
         });
 
-        console.log("owee");
-
         let _userTimezone;
 
         if (user) {
@@ -317,6 +337,21 @@ const CouncilEventController = () => {
           id: councilEventPanelId,
         },
         include: [
+          {
+            model: CouncilEventPanelComment,
+            separate: true,
+            include: [
+              {
+                model: CouncilEventPanelist,
+                duplicating: true,
+                include: [
+                  {
+                    model: User,
+                  },
+                ],
+              },
+            ],
+          },
           {
             model: CouncilEventPanelist,
             include: [
@@ -435,6 +470,21 @@ const CouncilEventController = () => {
         },
         include: [
           {
+            model: CouncilEventPanelComment,
+            separate: true,
+            include: [
+              {
+                model: CouncilEventPanelist,
+                duplicating: true,
+                include: [
+                  {
+                    model: User,
+                  },
+                ],
+              },
+            ],
+          },
+          {
             model: CouncilEventPanelist,
             include: [
               {
@@ -498,6 +548,52 @@ const CouncilEventController = () => {
     }
   };
 
+  const upsertComment = async (req, res) => {
+    const data = req.body;
+    try {
+      await CouncilEventPanelComment.upsert(data);
+
+      const councilEventPanel = await CouncilEventPanel.findOne({
+        order: [["panelStartAndEndDate", "ASC"]],
+        where: {
+          id: data.CouncilEventPanelId,
+        },
+        include: [
+          {
+            model: CouncilEventPanelComment,
+            separate: true,
+            include: [
+              {
+                model: CouncilEventPanelist,
+                duplicating: true,
+                include: [
+                  {
+                    model: User,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            model: CouncilEventPanelist,
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
+      });
+
+      return res.status(HttpCodes.OK).json({ councilEventPanel });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     upsert,
     getAll,
@@ -506,6 +602,7 @@ const CouncilEventController = () => {
     downloadICS,
     removePanelist,
     search,
+    upsertComment,
   };
 };
 
