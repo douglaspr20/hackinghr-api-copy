@@ -85,7 +85,7 @@ const ConversationController = () => {
       SELECT public."Conversations".*, public."Users".id as userId, public."Users"."abbrName", public."Users"."email", 
       public."Users".img, public."Users"."isOnline", public."Users"."firstName", public."Users"."lastName", public."Users"."timezone",
       public."Users"."isOnline" FROM public."Conversations"
-      LEFT JOIN public."Users" ON public."Users".id = ANY (public."Conversations".members::int[]) WHERE public."Conversations".id = ${conversationId}
+      INNER JOIN public."Users" ON public."Users".id = ANY (public."Conversations".members::int[]) WHERE public."Conversations".id = ${conversationId}
       `;
 
       const conversation = await db.sequelize.query(query, {
