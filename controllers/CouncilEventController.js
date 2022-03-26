@@ -38,6 +38,27 @@ const CouncilEventController = () => {
           }
         }
 
+        const _councilEventPanels = await CouncilEventPanel.findAll({
+          where: {
+            CouncilEventId: councilEvent.id,
+          },
+        });
+
+        const _councilEventPanelIds = _councilEventPanels.map(
+          (panel) => panel.id
+        );
+        const councilEventPanelIds = data.panels.map((panel) => panel.id);
+
+        const councilEventPanelIdDiff = _councilEventPanelIds.filter(
+          (id) => !councilEventPanelIds.includes(id)
+        );
+
+        await CouncilEventPanel.destroy({
+          where: {
+            id: councilEventPanelIdDiff,
+          },
+        });
+
         const councilEventPanels = data.panels?.map((panel) => {
           return CouncilEventPanel.upsert(
             {
@@ -242,22 +263,35 @@ const CouncilEventController = () => {
 
         const offset = timezone.offset;
 
-        let startTime = councilEventPanel.panelStartAndEndDate[0];
-        let endTime = councilEventPanel.panelStartAndEndDate[1];
-
-        startTime = convertToCertainTime(
-          moment(startTime),
-          councilEventPanel.CouncilEvent.timezone
+        let startTime = moment.tz(
+          councilEventPanel.panelStartAndEndDate[0],
+          _userTimezone.utc[0]
         );
-        endTime = convertToCertainTime(
-          moment(endTime),
-          councilEventPanel.CouncilEvent.timezone
+        let endTime = moment.tz(
+          councilEventPanel.panelStartAndEndDate[1],
+          _userTimezone.utc[0]
         );
 
-        startTime = convertToLocalTime(
-          moment(startTime).utcOffset(offset, true)
-        );
-        endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+        // console.log(
+        //   moment
+        //     .tz(councilEventPanel.panelStartAndEndDate[0], _userTimezone.utc[0])
+        //     .format("YYYY-MM-DD HH:mm:ssZ"),
+        //   "bruv"
+        // );
+
+        // startTime = convertToCertainTime(
+        //   moment(startTime),
+        //   councilEventPanel.CouncilEvent.timezone
+        // );
+        // endTime = convertToCertainTime(
+        //   moment(endTime),
+        //   councilEventPanel.CouncilEvent.timezone
+        // );
+
+        // startTime = convertToLocalTime(
+        //   moment(startTime).utcOffset(offset, true)
+        // );
+        // endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
         const calendarInvite = smtpService().generateCalendarInvite(
           startTime,
@@ -286,18 +320,10 @@ const CouncilEventController = () => {
 
         const panel = {
           panelName: councilEventPanel.panelName,
-          startDate: moment(councilEventPanel.panelStartAndEndDate[0]).format(
-            "LL"
-          ),
-          endDate: moment(councilEventPanel.panelStartAndEndDate[1]).format(
-            "LL"
-          ),
-          startTime: moment(councilEventPanel.panelStartAndEndDate[0]).format(
-            "HH:mm"
-          ),
-          endTime: moment(councilEventPanel.panelStartAndEndDate[1]).format(
-            "HH:mm"
-          ),
+          startDate: startTime.format("LL"),
+          endDate: endTime.format("LL"),
+          startTime: startTime.format("HH:mm"),
+          endTime: endTime.format("HH:mm"),
           linkToJoin: councilEventPanel.linkToJoin,
         };
 
@@ -515,17 +541,17 @@ const CouncilEventController = () => {
           [Op.or]: [
             {
               firstName: {
-                [Op.iLike]: keyword,
+                [Op.iLike]: `%${keyword}%`,
               },
             },
             {
               lastName: {
-                [Op.iLike]: keyword,
+                [Op.iLike]: `%${keyword}%`,
               },
             },
             {
               email: {
-                [Op.iLike]: keyword,
+                [Op.iLike]: `%${keyword}%`,
               },
             },
           ],
