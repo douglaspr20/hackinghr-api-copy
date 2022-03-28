@@ -264,8 +264,6 @@ const EventController = () => {
   const create = async (req, res) => {
     const { body } = req;
 
-    console.log(body.images.length, "brrt");
-
     if (body.title) {
       try {
         let eventInfo = {
@@ -279,14 +277,24 @@ const EventController = () => {
           );
         }
 
-        if (eventInfo.image2) {
-          eventInfo.image2 = await s3Service().getEventImageUrl(
-            "",
-            eventInfo.image2
-          );
-        }
+        // if (eventInfo.image2) {
+        //   eventInfo.image2 = await s3Service().getEventImageUrl(
+        //     "",
+        //     eventInfo.image2
+        //   );
+        // }
 
-        // if
+        if (!isEmpty(eventInfo.images)) {
+          const images = eventInfo.images.map((image) => {
+            if (isValidURL(image)) {
+              return image;
+            }
+
+            return s3Service().getEventImageUrl("", image);
+          });
+
+          eventInfo.images = await Promise.all(images);
+        }
 
         const event = await Event.create(eventInfo);
 
@@ -296,7 +304,7 @@ const EventController = () => {
             .json({ msg: "Internal server error" });
         }
 
-        const [numberOfAffectedRows, affectedRows] = await Event.update(
+        const [_, affectedRows] = await Event.update(
           {
             publicLink: `${process.env.DOMAIN_URL}${event.id}`,
           },
@@ -330,7 +338,7 @@ const EventController = () => {
         console.log(error);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Internal server error", error: err });
+          .json({ msg: "Internal server error", error: error });
       }
     }
 
@@ -384,32 +392,26 @@ const EventController = () => {
         await s3Service().deleteUserPicture(prevEvent.image2);
       }
 
-      let newImages = [];
       if (!isEmpty(event.images)) {
-        newImages = eventInfo.images.map((image) => {
-          console.log("image", image);
-          if (!isValidURL(image)) {
-            return s3Service().getEventImageUrl("", image);
+        const newImages = eventInfo.images.map((image) => {
+          if (isValidURL(image)) {
+            return image;
           }
 
-          return image;
+          return s3Service().getEventImageUrl("", image);
         });
 
-        console.log("newImages", newImages);
-
-        // eventInfo.images = await Promise.all(newImages);
+        eventInfo.images = await Promise.all(newImages);
       }
 
-      console.log(eventInfo, "eve");
-
-      // const [numberOfAffectedRows, affectedRows] = await Event.update(
-      //   eventInfo,
-      //   {
-      //     where: { id },
-      //     returning: true,
-      //     plain: true,
-      //   }
-      // );
+      const [numberOfAffectedRows, affectedRows] = await Event.update(
+        eventInfo,
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
 
       return res
         .status(HttpCodes.OK)
