@@ -6,6 +6,8 @@ const smtpService = require("../services/smtp.service");
 const moment = require("moment-timezone");
 const { convertToCertainTime, convertToLocalTime } = require("../utils/format");
 const { isEmpty } = require("lodash");
+const socketService = require("../services/socket.service");
+const SocketEventType = require("../enum/SocketEventTypes");
 
 const CouncilEvent = db.CouncilEvent;
 const CouncilEventPanel = db.CouncilEventPanel;
@@ -389,7 +391,12 @@ const CouncilEventController = () => {
         ],
       });
 
-      return res.status(HttpCodes.OK).json({ councilEventPanel });
+      socketService().emit(
+        SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+        councilEventPanel
+      );
+
+      return res.status(HttpCodes.OK).json({});
     } catch (err) {
       console.log(err);
       return res
@@ -521,7 +528,12 @@ const CouncilEventController = () => {
         ],
       });
 
-      return res.status(HttpCodes.OK).json({ councilEventPanel });
+      socketService().emit(
+        SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+        councilEventPanel
+      );
+
+      return res.status(HttpCodes.OK).json({});
     } catch (error) {
       console.log(error);
       return res
