@@ -1185,12 +1185,12 @@ module.exports = {
       eventName
     ) => `${firstName}, thank you for joining the panel: ${panelName} as part of the 
     event ${eventName}`,
-    body: (firstName, event, panel) => `
+    body: (firstName, event, panel, abbr) => `
     <p>
       Hi ${firstName},
       </p>
       <p>
-      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} at ${panel.startTime} and ends on ${panel.endDate} at ${panel.endTime}.  
+      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} at ${panel.startTime} ${abbr} and ends on ${panel.endDate} at ${panel.endTime} ${abbr}.  
       </p>
       <p>
       This panel is part of the event ${event.eventName} (starting on ${event.startDate} and ending on ${event.endDate}). 

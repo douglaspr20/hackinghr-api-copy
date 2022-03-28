@@ -337,7 +337,12 @@ const CouncilEventController = () => {
             councilEventPanel.panelName,
             councilEvent.eventName
           ),
-          html: LabEmails.COUNCIL_EVENT_JOIN.body(user.firstName, event, panel),
+          html: LabEmails.COUNCIL_EVENT_JOIN.body(
+            user.firstName,
+            event,
+            panel,
+            _userTimezone.abbr
+          ),
           contentType: "text/calendar",
           attachments: [
             {
