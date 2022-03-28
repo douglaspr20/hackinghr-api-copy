@@ -254,19 +254,15 @@ const CouncilEventController = () => {
 
         let _userTimezone;
 
-        // if (isAddedByAdmin) {
-        //   _userTimezone = TimeZoneList.find(
-        //     (item) => item.value === user.timezone
-        //   );
-        // } else {
-        //   _userTimezone = TimeZoneList.find((item) =>
-        //     item.utc.includes(userTimezone)
-        //   );
-        // }
-
-        _userTimezone = TimeZoneList.find(
-          (item) => item.value === user.timezone
-        );
+        if (isAddedByAdmin) {
+          _userTimezone = TimeZoneList.find(
+            (item) => item.value === user.timezone
+          );
+        } else {
+          _userTimezone = TimeZoneList.find((item) =>
+            item.utc.includes(userTimezone)
+          );
+        }
 
         const timezone = TimeZoneList.find(
           (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
