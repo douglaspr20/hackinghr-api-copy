@@ -27,7 +27,11 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.SkillCohortParticipant);
       User.hasMany(models.SkillCohortGroupingMember);
       User.hasMany(models.JobPost);
+      User.hasMany(models.Advertisement);
       User.hasOne(models.MarketPlaceProfile);
+      User.hasMany(models.CouncilConversationComment);
+      User.hasMany(models.CouncilConversationReply);
+      User.hasMany(models.CouncilConversationLike);
     }
   }
   User.init(
@@ -129,7 +133,25 @@ module.exports = (sequelize, DataTypes) => {
       recruiterSubscription_startdate: DataTypes.DATE,
       recruiterSubscription_enddate: DataTypes.DATE,
       acceptTermsConditionGConference: DataTypes.BOOLEAN,
+      viewRulesGConference: DataTypes.BOOLEAN,
       dateSendEmailTermsConditionGConference: DataTypes.DATE,
+      matchedCount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      isAdvertiser: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      advertiserSubscriptionDate: DataTypes.DATE,
+      projectXFreeTrialAvailability: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
+      isExpertCouncilAdmin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

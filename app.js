@@ -20,6 +20,7 @@ const SkillCohortResourceResponseController = require("./controllers/SkillCohort
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
 const WeeklyDigestController = require("./controllers/WeeklyDigestController");
+const MatchmakingController = require("./controllers/MatchmakingController");
 
 const moment = require("moment-timezone");
 
@@ -34,6 +35,7 @@ dotenv.config();
  * server configuration
  */
 const routes = require("./routes");
+const BusinessPartnerController = require("./controllers/BusinessPartnerController");
 
 /**
  * express application
@@ -47,6 +49,14 @@ const mappedAdminRoutes = mapRoutes(routes.adminRoutes, "controllers/", [
   authPolicy.validate,
   authPolicy.checkAdminRole,
 ]);
+
+// Creating a cron which runs on every sunday
+
+// cron.schedule("0 16 * * SUN", () => {
+cron.schedule("0 8 * * SUN", () => {
+  console.log("running a task every sunday");
+  BusinessPartnerController().changePendingStatusToReject();
+});
 
 // Creating a cron job which runs on every an hour.
 cron.schedule("25 * * * *", () => {
@@ -113,7 +123,7 @@ cron.schedule(
             );
 
           if (!hasResponded) {
-            if (participant.numberOfCommentStrike >= 1) {
+            if (participant.numberOfCommentStrike >= 2) {
               await SkillCohortParticipantController().removeParticipantAccess(
                 participant,
                 skillCohort.id
@@ -177,54 +187,37 @@ cron.schedule(
     const skillCohortResources =
       await SkillCohortResourcesController().getResourcesToBeReleasedToday();
 
-    const jaggedListOfParticipants =
-      await SkillCohortParticipantController().getAllParticipantsByListOfSkillCohortResources(
-        skillCohortResources
-      );
+    const notifications = skillCohortResources.map((res) => {
+      const skillCohort = res.SkillCohort || {};
+      const participants = skillCohort?.SkillCohortParticipants || [];
 
-    const notifications = skillCohortResources.map((resource, indx) => {
-      let participantIds = jaggedListOfParticipants[indx].map(
-        (participants) => {
-          return participants.UserId;
-        }
-      );
-
-      if (isEmpty(participantIds)) {
-        participantIds = [-2];
-      }
-
-      return NotificationController().createNotification({
-        message: `${resource.SkillCohort.title} - New resource available`,
-        type: "resource",
-        meta: resource,
-        onlyFor: participantIds,
-      });
-    });
-
-    await Promise.all(notifications);
-
-    const emailToBeSent = jaggedListOfParticipants.map((participants) => {
-      return participants.map((participant) => {
-        const cohort = participant.SkillCohort;
-        const resource = skillCohortResources.find((resource) => {
-          return resource.SkillCohortId === cohort.id;
-        });
-
+      const participantIds = participants.map((participant) => {
         const user = participant.User;
 
         const mailOptions = {
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-          to: participant.User.email,
-          subject: LabEmails.DAILY_RESOURCE.subject(cohort, resource),
-          html: LabEmails.DAILY_RESOURCE.body(user, cohort, resource),
+          to: user.email,
+          subject: LabEmails.DAILY_RESOURCE.subject(skillCohort, res),
+          html: LabEmails.DAILY_RESOURCE.body(user, skillCohort, res),
           contentType: "text/html",
         };
 
-        return smtpService().sendMailUsingSendInBlue(mailOptions);
+        // send email
+        smtpService().sendMailUsingSendInBlue(mailOptions);
+
+        return user.id;
+      });
+
+      // notifications
+      return NotificationController().createNotification({
+        message: `${res.SkillCohort.title} - New resource available`,
+        type: "resource",
+        meta: res,
+        onlyFor: participantIds,
       });
     });
 
-    await Promise.all(emailToBeSent.flat());
+    await Promise.all(notifications.flat());
   },
   {
     timezone: "America/Los_Angeles",
@@ -357,15 +350,79 @@ cron.schedule(
 );
 
 // Weekly Digest
+// cron.schedule(
+//   "0 0 * * *", // 12AM every day
+//   // "0 0 * * 5", // 12AM every Friday
+//   async () => {
+//     console.log(
+//       "****************Running task at 12AM everyday****************"
+//     );
+//     console.log("****************Weekly Digest****************");
+//     await WeeklyDigestController().updateWeeklyDigestEmail();
+//   },
+//   {
+//     timezone: "America/Los_Angeles",
+//   }
+// );
+
+// User Matchmaking Count Reset
 cron.schedule(
-  "0 0 * * *", // 12AM every day
-  // "0 0 * * 5", // 12AM every Friday
+  "0 0 1 * *", // run every month
   async () => {
-    console.log(
-      "****************Running task at 12AM everyday****************"
-    );
-    console.log("****************Weekly Digest****************");
-    await WeeklyDigestController().updateWeeklyDigestEmail();
+    const month = moment().format("M");
+
+    // checks if the current month is an odd number and executes the reset, basically reset every 2 months
+    if (+month % 2 === 1) {
+      console.log(
+        "****************User Matchmaking Count Reset****************"
+      );
+      await MatchmakingController().resetMatchedCount();
+    }
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+// Send email to those who finish the project X
+cron.schedule(
+  "0 5 * * *", // 5AM Everyday
+  async () => {
+    console.log("****************Post Cohort****************");
+    const dateToday = moment().tz("America/Los_Angeles").startOf("day");
+
+    const cohorts =
+      await SkillCohortController().getAllCohortsThatFinishedTheDayBefore(
+        dateToday
+      );
+
+    cohorts.forEach((cohort) => {
+      const nextMonday = moment(cohort.endDate)
+        .tz("America/Los_Angeles")
+        .startOf("isoWeek")
+        .add(1, "week")
+        .format("LL");
+
+      cohort.SkillCohortParticipants.forEach((participant) => {
+        const user = participant.User;
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: user.email,
+          subject: LabEmails.THANK_YOU_PARTICIPATION_PROJECT_X.subject(
+            cohort,
+            nextMonday
+          ),
+          html: LabEmails.THANK_YOU_PARTICIPATION_PROJECT_X.body(
+            cohort,
+            user,
+            nextMonday
+          ),
+          contentType: "text/html",
+        };
+        smtpService().sendMailUsingSendInBlue(mailOptions);
+      });
+    });
   },
   {
     timezone: "America/Los_Angeles",

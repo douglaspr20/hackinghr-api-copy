@@ -704,6 +704,32 @@ const UserController = () => {
     const { id } = req.params;
 
     try {
+      const session = await AnnualConference.findOne({
+        where: {
+          id,
+        },
+      });
+
+      let totalUsers;
+
+      if (session.type === "Roundtable") {
+        totalUsers = await User.findAndCountAll({
+          where: {
+            sessionsJoined: {
+              [Op.overlap]: [id],
+            },
+          },
+          offset: 10,
+          limit: 2,
+        });
+      }
+
+      if (totalUsers && totalUsers?.count >= 30) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "This session has reached the limit of users that can join",
+        });
+      }
+
       const [numberOfAffectedRows, affectedRows] = await User.update(
         {
           sessionsJoined: Sequelize.fn(
@@ -1523,6 +1549,44 @@ const UserController = () => {
     }
   };
 
+  const viewRulesGConference = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          viewRulesGConference: true,
+        },
+        {
+          where: {
+            id,
+          },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
+  const countAllUsers = async (req, res) => {
+    try {
+      const userCount = await User.count();
+
+      return res.status(HttpCodes.OK).json({ userCount });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   return {
     getUser,
     updateUser,
@@ -1554,6 +1618,8 @@ const UserController = () => {
     getLearningBadgesHoursByUser,
     getAllUsersExcludePassword,
     acceptTermsConditionGConference,
+    viewRulesGConference,
+    countAllUsers,
   };
 };
 
