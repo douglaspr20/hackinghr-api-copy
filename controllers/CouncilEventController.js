@@ -38,26 +38,28 @@ const CouncilEventController = () => {
           }
         }
 
-        const _councilEventPanels = await CouncilEventPanel.findAll({
-          where: {
-            CouncilEventId: councilEvent.id,
-          },
-        });
+        if (!isEmpty(data.panels)) {
+          const _councilEventPanels = await CouncilEventPanel.findAll({
+            where: {
+              CouncilEventId: councilEvent.id,
+            },
+          });
 
-        const _councilEventPanelIds = _councilEventPanels.map(
-          (panel) => panel.id
-        );
-        const councilEventPanelIds = data.panels.map((panel) => panel.id);
+          const _councilEventPanelIds = _councilEventPanels.map(
+            (panel) => panel.id
+          );
+          const councilEventPanelIds = data.panels.map((panel) => panel.id);
 
-        const councilEventPanelIdDiff = _councilEventPanelIds.filter(
-          (id) => !councilEventPanelIds.includes(id)
-        );
+          const councilEventPanelIdDiff = _councilEventPanelIds.filter(
+            (id) => !councilEventPanelIds.includes(id)
+          );
 
-        await CouncilEventPanel.destroy({
-          where: {
-            id: councilEventPanelIdDiff,
-          },
-        });
+          await CouncilEventPanel.destroy({
+            where: {
+              id: councilEventPanelIdDiff,
+            },
+          });
+        }
 
         const councilEventPanels = data.panels?.map((panel) => {
           return CouncilEventPanel.upsert(
@@ -174,7 +176,7 @@ const CouncilEventController = () => {
   };
 
   const joinCouncilEventPanelist = async (req, res) => {
-    const { councilEventPanelId, status, UserId } = req.body;
+    const { councilEventPanelId, status, UserId, isAddedByAdmin } = req.body;
     const { userTimezone } = req.query;
 
     try {
@@ -248,50 +250,31 @@ const CouncilEventController = () => {
           },
         });
 
-        let _userTimezone;
+        const _userTimezone = TimeZoneList.find((item) =>
+          item.utc.includes(userTimezone)
+        );
 
-        if (user) {
-          _userTimezone = TimeZoneList.find((tz) => tz.value === user.timezone);
-        } else {
-          _userTimezone = TimeZoneList.find((item) =>
-            item.utc.includes(userTimezone)
-          );
-        }
-
-        let timezone = councilEventPanel.CouncilEvent.timezone;
-        timezone = TimeZoneList.find((tz) => tz.value === timezone);
-
+        const timezone = TimeZoneList.find(
+          (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
+        );
         const offset = timezone.offset;
 
-        let startTime = moment.tz(
-          councilEventPanel.panelStartAndEndDate[0],
-          _userTimezone.utc[0]
+        let startTime = councilEventPanel.panelStartAndEndDate[0];
+        let endTime = councilEventPanel.panelStartAndEndDate[1];
+
+        startTime = convertToCertainTime(
+          moment(startTime),
+          councilEventPanel.CouncilEvent.timezone
         );
-        let endTime = moment.tz(
-          councilEventPanel.panelStartAndEndDate[1],
-          _userTimezone.utc[0]
+        endTime = convertToCertainTime(
+          moment(endTime),
+          councilEventPanel.CouncilEvent.timezone
         );
 
-        // console.log(
-        //   moment
-        //     .tz(councilEventPanel.panelStartAndEndDate[0], _userTimezone.utc[0])
-        //     .format("YYYY-MM-DD HH:mm:ssZ"),
-        //   "bruv"
-        // );
-
-        // startTime = convertToCertainTime(
-        //   moment(startTime),
-        //   councilEventPanel.CouncilEvent.timezone
-        // );
-        // endTime = convertToCertainTime(
-        //   moment(endTime),
-        //   councilEventPanel.CouncilEvent.timezone
-        // );
-
-        // startTime = convertToLocalTime(
-        //   moment(startTime).utcOffset(offset, true)
-        // );
-        // endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+        startTime = convertToLocalTime(
+          moment(startTime).utcOffset(offset, true)
+        );
+        endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
         const calendarInvite = smtpService().generateCalendarInvite(
           startTime,
