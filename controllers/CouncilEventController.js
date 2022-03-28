@@ -250,9 +250,17 @@ const CouncilEventController = () => {
           },
         });
 
-        const _userTimezone = TimeZoneList.find((item) =>
-          item.utc.includes(userTimezone)
-        );
+        let _userTimezone;
+
+        if (isAddedByAdmin) {
+          _userTimezone = TimeZoneList.find(
+            (item) => item.value === user.timezone
+          );
+        } else {
+          _userTimezone = TimeZoneList.find((item) =>
+            item.utc.includes(userTimezone)
+          );
+        }
 
         const timezone = TimeZoneList.find(
           (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
@@ -271,10 +279,19 @@ const CouncilEventController = () => {
           councilEventPanel.CouncilEvent.timezone
         );
 
-        startTime = convertToLocalTime(
-          moment(startTime).utcOffset(offset, true)
-        );
-        endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+        if (isAddedByAdmin) {
+          startTime = moment(startTime)
+            .tz(_userTimezone.utc[0])
+            .utcOffset(_userTimezone.offset, true);
+          endTime = moment(endTime)
+            .tz(_userTimezone.utc[0])
+            .utcOffset(_userTimezone.offset, true);
+        } else {
+          startTime = convertToLocalTime(
+            moment(startTime).utcOffset(offset, true)
+          );
+          endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+        }
 
         const calendarInvite = smtpService().generateCalendarInvite(
           startTime,
