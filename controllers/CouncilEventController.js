@@ -391,10 +391,12 @@ const CouncilEventController = () => {
         ],
       });
 
-      socketService().emit(
-        SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-        councilEventPanel
-      );
+      if (!isEmpty(councilEventPanel)) {
+        socketService().emit(
+          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+          councilEventPanel
+        );
+      }
 
       return res.status(HttpCodes.OK).json({});
     } catch (err) {
@@ -528,10 +530,12 @@ const CouncilEventController = () => {
         ],
       });
 
-      socketService().emit(
-        SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-        councilEventPanel
-      );
+      if (!isEmpty(councilEventPanel)) {
+        socketService().emit(
+          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+          councilEventPanel
+        );
+      }
 
       return res.status(HttpCodes.OK).json({});
     } catch (error) {
@@ -623,10 +627,12 @@ const CouncilEventController = () => {
         ],
       });
 
-      socketService().emit(
-        SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-        councilEventPanel
-      );
+      if (!isEmpty(councilEventPanel)) {
+        socketService().emit(
+          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+          councilEventPanel
+        );
+      }
 
       return res.status(HttpCodes.OK).json({});
     } catch (error) {
