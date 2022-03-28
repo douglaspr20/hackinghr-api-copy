@@ -264,6 +264,8 @@ const EventController = () => {
   const create = async (req, res) => {
     const { body } = req;
 
+    console.log(body.images.length, "brrt");
+
     if (body.title) {
       try {
         let eventInfo = {
@@ -283,6 +285,8 @@ const EventController = () => {
             eventInfo.image2
           );
         }
+
+        // if
 
         const event = await Event.create(eventInfo);
 
@@ -380,14 +384,32 @@ const EventController = () => {
         await s3Service().deleteUserPicture(prevEvent.image2);
       }
 
-      const [numberOfAffectedRows, affectedRows] = await Event.update(
-        eventInfo,
-        {
-          where: { id },
-          returning: true,
-          plain: true,
-        }
-      );
+      let newImages = [];
+      if (!isEmpty(event.images)) {
+        newImages = eventInfo.images.map((image) => {
+          console.log("image", image);
+          if (!isValidURL(image)) {
+            return s3Service().getEventImageUrl("", image);
+          }
+
+          return image;
+        });
+
+        console.log("newImages", newImages);
+
+        // eventInfo.images = await Promise.all(newImages);
+      }
+
+      console.log(eventInfo, "eve");
+
+      // const [numberOfAffectedRows, affectedRows] = await Event.update(
+      //   eventInfo,
+      //   {
+      //     where: { id },
+      //     returning: true,
+      //     plain: true,
+      //   }
+      // );
 
       return res
         .status(HttpCodes.OK)
