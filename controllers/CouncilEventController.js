@@ -254,15 +254,19 @@ const CouncilEventController = () => {
 
         let _userTimezone;
 
-        if (isAddedByAdmin) {
-          _userTimezone = TimeZoneList.find(
-            (item) => item.value === user.timezone
-          );
-        } else {
-          _userTimezone = TimeZoneList.find((item) =>
-            item.utc.includes(userTimezone)
-          );
-        }
+        // if (isAddedByAdmin) {
+        //   _userTimezone = TimeZoneList.find(
+        //     (item) => item.value === user.timezone
+        //   );
+        // } else {
+        //   _userTimezone = TimeZoneList.find((item) =>
+        //     item.utc.includes(userTimezone)
+        //   );
+        // }
+
+        _userTimezone = TimeZoneList.find(
+          (item) => item.value === user.timezone
+        );
 
         const timezone = TimeZoneList.find(
           (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
@@ -325,6 +329,7 @@ const CouncilEventController = () => {
         };
 
         const mailOptions = {
+          from: "hackinghrlab@gmail.com",
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
           subject: LabEmails.COUNCIL_EVENT_JOIN.subject(
