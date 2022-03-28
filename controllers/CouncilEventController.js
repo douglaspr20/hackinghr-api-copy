@@ -623,7 +623,12 @@ const CouncilEventController = () => {
         ],
       });
 
-      return res.status(HttpCodes.OK).json({ councilEventPanel });
+      socketService().emit(
+        SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+        councilEventPanel
+      );
+
+      return res.status(HttpCodes.OK).json({});
     } catch (error) {
       console.log(error);
       return res
