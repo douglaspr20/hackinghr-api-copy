@@ -281,19 +281,14 @@ const CouncilEventController = () => {
           councilEventPanel.CouncilEvent.timezone
         );
 
-        if (isAddedByAdmin) {
-          startTime = moment(startTime)
-            .tz(_userTimezone.utc[0])
-            .utcOffset(_userTimezone.offset, true);
-          endTime = moment(endTime)
-            .tz(_userTimezone.utc[0])
-            .utcOffset(_userTimezone.offset, true);
-        } else {
-          startTime = convertToLocalTime(
-            moment(startTime).utcOffset(offset, true)
-          );
-          endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
-        }
+        startTime = convertToLocalTime(
+          moment(startTime).utcOffset(offset, true),
+          _userTimezone.utc[0]
+        );
+        endTime = convertToLocalTime(
+          moment(endTime).utcOffset(offset, true),
+          _userTimezone.utc[0]
+        );
 
         const calendarInvite = smtpService().generateCalendarInvite(
           startTime,
