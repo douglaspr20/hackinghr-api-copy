@@ -283,14 +283,19 @@ const CouncilEventController = () => {
           councilEventPanel.CouncilEvent.timezone
         );
 
+        console.log("convertToCertainTime", startTime);
+        console.log("convertToCertainTime", endTime);
         startTime = convertToLocalTime(
           moment(startTime).utcOffset(offset, true),
           _userTimezone.utc[0]
         );
+
         endTime = convertToLocalTime(
           moment(endTime).utcOffset(offset, true),
           _userTimezone.utc[0]
         );
+        console.log("convertToLocalTime", startTime);
+        console.log("convertToLocalTime", endTime);
 
         const calendarInvite = smtpService().generateCalendarInvite(
           startTime,
