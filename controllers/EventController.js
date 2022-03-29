@@ -277,12 +277,12 @@ const EventController = () => {
           );
         }
 
-        // if (eventInfo.image2) {
-        //   eventInfo.image2 = await s3Service().getEventImageUrl(
-        //     "",
-        //     eventInfo.image2
-        //   );
-        // }
+        if (eventInfo.image2) {
+          eventInfo.image2 = await s3Service().getEventImageUrl(
+            "",
+            eventInfo.image2
+          );
+        }
 
         if (!isEmpty(eventInfo.images)) {
           const images = eventInfo.images.map((image) => {
