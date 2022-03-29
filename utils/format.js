@@ -41,6 +41,8 @@ function convertToLocalTime(date, localTz = null) {
     localTimezone = moment.tz.guess();
   }
 
+  console.log("localTimezone", localTimezone);
+
   return moment.utc(date).tz(localTimezone);
 }
 
