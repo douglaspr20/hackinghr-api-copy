@@ -264,6 +264,8 @@ const CouncilEventController = () => {
           );
         }
 
+        console.log("_userTimezone", _userTimezone);
+
         const timezone = TimeZoneList.find(
           (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
         );
