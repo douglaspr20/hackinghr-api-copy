@@ -8,13 +8,10 @@ const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
-const { Settings, EmailContent, USER_ROLE, TimeZoneList } = require("../enum");
-const { isEmpty, compact } = require("lodash");
-const {
-  convertToLocalTime,
-  convertJSONToExcel,
-  convertToCertainTime,
-} = require("../utils/format");
+const TimeZoneList = require("../enum/TimeZoneList");
+const { Settings, EmailContent, USER_ROLE } = require("../enum");
+const { isEmpty, flatten, head, compact } = require("lodash");
+const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
@@ -28,15 +25,22 @@ const EventController = () => {
       1,
       "days"
     );
-    const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
+    const dateAfterEventEnd = convertToLocalTime(
+      event.startAndEndTimes[event.startAndEndTimes.length - 1].endTime
+    );
+
     const dateBefore2Hours = convertToLocalTime(event.startDate).subtract(
       45,
       "minutes"
     );
+
+    const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
+    const interval3 = `0 ${dateAfterEventEnd.minutes()} ${dateAfterEventEnd.hours()} ${dateAfterEventEnd.date()} ${dateAfterEventEnd.month()} *`;
 
     console.log("////////////////////////////////////////////");
     console.log("/////// setEventReminders //////");
+
     if (dateBefore24Hours.isAfter(moment())) {
       cronService().addTask(`${event.id}-24`, interval1, true, async () => {
         let targetEvent = await Event.findOne({ where: { id: event.id } });
@@ -57,7 +61,6 @@ const EventController = () => {
             const targetEventDate = moment(targetEvent.startDate);
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              to: _user.email,
               subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_24_HOURS.body(
                 _user,
@@ -94,7 +97,6 @@ const EventController = () => {
             const _user = user.toJSON();
             let mailOptions = {
               from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-              to: _user.email,
               subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_45_MINUTES.body(
                 _user,
@@ -108,11 +110,46 @@ const EventController = () => {
         );
       });
     }
+
+    if (dateAfterEventEnd.isAfter(moment())) {
+      cronService().addTask(`${event.id}-5`, interval3, true, async () => {
+        let targetEvent = await Event.findOne({ where: { id: event.id } });
+        targetEvent = targetEvent.toJSON();
+        const users = targetEvent.usersAssistence.map((el) => JSON.parse(el));
+        const usersId = users.map((el) => el.usersAssistence);
+        const link = `${process.env.DOMAIN_URL}`;
+        const eventUsers = await Promise.all(
+          (usersId[0] || []).map((user) => {
+            return User.findOne({
+              where: {
+                id: user,
+              },
+            });
+          })
+        );
+        await Promise.all(
+          eventUsers.map((user) => {
+            const _user = user.toJSON();
+            let mailOptions = {
+              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+              to: _user.email,
+              subject: LabEmails.EVENT_JUST_END.subject(targetEvent),
+              html: LabEmails.EVENT_JUST_END.body(_user, targetEvent, link),
+            };
+
+            console.log("***** mailOptions ", mailOptions);
+
+            return smtpService().sendMail(mailOptions);
+          })
+        );
+      });
+    }
   };
 
   const removeEventReminders = (event) => {
     cronService().stopTask(`${event.id}-24`);
     cronService().stopTask(`${event.id}-45`);
+    cronService().stopTask(`${event.id}-5`);
   };
 
   const removeOrganizerReminders = (event) => {
@@ -162,7 +199,6 @@ const EventController = () => {
 
     let mailOptions = {
       from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-      to: event.organizerEmail,
       subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
       attachments: [
         {
@@ -214,7 +250,6 @@ const EventController = () => {
       users.map((user) => {
         mailOptions = {
           ...mailOptions,
-          to: user.email,
         };
 
         return smtpService().sendMail(mailOptions);
@@ -267,8 +302,8 @@ const EventController = () => {
         setEventReminders(event);
         setOrganizerReminders(event);
 
-        const startTime = convertToLocalTime(event.startDate);
-        if (startTime.isAfter(moment())) {
+        const startTime = convertToLocalTime(event?.startDate);
+        if (startTime?.isAfter(moment())) {
           await NotificationController().createNotification({
             message: `New Event "${
               event.title || eventInfo.title
@@ -473,6 +508,63 @@ const EventController = () => {
     }
   };
 
+  const getLiveEvents = async (req, res) => {
+    const { id } = req.user;
+    try {
+      const events = await Event.findAll({
+        // where: id,
+      });
+      const eventsId = [];
+      const eventsFilteredId = [];
+      const eventsToShowFilter = [];
+      const filterEvents = events.filter(
+        (item) => item.usersAssistence.length !== 0
+      );
+
+      const usersAssistenceSelected = filterEvents.map((item) => {
+        eventsId.push(item.id);
+        return item.usersAssistence[0].map((el) => JSON.parse(el));
+      });
+
+      const usersAssistence = usersAssistenceSelected.map((el) => {
+        return el.map(
+          (item) =>
+            item.usersAssistence?.length > 0 &&
+            item.usersAssistence.map((el) => el === id && el)
+        );
+      });
+
+      eventsId.forEach((item, index) => {
+        if (!usersAssistence[index].includes(false)) {
+          if (usersAssistence[index].length > 1) {
+            const isUserAllDays = usersAssistence[index].reduce((prev, act) => {
+              if (!prev) return prev;
+              return act.includes(id);
+            }, true);
+            isUserAllDays && eventsFilteredId.push(item);
+          } else {
+            for (const user of usersAssistence[index]) {
+              user.includes(id) && eventsFilteredId.push(item);
+            }
+          }
+        }
+      });
+      events.forEach((event) => {
+        for (const idsFiltered of eventsFilteredId) {
+          idsFiltered === event.id && eventsToShowFilter.push(event);
+        }
+      });
+
+      const notRepeatEvents = [...new Set(eventsToShowFilter)];
+      return res.status(HttpCodes.OK).json({ events: notRepeatEvents });
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const updateEventStatus = async (req, res) => {
     const { id: eventId } = req.params;
     const { id: userId } = req.token;
@@ -510,22 +602,87 @@ const EventController = () => {
   };
 
   const updateEventUserAssistence = async (req, res) => {
-    const { id } = req.params;
+    const { id: eventId } = req.params;
     const { id: userId } = req.token;
-    if (id && userId) {
+    const { body } = req;
+    const EventId = Number(eventId);
+
+    if (EventId && userId) {
       try {
-        let prevEvent = await Event.findOne({ where: { id } });
+        const { dataValues: user } = await User.findOne({
+          where: { id: userId },
+        });
+
+        if (!user) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Host user not found" });
+        }
+        let prevEvent = await Event.findOne({ where: { id: EventId } });
         prevEvent = prevEvent.toJSON();
         const [numberOfAffectedRows, affectedRows] = await Event.update(
           {
-            usersAssistence: [...prevEvent.usersAssistence, userId],
+            usersAssistence: [body.usersAssistence],
           },
           {
-            where: { id },
+            where: { id: EventId },
             returning: true,
             plain: true,
           }
         );
+
+        let dayOfMail;
+        const days = body.usersAssistence.map((el) => JSON.parse(el));
+        const timezone = TimeZoneList.find(
+          (item) => item.value === affectedRows.timezone
+        );
+        days.map((time) => {
+          const convertedStartEventTime = moment(time.start)
+            .tz(timezone.utc[0])
+            .utcOffset(timezone.offset, true)
+            .format();
+          const convertedEndEventTime = moment(time.end)
+            .tz(timezone.utc[0])
+            .utcOffset(timezone.offset, true)
+            .format();
+
+          const localDate = moment()
+            .utc()
+            .tz(timezone.utc[0])
+            .utcOffset(timezone.offset, true)
+            .format();
+
+          const isTodayEvent =
+            moment(convertedStartEventTime).format("MM DD") <=
+              moment(localDate).format("MM DD") &&
+            moment(convertedEndEventTime).format("MM DD") ===
+              moment(localDate).format("MM DD");
+
+          if (isTodayEvent) {
+            dayOfMail = days.findIndex((el) => isTodayEvent);
+          }
+        });
+        await Promise.resolve(
+          (() => {
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
+              subject: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.subject({
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
+              html: LabEmails.USER_CONFIRM_LIVE_ASSISTENCE.body(user, {
+                firstDay: dayOfMail + 1,
+                allDays: days.length,
+                name: affectedRows.title,
+              }),
+            };
+            console.log("***** mailOptions ", mailOptions);
+            smtpService().sendMail(mailOptions);
+          })()
+        );
+
         return res.status(HttpCodes.OK).json({ affectedRows });
       } catch (error) {
         console.log(error);
@@ -557,7 +714,6 @@ const EventController = () => {
       };
 
       requests = users.map((user) => {
-        mailOptions.to = user.email;
         mailOptions.html = EmailContent.CLAIM_EMAIL(user, event);
 
         return smtpService().sendMail(mailOptions);
@@ -690,7 +846,6 @@ const EventController = () => {
         emailList.map((email) => {
           mailOptions = {
             ...mailOptions,
-            to: email,
           };
 
           return smtpService().sendMail(mailOptions);
@@ -760,12 +915,14 @@ const EventController = () => {
         startAndEndTimes: compact(event.startAndEndTimes),
       };
 
-      const _userTimezone = TimeZoneList.find((item) =>
-        item.utc.includes(userTimezone)
-      );
-      const timezone = TimeZoneList.find(
-        (item) => item.value === event.timezone
-      );
+      // const startTime = moment(event.startAndEndTimes[day]?.startTime).format(
+      //   "HH:mm:ss"
+      // );
+      let startDate = moment(`${date}  ${startTime ? startTime : ""}`);
+
+      // const endTime = moment(event.startAndEndTimes[day].endTime).format(
+      //   "HH:mm:ss"
+      // );
       const offset = timezone.offset;
 
       let startTime = convertToCertainTime(
@@ -927,7 +1084,6 @@ const EventController = () => {
         if (event.showClaim === 1) {
           let mailOptions = {
             from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-            to: user.email,
             subject: LabEmails.EVENT_CLAIM_CREDIT.subject(event.title),
             html: LabEmails.EVENT_CLAIM_CREDIT.body(user, event),
             attachments: [
@@ -947,9 +1103,7 @@ const EventController = () => {
           return res.status(HttpCodes.OK).json({});
         }
 
-        return res.status(HttpCodes.BAD_REQUEST).json({
-          msg: "Bad Request: This Event is not allowed to confirm",
-        });
+        return res.status(HttpCodes.BAD_REQUEST).json({});
       } catch (error) {
         console.log(error);
         return res
@@ -984,7 +1138,6 @@ const EventController = () => {
 
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          to: user.email,
           subject: LabEmails.EVENT_CLAIM_ATTENDANCE.subject(event.title),
           html: LabEmails.EVENT_CLAIM_ATTENDANCE.body(user, event),
         };
@@ -1004,6 +1157,21 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
+  const eventCertificateMetaData = async (req, res) => {
+    const { metadata } = req.body;
+    const metaTags = `<meta name="description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true"/>
+    <meta property="og:title" content="Hacking HR's Certificate of Participation" data-react-helmet="true"/>
+    <meta property="og:description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true"/>
+    <meta property="og:type" content="webpage" data-react-helmet="true" />
+    <meta property="og:url" content="https://www.hackinghrlab.io/" data-react-helmet="true"/>
+    <meta property="twitter:url" content="https://www.hackinghrlab.io/" data-react-helmet="true"/>
+    <meta property="image" content="${metadata.metadata}" data-react-helmet="true" />
+    <meta property="og:image" content="${metadata.metadata}" data-react-helmet="true"/>
+    <meta property="twitter:title" content="Hacking HR's Certificate of Participation" data-react-helmet="true"/>
+    <meta property="twitter:image" content="${metadata.metadata}" data-react-helmet="true"/>`;
+    res.send(metaTags);
+  };
+
   return {
     create,
     getAllEvents,
@@ -1012,6 +1180,8 @@ const EventController = () => {
     updateEventUserAssistence,
     updateEvent,
     updateEventStatus,
+    getLiveEvents,
+    updateEventUserAssistence,
     emailAfterEventThread,
     getEventUsers,
     remove,
@@ -1023,6 +1193,7 @@ const EventController = () => {
     resetEmailReminders,
     claimCredit,
     claimAttendance,
+    eventCertificateMetaData,
   };
 };
 

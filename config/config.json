@@ -29,7 +29,7 @@
         "rejectUnauthorized": false
       },
       "keepAlive": true
-    },  
+    },
     "ssl": true,
     "extra": {
       "ssl": true

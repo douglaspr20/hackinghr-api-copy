@@ -73,7 +73,15 @@ const LiveController = () => {
   const update = async (id, params) => {
     try {
       let data = {};
-      let fields = ["live", "url", "title", "description", "isFree"];
+      let fields = [
+        "live",
+        "url",
+        "eventAssistence",
+        "event",
+        "title",
+        "description",
+        "isFree",
+      ];
       for (let item of fields) {
         if (params.hasOwnProperty(item)) {
           data = { ...data, [item]: params[item] };

@@ -36,6 +36,8 @@ const privateRoutes = {
   "DELETE /business-partner-comments/delete-comment/:id":
     "BusinessPartnerCommentController.remove",
   "GET /events/": "EventController.getAllEvents",
+  "POST /events/metadata": "EventController.eventCertificateMetaData",
+  "GET /events-live/": "EventController.getLiveEvents",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
   "PUT /user/": "UserController.updateUser",
@@ -108,7 +110,8 @@ const privateRoutes = {
   "PUT /podcast/viewed": "PodcastController.markAsViewed",
   "PUT /podcast/:id/save-for-later": "PodcastController.saveForLater",
   "DELETE /event/channel/:id": "EventController.deleteChannelEvent",
-  "PUT /event/:id": "EventController.updateEventUserAssistence",
+  "PUT /event/:id": "EventController.updateEvent",
+  "PUT /event/user-assistence/:id": "EventController.updateEventUserAssistence",
   "PUT /event/channel/:id": "EventController.updateEvent",
   "PUT /channel/follow/:id": "ChannelController.setFollow",
   "PUT /channel/unfollow/:id": "ChannelController.unsetFollow",

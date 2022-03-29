@@ -12,6 +12,8 @@ module.exports = (sequelize, DataTypes) => {
   Live.init(
     {
       live: DataTypes.BOOLEAN,
+      eventAssistence: DataTypes.BOOLEAN,
+      event: DataTypes.STRING,
       title: DataTypes.STRING,
       url: DataTypes.STRING,
       description: DataTypes.STRING,
