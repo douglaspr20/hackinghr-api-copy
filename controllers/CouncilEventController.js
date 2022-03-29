@@ -282,12 +282,12 @@ const CouncilEventController = () => {
         );
 
         startTime = convertToLocalTime(
-          moment(startTime).utcOffset(offset, true),
-          _userTimezone.utc[0]
+          moment(startTime).utcOffset(offset, true)
+          // _userTimezone.utc[0]
         );
         endTime = convertToLocalTime(
-          moment(endTime).utcOffset(offset, true),
-          _userTimezone.utc[0]
+          moment(endTime).utcOffset(offset, true)
+          // _userTimezone.utc[0]
         );
 
         const calendarInvite = smtpService().generateCalendarInvite(
