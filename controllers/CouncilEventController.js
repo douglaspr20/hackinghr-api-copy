@@ -309,6 +309,8 @@ const CouncilEventController = () => {
           `METHOD:REQUEST\r\nBEGIN:VEVENT`
         );
 
+        console.log(icsContent);
+
         const event = {
           startDate: moment(councilEvent.startDate).format("LL"),
           endDate: moment(councilEvent.endDate).format("LL"),
