@@ -278,6 +278,7 @@ const CouncilEventController = () => {
           moment(startTime),
           councilEventPanel.CouncilEvent.timezone
         );
+
         endTime = convertToCertainTime(
           moment(endTime),
           councilEventPanel.CouncilEvent.timezone
@@ -286,12 +287,12 @@ const CouncilEventController = () => {
         console.log("convertToCertainTime", startTime);
         console.log("convertToCertainTime", endTime);
         startTime = convertToLocalTime(
-          moment(startTime).utcOffset(offset, true),
+          moment(startTime).utcOffset(offset),
           _userTimezone.utc[0]
         );
 
         endTime = convertToLocalTime(
-          moment(endTime).utcOffset(offset, true),
+          moment(endTime).utcOffset(offset),
           _userTimezone.utc[0]
         );
         console.log("convertToLocalTime", startTime);
@@ -480,6 +481,8 @@ const CouncilEventController = () => {
         "BEGIN:VEVENT",
         `METHOD:REQUEST\r\nBEGIN:VEVENT`
       );
+
+      console.log(icsContent, "bruv");
 
       res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
       res.setHeader(
