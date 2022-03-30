@@ -334,7 +334,7 @@ const CouncilEventController = () => {
           linkToJoin: councilEventPanel.linkToJoin,
         };
 
-        const mailOptions = {
+        let mailOptions = {
           // from: "hackinghrlab@gmail.com",
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
@@ -343,22 +343,33 @@ const CouncilEventController = () => {
             councilEventPanel.panelName,
             councilEvent.eventName
           ),
-          html: LabEmails.COUNCIL_EVENT_JOIN.body(
-            user.firstName,
-            event,
-            panel,
-            timezone.abbr
-          ),
+          html: isAddedByAdmin
+            ? LabEmails.COUNCIL_EVENT_JOIN.addedByAdminBody(
+                user.firstName,
+                event,
+                panel,
+                timezone.abbr
+              )
+            : LabEmails.COUNCIL_EVENT_JOIN.body(
+                user.firstName,
+                event,
+                panel,
+                timezone.abbr
+              ),
           contentType: "text/calendar",
-          attachments: [
+        };
+
+        // user joined, not added
+        if (!isAddedByAdmin) {
+          mailOptions["attachments"] = [
             {
               filename: `${councilEventPanel.panelName}.ics`,
               content: icsContent,
               contentType: "application/ics; charset=UTF-8; method=REQUEST",
               contentDisposition: "inline",
             },
-          ],
-        };
+          ];
+        }
 
         smtpService().sendMailUsingSendInBlue(mailOptions);
       } else {
