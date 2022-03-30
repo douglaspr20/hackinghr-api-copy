@@ -271,36 +271,36 @@ const CouncilEventController = () => {
         );
         const offset = timezone.offset;
 
-        let startTime = councilEventPanel.panelStartAndEndDate[0];
-        let endTime = councilEventPanel.panelStartAndEndDate[1];
+        const startTime = councilEventPanel.panelStartAndEndDate[0];
+        const endTime = councilEventPanel.panelStartAndEndDate[1];
 
-        startTime = convertToCertainTime(
+        const convertedStartTime = convertToCertainTime(
           moment(startTime),
           councilEventPanel.CouncilEvent.timezone
         );
 
-        endTime = convertToCertainTime(
+        const convertedEndTime = convertToCertainTime(
           moment(endTime),
           councilEventPanel.CouncilEvent.timezone
         );
 
-        console.log("convertToCertainTime", startTime);
-        console.log("convertToCertainTime", endTime);
-        startTime = convertToLocalTime(
-          moment(startTime).utcOffset(offset),
-          _userTimezone.utc[0]
+        console.log("convertToCertainTime", convertedStartTime);
+        console.log("convertToCertainTime", convertedEndTime);
+        const localStartTime = convertToLocalTime(
+          moment(convertedStartTime).utcOffset(offset, true)
+          // _userTimezone.utc[0]
         );
 
-        endTime = convertToLocalTime(
-          moment(endTime).utcOffset(offset),
-          _userTimezone.utc[0]
+        const localEndTime = convertToLocalTime(
+          moment(convertedEndTime).utcOffset(offset, true)
+          // _userTimezone.utc[0]
         );
         console.log("convertToLocalTime", startTime);
         console.log("convertToLocalTime", endTime);
 
         const calendarInvite = smtpService().generateCalendarInvite(
-          startTime,
-          endTime,
+          localStartTime,
+          localEndTime,
           councilEventPanel.panelName,
           `Link to join: ${councilEventPanel.linkToJoin}`,
           "",
@@ -327,10 +327,10 @@ const CouncilEventController = () => {
 
         const panel = {
           panelName: councilEventPanel.panelName,
-          startDate: startTime.format("LL"),
-          endDate: endTime.format("LL"),
-          startTime: startTime.format("HH:mm"),
-          endTime: endTime.format("HH:mm"),
+          startDate: convertedStartTime.format("LL"),
+          endDate: convertedEndTime.format("LL"),
+          startTime: convertedStartTime.format("HH:mm"),
+          endTime: convertedEndTime.format("HH:mm"),
           linkToJoin: councilEventPanel.linkToJoin,
         };
 
@@ -347,7 +347,7 @@ const CouncilEventController = () => {
             user.firstName,
             event,
             panel,
-            _userTimezone.abbr
+            timezone.abbr
           ),
           contentType: "text/calendar",
           attachments: [
