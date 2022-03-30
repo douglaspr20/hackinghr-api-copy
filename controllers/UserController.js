@@ -572,7 +572,7 @@ const UserController = () => {
   };
 
   const searchUser = async (req, res) => {
-    const { search, limit } = req;
+    const { search, limit } = req.query;
 
     try {
       const users = await User.findAll({
@@ -604,15 +604,31 @@ const UserController = () => {
                     [Op.iLike]: `%${search}%`,
                   },
                 },
+                {
+                  topicsOfInterest: {
+                    [Op.overlap]: [`${search}`],
+                  },
+                },
+                {
+                  recentJobLevel: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  sizeOfOrganization: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
               ],
             }
           : {},
+        order: [[Sequelize.fn("RANDOM")]],
         limit: limit || 50,
       });
 
       return res.status(HttpCodes.OK).json({ users });
     } catch (error) {
-      console.log(err);
+      console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
