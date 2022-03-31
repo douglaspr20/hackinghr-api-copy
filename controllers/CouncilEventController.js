@@ -400,6 +400,7 @@ const CouncilEventController = () => {
                       "firstName",
                       "lastName",
                       "titleProfessions",
+                      "img",
                     ],
                   },
                 ],
@@ -554,6 +555,7 @@ const CouncilEventController = () => {
                       "firstName",
                       "lastName",
                       "titleProfessions",
+                      "img",
                     ],
                   },
                 ],
@@ -659,6 +661,13 @@ const CouncilEventController = () => {
                 include: [
                   {
                     model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                      "img",
+                    ],
                   },
                 ],
               },
@@ -669,6 +678,13 @@ const CouncilEventController = () => {
             include: [
               {
                 model: User,
+                attributes: [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "titleProfessions",
+                  "img",
+                ],
               },
             ],
           },
