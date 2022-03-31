@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "CASCADE",
       });
       CouncilEventPanel.hasMany(models.CouncilEventPanelist);
+      CouncilEventPanel.hasMany(models.CouncilEventPanelComment);
     }
   }
   CouncilEventPanel.init(

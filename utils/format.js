@@ -32,8 +32,16 @@ function convertToUserTimezone(date, tz) {
   return res;
 }
 
-function convertToLocalTime(date) {
-  const localTimezone = moment.tz.guess();
+function convertToLocalTime(date, localTz = null) {
+  let localTimezone;
+
+  if (localTz) {
+    localTimezone = localTz;
+  } else {
+    localTimezone = moment.tz.guess();
+  }
+
+  console.log("localTimezone", localTimezone);
 
   return moment.utc(date).tz(localTimezone);
 }

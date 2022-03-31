@@ -5,11 +5,15 @@ const { LabEmails, TimeZoneList } = require("../enum");
 const smtpService = require("../services/smtp.service");
 const moment = require("moment-timezone");
 const { convertToCertainTime, convertToLocalTime } = require("../utils/format");
+const { isEmpty } = require("lodash");
+const socketService = require("../services/socket.service");
+const SocketEventType = require("../enum/SocketEventTypes");
 
 const CouncilEvent = db.CouncilEvent;
 const CouncilEventPanel = db.CouncilEventPanel;
 const CouncilEventPanelist = db.CouncilEventPanelist;
 const User = db.User;
+const CouncilEventPanelComment = db.CouncilEventPanelComment;
 
 const CouncilEventController = () => {
   const upsert = async (req, res) => {
@@ -28,12 +32,38 @@ const CouncilEventController = () => {
           }
         );
 
-        const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
-        if (isPanelFull) {
-          throw new Error();
+        if (!isEmpty(data.panels)) {
+          const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
+
+          if (isPanelFull) {
+            throw new Error();
+          }
         }
 
-        const councilEventPanels = data.panels.map((panel) => {
+        if (!isEmpty(data.panels)) {
+          const _councilEventPanels = await CouncilEventPanel.findAll({
+            where: {
+              CouncilEventId: councilEvent.id,
+            },
+          });
+
+          const _councilEventPanelIds = _councilEventPanels.map(
+            (panel) => panel.id
+          );
+          const councilEventPanelIds = data.panels.map((panel) => panel.id);
+
+          const councilEventPanelIdDiff = _councilEventPanelIds.filter(
+            (id) => !councilEventPanelIds.includes(id)
+          );
+
+          await CouncilEventPanel.destroy({
+            where: {
+              id: councilEventPanelIdDiff,
+            },
+          });
+        }
+
+        const councilEventPanels = data.panels?.map((panel) => {
           return CouncilEventPanel.upsert(
             {
               ...panel,
@@ -43,7 +73,9 @@ const CouncilEventController = () => {
           );
         });
 
-        await Promise.all(councilEventPanels);
+        if (!isEmpty(councilEventPanels)) {
+          await Promise.all(councilEventPanels);
+        }
 
         const _councilEvent = await CouncilEvent.findOne({
           where: {
@@ -88,6 +120,21 @@ const CouncilEventController = () => {
             model: CouncilEventPanel,
             include: [
               {
+                model: CouncilEventPanelComment,
+                separate: true,
+                include: [
+                  {
+                    model: CouncilEventPanelist,
+                    duplicating: true,
+                    include: [
+                      {
+                        model: User,
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
                 model: CouncilEventPanelist,
                 include: [
                   {
@@ -131,7 +178,7 @@ const CouncilEventController = () => {
   };
 
   const joinCouncilEventPanelist = async (req, res) => {
-    const { councilEventPanelId, status, UserId } = req.body;
+    const { councilEventPanelId, status, UserId, isAddedByAdmin } = req.body;
     const { userTimezone } = req.query;
 
     try {
@@ -205,43 +252,55 @@ const CouncilEventController = () => {
           },
         });
 
-        console.log("owee");
-
         let _userTimezone;
 
-        if (user) {
-          _userTimezone = TimeZoneList.find((tz) => tz.value === user.timezone);
+        if (isAddedByAdmin) {
+          _userTimezone = TimeZoneList.find(
+            (item) => item.value === user.timezone
+          );
         } else {
           _userTimezone = TimeZoneList.find((item) =>
             item.utc.includes(userTimezone)
           );
         }
 
-        let timezone = councilEventPanel.CouncilEvent.timezone;
-        timezone = TimeZoneList.find((tz) => tz.value === timezone);
+        console.log("_userTimezone", _userTimezone);
 
+        const timezone = TimeZoneList.find(
+          (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
+        );
         const offset = timezone.offset;
 
-        let startTime = councilEventPanel.panelStartAndEndDate[0];
-        let endTime = councilEventPanel.panelStartAndEndDate[1];
+        const startTime = councilEventPanel.panelStartAndEndDate[0];
+        const endTime = councilEventPanel.panelStartAndEndDate[1];
 
-        startTime = convertToCertainTime(
+        const convertedStartTime = convertToCertainTime(
           moment(startTime),
           councilEventPanel.CouncilEvent.timezone
         );
-        endTime = convertToCertainTime(
+
+        const convertedEndTime = convertToCertainTime(
           moment(endTime),
           councilEventPanel.CouncilEvent.timezone
         );
 
-        startTime = convertToLocalTime(
-          moment(startTime).utcOffset(offset, true)
+        console.log("convertToCertainTime", convertedStartTime);
+        console.log("convertToCertainTime", convertedEndTime);
+        const localStartTime = convertToLocalTime(
+          moment(convertedStartTime).utcOffset(offset, true)
+          // _userTimezone.utc[0]
         );
-        endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+
+        const localEndTime = convertToLocalTime(
+          moment(convertedEndTime).utcOffset(offset, true)
+          // _userTimezone.utc[0]
+        );
+        console.log("convertToLocalTime", startTime);
+        console.log("convertToLocalTime", endTime);
 
         const calendarInvite = smtpService().generateCalendarInvite(
-          startTime,
-          endTime,
+          localStartTime,
+          localEndTime,
           councilEventPanel.panelName,
           `Link to join: ${councilEventPanel.linkToJoin}`,
           "",
@@ -258,6 +317,8 @@ const CouncilEventController = () => {
           `METHOD:REQUEST\r\nBEGIN:VEVENT`
         );
 
+        console.log(icsContent);
+
         const event = {
           startDate: moment(councilEvent.startDate).format("LL"),
           endDate: moment(councilEvent.endDate).format("LL"),
@@ -266,22 +327,15 @@ const CouncilEventController = () => {
 
         const panel = {
           panelName: councilEventPanel.panelName,
-          startDate: moment(councilEventPanel.panelStartAndEndDate[0]).format(
-            "LL"
-          ),
-          endDate: moment(councilEventPanel.panelStartAndEndDate[1]).format(
-            "LL"
-          ),
-          startTime: moment(councilEventPanel.panelStartAndEndDate[0]).format(
-            "HH:mm"
-          ),
-          endTime: moment(councilEventPanel.panelStartAndEndDate[1]).format(
-            "HH:mm"
-          ),
+          startDate: convertedStartTime.format("LL"),
+          endDate: convertedEndTime.format("LL"),
+          startTime: convertedStartTime.format("HH:mm"),
+          endTime: convertedEndTime.format("HH:mm"),
           linkToJoin: councilEventPanel.linkToJoin,
         };
 
-        const mailOptions = {
+        let mailOptions = {
+          // from: "hackinghrlab@gmail.com",
           from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
           subject: LabEmails.COUNCIL_EVENT_JOIN.subject(
@@ -289,17 +343,33 @@ const CouncilEventController = () => {
             councilEventPanel.panelName,
             councilEvent.eventName
           ),
-          html: LabEmails.COUNCIL_EVENT_JOIN.body(user.firstName, event, panel),
+          html: isAddedByAdmin
+            ? LabEmails.COUNCIL_EVENT_JOIN.addedByAdminBody(
+                user.firstName,
+                event,
+                panel,
+                timezone.abbr
+              )
+            : LabEmails.COUNCIL_EVENT_JOIN.body(
+                user.firstName,
+                event,
+                panel,
+                timezone.abbr
+              ),
           contentType: "text/calendar",
-          attachments: [
+        };
+
+        // user joined, not added
+        if (!isAddedByAdmin) {
+          mailOptions["attachments"] = [
             {
               filename: `${councilEventPanel.panelName}.ics`,
               content: icsContent,
               contentType: "application/ics; charset=UTF-8; method=REQUEST",
               contentDisposition: "inline",
             },
-          ],
-        };
+          ];
+        }
 
         smtpService().sendMailUsingSendInBlue(mailOptions);
       } else {
@@ -318,6 +388,21 @@ const CouncilEventController = () => {
         },
         include: [
           {
+            model: CouncilEventPanelComment,
+            separate: true,
+            include: [
+              {
+                model: CouncilEventPanelist,
+                duplicating: true,
+                include: [
+                  {
+                    model: User,
+                  },
+                ],
+              },
+            ],
+          },
+          {
             model: CouncilEventPanelist,
             include: [
               {
@@ -328,7 +413,14 @@ const CouncilEventController = () => {
         ],
       });
 
-      return res.status(HttpCodes.OK).json({ councilEventPanel });
+      if (!isEmpty(councilEventPanel)) {
+        socketService().emit(
+          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+          councilEventPanel
+        );
+      }
+
+      return res.status(HttpCodes.OK).json({});
     } catch (err) {
       console.log(err);
       return res
@@ -401,6 +493,8 @@ const CouncilEventController = () => {
         `METHOD:REQUEST\r\nBEGIN:VEVENT`
       );
 
+      console.log(icsContent, "bruv");
+
       res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
       res.setHeader(
         "Content-Disposition",
@@ -435,6 +529,21 @@ const CouncilEventController = () => {
         },
         include: [
           {
+            model: CouncilEventPanelComment,
+            separate: true,
+            include: [
+              {
+                model: CouncilEventPanelist,
+                duplicating: true,
+                include: [
+                  {
+                    model: User,
+                  },
+                ],
+              },
+            ],
+          },
+          {
             model: CouncilEventPanelist,
             include: [
               {
@@ -445,7 +554,14 @@ const CouncilEventController = () => {
         ],
       });
 
-      return res.status(HttpCodes.OK).json({ councilEventPanel });
+      if (!isEmpty(councilEventPanel)) {
+        socketService().emit(
+          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+          councilEventPanel
+        );
+      }
+
+      return res.status(HttpCodes.OK).json({});
     } catch (error) {
       console.log(error);
       return res
@@ -465,17 +581,17 @@ const CouncilEventController = () => {
           [Op.or]: [
             {
               firstName: {
-                [Op.iLike]: keyword,
+                [Op.iLike]: `%${keyword}%`,
               },
             },
             {
               lastName: {
-                [Op.iLike]: keyword,
+                [Op.iLike]: `%${keyword}%`,
               },
             },
             {
               email: {
-                [Op.iLike]: keyword,
+                [Op.iLike]: `%${keyword}%`,
               },
             },
           ],
@@ -498,6 +614,59 @@ const CouncilEventController = () => {
     }
   };
 
+  const upsertComment = async (req, res) => {
+    const data = req.body;
+    try {
+      await CouncilEventPanelComment.upsert(data);
+
+      const councilEventPanel = await CouncilEventPanel.findOne({
+        order: [["panelStartAndEndDate", "ASC"]],
+        where: {
+          id: data.CouncilEventPanelId,
+        },
+        include: [
+          {
+            model: CouncilEventPanelComment,
+            separate: true,
+            include: [
+              {
+                model: CouncilEventPanelist,
+                duplicating: true,
+                include: [
+                  {
+                    model: User,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            model: CouncilEventPanelist,
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!isEmpty(councilEventPanel)) {
+        socketService().emit(
+          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+          councilEventPanel
+        );
+      }
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     upsert,
     getAll,
@@ -506,6 +675,7 @@ const CouncilEventController = () => {
     downloadICS,
     removePanelist,
     search,
+    upsertComment,
   };
 };
 

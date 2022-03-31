@@ -1239,12 +1239,12 @@ module.exports = {
       eventName
     ) => `${firstName}, thank you for joining the panel: ${panelName} as part of the 
     event ${eventName}`,
-    body: (firstName, event, panel) => `
+    body: (firstName, event, panel, abbr) => `
     <p>
       Hi ${firstName},
       </p>
       <p>
-      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} at ${panel.startTime} and ends on ${panel.endDate} at ${panel.endTime}.  
+      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} at ${panel.startTime} ${abbr} and ends on ${panel.endDate} at ${panel.endTime} ${abbr}.  
       </p>
       <p>
       This panel is part of the event ${event.eventName} (starting on ${event.startDate} and ending on ${event.endDate}). 
@@ -1254,6 +1254,29 @@ module.exports = {
       </p>
       <p>
       Please make sure you add the calendar invite attached to this email in your calendar. We will not send another calendar invite.
+      </p>
+      <p>
+      Thank you so much and please stay tuned for more information coming in soon to prepare for the panel. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      Hacking HR LAB
+      <br />
+      `,
+    addedByAdminBody: (firstName, event, panel, abbr) => `
+    <p>
+      Hi ${firstName},
+      </p>
+      <p>
+      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} at ${panel.startTime} ${abbr} and ends on ${panel.endDate} at ${panel.endTime} ${abbr}.  
+      </p>
+      <p>
+      This panel is part of the event ${event.eventName} (starting on ${event.startDate} and ending on ${event.endDate}). 
+      </p>
+      <p>
+      The link to connect to this panel is: ${panel.linkToJoin}
       </p>
       <p>
       Thank you so much and please stay tuned for more information coming in soon to prepare for the panel. 

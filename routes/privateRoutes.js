@@ -276,6 +276,7 @@ const privateRoutes = {
   "DELETE /council/event/panel/:CouncilEventPanelId/panelist/:CouncilEventPanelistId":
     "CouncilEventController.removePanelist",
   "GET /council/event/search-user": "CouncilEventController.search",
+  "POST /council/event/panel/comment": "CouncilEventController.upsertComment",
 };
 
 module.exports = privateRoutes;
