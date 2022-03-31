@@ -81,7 +81,7 @@ const CouncilEventController = () => {
           where: {
             id: councilEvent.id,
           },
-          order: [[CouncilEventPanel, "panelStartAndEndDate", "ASC"]],
+          order: [[CouncilEventPanel, "startDate", "ASC"]],
           include: [
             {
               model: CouncilEventPanel,
@@ -114,7 +114,7 @@ const CouncilEventController = () => {
   const getAll = async (req, res) => {
     try {
       let councilEvents = await CouncilEvent.findAll({
-        order: [[CouncilEventPanel, "panelStartAndEndDate", "ASC"]],
+        order: [[CouncilEventPanel, "startDate", "ASC"]],
         include: [
           {
             model: CouncilEventPanel,
@@ -271,8 +271,8 @@ const CouncilEventController = () => {
         );
         const offset = timezone.offset;
 
-        const startTime = councilEventPanel.panelStartAndEndDate[0];
-        const endTime = councilEventPanel.panelStartAndEndDate[1];
+        const startTime = councilEventPanel.startDate;
+        const endTime = councilEventPanel.endDate;
 
         const convertedStartTime = convertToCertainTime(
           moment(startTime),
@@ -382,7 +382,7 @@ const CouncilEventController = () => {
       }
 
       const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["panelStartAndEndDate", "ASC"]],
+        order: [["startDate", "ASC"]],
         where: {
           id: councilEventPanelId,
         },
@@ -459,8 +459,8 @@ const CouncilEventController = () => {
       );
       const offset = timezone.offset;
 
-      let startTime = councilEventPanel.panelStartAndEndDate[0];
-      let endTime = councilEventPanel.panelStartAndEndDate[1];
+      let startTime = councilEventPanel.startDate;
+      let endTime = councilEventPanel.endDate;
 
       startTime = convertToCertainTime(
         moment(startTime),
@@ -523,7 +523,7 @@ const CouncilEventController = () => {
       });
 
       const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["panelStartAndEndDate", "ASC"]],
+        order: [["startDate", "ASC"]],
         where: {
           id: CouncilEventPanelId,
         },
@@ -620,7 +620,7 @@ const CouncilEventController = () => {
       await CouncilEventPanelComment.upsert(data);
 
       const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["panelStartAndEndDate", "ASC"]],
+        order: [["startDate", "ASC"]],
         where: {
           id: data.CouncilEventPanelId,
         },

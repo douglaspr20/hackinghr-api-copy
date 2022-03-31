@@ -30,6 +30,8 @@ module.exports = (sequelize, DataTypes) => {
       linkToJoin: {
         type: DataTypes.STRING,
       },
+      startDate: DataTypes.DATE,
+      endDate: DataTypes.DATE,
     },
     {
       sequelize,
