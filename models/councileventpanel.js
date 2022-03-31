@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   CouncilEventPanel.init(
     {
       panelName: DataTypes.STRING,
+      // deprecated
       panelStartAndEndDate: {
         type: DataTypes.ARRAY(DataTypes.DATE),
       },
