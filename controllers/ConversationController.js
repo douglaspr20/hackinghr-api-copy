@@ -21,12 +21,34 @@ const ConversationController = () => {
       if (prevConversation) {
         return socketService().emit(
           SocketEventTypes.NEW_CONVERSATION,
-          prevConversation.id
+          prevConversation
         );
       }
       const conversation = await Conversation.create({ members });
-      socketService().emit(SocketEventTypes.NEW_CONVERSATION, conversation.id);
-      return conversation;
+
+      const query = `
+        SELECT public."Conversations".* FROM public."Conversations" WHERE public."Conversations".id = ${conversation.id}
+        `;
+
+      let [newConversation] = await db.sequelize.query(query, {
+        type: QueryTypes.SELECT,
+      });
+
+      const query2 = `SELECT public."Users".id, public."Users"."abbrName", public."Users"."email", 
+      public."Users".img, public."Users"."isOnline", public."Users"."firstName", public."Users"."lastName", public."Users"."timezone",
+      public."Users"."isOnline" FROM public."Users" WHERE public."Users".id = ANY (ARRAY[${newConversation.members}]::int[])`;
+
+      let membersInfo = await db.sequelize.query(query2, {
+        type: QueryTypes.SELECT,
+      });
+
+      newConversation = {
+        ...newConversation,
+        members: membersInfo,
+      };
+
+      socketService().emit(SocketEventTypes.NEW_CONVERSATION, newConversation);
+      return newConversation;
     } catch (error) {
       console.log(error);
     }

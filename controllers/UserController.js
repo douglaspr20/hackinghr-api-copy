@@ -600,6 +600,11 @@ const UserController = () => {
                   },
                 },
                 {
+                  location: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
                   city: {
                     [Op.iLike]: `%${search}%`,
                   },
@@ -621,7 +626,27 @@ const UserController = () => {
                 },
               ],
             }
-          : {},
+          : {
+              [Op.or]: [
+                {
+                  city: req.query.city,
+                },
+                {
+                  recentJobLevel: req.query.recentJobLevel,
+                },
+                {
+                  titleProfessions: req.query.titleProfessions,
+                },
+                {
+                  location: req.query.location,
+                },
+                {
+                  topicsOfInterest: {
+                    [Op.overlap]: req.query.topicsOfInterest,
+                  },
+                },
+              ],
+            },
         order: [[Sequelize.fn("RANDOM")]],
         limit: limit || 50,
       });
