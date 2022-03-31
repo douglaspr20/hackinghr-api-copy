@@ -424,11 +424,6 @@ const CouncilEventController = () => {
         ],
       });
 
-      console.log(
-        councilEventPanel.CouncilEventPanelists[0].User,
-        "councilEventPanel"
-      );
-
       if (!isEmpty(councilEventPanel)) {
         socketService().emit(
           SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
