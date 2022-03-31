@@ -284,40 +284,38 @@ const CouncilEventController = () => {
           councilEventPanel.CouncilEvent.timezone
         );
 
-        console.log("convertToCertainTime", convertedStartTime);
-        console.log("convertToCertainTime", convertedEndTime);
-        const localStartTime = convertToLocalTime(
-          moment(convertedStartTime).utcOffset(offset, true)
-          // _userTimezone.utc[0]
-        );
+        let icsContent;
 
-        const localEndTime = convertToLocalTime(
-          moment(convertedEndTime).utcOffset(offset, true)
-          // _userTimezone.utc[0]
-        );
-        console.log("convertToLocalTime", startTime);
-        console.log("convertToLocalTime", endTime);
+        if (!isAddedByAdmin) {
+          const localStartTime = convertToLocalTime(
+            moment(convertedStartTime).utcOffset(offset, true)
+            // _userTimezone.utc[0]
+          );
 
-        const calendarInvite = smtpService().generateCalendarInvite(
-          localStartTime,
-          localEndTime,
-          councilEventPanel.panelName,
-          `Link to join: ${councilEventPanel.linkToJoin}`,
-          "",
-          // event.location,
-          "",
-          "Hacking HR",
-          process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          _userTimezone.utc[0]
-        );
+          const localEndTime = convertToLocalTime(
+            moment(convertedEndTime).utcOffset(offset, true)
+            // _userTimezone.utc[0]
+          );
 
-        let icsContent = calendarInvite.toString();
-        icsContent = icsContent.replace(
-          "BEGIN:VEVENT",
-          `METHOD:REQUEST\r\nBEGIN:VEVENT`
-        );
+          const calendarInvite = smtpService().generateCalendarInvite(
+            localStartTime,
+            localEndTime,
+            councilEventPanel.panelName,
+            `Link to join: ${councilEventPanel.linkToJoin}`,
+            "",
+            // event.location,
+            "",
+            "Hacking HR",
+            process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            _userTimezone.utc[0]
+          );
 
-        console.log(icsContent);
+          icsContent = calendarInvite.toString();
+          icsContent = icsContent.replace(
+            "BEGIN:VEVENT",
+            `METHOD:REQUEST\r\nBEGIN:VEVENT`
+          );
+        }
 
         const event = {
           startDate: moment(councilEvent.startDate).format("LL"),
@@ -397,6 +395,12 @@ const CouncilEventController = () => {
                 include: [
                   {
                     model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                    ],
                   },
                 ],
               },
@@ -407,16 +411,28 @@ const CouncilEventController = () => {
             include: [
               {
                 model: User,
+                attributes: [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "titleProfessions",
+                  "img",
+                ],
               },
             ],
           },
         ],
       });
 
+      console.log(
+        councilEventPanel.CouncilEventPanelists[0].User,
+        "councilEventPanel"
+      );
+
       if (!isEmpty(councilEventPanel)) {
         socketService().emit(
           SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel
+          councilEventPanel.toJSON()
         );
       }
 
@@ -538,6 +554,12 @@ const CouncilEventController = () => {
                 include: [
                   {
                     model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                    ],
                   },
                 ],
               },
@@ -548,6 +570,13 @@ const CouncilEventController = () => {
             include: [
               {
                 model: User,
+                attributes: [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "titleProfessions",
+                  "img",
+                ],
               },
             ],
           },
@@ -557,7 +586,7 @@ const CouncilEventController = () => {
       if (!isEmpty(councilEventPanel)) {
         socketService().emit(
           SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel
+          councilEventPanel.toJSON()
         );
       }
 
@@ -654,7 +683,7 @@ const CouncilEventController = () => {
       if (!isEmpty(councilEventPanel)) {
         socketService().emit(
           SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel
+          councilEventPanel.toJSON()
         );
       }
 
