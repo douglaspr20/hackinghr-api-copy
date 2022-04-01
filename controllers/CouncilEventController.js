@@ -336,7 +336,7 @@ const CouncilEventController = () => {
 
         let mailOptions = {
           // from: "hackinghrlab@gmail.com",
-          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          from: process.env.SEND_IN_BLUE_SMTP_USER,
           to: user.email,
           subject: LabEmails.COUNCIL_EVENT_JOIN.subject(
             user.firstName,
