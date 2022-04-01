@@ -575,6 +575,80 @@ const UserController = () => {
     const { search, limit } = req.query;
 
     try {
+      const count = await User.count({
+        where: search
+          ? {
+              [Op.or]: [
+                {
+                  firstName: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  lastName: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  company: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  titleProfessions: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  location: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  city: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  topicsOfInterest: {
+                    [Op.overlap]: [`${search}`],
+                  },
+                },
+                {
+                  recentJobLevel: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+                {
+                  sizeOfOrganization: {
+                    [Op.iLike]: `%${search}%`,
+                  },
+                },
+              ],
+            }
+          : {
+              [Op.or]: [
+                {
+                  city: req.query.city,
+                },
+                {
+                  recentJobLevel: req.query.recentJobLevel,
+                },
+                {
+                  titleProfessions: req.query.titleProfessions,
+                },
+                {
+                  location: req.query.location,
+                },
+                {
+                  topicsOfInterest: {
+                    [Op.overlap]: req.query.topicsOfInterest,
+                  },
+                },
+              ],
+            },
+      });
+
       const users = await User.findAll({
         where: search
           ? {
@@ -651,7 +725,7 @@ const UserController = () => {
         limit: limit || 50,
       });
 
-      return res.status(HttpCodes.OK).json({ users });
+      return res.status(HttpCodes.OK).json({ users, count });
     } catch (error) {
       console.log(error);
       return res
