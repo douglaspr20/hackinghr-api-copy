@@ -1204,7 +1204,11 @@ module.exports = {
         Thank you so much! 
       </p>
       <br />
-      Hacking HR LAB
+      Enrique Rubio
+      <br />
+      Founder
+      <br />
+      Hacking HR
       <br />
       `,
     addedByAdminBody: (firstName, event, panel, abbr) => `
@@ -1227,8 +1231,13 @@ module.exports = {
         Thank you so much! 
       </p>
       <br />
-      Hacking HR LAB
+      Enrique Rubio
       <br />
+      Founder
+      <br />
+      Hacking HR
+      <br />
+
       `,
   },
 };
