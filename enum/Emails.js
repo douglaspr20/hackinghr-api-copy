@@ -1179,12 +1179,8 @@ module.exports = {
       `,
   },
   COUNCIL_EVENT_JOIN: {
-    subject: (
-      firstName,
-      panelName,
-      eventName
-    ) => `${firstName}, thank you for joining the panel: ${panelName} as part of the 
-    event ${eventName}`,
+    subject: (firstName, panelName, eventName) =>
+      `${firstName}, thank you for joining the panel: ${panelName} as part of the event ${eventName}`,
     body: (firstName, event, panel, abbr) => `
     <p>
       Hi ${firstName},
