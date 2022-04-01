@@ -91,6 +91,13 @@ const CouncilEventController = () => {
                   include: [
                     {
                       model: User,
+                      attributes: [
+                        "id",
+                        "firstName",
+                        "lastName",
+                        "titleProfessions",
+                        "img",
+                      ],
                     },
                   ],
                 },
@@ -129,6 +136,13 @@ const CouncilEventController = () => {
                     include: [
                       {
                         model: User,
+                        attributes: [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "titleProfessions",
+                          "img",
+                        ],
                       },
                     ],
                   },
@@ -139,6 +153,13 @@ const CouncilEventController = () => {
                 include: [
                   {
                     model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                      "img",
+                    ],
                   },
                 ],
               },
@@ -178,8 +199,14 @@ const CouncilEventController = () => {
   };
 
   const joinCouncilEventPanelist = async (req, res) => {
-    const { councilEventPanelId, status, UserId, isAddedByAdmin, isModerator } =
-      req.body;
+    const {
+      councilEventPanelId,
+      status,
+      UserId,
+      isAddedByAdmin,
+      isModerator,
+      councilEventId,
+    } = req.body;
     const { userTimezone } = req.query;
 
     try {
@@ -265,8 +292,6 @@ const CouncilEventController = () => {
             item.utc.includes(userTimezone)
           );
         }
-
-        console.log("_userTimezone", _userTimezone);
 
         const timezone = TimeZoneList.find(
           (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
@@ -372,6 +397,42 @@ const CouncilEventController = () => {
         }
 
         smtpService().sendMailUsingSendInBlue(mailOptions);
+
+        const councilEventPanelist = await CouncilEventPanelist.findOne({
+          where: {
+            CouncilEventPanelId: councilEventPanelId,
+            UserId,
+          },
+          include: [
+            {
+              model: User,
+              attributes: [
+                "id",
+                "firstName",
+                "lastName",
+                "titleProfessions",
+                "img",
+              ],
+            },
+          ],
+        });
+
+        if (!isEmpty(councilEventPanelist)) {
+          const transformedCouncilEventPanelist = {
+            ...councilEventPanelist.toJSON(),
+            CouncilEventId: councilEvent.id,
+            isJoining: true,
+          };
+
+          console.log(
+            transformedCouncilEventPanelist,
+            "transformedCouncilEventPanelist"
+          );
+          socketService().emit(
+            SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
+            transformedCouncilEventPanelist
+          );
+        }
       } else {
         await CouncilEventPanelist.destroy({
           where: {
@@ -379,59 +440,12 @@ const CouncilEventController = () => {
             CouncilEventPanelId: councilEventPanelId,
           },
         });
-      }
 
-      const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["startDate", "ASC"]],
-        where: {
-          id: councilEventPanelId,
-        },
-        include: [
-          {
-            model: CouncilEventPanelComment,
-            separate: true,
-            include: [
-              {
-                model: CouncilEventPanelist,
-                duplicating: true,
-                include: [
-                  {
-                    model: User,
-                    attributes: [
-                      "id",
-                      "firstName",
-                      "lastName",
-                      "titleProfessions",
-                      "img",
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            model: CouncilEventPanelist,
-            include: [
-              {
-                model: User,
-                attributes: [
-                  "id",
-                  "firstName",
-                  "lastName",
-                  "titleProfessions",
-                  "img",
-                ],
-              },
-            ],
-          },
-        ],
-      });
-
-      if (!isEmpty(councilEventPanel)) {
-        socketService().emit(
-          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel.toJSON()
-        );
+        socketService().emit(SocketEventType.UPDATE_COUNCIL_EVENT_PANEL, {
+          UserId,
+          CouncilEventPanelId: councilEventPanelId,
+          CouncilEventId: councilEventId,
+        });
       }
 
       return res.status(HttpCodes.OK).json({});
@@ -530,64 +544,35 @@ const CouncilEventController = () => {
     const { CouncilEventPanelistId, CouncilEventPanelId } = req.params;
 
     try {
+      const councilEventPanelist = await CouncilEventPanelist.findOne({
+        where: {
+          id: CouncilEventPanelistId,
+        },
+        include: [
+          {
+            model: CouncilEventPanel,
+          },
+        ],
+      });
+
+      if (!councilEventPanelist) {
+        console.log(err);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
       await CouncilEventPanelist.destroy({
         where: {
           id: CouncilEventPanelistId,
         },
       });
 
-      const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["startDate", "ASC"]],
-        where: {
-          id: CouncilEventPanelId,
-        },
-        include: [
-          {
-            model: CouncilEventPanelComment,
-            separate: true,
-            include: [
-              {
-                model: CouncilEventPanelist,
-                duplicating: true,
-                include: [
-                  {
-                    model: User,
-                    attributes: [
-                      "id",
-                      "firstName",
-                      "lastName",
-                      "titleProfessions",
-                      "img",
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            model: CouncilEventPanelist,
-            include: [
-              {
-                model: User,
-                attributes: [
-                  "id",
-                  "firstName",
-                  "lastName",
-                  "titleProfessions",
-                  "img",
-                ],
-              },
-            ],
-          },
-        ],
+      socketService().emit(SocketEventType.UPDATE_COUNCIL_EVENT_PANEL, {
+        UserId: councilEventPanelist.UserId,
+        CouncilEventPanelId: councilEventPanelist.CouncilEventPanelId,
+        CouncilEventId: councilEventPanelist.CouncilEventPanel.CouncilEventId,
       });
-
-      if (!isEmpty(councilEventPanel)) {
-        socketService().emit(
-          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel.toJSON()
-        );
-      }
 
       return res.status(HttpCodes.OK).json({});
     } catch (error) {
@@ -645,38 +630,18 @@ const CouncilEventController = () => {
   const upsertComment = async (req, res) => {
     const data = req.body;
     try {
-      await CouncilEventPanelComment.upsert(data);
+      const [upsertedCouncilEventPanelComment, _] =
+        await CouncilEventPanelComment.upsert(data);
 
-      const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["startDate", "ASC"]],
+      const councilEventPanelComment = await CouncilEventPanelComment.findOne({
+        order: [["createdAt", "ASC"]],
         where: {
-          id: data.CouncilEventPanelId,
+          id: upsertedCouncilEventPanelComment.id,
         },
         include: [
           {
-            model: CouncilEventPanelComment,
-            separate: true,
-            include: [
-              {
-                model: CouncilEventPanelist,
-                duplicating: true,
-                include: [
-                  {
-                    model: User,
-                    attributes: [
-                      "id",
-                      "firstName",
-                      "lastName",
-                      "titleProfessions",
-                      "img",
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
             model: CouncilEventPanelist,
+            attributes: ["id"],
             include: [
               {
                 model: User,
@@ -693,10 +658,28 @@ const CouncilEventController = () => {
         ],
       });
 
-      if (!isEmpty(councilEventPanel)) {
+      const councilEvent = await CouncilEvent.findOne({
+        attributes: ["id"],
+        include: [
+          {
+            model: CouncilEventPanel,
+            attributes: [],
+            where: {
+              id: councilEventPanelComment.CouncilEventPanelId,
+            },
+          },
+        ],
+      });
+
+      const payload = {
+        ...councilEventPanelComment.toJSON(),
+        CouncilEventId: councilEvent.id,
+      };
+
+      if (!isEmpty(payload)) {
         socketService().emit(
-          SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel.toJSON()
+          SocketEventType.UPDATE_COUNCIL_EVENT_COMMENTS,
+          payload
         );
       }
 
