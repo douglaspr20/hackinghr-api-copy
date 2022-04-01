@@ -21,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   CouncilEventPanel.init(
     {
       panelName: DataTypes.STRING,
+      // deprecated
       panelStartAndEndDate: {
         type: DataTypes.ARRAY(DataTypes.DATE),
       },
@@ -30,6 +31,8 @@ module.exports = (sequelize, DataTypes) => {
       linkToJoin: {
         type: DataTypes.STRING,
       },
+      startDate: DataTypes.DATE,
+      endDate: DataTypes.DATE,
     },
     {
       sequelize,

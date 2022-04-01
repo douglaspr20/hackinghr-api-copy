@@ -81,7 +81,7 @@ const CouncilEventController = () => {
           where: {
             id: councilEvent.id,
           },
-          order: [[CouncilEventPanel, "panelStartAndEndDate", "ASC"]],
+          order: [[CouncilEventPanel, "startDate", "ASC"]],
           include: [
             {
               model: CouncilEventPanel,
@@ -114,7 +114,7 @@ const CouncilEventController = () => {
   const getAll = async (req, res) => {
     try {
       let councilEvents = await CouncilEvent.findAll({
-        order: [[CouncilEventPanel, "panelStartAndEndDate", "ASC"]],
+        order: [[CouncilEventPanel, "startDate", "ASC"]],
         include: [
           {
             model: CouncilEventPanel,
@@ -271,8 +271,8 @@ const CouncilEventController = () => {
         );
         const offset = timezone.offset;
 
-        const startTime = councilEventPanel.panelStartAndEndDate[0];
-        const endTime = councilEventPanel.panelStartAndEndDate[1];
+        const startTime = councilEventPanel.startDate;
+        const endTime = councilEventPanel.endDate;
 
         const convertedStartTime = convertToCertainTime(
           moment(startTime),
@@ -284,40 +284,38 @@ const CouncilEventController = () => {
           councilEventPanel.CouncilEvent.timezone
         );
 
-        console.log("convertToCertainTime", convertedStartTime);
-        console.log("convertToCertainTime", convertedEndTime);
-        const localStartTime = convertToLocalTime(
-          moment(convertedStartTime).utcOffset(offset, true)
-          // _userTimezone.utc[0]
-        );
+        let icsContent;
 
-        const localEndTime = convertToLocalTime(
-          moment(convertedEndTime).utcOffset(offset, true)
-          // _userTimezone.utc[0]
-        );
-        console.log("convertToLocalTime", startTime);
-        console.log("convertToLocalTime", endTime);
+        if (!isAddedByAdmin) {
+          const localStartTime = convertToLocalTime(
+            moment(convertedStartTime).utcOffset(offset, true)
+            // _userTimezone.utc[0]
+          );
 
-        const calendarInvite = smtpService().generateCalendarInvite(
-          localStartTime,
-          localEndTime,
-          councilEventPanel.panelName,
-          `Link to join: ${councilEventPanel.linkToJoin}`,
-          "",
-          // event.location,
-          "",
-          "Hacking HR",
-          process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-          _userTimezone.utc[0]
-        );
+          const localEndTime = convertToLocalTime(
+            moment(convertedEndTime).utcOffset(offset, true)
+            // _userTimezone.utc[0]
+          );
 
-        let icsContent = calendarInvite.toString();
-        icsContent = icsContent.replace(
-          "BEGIN:VEVENT",
-          `METHOD:REQUEST\r\nBEGIN:VEVENT`
-        );
+          const calendarInvite = smtpService().generateCalendarInvite(
+            localStartTime,
+            localEndTime,
+            councilEventPanel.panelName,
+            `Link to join: ${councilEventPanel.linkToJoin}`,
+            "",
+            // event.location,
+            "",
+            "Hacking HR",
+            process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            _userTimezone.utc[0]
+          );
 
-        console.log(icsContent);
+          icsContent = calendarInvite.toString();
+          icsContent = icsContent.replace(
+            "BEGIN:VEVENT",
+            `METHOD:REQUEST\r\nBEGIN:VEVENT`
+          );
+        }
 
         const event = {
           startDate: moment(councilEvent.startDate).format("LL"),
@@ -382,7 +380,7 @@ const CouncilEventController = () => {
       }
 
       const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["panelStartAndEndDate", "ASC"]],
+        order: [["startDate", "ASC"]],
         where: {
           id: councilEventPanelId,
         },
@@ -397,6 +395,13 @@ const CouncilEventController = () => {
                 include: [
                   {
                     model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                      "img",
+                    ],
                   },
                 ],
               },
@@ -407,6 +412,13 @@ const CouncilEventController = () => {
             include: [
               {
                 model: User,
+                attributes: [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "titleProfessions",
+                  "img",
+                ],
               },
             ],
           },
@@ -416,7 +428,7 @@ const CouncilEventController = () => {
       if (!isEmpty(councilEventPanel)) {
         socketService().emit(
           SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel
+          councilEventPanel.toJSON()
         );
       }
 
@@ -459,8 +471,8 @@ const CouncilEventController = () => {
       );
       const offset = timezone.offset;
 
-      let startTime = councilEventPanel.panelStartAndEndDate[0];
-      let endTime = councilEventPanel.panelStartAndEndDate[1];
+      let startTime = councilEventPanel.startDate;
+      let endTime = councilEventPanel.endDate;
 
       startTime = convertToCertainTime(
         moment(startTime),
@@ -523,7 +535,7 @@ const CouncilEventController = () => {
       });
 
       const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["panelStartAndEndDate", "ASC"]],
+        order: [["startDate", "ASC"]],
         where: {
           id: CouncilEventPanelId,
         },
@@ -538,6 +550,13 @@ const CouncilEventController = () => {
                 include: [
                   {
                     model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                      "img",
+                    ],
                   },
                 ],
               },
@@ -548,6 +567,13 @@ const CouncilEventController = () => {
             include: [
               {
                 model: User,
+                attributes: [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "titleProfessions",
+                  "img",
+                ],
               },
             ],
           },
@@ -557,7 +583,7 @@ const CouncilEventController = () => {
       if (!isEmpty(councilEventPanel)) {
         socketService().emit(
           SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel
+          councilEventPanel.toJSON()
         );
       }
 
@@ -620,7 +646,7 @@ const CouncilEventController = () => {
       await CouncilEventPanelComment.upsert(data);
 
       const councilEventPanel = await CouncilEventPanel.findOne({
-        order: [["panelStartAndEndDate", "ASC"]],
+        order: [["startDate", "ASC"]],
         where: {
           id: data.CouncilEventPanelId,
         },
@@ -635,6 +661,13 @@ const CouncilEventController = () => {
                 include: [
                   {
                     model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                      "img",
+                    ],
                   },
                 ],
               },
@@ -645,6 +678,13 @@ const CouncilEventController = () => {
             include: [
               {
                 model: User,
+                attributes: [
+                  "id",
+                  "firstName",
+                  "lastName",
+                  "titleProfessions",
+                  "img",
+                ],
               },
             ],
           },
@@ -654,7 +694,7 @@ const CouncilEventController = () => {
       if (!isEmpty(councilEventPanel)) {
         socketService().emit(
           SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
-          councilEventPanel
+          councilEventPanel.toJSON()
         );
       }
 
