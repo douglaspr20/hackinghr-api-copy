@@ -19,7 +19,10 @@ module.exports = (sequelize, DataTypes) => {
   }
   CouncilEventPanelist.init(
     {
-      // panelName: DataTypes.STRING,
+      isModerator: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

@@ -178,7 +178,8 @@ const CouncilEventController = () => {
   };
 
   const joinCouncilEventPanelist = async (req, res) => {
-    const { councilEventPanelId, status, UserId, isAddedByAdmin } = req.body;
+    const { councilEventPanelId, status, UserId, isAddedByAdmin, isModerator } =
+      req.body;
     const { userTimezone } = req.query;
 
     try {
@@ -243,6 +244,7 @@ const CouncilEventController = () => {
         await CouncilEventPanelist.create({
           CouncilEventPanelId: councilEventPanelId,
           UserId,
+          isModerator,
         });
 
         const user = await User.findOne({
