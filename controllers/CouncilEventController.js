@@ -129,6 +129,7 @@ const CouncilEventController = () => {
               {
                 model: CouncilEventPanelComment,
                 separate: true,
+                order: [["createdAt", "ASC"]],
                 include: [
                   {
                     model: CouncilEventPanelist,
