@@ -1233,12 +1233,8 @@ module.exports = {
       `,
   },
   COUNCIL_EVENT_JOIN: {
-    subject: (
-      firstName,
-      panelName,
-      eventName
-    ) => `${firstName}, thank you for joining the panel: ${panelName} as part of the 
-    event ${eventName}`,
+    subject: (firstName, panelName, eventName) =>
+      `${firstName}, thank you for joining the panel: ${panelName} as part of the event ${eventName}`,
     body: (firstName, event, panel, abbr) => `
     <p>
       Hi ${firstName},
@@ -1262,7 +1258,11 @@ module.exports = {
         Thank you so much! 
       </p>
       <br />
-      Hacking HR LAB
+      Enrique Rubio
+      <br />
+      Founder
+      <br />
+      Hacking HR
       <br />
       `,
     addedByAdminBody: (firstName, event, panel, abbr) => `
@@ -1285,8 +1285,13 @@ module.exports = {
         Thank you so much! 
       </p>
       <br />
-      Hacking HR LAB
+      Enrique Rubio
       <br />
+      Founder
+      <br />
+      Hacking HR
+      <br />
+
       `,
   },
 };
