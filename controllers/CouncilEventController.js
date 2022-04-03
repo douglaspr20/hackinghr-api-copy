@@ -223,17 +223,22 @@ const CouncilEventController = () => {
           ],
         });
 
-        const councilEventPanelistsCount = await CouncilEventPanelist.count({
-          where: { CouncilEventPanelId: councilEventPanelId },
-        });
+        if (!isAddedByAdmin) {
+          const councilEventPanelistsCount = await CouncilEventPanelist.count({
+            where: {
+              CouncilEventPanelId: councilEventPanelId,
+              isAddedByAdmin: "FALSE",
+            },
+          });
 
-        const isFull =
-          councilEventPanelistsCount >= councilEventPanel.numberOfPanelists;
+          const isFull =
+            councilEventPanelistsCount >= councilEventPanel.numberOfPanelists;
 
-        if (isFull) {
-          return res
-            .status(HttpCodes.INTERNAL_SERVER_ERROR)
-            .json({ msg: "Internal server error" });
+          if (isFull) {
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+          }
         }
 
         const councilEvent = await CouncilEvent.findOne({
@@ -273,6 +278,7 @@ const CouncilEventController = () => {
           CouncilEventPanelId: councilEventPanelId,
           UserId,
           isModerator,
+          isAddedByAdmin: !!isAddedByAdmin,
         });
 
         const user = await User.findOne({
