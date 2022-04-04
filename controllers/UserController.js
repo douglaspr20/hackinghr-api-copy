@@ -572,156 +572,100 @@ const UserController = () => {
   };
 
   const searchUser = async (req, res) => {
-    const { search, limit } = req.query;
+    const {
+      search,
+      location,
+      recentJobLevel,
+      titleProfessions,
+      topicsOfInterest,
+      sizeOfOrganization,
+      offset,
+      limit,
+    } = req.query;
+
+    const where = {};
+
+    if (search || titleProfessions) {
+      where[Op.or] = [
+        {
+          firstName: {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          lastName: {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          company: {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
+          titleProfessions: {
+            [Op.iLike]: search ? `%${search}%` : `%${titleProfessions}%`,
+          },
+        },
+        {
+          location: {
+            [Op.iLike]: search ? `%${search}%` : `%${location}%`,
+          },
+        },
+        {
+          topicsOfInterest: {
+            [Op.overlap]: search ? [`${search}`] : topicsOfInterest,
+          },
+        },
+        {
+          recentJobLevel: {
+            [Op.iLike]: search ? `%${search}%` : `%${recentJobLevel}%`,
+          },
+        },
+        {
+          sizeOfOrganization: {
+            [Op.iLike]: search ? `%${search}%` : `%${sizeOfOrganization}%`,
+          },
+        },
+      ];
+    }
+
+    if (!titleProfessions) {
+      for (const key in req.query) {
+        if (
+          key !== "search" &&
+          key !== "titleProfessions" &&
+          key !== "limit" &&
+          key !== "offset"
+        ) {
+          where[Op.and] = where[Op.and]
+            ? [
+                ...where[Op.and],
+                {
+                  [key]: {
+                    [Op.in]: JSON.parse(req.query[key]),
+                  },
+                },
+              ]
+            : [
+                {
+                  [key]: {
+                    [Op.in]: JSON.parse(req.query[key]),
+                  },
+                },
+              ];
+        }
+      }
+    }
 
     try {
       const count = await User.count({
-        where: search
-          ? {
-              [Op.or]: [
-                {
-                  firstName: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  lastName: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  company: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  titleProfessions: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  location: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  city: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  topicsOfInterest: {
-                    [Op.overlap]: [`${search}`],
-                  },
-                },
-                {
-                  recentJobLevel: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  sizeOfOrganization: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-              ],
-            }
-          : {
-              [Op.or]: [
-                {
-                  city: req.query.city,
-                },
-                {
-                  recentJobLevel: req.query.recentJobLevel,
-                },
-                {
-                  titleProfessions: req.query.titleProfessions,
-                },
-                {
-                  location: req.query.location,
-                },
-                {
-                  topicsOfInterest: {
-                    [Op.overlap]: req.query.topicsOfInterest,
-                  },
-                },
-              ],
-            },
+        where,
       });
-
       const users = await User.findAll({
-        where: search
-          ? {
-              [Op.or]: [
-                {
-                  firstName: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  lastName: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  company: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  titleProfessions: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  location: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  city: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  topicsOfInterest: {
-                    [Op.overlap]: [`${search}`],
-                  },
-                },
-                {
-                  recentJobLevel: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-                {
-                  sizeOfOrganization: {
-                    [Op.iLike]: `%${search}%`,
-                  },
-                },
-              ],
-            }
-          : {
-              [Op.or]: [
-                {
-                  city: req.query.city,
-                },
-                {
-                  recentJobLevel: req.query.recentJobLevel,
-                },
-                {
-                  titleProfessions: req.query.titleProfessions,
-                },
-                {
-                  location: req.query.location,
-                },
-                {
-                  topicsOfInterest: {
-                    [Op.overlap]: req.query.topicsOfInterest,
-                  },
-                },
-              ],
-            },
+        where,
         order: [[Sequelize.fn("RANDOM")]],
+        offset: offset || 0,
         limit: limit || 50,
       });
 
