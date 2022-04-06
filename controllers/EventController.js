@@ -11,7 +11,11 @@ const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
 const { isEmpty, flatten, head, compact } = require("lodash");
-const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
+const {
+  convertToLocalTime,
+  convertJSONToExcel,
+  convertToCertainTime,
+} = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
@@ -915,14 +919,14 @@ const EventController = () => {
         startAndEndTimes: compact(event.startAndEndTimes),
       };
 
-      // const startTime = moment(event.startAndEndTimes[day]?.startTime).format(
-      //   "HH:mm:ss"
-      // );
-      let startDate = moment(`${date}  ${startTime ? startTime : ""}`);
+      const _userTimezone = TimeZoneList.find((item) =>
+        item.utc.includes(userTimezone)
+      );
 
-      // const endTime = moment(event.startAndEndTimes[day].endTime).format(
-      //   "HH:mm:ss"
-      // );
+      const timezone = TimeZoneList.find(
+        (item) => item.value === event.timezone
+      );
+
       const offset = timezone.offset;
 
       let startTime = convertToCertainTime(
