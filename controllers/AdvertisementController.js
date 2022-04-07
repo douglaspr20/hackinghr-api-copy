@@ -180,9 +180,16 @@ const AdvertisementController = () => {
       }
 
       const result = await db.sequelize.transaction(async (t) => {
-        const advertisement = await Advertisement.create(transformedData, {
+        let advertisement = await Advertisement.create(transformedData, {
           transaction: t,
         });
+
+        advertisement = advertisement.toJSON();
+        advertisement = {
+          ...advertisement,
+          AdvertisementImpressions: [],
+          AdvertisementClicks: [],
+        };
 
         let user = {
           ...req.user.toJSON(),
@@ -287,7 +294,7 @@ const AdvertisementController = () => {
       }
 
       const result = await db.sequelize.transaction(async (t) => {
-        const [_, affectedRows] = await Advertisement.update(
+        await Advertisement.update(
           _advertisement,
           {
             where: {
@@ -299,6 +306,25 @@ const AdvertisementController = () => {
           {
             transaction: t,
           }
+        );
+
+        const fetchedAdvertisement = await Advertisement.findOne(
+          {
+            where: {
+              id: advertisement.id,
+            },
+            include: [
+              {
+                model: AdvertisementImpression,
+                attributes: ["id"],
+              },
+              {
+                model: AdvertisementClick,
+                attributes: ["id"],
+              },
+            ],
+          },
+          { transaction: t }
         );
 
         let user = {
@@ -323,7 +349,7 @@ const AdvertisementController = () => {
         }
 
         return {
-          affectedRows,
+          affectedRows: fetchedAdvertisement.toJSON(),
           user,
         };
       });
