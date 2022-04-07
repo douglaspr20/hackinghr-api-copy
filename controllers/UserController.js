@@ -70,6 +70,46 @@ const UserController = () => {
     }
   };
 
+  const getUserById = async (req, res) => {
+    const { id } = req.params;
+
+    if (id) {
+      try {
+        const user = await User.findOne({
+          attributes: [
+            "id",
+            "email",
+            "memberShip",
+            "subscription_startdate",
+            "subscription_enddate",
+            "external_payment",
+            "councilMember",
+          ],
+          where: {
+            id,
+          },
+        });
+
+        if (!user) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Bad Request: User not found" });
+        }
+
+        return res.status(HttpCodes.OK).json({ user });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: user id is wrong" });
+    }
+  };
+
   const updateUser = async (req, res) => {
     let user = req.body;
     const { id } = req.token;
@@ -133,6 +173,49 @@ const UserController = () => {
         await StripeController().updateEmail(
           prevUser.email,
           user.email.toLowerCase()
+        );
+
+        return res
+          .status(HttpCodes.OK)
+          .json({ numberOfAffectedRows, affectedRows });
+      } catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    } else {
+      return res
+        .status(HttpCodes.BAD_REQUEST)
+        .json({ msg: "Bad Request: data is wrong" });
+    }
+  };
+
+  const updateUserAdmin = async (req, res) => {
+    let user = req.body;
+    const { id } = req.params;
+
+    if (user && id) {
+      try {
+        const prevUser = await User.findOne({
+          where: {
+            id: parseInt(id),
+          },
+        });
+        if (!prevUser) {
+          return res
+            .status(HttpCodes.BAD_REQUEST)
+            .json({ msg: "Bad Request: data is wrong" });
+        }
+        const [numberOfAffectedRows, affectedRows] = await User.update(
+          {
+            ...user,
+          },
+          {
+            where: { id },
+            returning: true,
+            plain: true,
+          }
         );
 
         return res
@@ -1589,7 +1672,9 @@ const UserController = () => {
 
   return {
     getUser,
+    getUserById,
     updateUser,
+    updateUserAdmin,
     searchUser,
     upgradePlan,
     addEvent,

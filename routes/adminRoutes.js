@@ -1,4 +1,6 @@
 const adminRoutes = {
+  "GET /user-by-id/:id": "UserController.getUserById",
+  "PUT /user-by-id/:id": "UserController.updateUserAdmin",
   "POST /event/": "EventController.create",
   "PUT /event/:id": "EventController.updateEvent",
   "GET /event/:id/users": "EventController.getEventUsers",
