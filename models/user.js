@@ -29,6 +29,9 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.JobPost);
       User.hasMany(models.Advertisement);
       User.hasOne(models.MarketPlaceProfile);
+      User.hasMany(models.CouncilConversationComment);
+      User.hasMany(models.CouncilConversationReply);
+      User.hasMany(models.CouncilConversationLike);
     }
   }
   User.init(
@@ -148,6 +151,10 @@ module.exports = (sequelize, DataTypes) => {
       projectXFreeTrialAvailability: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+      },
+      isExpertCouncilAdmin: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
     },
     {

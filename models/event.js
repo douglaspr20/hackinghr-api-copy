@@ -67,6 +67,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
+      usersAssistence: {
+        type: DataTypes.ARRAY(DataTypes.JSONB),
+        defaultValue: [],
+      },
       isOverEmailSent: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

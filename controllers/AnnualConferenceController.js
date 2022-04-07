@@ -191,7 +191,7 @@ const AnnualConferenceController = () => {
       public."Instructors".image, public."Instructors"."description" as descriptionSpeaker
       FROM public."AnnualConferences"
       LEFT JOIN public."Instructors" ON public."Instructors".id = ANY (public."AnnualConferences".speakers::int[])
-      WHERE public."AnnualConferences"."id" IN (${sessionsId}) AND public."AnnualConferences".type = 'Certificate Track and Panels'
+      WHERE public."AnnualConferences"."id" IN (${sessionsId})
       GROUP BY public."AnnualConferences".id, public."Instructors".id
     `;
 
@@ -352,7 +352,7 @@ const AnnualConferenceController = () => {
 
     if (id) {
       try {
-        let session = await AnnualConference.findOne({
+        let { dataValues: session } = await AnnualConference.findOne({
           where: {
             id,
           },
@@ -363,12 +363,15 @@ const AnnualConferenceController = () => {
           shrmCode: session.recertification_credits.match(/\d{2}\-\w{5}/)[0],
           hrciCode: session.recertification_credits.match(/\d{2,8}/)[0],
         };
+
         let mailOptions = {
           from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
           to: user.email,
           subject: LabEmails.LIBRARY_CLAIM.subject(session.title),
           html: LabEmails.LIBRARY_CLAIM.body(user, session),
         };
+
+        // console.log(mailOptions);
 
         await smtpService().sendMail(mailOptions);
 

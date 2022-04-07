@@ -1004,6 +1004,37 @@ module.exports = {
       The Hacking HR Team
     `,
   },
+  USER_CONFIRM_LIVE_ASSISTENCE: {
+    subject: (event) =>
+      `Thank you for confirming your participation to Day ${event.firstDay} of ${event.allDays} at Hacking HR’s ${event.name}`,
+    body: (user, event) => `
+    <p>
+    Hi ${user.firstName},
+    </p>
+    <p>
+    Thank you for confirming your participation today.
+    </p>
+    <p>
+    Please keep in mind that this event lasts ${event.allDays} days and you must attend to all the 
+    sessions and days during the event to claim a Digital Certificate of Participation. 
+    Watching the recorded videos after the event is not conducive to a Digital 
+    Certificate of Participation.
+    </p>
+    <p>
+    Today is Day  ${event.firstDay} of ${event.allDays} days of the event!.
+    </p>
+    <p>
+    Your Digital Certificate of Participation will be available at the end of the event 
+    (after the last session!) if you CONFIRM your participation in all days of this event.
+    </p>
+    <p>
+    Thank you!
+    </p>
+    <p>
+    Hacking HR Team
+    </p>
+  `,
+  },
   USER_RENEW_PREMIUM: {
     subject: () =>
       `Thank you for renewing your annual subscription to the Hacking HR LAB!`,
@@ -1033,11 +1064,7 @@ module.exports = {
   },
   USER_ACCEPT_TERMS_CONDITIONS_GCONFERENCE: {
     subject: `Thank you for acknowledging and accepting the rules of engagement as part of the Hacking HR 2022 Global Online Conference`,
-    body: (user) => `
-    <p>
-    Hi ${user.firstName},
-    </p>
-    <p>
+    body: () => `
     We appreciate you taking the time to carefully read, acknowledge and accept the 
     rules of engagement as part of the learning experience at the Hacking HR 2022 
     Global Online Conference. 
@@ -1112,6 +1139,33 @@ module.exports = {
     <br />
     `,
   },
+  EVENT_JUST_END: {
+    subject: (event) =>
+      `Your Digital Certificate of Participation for joining Hacking HR’s ${event.title} is available for download`,
+    body: (user, event, link) => `
+    <p>
+    Hi ${user.firstName},
+    </p>
+    <p>
+    Thank you for joining us during all the sessions at Hacking HR’s ${event.title}.
+    </p>
+    <p>
+      We hope that it was an exciting learning experience for you and that you took away 
+      great and actionable insights to put into practice in your role.
+    </p>
+    <p>
+      You can now download your Digital Certificate of Participation. Go to the 
+      <a href="${link}" target="_blank">Hacking HR LAB</a>, click on your profile and then on My Learning. Then go to the tab “Digital 
+      Certificates” to download.
+    </p>
+    <p>
+      Thank you! We hope to see you in future events!
+    </p>
+    <p>
+      Hacking HR Team
+    </p>
+  `,
+  },
   MATCHMAKE_USERS: {
     subject: () => `Match user`,
     body: (matchedUser, advertiser, message) => `
@@ -1176,6 +1230,68 @@ module.exports = {
       <br />
       Hacking HR LAB
       <br />
+      `,
+  },
+  COUNCIL_EVENT_JOIN: {
+    subject: (firstName, panelName, eventName) =>
+      `${firstName}, thank you for joining the panel: ${panelName} as part of the event ${eventName}`,
+    body: (firstName, event, panel, abbr) => `
+    <p>
+      Hi ${firstName},
+      </p>
+      <p>
+      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} at ${panel.startTime} ${abbr} and ends on ${panel.endDate} at ${panel.endTime} ${abbr}.  
+      </p>
+      <p>
+      This panel is part of the event ${event.eventName} (starting on ${event.startDate} and ending on ${event.endDate}). 
+      </p>
+      <p>
+      The link to connect to this panel is: ${panel.linkToJoin}
+      </p>
+      <p>
+      Please make sure you add the calendar invite attached to this email in your calendar. We will not send another calendar invite.
+      </p>
+      <p>
+      Thank you so much and please stay tuned for more information coming in soon to prepare for the panel. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      Enrique Rubio
+      <br />
+      Founder
+      <br />
+      Hacking HR
+      <br />
+      `,
+    addedByAdminBody: (firstName, event, panel, abbr) => `
+    <p>
+      Hi ${firstName},
+      </p>
+      <p>
+      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} at ${panel.startTime} ${abbr} and ends on ${panel.endDate} at ${panel.endTime} ${abbr}.  
+      </p>
+      <p>
+      This panel is part of the event ${event.eventName} (starting on ${event.startDate} and ending on ${event.endDate}). 
+      </p>
+      <p>
+      The link to connect to this panel is: ${panel.linkToJoin}
+      </p>
+      <p>
+      Thank you so much and please stay tuned for more information coming in soon to prepare for the panel. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      Enrique Rubio
+      <br />
+      Founder
+      <br />
+      Hacking HR
+      <br />
+
       `,
   },
 };

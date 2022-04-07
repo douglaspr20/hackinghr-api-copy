@@ -86,6 +86,10 @@ const AuthController = () => {
           recentWorkArea: body.recentWorkArea,
           sizeOfOrganization: body.sizeOfOrganization,
           role: UserRoles.USER,
+          titleProfessions: body.titleProfessions,
+          company: body.company,
+          languages: body.languages,
+          city: body.city,
         };
 
         userInfo.percentOfCompletion =

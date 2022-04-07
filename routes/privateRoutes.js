@@ -36,6 +36,8 @@ const privateRoutes = {
   "DELETE /business-partner-comments/delete-comment/:id":
     "BusinessPartnerCommentController.remove",
   "GET /events/": "EventController.getAllEvents",
+  "POST /events/metadata": "EventController.eventCertificateMetaData",
+  "GET /events-live/": "EventController.getLiveEvents",
   "GET /user/my-events/": "UserController.getMyEvents",
   "POST /feedback/": "FeedbackController.sendMail",
   "PUT /user/": "UserController.updateUser",
@@ -108,7 +110,8 @@ const privateRoutes = {
   "PUT /podcast/viewed": "PodcastController.markAsViewed",
   "PUT /podcast/:id/save-for-later": "PodcastController.saveForLater",
   "DELETE /event/channel/:id": "EventController.deleteChannelEvent",
-  "PUT /event/:id": "EventController.updateEventUserAssistence",
+  "PUT /event/:id": "EventController.updateEvent",
+  "PUT /event/user-assistence/:id": "EventController.updateEventUserAssistence",
   "PUT /event/channel/:id": "EventController.updateEvent",
   "PUT /channel/follow/:id": "ChannelController.setFollow",
   "PUT /channel/unfollow/:id": "ChannelController.unsetFollow",
@@ -257,6 +260,30 @@ const privateRoutes = {
   "GET /matchmake": "MatchmakingController.getMatchmake",
   "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
   "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
+  "POST /council/event": "CouncilEventController.upsert",
+  "GET /council/events": "CouncilEventController.getAll",
+  "DELETE /council/event/:id": "CouncilEventController.destroy",
+  "POST /council/event/panelist":
+    "CouncilEventController.joinCouncilEventPanelist",
+  "POST /council-conversation": "CouncilConversationController.upsert",
+  "GET /council-conversations": "CouncilConversationController.getAll",
+  "GET /council-conversation/:id": "CouncilConversationController.get",
+  "DELETE /council-conversation/:id": "CouncilConversationController.destroy",
+  "POST /council-conversation/comment":
+    "CouncilConversationCommentController.upsert",
+  "POST /council-conversation/reply":
+    "CouncilConversationReplyController.upsert",
+  "PUT /council-conversation/comment/:id":
+    "CouncilConversationCommentController.destroy",
+  "PUT /council-conversation/reply/:id":
+    "CouncilConversationReplyController.destroy",
+  "POST /council-conversation/like": "CouncilConversationLikeController.create",
+  "DELETE /council-conversation/like/:id":
+    "CouncilConversationLikeController.destroy",
+  "DELETE /council/event/panel/:CouncilEventPanelId/panelist/:CouncilEventPanelistId":
+    "CouncilEventController.removePanelist",
+  "GET /council/event/search-user": "CouncilEventController.search",
+  "POST /council/event/panel/comment": "CouncilEventController.upsertComment",
 };
 
 module.exports = privateRoutes;
