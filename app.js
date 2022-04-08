@@ -92,20 +92,6 @@ cron.schedule(
   }
 );
 
-cron.schedule(
-  "0 0 * * 1", // 12AM every monday
-  async () => {
-    console.log(
-      "****************Running task at 12AM everyday****************"
-    );
-    console.log("****************Reset Counter****************");
-    await SkillCohortParticipantController().resetCounter();
-  },
-  {
-    timezone: "America/Los_Angeles",
-  }
-);
-
 // Checks if participants have responded to a resource and kick them if they didn't
 cron.schedule(
   "45 23 * * 7", //sunday 11 pm
