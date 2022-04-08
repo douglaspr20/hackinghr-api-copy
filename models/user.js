@@ -125,6 +125,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
+      isOnline: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
       isSponsor: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,

@@ -240,6 +240,13 @@ const privateRoutes = {
   "POST /marketplace-profiles": "MarketplaceProfileController.add",
   "GET /marketplace-profiles/:id": "MarketplaceProfileController.get",
   "PUT /marketplace-profiles/:id": "MarketplaceProfileController.update",
+  "POST /conversations": "ConversationController.create",
+  "GET /conversation/:conversationId": "ConversationController.get",
+  "GET /conversations/:userId": "ConversationController.getAll",
+  "POST /messages/": "MessageController.create",
+  "GET /messages/:conversationId": "MessageController.getAll",
+  "PUT /messages/:ConversationId": "MessageController.readMessages",
+  "GET /more-messages/:ConversationId": "MessageController.getMoreMessages",
   "PUT /user/accept-terms-condition-g-conference/:id":
     "UserController.acceptTermsConditionGConference",
   "PUT /user/view-rules-g-conference/:id":

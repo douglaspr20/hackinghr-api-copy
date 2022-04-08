@@ -19,8 +19,12 @@ const SkillCohortController = require("./controllers/SkillCohortController");
 const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
 const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
 const JobPostController = require("./controllers/JobPostController");
+const UserController = require("./controllers/UserController");
+const ConversationController = require("./controllers/ConversationController");
 const WeeklyDigestController = require("./controllers/WeeklyDigestController");
 const MatchmakingController = require("./controllers/MatchmakingController");
+const MessageController = require("./controllers/MessageController");
+const BusinessPartnerController = require("./controllers/BusinessPartnerController");
 
 const moment = require("moment-timezone");
 
@@ -35,7 +39,7 @@ dotenv.config();
  * server configuration
  */
 const routes = require("./routes");
-const BusinessPartnerController = require("./controllers/BusinessPartnerController");
+const SocketEventTypes = require("./enum/SocketEventTypes");
 
 /**
  * express application
@@ -335,35 +339,35 @@ cron.schedule(
 );
 
 // Job Post Auto Expiry
-cron.schedule(
-  "0 0 * * *", // 12AM every day
-  async () => {
-    console.log(
-      "****************Running task at 12AM everyday****************"
-    );
-    console.log("****************Auto Expiry****************");
-    await JobPostController().jobPostAutoExpiry();
-  },
-  {
-    timezone: "America/Los_Angeles",
-  }
-);
-
-// Weekly Digest
 // cron.schedule(
 //   "0 0 * * *", // 12AM every day
-//   // "0 0 * * 5", // 12AM every Friday
 //   async () => {
 //     console.log(
 //       "****************Running task at 12AM everyday****************"
 //     );
-//     console.log("****************Weekly Digest****************");
-//     await WeeklyDigestController().updateWeeklyDigestEmail();
+//     console.log("****************Auto Expiry****************");
+//     await JobPostController().jobPostAutoExpiry();
 //   },
 //   {
 //     timezone: "America/Los_Angeles",
 //   }
 // );
+
+// Weekly Digest
+cron.schedule(
+  "0 0 * * *", // 12AM every day
+  // "0 0 * * 5", // 12AM every Friday
+  async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Weekly Digest****************");
+    await WeeklyDigestController().updateWeeklyDigestEmail();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
 
 // User Matchmaking Count Reset
 cron.schedule(
@@ -464,6 +468,8 @@ const server = http.createServer(app);
 
 const FEUrl = process.env.DOMAIN_URL || "http://localhost:3000/";
 
+const usersOnline = {};
+
 const io = socketIo(server, {
   cors: {
     origin: [
@@ -477,12 +483,38 @@ const io = socketIo(server, {
 io.on("connection", (socket) => {
   socketService().addSocket(socket);
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
+    const id = usersOnline[socket.id];
+    if (id) {
+      const userOnline = await UserController().userIsOnline(id, false);
+      io.emit(SocketEventTypes.USER_OFFLINE, userOnline.dataValues);
+    }
+    delete usersOnline[socket.id];
     socketService().removeSocket(socket);
   });
 
   socket.on("error", (error) => {
     console.log(`Socket IO Error:`, error);
+  });
+
+  socket.on(SocketEventTypes.USER_ONLINE, async ({ id }) => {
+    const userOnline = await UserController().userIsOnline(id, true);
+    usersOnline[socket.id] = id;
+    io.emit(SocketEventTypes.USER_ONLINE, userOnline.dataValues);
+  });
+
+  socket.on(SocketEventTypes.USER_OFFLINE, async ({ id }) => {
+    const userOnline = await UserController().userIsOnline(id, false);
+    io.emit(SocketEventTypes.USER_OFFLINE, userOnline.dataValues);
+    delete usersOnline[socket.id];
+    socketService().removeSocket(socket);
+  });
+
+  socket.on(SocketEventTypes.SEND_MESSAGE, async (message) => {
+    const newMessage = await MessageController().create(message);
+    delete newMessage.dataValues.createdAt;
+    newMessage.dataValues.messageDate = newMessage.dataValues.updatedAt;
+    io.local.emit(SocketEventTypes.MESSAGE, newMessage);
   });
 });
 
