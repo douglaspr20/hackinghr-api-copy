@@ -27,6 +27,7 @@ const StripeController = () => {
       isAdvertisement = false,
       isBuyingCredits = false,
       credits = 0,
+      callback_url,
     } = req.body;
     const { id } = req.token;
 
@@ -44,14 +45,8 @@ const StripeController = () => {
 
       try {
         let sessionData = {
-          success_url:
-            isBuyingCredits || isAdvertisement
-              ? process.env.STRIPE_ADVERTISEMENT_CREDITS_CALLBACK
-              : process.env.STRIPE_CALLBACK_URL,
-          cancel_url:
-            isBuyingCredits || isAdvertisement
-              ? process.env.STRIPE_ADVERTISEMENT_CREDITS_CALLBACK
-              : process.env.STRIPE_CALLBACK_URL,
+          success_url: callback_url || process.env.STRIPE_CALLBACK_URL,
+          cancel_url: callback_url || process.env.STRIPE_CALLBACK_URL,
           payment_method_types: ["card"],
           line_items: checkoutSessionPrices,
           mode: "subscription",
