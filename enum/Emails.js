@@ -1293,5 +1293,9 @@ module.exports = {
       <br />
 
       `,
+  USER_PURCHASE_ADVERTISEMENT_CREDITS: {
+    subject: (numOfCredits) =>
+      `Thank you for purchasing ${numOfCredits} credits!`,
+    body: () => `Thank you!`,
   },
 };

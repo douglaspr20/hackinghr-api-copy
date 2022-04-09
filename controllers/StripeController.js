@@ -21,7 +21,13 @@ const StripeController = () => {
    * @param {*} res
    */
   const createCheckoutSession = async (req, res) => {
-    const { prices, user, isAdvertisement = false } = req.body;
+    const {
+      prices,
+      user,
+      isAdvertisement = false,
+      isBuyingCredits = false,
+      credits = 0,
+    } = req.body;
     const { id } = req.token;
 
     if (prices) {
@@ -53,6 +59,19 @@ const StripeController = () => {
             payment_intent_data: {
               metadata: {
                 isAdvertisement: true,
+              },
+            },
+          };
+        }
+
+        if (isBuyingCredits) {
+          sessionData = {
+            ...sessionData,
+            mode: "payment",
+            payment_intent_data: {
+              metadata: {
+                credits,
+                isBuyingCredits: true,
               },
             },
           };
@@ -248,6 +267,20 @@ const StripeController = () => {
           newUserData = { ...newUserData, ...advertiserData };
         }
 
+        if (
+          metadata.isBuyingCredits === "true" &&
+          paid &&
+          status === "succeeded"
+        ) {
+          const data = await advertisementCreditsValidation(
+            user,
+            customerInformation,
+            metadata.credits
+          );
+
+          newUserData = { ...newUserData, ...data };
+        }
+
         console.log(`***** newUserData:`, newUserData);
       }
       return res.status(HttpCodes.OK).json({ newUserData });
@@ -256,6 +289,48 @@ const StripeController = () => {
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
+    }
+  };
+
+  const advertisementCreditsValidation = async (
+    user,
+    customerInformation,
+    credits = 0
+  ) => {
+    let newUserData = {};
+
+    try {
+      const totalCreditsPurchased =
+        (+customerInformation.metadata.totalCreditsPurchased || 0) + +credits;
+
+      await stripe.customers.update(customerInformation.id, {
+        metadata: { totalCreditsPurchased },
+      });
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.subject(credits),
+        html: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.body(),
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      await User.increment(
+        {
+          advertisementCredits: +credits,
+        },
+        {
+          where: {
+            email: user.email,
+          },
+        }
+      );
+
+      return newUserData;
+    } catch (error) {
+      console.log(error);
+      return {};
     }
   };
 
