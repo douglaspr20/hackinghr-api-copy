@@ -1293,17 +1293,18 @@ module.exports = {
       <br />
 
       `,
-  USER_PURCHASE_ADVERTISEMENT_CREDITS: {
-    subject: (numOfCredits) =>
-      `Thank you for purchasing ${numOfCredits} credits!`,
-    body: () => `Thank you!`,
-  },
-  ADVERTISEMENT_CAMPAIGN_START: {
-    subject: () => `Your campaign starts today.`,
-    body: (user) => `
+    USER_PURCHASE_ADVERTISEMENT_CREDITS: {
+      subject: (numOfCredits) =>
+        `Thank you for purchasing ${numOfCredits} credits!`,
+      body: () => `Thank you!`,
+    },
+    ADVERTISEMENT_CAMPAIGN_START: {
+      subject: () => `Your campaign starts today.`,
+      body: (user) => `
       Hi ${user.firstName},
 
       Your campaign starts today.
     `,
+    },
   },
 };
