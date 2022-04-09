@@ -4,6 +4,8 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
+const { LabEmails } = require("../enum");
+const smtpService = require("../services/smtp.service");
 
 const Advertisement = db.Advertisement;
 const User = db.User;
@@ -431,6 +433,73 @@ const AdvertisementController = () => {
     }
   };
 
+  const changeAdvertisementStatusToEndedWhenCampaignEnds = async () => {
+    try {
+      const date = moment()
+        .tz("America/Los_Angeles")
+        .subtract(1, "day")
+        .endOf("day");
+
+      const advertisements = await Advertisement.findAll({
+        where: {
+          status: "active",
+          endDate: date.format(),
+        },
+      });
+
+      const changeStatus = advertisements.map((advertisement) => {
+        const _advertisement = advertisement.toJSON();
+
+        return Advertisement.update(
+          { status: "ended" },
+          {
+            where: {
+              id: _advertisement.id,
+            },
+          }
+        );
+      });
+
+      await Promise.all(changeStatus);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const sendEmailWhenCampaignStarts = async () => {
+    const date = moment().tz("America/Los_Angeles").startOf("day");
+
+    try {
+      const advertisements = await Advertisement.findAll({
+        where: {
+          status: "active",
+          startDate: date.format(),
+        },
+        include: [
+          {
+            model: User,
+          },
+        ],
+      });
+
+      advertisements.forEach((advertisement) => {
+        const user = advertisement.User;
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: user.email,
+          subject: LabEmails.ADVERTISEMENT_CAMPAIGN_START.subject(),
+          html: LabEmails.ADVERTISEMENT_CAMPAIGN_START.body(user),
+          contentType: "text/html",
+        };
+
+        smtpService().sendMailUsingSendInBlue(mailOptions);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     getAdvertisementsTodayByPage,
     getAdvertisementByAdvertiser,
@@ -439,6 +508,8 @@ const AdvertisementController = () => {
     getAllActiveAdvertisements,
     editAdvertisement,
     createAdvertisementClick,
+    changeAdvertisementStatusToEndedWhenCampaignEnds,
+    sendEmailWhenCampaignStarts,
   };
 };
 

@@ -25,6 +25,7 @@ const WeeklyDigestController = require("./controllers/WeeklyDigestController");
 const MatchmakingController = require("./controllers/MatchmakingController");
 const MessageController = require("./controllers/MessageController");
 const BusinessPartnerController = require("./controllers/BusinessPartnerController");
+const AdvertisementController = require("./controllers/AdvertisementController");
 
 const moment = require("moment-timezone");
 
@@ -77,6 +78,20 @@ cron.schedule("25 * * * *", () => {
 */
 
 // cron job that resets the assessment and comment strike to 0
+cron.schedule(
+  "0 0 * * 1", // 12AM every monday
+  async () => {
+    console.log(
+      "****************Running task at 12AM everyday****************"
+    );
+    console.log("****************Reset Counter****************");
+    await SkillCohortParticipantController().resetCounter();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
 cron.schedule(
   "0 0 * * 1", // 12AM every monday
   async () => {
@@ -427,6 +442,19 @@ cron.schedule(
         smtpService().sendMailUsingSendInBlue(mailOptions);
       });
     });
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+cron.schedule(
+  "30 0 * * *",
+  () => {
+    console.log("running a task everyday at 12:30.");
+
+    AdvertisementController().changeAdvertisementStatusToEndedWhenCampaignEnds();
+    AdvertisementController().sendEmailWhenCampaignStarts();
   },
   {
     timezone: "America/Los_Angeles",
