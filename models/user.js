@@ -32,6 +32,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.CouncilConversationComment);
       User.hasMany(models.CouncilConversationReply);
       User.hasMany(models.CouncilConversationLike);
+      User.hasMany(models.AdvertisementImpression);
+      User.hasMany(models.AdvertisementClick);
     }
   }
   User.init(
@@ -155,6 +157,10 @@ module.exports = (sequelize, DataTypes) => {
       isExpertCouncilAdmin: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+      },
+      advertisementCredits: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
     },
     {

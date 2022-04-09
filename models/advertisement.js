@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Advertisement.belongsTo(models.User, { foreignKey: "UserId" });
+      Advertisement.hasMany(models.AdvertisementImpression);
+      Advertisement.hasMany(models.AdvertisementClick);
     }
   }
   Advertisement.init(

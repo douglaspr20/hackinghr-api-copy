@@ -21,14 +21,21 @@ const StripeController = () => {
    * @param {*} res
    */
   const createCheckoutSession = async (req, res) => {
-    const { prices, user, isAdvertisement = false } = req.body;
+    const {
+      prices,
+      user,
+      isAdvertisement = false,
+      isBuyingCredits = false,
+      credits = 0,
+      callback_url,
+    } = req.body;
     const { id } = req.token;
 
     if (prices) {
       let checkoutSessionPrices = [];
-      prices.map((item) =>
-        checkoutSessionPrices.push({ price: item, quantity: 1 })
-      );
+      prices.map((item) => {
+        checkoutSessionPrices.push({ price: item, quantity: 1 });
+      });
 
       const user = await User.findOne({
         where: {
@@ -38,8 +45,8 @@ const StripeController = () => {
 
       try {
         let sessionData = {
-          success_url: process.env.STRIPE_CALLBACK_URL,
-          cancel_url: process.env.STRIPE_CALLBACK_URL,
+          success_url: callback_url || process.env.STRIPE_CALLBACK_URL,
+          cancel_url: callback_url || process.env.STRIPE_CALLBACK_URL,
           payment_method_types: ["card"],
           line_items: checkoutSessionPrices,
           mode: "subscription",
@@ -53,6 +60,19 @@ const StripeController = () => {
             payment_intent_data: {
               metadata: {
                 isAdvertisement: true,
+              },
+            },
+          };
+        }
+
+        if (isBuyingCredits) {
+          sessionData = {
+            ...sessionData,
+            mode: "payment",
+            payment_intent_data: {
+              metadata: {
+                credits,
+                isBuyingCredits: true,
               },
             },
           };
@@ -248,6 +268,20 @@ const StripeController = () => {
           newUserData = { ...newUserData, ...advertiserData };
         }
 
+        if (
+          metadata.isBuyingCredits === "true" &&
+          paid &&
+          status === "succeeded"
+        ) {
+          const data = await advertisementCreditsValidation(
+            user,
+            customerInformation,
+            metadata.credits
+          );
+
+          newUserData = { ...newUserData, ...data };
+        }
+
         console.log(`***** newUserData:`, newUserData);
       }
       return res.status(HttpCodes.OK).json({ newUserData });
@@ -256,6 +290,48 @@ const StripeController = () => {
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
+    }
+  };
+
+  const advertisementCreditsValidation = async (
+    user,
+    customerInformation,
+    credits = 0
+  ) => {
+    let newUserData = {};
+
+    try {
+      const totalCreditsPurchased =
+        (+customerInformation.metadata.totalCreditsPurchased || 0) + +credits;
+
+      await stripe.customers.update(customerInformation.id, {
+        metadata: { totalCreditsPurchased },
+      });
+
+      await User.increment(
+        {
+          advertisementCredits: +credits,
+        },
+        {
+          where: {
+            email: user.email,
+          },
+        }
+      );
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.subject(credits),
+        html: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.body(),
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      return newUserData;
+    } catch (error) {
+      console.log(error);
+      return {};
     }
   };
 
@@ -276,16 +352,27 @@ const StripeController = () => {
 
       await smtpService().sendMailUsingSendInBlue(mailOptions);
 
-      newUserData["isAdvertiser"] = true;
+      newUserData["isAdvertiser"] = "TRUE";
       newUserData["advertiserSubscriptionDate"] = moment().format(
         "YYYY-MM-DD HH:mm:ss"
       );
 
-      await User.update(newUserData, {
+      const update = User.update(newUserData, {
         where: {
           email: user.email,
         },
       });
+
+      const increment = User.increment(
+        {
+          advertisementCredits: 40,
+        },
+        {
+          where: { email: user.email },
+        }
+      );
+
+      await Promise.all([update, increment]);
 
       return newUserData;
     } catch (error) {

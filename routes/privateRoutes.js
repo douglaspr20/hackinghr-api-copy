@@ -259,6 +259,7 @@ const privateRoutes = {
   "GET /ad/:advertisementId": "AdvertisementController.getAdvertisementById",
   "GET /matchmake": "MatchmakingController.getMatchmake",
   "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
+  "POST /ad/click": "AdvertisementController.createAdvertisementClick",
   "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
   "POST /council/event": "CouncilEventController.upsert",
   "GET /council/events": "CouncilEventController.getAll",

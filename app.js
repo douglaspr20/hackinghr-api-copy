@@ -25,6 +25,7 @@ const WeeklyDigestController = require("./controllers/WeeklyDigestController");
 const MatchmakingController = require("./controllers/MatchmakingController");
 const MessageController = require("./controllers/MessageController");
 const BusinessPartnerController = require("./controllers/BusinessPartnerController");
+const AdvertisementController = require("./controllers/AdvertisementController");
 
 const moment = require("moment-timezone");
 
@@ -427,6 +428,19 @@ cron.schedule(
         smtpService().sendMailUsingSendInBlue(mailOptions);
       });
     });
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
+
+cron.schedule(
+  "30 0 * * *",
+  () => {
+    console.log("running a task everyday at 12:30.");
+
+    AdvertisementController().changeAdvertisementStatusToEndedWhenCampaignEnds();
+    AdvertisementController().sendEmailWhenCampaignStarts();
   },
   {
     timezone: "America/Los_Angeles",

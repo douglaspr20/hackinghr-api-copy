@@ -4,30 +4,18 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
+const { LabEmails } = require("../enum");
+const smtpService = require("../services/smtp.service");
 
 const Advertisement = db.Advertisement;
-
-const price = [
-  {
-    min: 1,
-    max: 10,
-    price: 100,
-  },
-  {
-    min: 10,
-    max: 20,
-    price: 200,
-  },
-  {
-    min: 20,
-    max: 30,
-    price: 300,
-  },
-];
+const User = db.User;
+const AdvertisementImpression = db.AdvertisementImpression;
+const AdvertisementClick = db.AdvertisementClick;
 
 const AdvertisementController = () => {
   const getAdvertisementsTodayByPage = async (req, res) => {
     const { page } = req.query;
+    const { id: UserId } = req.token;
 
     const dateToday = moment().tz("America/Los_Angeles").startOf("day");
 
@@ -44,6 +32,17 @@ const AdvertisementController = () => {
           status: "active",
         },
       });
+
+      const advertisementIds = advertisement.map((ad) => ad.toJSON().id);
+
+      const advertisementImpressions = advertisementIds.map((AdvertisementId) =>
+        AdvertisementImpression.create({
+          AdvertisementId,
+          UserId,
+        })
+      );
+
+      await Promise.all(advertisementImpressions);
 
       return res.status(HttpCodes.OK).json({ advertisement });
     } catch (error) {
@@ -64,6 +63,16 @@ const AdvertisementController = () => {
           UserId,
         },
         order: [["createdAt", "ASC"]],
+        include: [
+          {
+            model: AdvertisementImpression,
+            attributes: ["id"],
+          },
+          {
+            model: AdvertisementClick,
+            attributes: ["id"],
+          },
+        ],
       });
 
       return res.status(HttpCodes.OK).json({ advertisements });
@@ -76,9 +85,50 @@ const AdvertisementController = () => {
     }
   };
 
+  const calculateCosts = (page, adDurationByDays) => {
+    let totalCredits = 0;
+    let adCostPerDay = 0;
+
+    switch (page) {
+      case "home":
+      case "conference-library":
+        if (adDurationByDays > 0) {
+          if (adDurationByDays <= 7) {
+            totalCredits = adDurationByDays * 7;
+            adCostPerDay = 7;
+          } else if (adDurationByDays >= 8 && adDurationByDays <= 14) {
+            totalCredits = adDurationByDays * 6;
+            adCostPerDay = 6;
+          } else {
+            totalCredits = adDurationByDays * 5;
+            adCostPerDay = 5;
+          }
+        }
+        break;
+      case "events":
+      case "project-x":
+        if (adDurationByDays > 0) {
+          if (adDurationByDays <= 7) {
+            totalCredits = adDurationByDays * 5;
+            adCostPerDay = 5;
+          } else if (adDurationByDays >= 8 && adDurationByDays <= 14) {
+            totalCredits = adDurationByDays * 4;
+            adCostPerDay = 4;
+          } else {
+            totalCredits = adDurationByDays * 3;
+            adCostPerDay = 3;
+          }
+        }
+        break;
+      default:
+    }
+
+    return [totalCredits, adCostPerDay];
+  };
+
   const createAdvertisement = async (req, res) => {
     const data = req.body;
-    const { id } = req.user;
+    const { id, advertisementCredits } = req.user;
     // check if user is an advertiser
 
     try {
@@ -87,48 +137,90 @@ const AdvertisementController = () => {
         UserId: id,
       };
 
-      // const advertisementsCount = await Advertisement.count({
-      //   where: {
-      //     [Op.or]: [
-      //       {
-      //         datesBetweenStartDateAndEndDate: {
-      //           [Op.contains]: [transformedData.startDate],
-      //         },
-      //       },
-      //       {
-      //         datesBetweenStartDateAndEndDate: {
-      //           [Op.contains]: [transformedData.endDate],
-      //         },
-      //       },
-      //     ],
-      //     page: transformedData.page,
-      //   },
-      // });
-
-      // if (advertisementsCount === 3 && data.page === "home") {
-      //   return res.status(HttpCodes.BAD_REQUEST).json({ msg: "Already full" });
-      // }
-
-      const adBracket = price.find(
-        (p) => p.min <= data.adDurationByDays && p.max >= data.adDurationByDays
+      const [totalCredits, adCostPerDay] = calculateCosts(
+        transformedData.page,
+        transformedData.adDurationByDays
       );
-      transformedData["adCostPerDay"] = adBracket["price"] || 0;
 
-      if (transformedData.image) {
+      if (advertisementCredits < totalCredits) {
+        return res
+          .status(HttpCodes.ACCEPTED)
+          .json({ msg: "You don't have enough credits." });
+      }
+      transformedData["adCostPerDay"] = adCostPerDay;
+
+      const advertisementsCount = await Advertisement.count({
+        where: {
+          [Op.or]: [
+            {
+              datesBetweenStartDateAndEndDate: {
+                [Op.contains]: [transformedData.startDate],
+              },
+            },
+            {
+              datesBetweenStartDateAndEndDate: {
+                [Op.contains]: [transformedData.endDate],
+              },
+            },
+          ],
+          page: transformedData.page,
+        },
+      });
+
+      const numOfAdvertisementLimitPerPage = 3;
+      const isOverLimit = advertisementsCount >= numOfAdvertisementLimitPerPage;
+
+      if (isOverLimit) {
+        return res
+          .status(HttpCodes.ACCEPTED)
+          .json({ msg: "Chosen date slot is full." });
+      }
+
+      if (transformedData.image && !isValidURL(transformedData.image)) {
         transformedData.adContentLink =
           await s3Service().getAdvertisementImageUrl("", transformedData.image);
       }
 
-      const advertisement = await Advertisement.create(transformedData);
+      const result = await db.sequelize.transaction(async (t) => {
+        let advertisement = await Advertisement.create(transformedData, {
+          transaction: t,
+        });
 
-      // const advertisements = await Advertisement.findAll({
-      //   where: {
-      //     UserId: id,
-      //   },
-      //   order: [["createdAt", "ASC"]],
-      // });
+        advertisement = advertisement.toJSON();
+        advertisement = {
+          ...advertisement,
+          AdvertisementImpressions: [],
+          AdvertisementClicks: [],
+        };
 
-      return res.status(HttpCodes.OK).json({ advertisement });
+        let user = {
+          ...req.user.toJSON(),
+          password: null,
+        };
+
+        if (transformedData.status === "active") {
+          [user] = await User.decrement(
+            { advertisementCredits: totalCredits },
+            {
+              where: {
+                id,
+              },
+              attributes: { exclude: ["password"] },
+              returning: true,
+              plain: true,
+            }
+          );
+
+          user = user[0];
+        }
+
+        return {
+          advertisement,
+          user,
+        };
+      });
+
+      return res.status(HttpCodes.OK).json(result);
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -141,6 +233,7 @@ const AdvertisementController = () => {
   const editAdvertisement = async (req, res) => {
     const _advertisement = req.body;
     const { AdvertisementId } = req.params;
+    const { id, advertisementCredits } = req.user;
 
     try {
       const advertisement = await Advertisement.findOne({
@@ -155,25 +248,115 @@ const AdvertisementController = () => {
           .json({ msg: "Advertisement not found." });
       }
 
+      const [totalCredits, adCostPerDay] = calculateCosts(
+        advertisement.page,
+        advertisement.adDurationByDays
+      );
+
+      if (advertisementCredits < totalCredits) {
+        return res
+          .status(HttpCodes.ACCEPTED)
+          .json({ msg: "You don't have enough credits." });
+      }
+      _advertisement["adCostPerDay"] = adCostPerDay;
+
+      const advertisementsCount = await Advertisement.count({
+        where: {
+          [Op.or]: [
+            {
+              datesBetweenStartDateAndEndDate: {
+                [Op.contains]: [advertisement.startDate],
+              },
+            },
+            {
+              datesBetweenStartDateAndEndDate: {
+                [Op.contains]: [advertisement.endDate],
+              },
+            },
+          ],
+          page: advertisement.page,
+          id: {
+            [Op.ne]: advertisement.id,
+          },
+        },
+      });
+
+      const numOfAdvertisementLimitPerPage = 3;
+      const isOverLimit = advertisementsCount >= numOfAdvertisementLimitPerPage;
+
+      if (isOverLimit) {
+        return res
+          .status(HttpCodes.ACCEPTED)
+          .json({ msg: "Chosen date slot is full." });
+      }
+
       if (_advertisement.image && !isValidURL(_advertisement.image)) {
         _advertisement.adContentLink =
           await s3Service().getAdvertisementImageUrl("", _advertisement.image);
       }
 
-      const [numberOfAffectedRows, affectedRows] = await Advertisement.update(
-        _advertisement,
-        {
-          where: {
-            id: AdvertisementId,
+      const result = await db.sequelize.transaction(async (t) => {
+        await Advertisement.update(
+          _advertisement,
+          {
+            where: {
+              id: advertisement.id,
+            },
+            returning: true,
+            plain: true,
           },
-          returning: true,
-          plain: true,
-        }
-      );
+          {
+            transaction: t,
+          }
+        );
 
-      return res
-        .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows });
+        const fetchedAdvertisement = await Advertisement.findOne(
+          {
+            where: {
+              id: advertisement.id,
+            },
+            include: [
+              {
+                model: AdvertisementImpression,
+                attributes: ["id"],
+              },
+              {
+                model: AdvertisementClick,
+                attributes: ["id"],
+              },
+            ],
+          },
+          { transaction: t }
+        );
+
+        let user = {
+          ...req.user.toJSON(),
+          password: null,
+        };
+
+        if (_advertisement.status === "active") {
+          [user] = await User.decrement(
+            { advertisementCredits: totalCredits },
+            {
+              where: {
+                id,
+              },
+              attributes: { exclude: ["password"] },
+              returning: true,
+              plain: true,
+            }
+          );
+
+          user = user[0];
+        }
+
+        return {
+          affectedRows: fetchedAdvertisement.toJSON(),
+          user,
+        };
+      });
+
+      return res.status(HttpCodes.OK).json(result);
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -230,6 +413,93 @@ const AdvertisementController = () => {
     }
   };
 
+  const createAdvertisementClick = async (req, res) => {
+    const { id } = req.token;
+    const { advertisementId } = req.body;
+
+    try {
+      await AdvertisementClick.create({
+        UserId: id,
+        AdvertisementId: advertisementId,
+      });
+
+      return res.status(HttpCodes.OK).json({});
+    } catch (error) {
+      console.log(error);
+      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Internal server error",
+        error,
+      });
+    }
+  };
+
+  const changeAdvertisementStatusToEndedWhenCampaignEnds = async () => {
+    try {
+      const date = moment()
+        .tz("America/Los_Angeles")
+        .subtract(1, "day")
+        .endOf("day");
+
+      const advertisements = await Advertisement.findAll({
+        where: {
+          status: "active",
+          endDate: date.format(),
+        },
+      });
+
+      const changeStatus = advertisements.map((advertisement) => {
+        const _advertisement = advertisement.toJSON();
+
+        return Advertisement.update(
+          { status: "ended" },
+          {
+            where: {
+              id: _advertisement.id,
+            },
+          }
+        );
+      });
+
+      await Promise.all(changeStatus);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const sendEmailWhenCampaignStarts = async () => {
+    const date = moment().tz("America/Los_Angeles").startOf("day");
+
+    try {
+      const advertisements = await Advertisement.findAll({
+        where: {
+          status: "active",
+          startDate: date.format(),
+        },
+        include: [
+          {
+            model: User,
+          },
+        ],
+      });
+
+      advertisements.forEach((advertisement) => {
+        const user = advertisement.User;
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: user.email,
+          subject: LabEmails.ADVERTISEMENT_CAMPAIGN_START.subject(),
+          html: LabEmails.ADVERTISEMENT_CAMPAIGN_START.body(user),
+          contentType: "text/html",
+        };
+
+        smtpService().sendMailUsingSendInBlue(mailOptions);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     getAdvertisementsTodayByPage,
     getAdvertisementByAdvertiser,
@@ -237,6 +507,9 @@ const AdvertisementController = () => {
     getAdvertisementById,
     getAllActiveAdvertisements,
     editAdvertisement,
+    createAdvertisementClick,
+    changeAdvertisementStatusToEndedWhenCampaignEnds,
+    sendEmailWhenCampaignStarts,
   };
 };
 
