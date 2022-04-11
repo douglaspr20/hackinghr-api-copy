@@ -20,6 +20,8 @@ const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
 const User = db.User;
+const EventInstructor = db.EventInstructor;
+const Instructor = db.Instructor;
 const QueryTypes = Sequelize.QueryTypes;
 const VisibleLevel = Settings.VISIBLE_LEVEL;
 
@@ -304,6 +306,13 @@ const EventController = () => {
             .json({ msg: "Internal server error" });
         }
 
+        const instructorIds = eventInfo.instructorIds.map((id) => ({
+          InstructorId: id,
+          EventId: event.id,
+        }));
+
+        await EventInstructor.bulkCreate(instructorIds);
+
         const [_, affectedRows] = await Event.update(
           {
             publicLink: `${process.env.DOMAIN_URL}${event.id}`,
@@ -413,6 +422,26 @@ const EventController = () => {
         }
       );
 
+      const instructorIds = eventInfo.instructorIds.map((instructorId) => ({
+        InstructorId: instructorId,
+        EventId: id,
+      }));
+
+      await EventInstructor.bulkCreate(instructorIds);
+
+      await db.sequelize.transaction(async (t) => {
+        await EventInstructor.destroy(
+          {
+            where: {
+              EventId: id,
+            },
+          },
+          { transaction: t }
+        );
+
+        await EventInstructor.bulkCreate(instructorIds, { transaction: t });
+      });
+
       return res
         .status(HttpCodes.OK)
         .json({ numberOfAffectedRows, affectedRows });
@@ -461,28 +490,21 @@ const EventController = () => {
     }
   };
 
-  const getEventBase = async (id, raw = false) => {
-    try {
-      let event = await Event.findOne({
-        where: {
-          id,
-        },
-        raw,
-      });
-
-      return event;
-    } catch (err) {
-      console.log(err);
-      return null;
-    }
-  };
-
   const getEventAdmin = async (req, res) => {
     const { id } = req.params;
 
     if (id) {
       try {
-        const event = await getEventBase(id);
+        const event = await Event.findOne({
+          where: {
+            id,
+          },
+          include: [
+            {
+              model: EventInstructor,
+            },
+          ],
+        });
 
         if (!event) {
           return res
@@ -509,7 +531,22 @@ const EventController = () => {
 
     if (id) {
       try {
-        let event = await getEventBase(id, true);
+        let event = await Event.findOne({
+          where: {
+            id,
+          },
+          include: [
+            {
+              model: EventInstructor,
+              attributes: ["id"],
+              include: [
+                {
+                  model: Instructor,
+                },
+              ],
+            },
+          ],
+        });
 
         if (!event) {
           return res
@@ -518,8 +555,8 @@ const EventController = () => {
         }
 
         event = {
-          ...event,
-          startAndEndTimes: compact(event.startAndEndTimes),
+          ...event.toJSON(),
+          startAndEndTimes: compact(event.toJSON().startAndEndTimes),
         };
 
         return res.status(HttpCodes.OK).json({ event });

@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Event.hasMany(models.Library);
+      Event.hasMany(models.EventInstructor);
     }
   }
   Event.init(
