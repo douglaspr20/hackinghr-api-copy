@@ -34,8 +34,6 @@ const StripeController = () => {
     } = req.body;
     const { id } = req.token;
 
-    console.log(event, "evee");
-
     if (prices) {
       let checkoutSessionPrices = [];
 
@@ -104,6 +102,7 @@ const StripeController = () => {
                 eventTitle: event.title,
                 eventId: event.id,
                 eventTimezone: event.timezone,
+                userTimezone: event.userTimezone,
               },
             },
           };
@@ -316,6 +315,7 @@ const StripeController = () => {
           await paidEventValidation(user, customerInformation, {
             id: metadata.eventId,
             timezone: metadata.eventTimezone,
+            userTimezone: metadata.userTimezone,
           });
         }
 
