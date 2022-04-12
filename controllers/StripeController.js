@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const UserRoles = require("../enum").USER_ROLE;
 const smtpService = require("../services/smtp.service");
 const { LabEmails } = require("../enum");
+const UserController = require("../controllers/UserController");
 
 const Stripe = require("stripe");
 const stripe = Stripe(process.env.STRIPE_SK_KEY, {
@@ -27,15 +28,29 @@ const StripeController = () => {
       isAdvertisement = false,
       isBuyingCredits = false,
       credits = 0,
+      isPaidEvent = false,
+      event = {},
       callback_url,
     } = req.body;
     const { id } = req.token;
 
+    console.log(event, "evee");
+
     if (prices) {
       let checkoutSessionPrices = [];
-      prices.map((item) => {
-        checkoutSessionPrices.push({ price: item, quantity: 1 });
-      });
+
+      if (isPaidEvent) {
+        prices.map((item) =>
+          checkoutSessionPrices.push({
+            price_data: item.price_data,
+            quantity: 1,
+          })
+        );
+      } else {
+        prices.map((item) =>
+          checkoutSessionPrices.push({ price: item, quantity: 1 })
+        );
+      }
 
       const user = await User.findOne({
         where: {
@@ -73,6 +88,22 @@ const StripeController = () => {
               metadata: {
                 credits,
                 isBuyingCredits: true,
+              }
+            }
+          }
+        }
+        if (isPaidEvent) {
+          sessionData = {
+            ...sessionData,
+            success_url: callback_url,
+            cancel_url: callback_url,
+            mode: "payment",
+            payment_intent_data: {
+              metadata: {
+                isPaidEvent: true,
+                eventTitle: event.title,
+                eventId: event.id,
+                eventTimezone: event.timezone,
               },
             },
           };
@@ -281,6 +312,12 @@ const StripeController = () => {
 
           newUserData = { ...newUserData, ...data };
         }
+        if (metadata.isPaidEvent === "true" && paid && status === "succeeded") {
+          await paidEventValidation(user, customerInformation, {
+            id: metadata.eventId,
+            timezone: metadata.eventTimezone,
+          });
+        }
 
         console.log(`***** newUserData:`, newUserData);
       }
@@ -329,6 +366,22 @@ const StripeController = () => {
       await smtpService().sendMailUsingSendInBlue(mailOptions);
 
       return newUserData;
+    } catch (error) {
+      console.log(error)
+      return {}
+    }
+  }
+  const paidEventValidation = async (user, customerInformation, event) => {
+    try {
+      await stripe.customers.update(customerInformation.id, {
+        metadata: {
+          isPaidEvent: true,
+          eventTitle: event.title,
+          eventId: event.id,
+        },
+      });
+
+      await UserController()._addEvent(event, user.id, user);
     } catch (error) {
       console.log(error);
       return {};

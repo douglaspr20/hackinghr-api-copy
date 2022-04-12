@@ -103,6 +103,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.JSONB,
         defaultValue: {},
       },
+      ticketFee: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
     },
     {
       sequelize,

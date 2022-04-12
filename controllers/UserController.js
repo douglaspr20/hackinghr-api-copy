@@ -278,6 +278,25 @@ const UserController = () => {
     const { user: prevUser } = req;
 
     try {
+      const { numberOfAffectedRows, affectedRows } = await _addEvent(
+        event,
+        id,
+        prevUser
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const _addEvent = async (event, id, prevUser) => {
+    try {
       const [rows, user] = await User.update(
         {
           events: Sequelize.fn(
@@ -318,14 +337,9 @@ const UserController = () => {
 
       generateAttendEmail(user, event.userTimezone, affectedRows_);
 
-      return res
-        .status(HttpCodes.OK)
-        .json({ numberOfAffectedRows, affectedRows: affectedRows_ });
+      return { numberOfAffectedRows, affectedRows };
     } catch (error) {
       console.log(error);
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error" });
     }
   };
 
@@ -1727,6 +1741,7 @@ const UserController = () => {
     userIsOnline,
     viewRulesGConference,
     countAllUsers,
+    _addEvent,
   };
 };
 
