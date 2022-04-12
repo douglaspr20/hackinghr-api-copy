@@ -581,6 +581,7 @@ const UserController = () => {
       sizeOfOrganization,
       offset,
       limit,
+      typeUser,
     } = req.query;
 
     const where = {};
@@ -636,7 +637,8 @@ const UserController = () => {
           key !== "search" &&
           key !== "titleProfessions" &&
           key !== "limit" &&
-          key !== "offset"
+          key !== "offset" &&
+          key !== "typeUser"
         ) {
           where[Op.and] = where[Op.and]
             ? [
@@ -652,6 +654,19 @@ const UserController = () => {
                   [key]: {
                     [Op.in]: JSON.parse(req.query[key]),
                   },
+                },
+              ];
+        } else if (typeUser && typeUser === "online") {
+          where[Op.and] = where[Op.and]
+            ? [
+                ...where[Op.and],
+                {
+                  isOnline: true,
+                },
+              ]
+            : [
+                {
+                  isOnline: true,
                 },
               ];
         }
