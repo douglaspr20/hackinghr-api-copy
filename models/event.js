@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       Event.hasMany(models.Library);
+      Event.hasMany(models.EventInstructor);
     }
   }
   Event.init(
@@ -92,6 +93,18 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: [],
       },
       isAnnualConference: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
+      images: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      venueAddress: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+      },
+      ticketFee: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },

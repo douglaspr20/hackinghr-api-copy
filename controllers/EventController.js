@@ -20,6 +20,8 @@ const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
 const User = db.User;
+const EventInstructor = db.EventInstructor;
+const Instructor = db.Instructor;
 const QueryTypes = Sequelize.QueryTypes;
 const VisibleLevel = Settings.VISIBLE_LEVEL;
 
@@ -284,6 +286,18 @@ const EventController = () => {
           );
         }
 
+        if (!isEmpty(eventInfo.images)) {
+          const images = eventInfo.images.map((image) => {
+            if (isValidURL(image)) {
+              return image;
+            }
+
+            return s3Service().getEventImageUrl("", image);
+          });
+
+          eventInfo.images = await Promise.all(images);
+        }
+
         const event = await Event.create(eventInfo);
 
         if (!event) {
@@ -292,7 +306,14 @@ const EventController = () => {
             .json({ msg: "Internal server error" });
         }
 
-        const [numberOfAffectedRows, affectedRows] = await Event.update(
+        const instructorIds = eventInfo.instructorIds.map((id) => ({
+          InstructorId: id,
+          EventId: event.id,
+        }));
+
+        await EventInstructor.bulkCreate(instructorIds);
+
+        const [_, affectedRows] = await Event.update(
           {
             publicLink: `${process.env.DOMAIN_URL}${event.id}`,
           },
@@ -326,7 +347,7 @@ const EventController = () => {
         console.log(error);
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
-          .json({ msg: "Internal server error", error: err });
+          .json({ msg: "Internal server error", error: error });
       }
     }
 
@@ -380,6 +401,18 @@ const EventController = () => {
         await s3Service().deleteUserPicture(prevEvent.image2);
       }
 
+      if (!isEmpty(event.images)) {
+        const newImages = eventInfo.images.map((image) => {
+          if (isValidURL(image)) {
+            return image;
+          }
+
+          return s3Service().getEventImageUrl("", image);
+        });
+
+        eventInfo.images = await Promise.all(newImages);
+      }
+
       const [numberOfAffectedRows, affectedRows] = await Event.update(
         eventInfo,
         {
@@ -388,6 +421,26 @@ const EventController = () => {
           plain: true,
         }
       );
+
+      const instructorIds = eventInfo.instructorIds.map((instructorId) => ({
+        InstructorId: instructorId,
+        EventId: id,
+      }));
+
+      await EventInstructor.bulkCreate(instructorIds);
+
+      await db.sequelize.transaction(async (t) => {
+        await EventInstructor.destroy(
+          {
+            where: {
+              EventId: id,
+            },
+          },
+          { transaction: t }
+        );
+
+        await EventInstructor.bulkCreate(instructorIds, { transaction: t });
+      });
 
       return res
         .status(HttpCodes.OK)
@@ -437,28 +490,21 @@ const EventController = () => {
     }
   };
 
-  const getEventBase = async (id, raw = false) => {
-    try {
-      let event = await Event.findOne({
-        where: {
-          id,
-        },
-        raw,
-      });
-
-      return event;
-    } catch (err) {
-      console.log(err);
-      return null;
-    }
-  };
-
   const getEventAdmin = async (req, res) => {
     const { id } = req.params;
 
     if (id) {
       try {
-        const event = await getEventBase(id);
+        const event = await Event.findOne({
+          where: {
+            id,
+          },
+          include: [
+            {
+              model: EventInstructor,
+            },
+          ],
+        });
 
         if (!event) {
           return res
@@ -485,7 +531,22 @@ const EventController = () => {
 
     if (id) {
       try {
-        let event = await getEventBase(id, true);
+        let event = await Event.findOne({
+          where: {
+            id,
+          },
+          include: [
+            {
+              model: EventInstructor,
+              attributes: ["id"],
+              include: [
+                {
+                  model: Instructor,
+                },
+              ],
+            },
+          ],
+        });
 
         if (!event) {
           return res
@@ -494,8 +555,8 @@ const EventController = () => {
         }
 
         event = {
-          ...event,
-          startAndEndTimes: compact(event.startAndEndTimes),
+          ...event.toJSON(),
+          startAndEndTimes: compact(event.toJSON().startAndEndTimes),
         };
 
         return res.status(HttpCodes.OK).json({ event });
