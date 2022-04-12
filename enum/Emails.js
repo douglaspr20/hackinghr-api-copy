@@ -1324,8 +1324,18 @@ module.exports = {
   },
   USER_PURCHASE_ADVERTISEMENT_CREDITS: {
     subject: (numOfCredits) =>
-      `Thank you for purchasing ${numOfCredits} credits!`,
-    body: () => `Thank you!`,
+      `(Hacking HR LAB) Thank you for purchasing ${numOfCredits} credits!`,
+    body: (firstName, numOfCredits) => `
+      <p>Hi ${firstName},</p>
+
+      <p>We just wanted to send you a quick note to confirm your purchase of ${numOfCredits} to use to create your marketing campaigns in the Hacking HR LAB.</p>
+
+      <p>Do not hesitate to let us know if you have any question.</p>
+
+      <p>Thank you!</p>
+
+      <p>Hacking HR Team</p>
+    `,
   },
   ADVERTISEMENT_CAMPAIGN_START: {
     subject: () => `(Hacking HR LAB) Your campaign is now LIVE!`,

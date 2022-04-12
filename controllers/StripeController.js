@@ -360,7 +360,10 @@ const StripeController = () => {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: user.email,
         subject: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.subject(credits),
-        html: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.body(),
+        html: LabEmails.USER_PURCHASE_ADVERTISEMENT_CREDITS.body(
+          user.firstName,
+          credits
+        ),
       };
 
       await smtpService().sendMailUsingSendInBlue(mailOptions);
