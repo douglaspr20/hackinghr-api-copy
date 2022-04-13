@@ -8,6 +8,7 @@ const Settings = require("./Settings");
 const ConferenceType = require("./ConferenceType");
 const JOB_BOARD = require("./JobBoard");
 const TimeZoneList = require("./TimeZoneList");
+const ProfileSettings = require("./ProfileSettings");
 
 module.exports = {
   USER_ROLE,
@@ -20,4 +21,5 @@ module.exports = {
   ConferenceType,
   JOB_BOARD,
   TimeZoneList,
+  ProfileSettings,
 };
