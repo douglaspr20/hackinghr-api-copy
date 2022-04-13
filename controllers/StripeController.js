@@ -400,10 +400,10 @@ const StripeController = () => {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: user.email,
         subject: LabEmails.USER_BECOME_ADVERTISER.subject(),
-        html: LabEmails.USER_BECOME_ADVERTISER.body(),
+        html: LabEmails.USER_BECOME_ADVERTISER.body(user.firstName),
       };
 
-      await smtpService().sendMailUsingSendInBlue(mailOptions);
+      smtpService().sendMailUsingSendInBlue(mailOptions);
 
       newUserData["isAdvertiser"] = "TRUE";
       newUserData["advertiserSubscriptionDate"] = moment().format(

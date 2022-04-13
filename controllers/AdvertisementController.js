@@ -4,7 +4,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
 const { isValidURL } = require("../utils/profile");
-const { LabEmails } = require("../enum");
+const { LabEmails, ProfileSettings } = require("../enum");
 const smtpService = require("../services/smtp.service");
 
 const Advertisement = db.Advertisement;
@@ -212,6 +212,37 @@ const AdvertisementController = () => {
           );
 
           user = user[0];
+
+          const startDate = moment.tz(
+            transformedData.startDate,
+            "America/Los_Angeles"
+          );
+
+          const endDate = moment.tz(
+            transformedData.endDate,
+            "America/Los_Angeles"
+          );
+
+          const mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.ADVERTISEMENT_CAMPAIGN_ACTIVE.subject(),
+            html: LabEmails.ADVERTISEMENT_CAMPAIGN_ACTIVE.body({
+              user,
+              startDate: startDate.format("LL"),
+              startTime: startDate.format("HH:mm"),
+              endDate: endDate.format("LL"),
+              endTime: endDate.format("HH:mm"),
+              days: transformedData.adDurationByDays,
+              creditsUsed: totalCredits,
+              creditsLeft: user.advertisementCredits,
+              page: transformedData.page,
+              link: transformedData.advertisementLink,
+            }),
+            contentType: "text/html",
+          };
+
+          smtpService().sendMailUsingSendInBlue(mailOptions);
         }
 
         return {
@@ -348,6 +379,42 @@ const AdvertisementController = () => {
           );
 
           user = user[0];
+
+          const isDraft = advertisement.status === "draft";
+
+          // from draft to active
+          if (isDraft) {
+            const startDate = moment.tz(
+              fetchedAdvertisement.toJSON().startDate,
+              "America/Los_Angeles"
+            );
+
+            const endDate = moment.tz(
+              fetchedAdvertisement.toJSON().endDate,
+              "America/Los_Angeles"
+            );
+
+            const mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
+              subject: LabEmails.ADVERTISEMENT_CAMPAIGN_ACTIVE.subject(),
+              html: LabEmails.ADVERTISEMENT_CAMPAIGN_ACTIVE.body({
+                user,
+                startDate: startDate.format("LL"),
+                startTime: startDate.format("HH:mm"),
+                endDate: endDate.format("LL"),
+                endTime: endDate.format("HH:mm"),
+                days: fetchedAdvertisement.toJSON().adDurationByDays,
+                creditsUsed: totalCredits,
+                creditsLeft: user.advertisementCredits,
+                page: fetchedAdvertisement.toJSON().page,
+                link: fetchedAdvertisement.toJSON().advertisementLink,
+              }),
+              contentType: "text/html",
+            };
+
+            smtpService().sendMailUsingSendInBlue(mailOptions);
+          }
         }
 
         return {
@@ -367,8 +434,6 @@ const AdvertisementController = () => {
   };
 
   const getAllActiveAdvertisements = async (req, res) => {
-    // const dateToday = moment().tz("America/Los_Angeles").startOf("day");
-
     try {
       const advertisements = await Advertisement.findAll({
         where: {
@@ -445,10 +510,51 @@ const AdvertisementController = () => {
           status: "active",
           endDate: date.format(),
         },
+        include: [
+          {
+            model: User,
+          },
+          {
+            model: AdvertisementImpression,
+            separate: true,
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+          {
+            model: AdvertisementClick,
+            separate: true,
+            include: [
+              {
+                model: User,
+              },
+            ],
+          },
+        ],
       });
 
       const changeStatus = advertisements.map((advertisement) => {
         const _advertisement = advertisement.toJSON();
+
+        const user = _advertisement.User;
+        const impressions = _advertisement.AdvertisementImpressions;
+        const clicks = _advertisement.AdvertisementClicks;
+
+        const mailOptions = {
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+          to: user.email,
+          subject: LabEmails.ADVERTISEMENT_CAMPAIGN_END.subject(),
+          html: LabEmails.ADVERTISEMENT_CAMPAIGN_END.body(
+            user.firstName,
+            impressions.length,
+            clicks.length
+          ),
+          contentType: "text/html",
+        };
+
+        smtpService().sendMailUsingSendInBlue(mailOptions);
 
         return Advertisement.update(
           { status: "ended" },
@@ -461,6 +567,86 @@ const AdvertisementController = () => {
       });
 
       await Promise.all(changeStatus);
+
+      // advertisements.forEach((advertisement) => {
+      // const _advertisement = advertisement.toJSON();
+      // const impressions = _advertisement.AdvertisementImpressions;
+      // const clicks = _advertisement.AdvertisementClicks;
+
+      // const jobLevelsImpression = {};
+      // const jobLevelsClicks = {};
+
+      // const sizeOfOrganizationImpression = {};
+      // const sizeOfOrganizationClicks = {};
+
+      // const countriesImpression = {};
+      // const countriesClicks = {};
+
+      // impressions.forEach((impression) => {
+      //   const user = impression.User;
+
+      //   if (jobLevelsImpression.hasOwnProperty(user.recentJobLevel)) {
+      //     jobLevelsImpression[user.recentJobLevel] =
+      //       jobLevelsImpression[user.recentJobLevel] + 1;
+      //   } else {
+      //     jobLevelsImpression[user.recentJobLevel] = 1;
+      //   }
+
+      //   if (
+      //     sizeOfOrganizationImpression.hasOwnProperty(user.sizeOfOrganization)
+      //   ) {
+      //     sizeOfOrganizationImpression[user.sizeOfOrganization] =
+      //       sizeOfOrganizationImpression[user.sizeOfOrganization] + 1;
+      //   } else {
+      //     sizeOfOrganizationImpression[user.sizeOfOrganization] = 1;
+      //   }
+
+      //   const country = ProfileSettings.COUNTRIES.find(
+      //     (c) => c.value === user.location
+      //   );
+
+      //   if (sizeOfOrganizationImpression.hasOwnProperty(country.text)) {
+      //     countriesImpression[country.text] =
+      //       countriesImpression[country.text] + 1;
+      //   } else {
+      //     countriesImpression[country.text] = 1;
+      //   }
+      // });
+
+      // clicks.forEach((click) => {
+      //   const user = click.User;
+
+      //   if (user.completed) {
+      //     if (jobLevelsImpression.hasOwnProperty(user.recentJobLevel)) {
+      //       jobLevelsClicks[user.recentJobLevel] =
+      //         jobLevelsClicks[user.recentJobLevel] + 1;
+      //     } else {
+      //       jobLevelsClicks[user.recentJobLevel] = 1;
+      //     }
+
+      //     if (
+      //       sizeOfOrganizationImpression.hasOwnProperty(
+      //         user.sizeOfOrganization
+      //       )
+      //     ) {
+      //       sizeOfOrganizationClicks[user.sizeOfOrganization] =
+      //         sizeOfOrganizationClicks[user.sizeOfOrganization] + 1;
+      //     } else {
+      //       sizeOfOrganizationClicks[user.sizeOfOrganization] = 1;
+      //     }
+
+      //     const country = ProfileSettings.COUNTRIES.find(
+      //       (c) => c.value === user.location
+      //     );
+
+      //     if (sizeOfOrganizationImpression.hasOwnProperty(country.text)) {
+      //       countriesClicks[country.text] = countriesClicks[country.text] + 1;
+      //     } else {
+      //       countriesClicks[country.text] = 1;
+      //     }
+      //   }
+      // });
+      // });
     } catch (error) {
       console.log(error);
     }

@@ -1184,8 +1184,37 @@ module.exports = {
     `,
   },
   USER_BECOME_ADVERTISER: {
-    subject: () => `Advertiser`,
-    body: () => `You are now an advertiser`,
+    subject: () =>
+      `Thank you for purchasing your ADVERTISER add-on in the Hacking HR LAB!`,
+    body: (firstName) => `
+      <p>
+        Hi ${firstName},
+      </p>
+
+      <p>We are excited to welcome you as “ADVERTISER” in the Hacking HR LAB (yes, we need to come up with a better name for this role!). </p>
+
+      <p>This functionality was built to let people like you run marketing campaigns in the Hacking HR LAB.</p>
+
+      <p>The most effective marketing campaigns are those with a compelling story and a strong call to action behind it. For example, links to great content or events. </p>
+
+      <p>This is how you can start creating your marketing campaigns: </p>
+      <ol type="1">
+        <li>Click on “Partners Dashboard” under your profile</li>
+        <li>In the first tab you can create a new campaign and see the dashboard with your created campaigns</li>
+      </ol>
+
+      <p>Each campaign requires that you enter the start and end date, an image at 1:1 resolution, a link and the page in which the campaign will be posted. We calculate the number of credits you need depending on the number of days and the page to post the campaign. </p>
+
+      <p>We recommend that you run your campaign for no less than ten days. </p>
+
+      <p>You will receive an email when you create and active your campaign, when your campaign starts and ends. We will send you an email when your campaign has ended which will include the number of impressions and clicks the campaign generated. </p>
+
+      <p>For now, please do not hesitate to let us know if you have any questions. We are here to help you and we hope that you can generate great traction to your call to action.</p>
+
+      <p>Thank you so much! </p>
+
+      <p>The Hacking HR Team</p>
+    `,
   },
   NEW_LIBRARY_CONTENT_FOR_APPROVAL: {
     subject: () => `New Library Content for Approval`,
@@ -1291,7 +1320,6 @@ module.exports = {
       <br />
       Hacking HR
       <br />
-
       `,
   },
   USER_PURCHASE_ADVERTISEMENT_CREDITS: {
@@ -1300,11 +1328,76 @@ module.exports = {
     body: () => `Thank you!`,
   },
   ADVERTISEMENT_CAMPAIGN_START: {
-    subject: () => `Your campaign starts today.`,
-    body: (user) => `
-    Hi ${user.firstName},
+    subject: () => `(Hacking HR LAB) Your campaign is now LIVE!`,
+    body: (user, endDate) => `
+    <p>Hi ${user.firstName},</p>
 
-    Your campaign starts today.
+    <p>We just wanted to send you a quick note to let you know that your campaign is now LIVE! </p>
+
+    <p>Starting now until the end of your campaign on ${endDate} you can only edit the link and image of the campaign. You can’t edit dates or the page you originally selected it to be published. </p>
+
+    <p>We will provide impressions and clicks data at the end of your campaign. </p>
+
+    <p>Do not hesitate to let us know if you have any question. </p>
+
+    <p>Thank you!</p>
+
+    <p>Hacking HR Team</p>
+  `,
+  },
+  ADVERTISEMENT_CAMPAIGN_END: {
+    subject: () => `(Hacking HR LAB) Your campaign has now ended.`,
+    body: (firstName, numOfImpressions, numOfClicks) => `
+    <p>Hi ${firstName},</p>
+
+    <p>We just wanted to send you a quick note to let you know that your campaign has already ended.  </p>
+
+    <p>Your campaign generated ${numOfImpressions} impressions and ${numOfClicks} clicks. </p>
+
+    <p>We hope you continue creating more marketing campaigns in the Hacking HR LAB!</p>
+
+    <p>Thank you!</p>
+
+    <p>Hacking HR Team</p>
+  `,
+  },
+  ADVERTISEMENT_CAMPAIGN_ACTIVE: {
+    subject: () =>
+      `(Hacking HR LAB) Your campaign has been successfully activated`,
+    body: ({
+      user,
+      startDate,
+      startTime,
+      endDate,
+      endTime,
+      days,
+      creditsUsed,
+      creditsLeft,
+      page,
+      link,
+    }) => `
+    <p>Hi ${user.firstName},</p>
+
+    <p>Thank you for creating your marketing campaign in the Hacking HR LAB!</p>
+
+    <p>Your campaign will start on ${startDate} at ${startTime} and end on ${endDate} at ${endTime}, for a total duration of ${days} day/s. For this campaign you are using ${creditsUsed} credits and you have ${creditsLeft} credits left. </p>
+
+    <p>Your campaign will be posted in the ${page} page in the Hacking HR LAB. </p>
+
+    <p>The link of your campaign is: ${link}. </p>
+
+    <p>Now that your campaign is active, you can do the following in the Partners Dashboard</p>
+    <ol>
+      <li>Edit the link and image of the campaign by clicking the EDIT icon on the right side of your campaign</li>
+      <li>See the number of impressions</li>
+      <li>See the number of clicks</li>
+    </ol>
+
+    <p>Do not hesitate to let us know if you have any question. </p>
+
+    <p>Thank you!</p>
+
+    <p>Hacking HR Team</p>
   `,
   },
 };
