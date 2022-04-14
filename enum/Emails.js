@@ -1410,4 +1410,40 @@ module.exports = {
     <p>Hacking HR Team</p>
   `,
   },
+  REMINDER_TO_ADD_QUESTION_ONE_WEEK_BEFORE_THE_EVENT: {
+    subject: () => `Send questions one week before the event`,
+    body: (firstName) => `
+      <p>Hello ${firstName},</p>
+
+      <p>Send questions one week before the event</p>
+    `,
+  },
+  REMINDER_TO_ADD_QUESTION_ONE_DAY_BEFORE_THE_EVENT: {
+    subject: () => `Your event starts tomorrow. Send questions.`,
+    body: (firstName) => `
+      <p>Hello ${firstName},</p>
+
+      <p>Your event starts tomorrow</p>
+      <p>Send questions one day before the event</p>
+    `,
+  },
+  REMIND_PANELIST_ONE_HOUR_BEFORE_THE_EVENT_AND_ATTACH_ALL_COMMENTS: {
+    subject: () => `Your event starts in the next hour.`,
+    body: (firstName, comment) => `
+      <p>Hello ${firstName},</p>
+
+      <p>Your event starts in the next hour.</p>
+      <p>Here are the comments in the panel</p>
+      ${comment}
+    `,
+  },
+  SEND_DAILY_COMMENTS_TO_MODERATOR: {
+    subject: (panelName) =>
+      `Here are yesterday's comments on panel ${panelName}`,
+    body: (comment) => `
+    <p>Hi</p>
+
+    ${comment}
+    `,
+  },
 };
