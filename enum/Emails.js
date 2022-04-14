@@ -1446,4 +1446,8 @@ module.exports = {
     ${comment}
     `,
   },
+  EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED: {
+    subject: () => `New Council Event is Created`,
+    body: () => `New Council Event is Created`,
+  },
 };

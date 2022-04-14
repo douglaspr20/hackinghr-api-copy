@@ -109,6 +109,36 @@ const CouncilEventController = () => {
         return _councilEvent;
       });
 
+      if (!councilEvent.isEmailSent && councilEvent.status === "active") {
+        const users = await User.findAll({
+          where: {
+            councilMember: "TRUE",
+          },
+        });
+
+        users.forEach((user) => {
+          const mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject:
+              LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.subject(),
+            html: LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.body(),
+            contentType: "text/html",
+          };
+
+          smtpService().sendMailUsingSendInBlue(mailOptions);
+        });
+
+        await CouncilEvent.update(
+          { isEmailSent: "TRUE" },
+          {
+            where: {
+              id: councilEvent.id,
+            },
+          }
+        );
+      }
+
       return res.status(HttpCodes.OK).json({ councilEvent });
     } catch (err) {
       console.log(err);
