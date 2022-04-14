@@ -26,6 +26,7 @@ const MatchmakingController = require("./controllers/MatchmakingController");
 const MessageController = require("./controllers/MessageController");
 const BusinessPartnerController = require("./controllers/BusinessPartnerController");
 const AdvertisementController = require("./controllers/AdvertisementController");
+const CouncilEventController = require("./controllers/CouncilEventController");
 
 const moment = require("moment-timezone");
 

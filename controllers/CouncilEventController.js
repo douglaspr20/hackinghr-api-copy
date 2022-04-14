@@ -700,10 +700,7 @@ const CouncilEventController = () => {
   };
 
   const reminderToAddQuestionAWeekBeforeTheEvent = async () => {
-    const aWeekLaterStartOfHour = moment()
-      .tz("America/Los_Angeles")
-      .startOf("hour")
-      .add(1, "week");
+    const aWeekLaterStartOfHour = moment.utc().startOf("hour").add(1, "week");
 
     try {
       const councilEventPanels = await CouncilEventPanel.findAll({
@@ -759,10 +756,7 @@ const CouncilEventController = () => {
   };
 
   const remindToAddQuestionsAndRemindTheEventStartsTomorrow = async () => {
-    const aDayBeforeStartOfHour = moment()
-      .tz("America/Los_Angeles")
-      .startOf("hour")
-      .add(1, "day");
+    const aDayBeforeStartOfHour = moment.utc().startOf("hour").add(1, "day");
 
     try {
       const councilEventPanels = await CouncilEventPanel.findAll({
@@ -818,10 +812,7 @@ const CouncilEventController = () => {
   };
 
   const remindPanelistOneHourBeforeTheEvent = async () => {
-    const anHourBeforeStartOfHour = moment()
-      .tz("America/Los_Angeles")
-      .startOf("hour")
-      .add(1, "hour");
+    const anHourBeforeStartOfHour = moment.utc().startOf("hour").add(1, "hour");
 
     try {
       const councilEventPanels = await CouncilEventPanel.findAll({
