@@ -116,13 +116,45 @@ const CouncilEventController = () => {
           },
         });
 
+        const timezone = TimeZoneList.find(
+          (tz) => tz.value === councilEvent.timezone
+        );
+
+        const startDate = moment.tz(councilEvent.startDate, timezone.utc[0]);
+        const endDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
+
+        const event = {
+          startDate: startDate.format("LL"),
+          startTime: startDate.format("HH:mm"),
+          endDate: endDate.format("LL"),
+          endTime: endDate.format("HH:mm"),
+          numberOfPanels: councilEvent.CouncilEventPanels.length,
+          maxNumberOfPanelsUsersCanJoin:
+            councilEvent.maxNumberOfPanelsUsersCanJoin,
+          eventName: councilEvent.eventName,
+        };
+
+        const panels = councilEvent.CouncilEventPanels.map((panel) => {
+          const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+
+          return `<p>${startDate.format("LL")} at ${startDate.format(
+            "HH:mm"
+          )}: ${panel.panelName}</p>`;
+        }).join("");
+
         users.forEach((user) => {
           const mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
             to: user.email,
             subject:
-              LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.subject(),
-            html: LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.body(),
+              LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.subject(
+                councilEvent.eventName
+              ),
+            html: LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.body(
+              user.firstName,
+              event,
+              panels
+            ),
             contentType: "text/html",
           };
 
@@ -309,6 +341,7 @@ const CouncilEventController = () => {
           UserId,
           isModerator,
           isAddedByAdmin: !!isAddedByAdmin,
+          CouncilEventId: councilEvent.id,
         });
 
         const user = await User.findOne({
@@ -461,10 +494,6 @@ const CouncilEventController = () => {
             isJoining: true,
           };
 
-          console.log(
-            transformedCouncilEventPanelist,
-            "transformedCouncilEventPanelist"
-          );
           socketService().emit(
             SocketEventType.UPDATE_COUNCIL_EVENT_PANEL,
             transformedCouncilEventPanelist
@@ -733,53 +762,92 @@ const CouncilEventController = () => {
     const aWeekLaterStartOfHour = moment.utc().startOf("hour").add(1, "week");
 
     try {
-      const councilEventPanels = await CouncilEventPanel.findAll({
+      const councilEvents = await CouncilEvent.findAll({
         where: {
-          startDateStartOfHour: aWeekLaterStartOfHour.format(),
+          startDate: aWeekLaterStartOfHour.format(),
+          status: "active",
         },
-        include: [
-          {
-            model: CouncilEvent,
-            attributes: [],
-            required: true,
-            where: {
-              status: "active",
-            },
-          },
-          {
-            model: CouncilEventPanelist,
-            include: [
-              {
-                model: User,
-                attributes: ["email", "firstName", "lastName"],
-              },
-            ],
-          },
-        ],
       });
 
-      if (!isEmpty(councilEventPanels)) {
-        councilEventPanels.forEach((panels) => {
-          const panelists = panels.CouncilEventPanelists;
-
-          panelists.forEach((panelist) => {
-            const user = panelist.User;
-
-            const mailOptions = {
-              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-              to: user.email,
-              subject:
-                LabEmails.REMINDER_TO_ADD_QUESTION_ONE_WEEK_BEFORE_THE_EVENT.subject(),
-              html: LabEmails.REMINDER_TO_ADD_QUESTION_ONE_WEEK_BEFORE_THE_EVENT.body(
-                user.firstName
-              ),
-              contentType: "text/html",
-            };
-
-            smtpService().sendMailUsingSendInBlue(mailOptions);
-          });
+      councilEvents.forEach(async (councilEvent) => {
+        const users = await User.findAll({
+          attributes: ["id", "email", "firstName", "lastName"],
+          include: [
+            {
+              model: CouncilEventPanelist,
+              required: true,
+              include: [
+                {
+                  model: CouncilEventPanel,
+                  required: true,
+                  where: {
+                    CouncilEventId: councilEvent.id,
+                  },
+                },
+              ],
+            },
+          ],
         });
-      }
+
+        const timezone = TimeZoneList.find(
+          (tz) => tz.value === councilEvent.timezone
+        );
+
+        const eventStartDate = moment.tz(
+          councilEvent.startDate,
+          timezone.utc[0]
+        );
+        const eventEndDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
+
+        transformedEvent = {
+          startDate: eventStartDate.format("LL"),
+          startTime: eventStartDate.format("HH:mm"),
+          endDate: eventEndDate.format("LL"),
+          endTime: eventEndDate.format("HH:mm"),
+          eventName: councilEvent.eventName,
+        };
+
+        users.forEach((user) => {
+          const panelists = user.CouncilEventPanelists;
+
+          let transformedPanels = panelists
+            .reverse()
+            .map((panelist) => {
+              const panel = panelist.CouncilEventPanel;
+
+              const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+              const endDate = moment.tz(panel.endDate, timezone.utc[0]);
+
+              const transformedPanels = `<p>${
+                panel.panelName
+              } on ${startDate.format("LL")} at ${startDate.format(
+                "HH:mm"
+              )} until ${endDate.format("LL")} at ${endDate.format(
+                "HH:mm"
+              )}</p>`;
+
+              return transformedPanels;
+            })
+            .join("");
+
+          const mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            to: user.email,
+            subject:
+              LabEmails.REMINDER_TO_ADD_QUESTION_ONE_WEEK_BEFORE_THE_EVENT.subject(
+                councilEvent.eventName
+              ),
+            html: LabEmails.REMINDER_TO_ADD_QUESTION_ONE_WEEK_BEFORE_THE_EVENT.body(
+              user.firstName,
+              transformedEvent,
+              transformedPanels
+            ),
+            contentType: "text/html",
+          };
+
+          smtpService().sendMailUsingSendInBlue(mailOptions);
+        });
+      });
     } catch (error) {
       console.error(error);
     }
@@ -789,53 +857,76 @@ const CouncilEventController = () => {
     const aDayBeforeStartOfHour = moment.utc().startOf("hour").add(1, "day");
 
     try {
-      const councilEventPanels = await CouncilEventPanel.findAll({
+      const councilEvents = await CouncilEvent.findAll({
         where: {
-          startDateStartOfHour: aDayBeforeStartOfHour.format(),
+          startDate: aDayBeforeStartOfHour.format(),
+          status: "active",
         },
-        include: [
-          {
-            model: CouncilEvent,
-            attributes: [],
-            required: true,
-            where: {
-              status: "active",
-            },
-          },
-          {
-            model: CouncilEventPanelist,
-            include: [
-              {
-                model: User,
-                attributes: ["email", "firstName", "lastName"],
-              },
-            ],
-          },
-        ],
       });
 
-      if (!isEmpty(councilEventPanels)) {
-        councilEventPanels.forEach((panels) => {
-          const panelists = panels.CouncilEventPanelists;
-
-          panelists.forEach((panelist) => {
-            const user = panelist.User;
-
-            const mailOptions = {
-              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-              to: user.email,
-              subject:
-                LabEmails.REMINDER_TO_ADD_QUESTION_ONE_DAY_BEFORE_THE_EVENT.subject(),
-              html: LabEmails.REMINDER_TO_ADD_QUESTION_ONE_DAY_BEFORE_THE_EVENT.body(
-                user.firstName
-              ),
-              contentType: "text/html",
-            };
-
-            smtpService().sendMailUsingSendInBlue(mailOptions);
-          });
+      councilEvents.forEach(async (event) => {
+        const users = await User.findAll({
+          attributes: ["id", "email", "firstName", "lastName"],
+          include: [
+            {
+              model: CouncilEventPanelist,
+              required: true,
+              include: [
+                {
+                  model: CouncilEventPanel,
+                  required: true,
+                  where: {
+                    CouncilEventId: event.id,
+                  },
+                },
+              ],
+            },
+          ],
         });
-      }
+
+        const timezone = TimeZoneList.find((tz) => tz.value === event.timezone);
+
+        users.forEach((user) => {
+          const panelists = user.CouncilEventPanelists;
+
+          let transformedPanels = panelists
+            .reverse()
+            .map((panelist) => {
+              const panel = panelist.CouncilEventPanel;
+
+              const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+              const endDate = moment.tz(panel.endDate, timezone.utc[0]);
+
+              const transformedPanels = `<p>${
+                panel.panelName
+              } on ${startDate.format("LL")} at ${startDate.format(
+                "HH:mm"
+              )} until ${endDate.format("LL")} at ${endDate.format(
+                "HH:mm"
+              )}</p>`;
+
+              return transformedPanels;
+            })
+            .join("");
+
+          const mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            to: user.email,
+            subject:
+              LabEmails.REMINDER_TO_ADD_QUESTION_ONE_DAY_BEFORE_THE_EVENT.subject(
+                event.eventName
+              ),
+            html: LabEmails.REMINDER_TO_ADD_QUESTION_ONE_DAY_BEFORE_THE_EVENT.body(
+              user.firstName,
+              transformedPanels,
+              event.eventName
+            ),
+            contentType: "text/html",
+          };
+
+          smtpService().sendMailUsingSendInBlue(mailOptions);
+        });
+      });
     } catch (error) {
       console.error(error);
     }
@@ -853,7 +944,7 @@ const CouncilEventController = () => {
         include: [
           {
             model: CouncilEvent,
-            attributes: [],
+            attributes: ["timezone"],
             required: true,
             where: {
               status: "active",
@@ -899,14 +990,29 @@ const CouncilEventController = () => {
       if (!isEmpty(councilEventPanels)) {
         councilEventPanels.forEach((panel, index) => {
           const panelists = panel.CouncilEventPanelists;
+          const event = panel.CouncilEvent;
 
           const transformedComments = councilEventPanelComments[index].map(
             (comment) => {
               const user = comment.CouncilEventPanelist.User;
 
-              return `${user.firstName} ${user.lastName}: ${comment.comment}`;
+              return `<li>${user.firstName} ${user.lastName}: ${comment.comment}</li>`;
             }
           );
+
+          const timezone = TimeZoneList.find(
+            (tz) => tz.value === event.timezone
+          );
+
+          const transformedPanel = {
+            linkToJoin: panel.linkToJoin,
+            panelName: panel.panelName,
+            startTime: `${moment
+              .tz(panel.startDate, timezone.utc[0])
+              .format("HH:mm")} ${timezone.abbr}`,
+          };
+
+          let moderator = panelists.find((panelist) => panelist.isModerator);
 
           panelists.forEach((panelist) => {
             const user = panelist.User;
@@ -915,10 +1021,14 @@ const CouncilEventController = () => {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               to: user.email,
               subject:
-                LabEmails.REMIND_PANELIST_ONE_HOUR_BEFORE_THE_EVENT_AND_ATTACH_ALL_COMMENTS.subject(),
+                LabEmails.REMIND_PANELIST_ONE_HOUR_BEFORE_THE_EVENT_AND_ATTACH_ALL_COMMENTS.subject(
+                  panel.panelName
+                ),
               html: LabEmails.REMIND_PANELIST_ONE_HOUR_BEFORE_THE_EVENT_AND_ATTACH_ALL_COMMENTS.body(
                 user.firstName,
-                transformedComments.join("")
+                transformedPanel,
+                transformedComments.join(""),
+                `${moderator.User.firstName} ${moderator.User.lastName}`
               ),
               contentType: "text/html",
             };
