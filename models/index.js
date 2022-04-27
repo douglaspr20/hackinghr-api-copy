@@ -17,6 +17,7 @@ let sequelize;
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
+  console.log({ hola: "pase por aqui" });
   sequelize = new Sequelize(
     config.database,
     config.username,
