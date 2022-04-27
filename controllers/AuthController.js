@@ -25,6 +25,8 @@ const AuthController = () => {
   const login = async (req, res) => {
     const { email, password } = req.body;
 
+    console.log(req.body);
+
     if (email && password) {
       try {
         const user = await User.findOne({
@@ -53,8 +55,6 @@ const AuthController = () => {
           .json({ msg: "Password is wrong." });
       } catch (err) {
         console.log(err);
-        console.log({ hola: "pase por login" });
-
         return res
           .status(HttpCodes.INTERNAL_SERVER_ERROR)
           .json({ msg: "Internal server error" });
