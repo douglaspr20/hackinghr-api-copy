@@ -17,6 +17,8 @@ module.exports = (sequelize, DataTypes) => {
       sender: DataTypes.INTEGER,
       text: DataTypes.TEXT,
       viewedUser: DataTypes.ARRAY(DataTypes.INTEGER),
+      documentFileUrl: DataTypes.TEXT,
+      type: DataTypes.ENUM("text", "image", "audio", "document", "video"),
     },
     {
       sequelize,
