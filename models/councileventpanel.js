@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       startDate: DataTypes.DATE,
       endDate: DataTypes.DATE,
+      startDateStartOfHour: DataTypes.DATE,
     },
     {
       sequelize,

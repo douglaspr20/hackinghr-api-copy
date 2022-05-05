@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.CouncilConversationLike);
       User.hasMany(models.AdvertisementImpression);
       User.hasMany(models.AdvertisementClick);
+      User.hasMany(models.CouncilEventPanelist);
     }
   }
   User.init(
