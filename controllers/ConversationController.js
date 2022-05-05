@@ -18,6 +18,22 @@ const ConversationController = () => {
         },
       });
 
+      if (prevConversation.showConversation === false) {
+        const [numberOfAffectedRows, affectedRows] = await Conversation.update(
+          { showConversation: true },
+          {
+            where: { id: prevConversation.id },
+            returning: true,
+            plain: true,
+          }
+        );
+
+        return socketService().emit(
+          SocketEventTypes.NEW_CONVERSATION,
+          affectedRows
+        );
+      }
+
       if (prevConversation) {
         return socketService().emit(
           SocketEventTypes.NEW_CONVERSATION,
@@ -124,10 +140,32 @@ const ConversationController = () => {
     }
   };
 
+  const hideConversation = async (req, res) => {
+    const { conversationId } = req.params;
+    try {
+      const [numberOfAffectedRows, affectedRows] = await Conversation.update(
+        { showConversation: false },
+        {
+          where: { id: conversationId },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ conversation: affectedRows });
+    } catch (error) {
+      res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Something went wrong",
+      });
+      console.log(error);
+    }
+  };
+
   return {
     create,
     getAll,
     get,
+    hideConversation,
   };
 };
 
