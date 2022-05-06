@@ -1261,6 +1261,12 @@ module.exports = {
       <br />
       `,
   },
+  NOTICE_NEW_MESSAGE_MODERATOR: {
+    subject: (firstName, panelName) => 
+    `Hi ${firstName}, in the event: ${panelName}`,
+    message: (name, lastName) => 
+    `<p>There is a new message from: ${name} ${lastName}</p>`
+  },
   COUNCIL_EVENT_JOIN: {
     subject: (firstName, panelName, eventName) =>
       `${firstName}, thank you for joining the panel: ${panelName} as part of the event ${eventName}`,

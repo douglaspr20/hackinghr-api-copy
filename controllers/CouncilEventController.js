@@ -725,7 +725,7 @@ const CouncilEventController = () => {
       });
 
       const councilEvent = await CouncilEvent.findOne({
-        attributes: ["id"],
+        attributes: ["id", "eventName"],
         include: [
           {
             model: CouncilEventPanel,
@@ -747,6 +747,70 @@ const CouncilEventController = () => {
           SocketEventType.UPDATE_COUNCIL_EVENT_COMMENTS,
           payload
         );
+      }
+
+      const user = await CouncilEventPanelist.findAll({
+        where: {
+          CouncilEventPanelId: data.CouncilEventPanelId,
+          isModerator: true
+        }
+      })
+
+      if(user[0] !== undefined){
+        if(user.length === 1){
+          const Moderador = await User.findOne({
+            attributes: ["firstName", "email"],
+            where: {
+              id: user[0].dataValues.UserId,
+            },
+          });
+
+          let mailOptions = {
+            // from: "hackinghrlab@gmail.com",
+            from: process.env.SEND_IN_BLUE_SMTP_USER,
+            //to: Moderador.dataValues.email,
+            to: 'enrique@hackinghr.io',
+            subject: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.subject(
+              Moderador.dataValues.firstName,
+              councilEvent.dataValues.eventName,
+            ),
+            html:LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.message(
+              payload.CouncilEventPanelist.User.firstName,
+              payload.CouncilEventPanelist.User.lastName
+            ),
+            contentType: "text/calendar",
+          };
+
+          smtpService().sendMailUsingSendInBlue(mailOptions);
+        }
+        if(user.length > 1){
+          for(let i = 0; i < user.length ; i++){
+            const Moderador = await User.findOne({
+              attributes: ["firstName", "email"],
+              where: {
+                id: user[i].dataValues.UserId,
+              },
+            });
+
+            let mailOptions = {
+              // from: "hackinghrlab@gmail.com",
+              from: process.env.SEND_IN_BLUE_SMTP_USER,
+              //to: Moderador.dataValues.email,
+              to: 'enrique@hackinghr.io',
+              subject: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.subject(
+                Moderador.dataValues.firstName,
+                councilEvent.dataValues.eventName,
+              ),
+              html:LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.message(
+                payload.CouncilEventPanelist.User.firstName,
+                payload.CouncilEventPanelist.User.lastName
+              ),
+              contentType: "text/calendar",
+            };
+
+            smtpService().sendMailUsingSendInBlue(mailOptions);
+          }
+        }
       }
 
       return res.status(HttpCodes.OK).json({});

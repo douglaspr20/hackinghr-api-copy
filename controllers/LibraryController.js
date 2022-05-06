@@ -3,7 +3,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 const isEmpty = require("lodash/isEmpty");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const { ReviewStatus, Settings } = require("../enum");
 const NotificationController = require("../controllers/NotificationController");
@@ -71,7 +71,25 @@ const LibraryController = () => {
       .status(HttpCodes.BAD_REQUEST)
       .json({ msg: "Bad Request: Title is needed." });
   };
+  const deleteLibrary = async (req, res) => {
+    const { id } = req.params;
 
+    try{
+      console.log(id)
+      await Library.destroy({
+        where: {
+          id,
+        },
+      });
+
+      return res.status(HttpCodes.OK).json({});
+    }catch (error) {
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error", error: error });
+    }
+    
+  };
   const share = async (req, res) => {
     const { body } = req;
     const user = req.user;
@@ -709,6 +727,7 @@ const LibraryController = () => {
     claim,
     markAsViewed,
     saveForLater,
+    deleteLibrary
   };
 };
 
