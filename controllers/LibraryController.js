@@ -18,6 +18,8 @@ const LibraryController = () => {
   const create = async (req, res) => {
     const { body } = req;
 
+    console.log({ hola: body });
+
     if (body.title) {
       try {
         let libraryInfo = {
@@ -74,8 +76,8 @@ const LibraryController = () => {
   const deleteLibrary = async (req, res) => {
     const { id } = req.params;
 
-    try{
-      console.log(id)
+    try {
+      console.log(id);
       await Library.destroy({
         where: {
           id,
@@ -83,12 +85,11 @@ const LibraryController = () => {
       });
 
       return res.status(HttpCodes.OK).json({});
-    }catch (error) {
+    } catch (error) {
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error", error: error });
     }
-    
   };
   const share = async (req, res) => {
     const { body } = req;
@@ -727,7 +728,7 @@ const LibraryController = () => {
     claim,
     markAsViewed,
     saveForLater,
-    deleteLibrary
+    deleteLibrary,
   };
 };
 
