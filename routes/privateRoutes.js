@@ -288,6 +288,11 @@ const privateRoutes = {
     "CouncilEventController.removePanelist",
   "GET /council/event/search-user": "CouncilEventController.search",
   "POST /council/event/panel/comment": "CouncilEventController.upsertComment",
+  "POST /blogpost": "BlogPostController.create",
+  "GET /blogpost": "BlogPostController.getAll",
+  "GET /blogpost/:ChannelId": "BlogPostController.getByChannelId",
+  "PUT /blogpost/:blogPostId": "BlogPostController.update",
+  "DELETE /blogpost/:blogPostId": "BlogPostController.remove",
 };
 
 module.exports = privateRoutes;

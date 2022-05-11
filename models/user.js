@@ -35,6 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.AdvertisementImpression);
       User.hasMany(models.AdvertisementClick);
       User.hasMany(models.CouncilEventPanelist);
+      User.hasMany(models.BlogPost);
     }
   }
   User.init(
