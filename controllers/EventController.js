@@ -298,6 +298,8 @@ const EventController = () => {
           eventInfo.images = await Promise.all(images);
         }
 
+        console.log(eventInfo);
+
         const event = await Event.create(eventInfo);
 
         if (!event) {
@@ -310,6 +312,8 @@ const EventController = () => {
           InstructorId: id,
           EventId: event.id,
         }));
+
+        console.log(eventInfo);
 
         await EventInstructor.bulkCreate(instructorIds);
 
@@ -473,6 +477,8 @@ const EventController = () => {
         where,
         raw: true,
       });
+
+      console.log(events);
 
       events = events.map((event) => {
         return {
