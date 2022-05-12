@@ -18,7 +18,6 @@ const CouncilEventPanelComment = db.CouncilEventPanelComment;
 const CouncilEventController = () => {
   const upsert = async (req, res) => {
     const data = req.body;
-
     try {
       const councilEvent = await db.sequelize.transaction(async (t) => {
         const [councilEvent] = await CouncilEvent.upsert(
@@ -135,11 +134,11 @@ const CouncilEventController = () => {
         };
 
         const panels = councilEvent.CouncilEventPanels.map((panel) => {
-          const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+        const startDate = moment.tz(panel.startDate, timezone.utc[0]);
 
           return `<p>${startDate.format("LL")} at ${startDate.format(
             "HH:mm"
-          )}: ${panel.panelName}</p>`;
+          )} (${data.timezone}) : ${panel.panelName}</p>`;
         }).join("");
 
         users.forEach((user) => {
@@ -768,8 +767,7 @@ const CouncilEventController = () => {
           let mailOptions = {
             // from: "hackinghrlab@gmail.com",
             from: process.env.SEND_IN_BLUE_SMTP_USER,
-            //to: Moderador.dataValues.email,
-            to: 'enrique@hackinghr.io',
+            to: Moderador.dataValues.email,
             subject: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.subject(
               Moderador.dataValues.firstName,
               councilEvent.dataValues.eventName,
@@ -795,8 +793,7 @@ const CouncilEventController = () => {
             let mailOptions = {
               // from: "hackinghrlab@gmail.com",
               from: process.env.SEND_IN_BLUE_SMTP_USER,
-              //to: Moderador.dataValues.email,
-              to: 'enrique@hackinghr.io',
+              to: Moderador.dataValues.email,
               subject: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.subject(
                 Moderador.dataValues.firstName,
                 councilEvent.dataValues.eventName,
@@ -828,9 +825,9 @@ const CouncilEventController = () => {
     try {
       const councilEvents = await CouncilEvent.findAll({
         where: {
-          startDate: aWeekLaterStartOfHour.format(),
           status: "active",
-        },
+          startDate: aWeekLaterStartOfHour.format("YYYY-MM-DD HH:mm:ss.000 +00:00")
+        }
       });
 
       councilEvents.forEach(async (councilEvent) => {
@@ -923,7 +920,7 @@ const CouncilEventController = () => {
     try {
       const councilEvents = await CouncilEvent.findAll({
         where: {
-          startDate: aDayBeforeStartOfHour.format(),
+          startDate: aDayBeforeStartOfHour.format("YYYY-MM-DD HH:mm:ss.000 +00:00"),
           status: "active",
         },
       });
@@ -1002,7 +999,7 @@ const CouncilEventController = () => {
     try {
       const councilEventPanels = await CouncilEventPanel.findAll({
         where: {
-          startDateStartOfHour: anHourBeforeStartOfHour.format(),
+          startDate: anHourBeforeStartOfHour.format("YYYY-MM-DD HH:mm:ss.000 +00:00"),
         },
         order: [["startDate", "ASC"]],
         include: [
@@ -1011,8 +1008,8 @@ const CouncilEventController = () => {
             attributes: ["timezone"],
             required: true,
             where: {
-              status: "active",
-            },
+              status: "active"
+            }
           },
           {
             model: CouncilEventPanelist,
@@ -1055,14 +1052,19 @@ const CouncilEventController = () => {
         councilEventPanels.forEach((panel, index) => {
           const panelists = panel.CouncilEventPanelists;
           const event = panel.CouncilEvent;
+          let transformedComments;
 
-          const transformedComments = councilEventPanelComments[index].map(
-            (comment) => {
-              const user = comment.CouncilEventPanelist.User;
+          if (!isEmpty(councilEventPanelComments)) {
+            transformedComments = councilEventPanelComments[index].map(
+              (comment) => {
+                const user = comment.CouncilEventPanelist.User;
 
-              return `<li>${user.firstName} ${user.lastName}: ${comment.comment}</li>`;
-            }
-          );
+                return `<li>${user.firstName} ${user.lastName}: ${comment.comment}</li>`;
+              }
+            );
+          }else{
+            transformedComments = []
+          }
 
           const timezone = TimeZoneList.find(
             (tz) => tz.value === event.timezone
@@ -1076,7 +1078,22 @@ const CouncilEventController = () => {
               .format("HH:mm")} ${timezone.abbr}`,
           };
 
-          let moderator = panelists.find((panelist) => panelist.isModerator);
+          let moderator = panelists.filter((panelist) => panelist.isModerator);
+
+          let moderatorText;
+
+          if(moderator !== undefined){
+            moderatorText = `The moderator for your panel is:`
+            moderator.forEach((moderato, index) => {
+              if(index === 0){
+                moderatorText = `${moderatorText} ${moderato.User.firstName} ${moderato.User.lastName}`
+              }else{
+                moderatorText = `${moderatorText}, ${moderato.User.firstName} ${moderato.User.lastName}`
+              }
+            })
+          }else{
+            moderatorText = ``
+          }
 
           panelists.forEach((panelist) => {
             const user = panelist.User;
@@ -1092,7 +1109,7 @@ const CouncilEventController = () => {
                 user.firstName,
                 transformedPanel,
                 transformedComments.join(""),
-                `${moderator.User.firstName} ${moderator.User.lastName}`
+                moderatorText
               ),
               contentType: "text/html",
             };

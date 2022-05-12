@@ -13,10 +13,6 @@ module.exports = (sequelize, DataTypes) => {
   Conversation.init(
     {
       members: DataTypes.ARRAY(DataTypes.INTEGER),
-      showConversation: {
-        defaultValue: true,
-        type: DataTypes.BOOLEAN,
-      },
     },
     {
       sequelize,

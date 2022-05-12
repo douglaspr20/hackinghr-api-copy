@@ -1423,7 +1423,7 @@ module.exports = {
 
       <p>This is a reminder that ${event.eventName} is coming up in one week. </p>
 
-      <p>This event is on: ${event.startDate} at ${event.startTime} until ${event.endDate} at ${event.endTime}. </p>
+      <p>This event is on: ${event.startDate} until ${event.endDate}. </p>
 
       <p>You are signed up as a panelist in the panel/s:</p>
 
@@ -1484,7 +1484,7 @@ module.exports = {
         ${comments}
       </ul>
 
-      <p>The moderator for your panel is: ${moderatorName}. </p>
+      <p>${moderatorName}</p>
 
       <p>Thank you and see you shortly!</p>
 
@@ -1508,8 +1508,8 @@ module.exports = {
 
       <p>I am excited to share with you that we are planning a new event: ${event.eventName}</p>
 
-      <p>This event is on: ${event.startDate} at ${event.startTime} until ${event.endDate} at ${event.endTime}. </p>
-      <p>Check out the ${event.numOfPanels} panels we will have at the event: </p>
+      <p>This event is on: ${event.startDate} until ${event.endDate}. </p>
+      <p>Check out the ${event.numberOfPanels} panels we will have at the event: </p>
 
       <p>${panels}</p>
 

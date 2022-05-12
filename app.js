@@ -65,7 +65,7 @@ cron.schedule("0 8 * * SUN", () => {
 });
 
 // Creating a cron job which runs on every an hour.
-cron.schedule("25 * * * *", () => {
+cron.schedule("0 */59 * * * *", () => {
   console.log("running a task every 1 hour.");
   EventController().emailAfterEventThread();
 
@@ -543,23 +543,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on(SocketEventTypes.SEND_MESSAGE, async (message) => {
-    if (message.files?.length > 0) {
-      for (const messageFile of message.files) {
-        const newMessage = await MessageController().create({
-          ...messageFile,
-          ConversationId: message.ConversationId,
-          sender: message.sender,
-          viewedUser: message.viewedUser,
-        });
-        io.local.emit(SocketEventTypes.MESSAGE, newMessage);
-      }
-    }
-
-    if (message.text) {
-      const newMessage = await MessageController().create(message);
-      newMessage.dataValues.messageDate = newMessage.dataValues.createdAt;
-      io.local.emit(SocketEventTypes.MESSAGE, newMessage);
-    }
+    const newMessage = await MessageController().create(message);
+    delete newMessage.dataValues.createdAt;
+    newMessage.dataValues.messageDate = newMessage.dataValues.updatedAt;
+    io.local.emit(SocketEventTypes.MESSAGE, newMessage);
   });
 });
 
