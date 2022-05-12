@@ -478,8 +478,6 @@ const EventController = () => {
         raw: true,
       });
 
-      console.log(events);
-
       events = events.map((event) => {
         return {
           ...event,
