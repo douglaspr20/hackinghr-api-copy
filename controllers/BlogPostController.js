@@ -3,6 +3,7 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 
 const BlogPost = db.BlogPost;
+const User = db.User;
 
 const BlogPostController = () => {
   const create = async (req, res) => {
@@ -73,6 +74,36 @@ const BlogPostController = () => {
     }
   };
 
+  const getBlogPost = async (req, res) => {
+    const { blogPostId } = req.params;
+    try {
+      const blogPost = await BlogPost.findOne({
+        where: {
+          id: blogPostId,
+        },
+        include: [
+          {
+            model: User,
+            attributes: ["id", "firstName", "lastName", "img"],
+          },
+        ],
+      });
+
+      if (blogPost) {
+        return res.status(HttpCodes.OK).json({ blogPost });
+      }
+
+      return res
+        .status(HttpCodes.BAD_GATEWAY)
+        .json({ msg: "BlogPost not found" });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const update = async (req, res) => {
     const { body, params } = req;
     try {
@@ -127,6 +158,7 @@ const BlogPostController = () => {
     create,
     getAll,
     getByChannelId,
+    getBlogPost,
     update,
     remove,
   };
