@@ -204,6 +204,7 @@ const CouncilEventController = () => {
                           "lastName",
                           "titleProfessions",
                           "img",
+                          "abbrName"
                         ],
                       },
                     ],
@@ -221,6 +222,7 @@ const CouncilEventController = () => {
                       "lastName",
                       "titleProfessions",
                       "img",
+                      "abbrName"
                     ],
                   },
                 ],
