@@ -19,158 +19,324 @@ const CouncilEventController = () => {
   const upsert = async (req, res) => {
     const data = req.body;
     try {
-      const councilEvent = await db.sequelize.transaction(async (t) => {
-        const [councilEvent] = await CouncilEvent.upsert(
-          data,
-          {
-            returning: true,
-            raw: true,
-          },
-          {
-            transaction: t,
-          }
-        );
-
-        if (!isEmpty(data.panels)) {
-          const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
-
-          if (isPanelFull) {
-            throw new Error();
-          }
-        }
-
-        if (!isEmpty(data.panels)) {
-          const _councilEventPanels = await CouncilEventPanel.findAll({
-            where: {
-              CouncilEventId: councilEvent.id,
-            },
+      if(data.isEdit === false){
+        const councilEvent = await db.sequelize.transaction(async (t) => {
+          const councilEvent = await CouncilEvent.create({
+            eventName: data.eventName,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            description: data.description,
+            numberOfPanels: data.numberOfPanels,
+            timezone: data.timezone,
+            maxNumberOfPanelsUsersCanJoin: data.maxNumberOfPanelsUsersCanJoin,
+            status: data.status
           });
 
-          const _councilEventPanelIds = _councilEventPanels.map(
-            (panel) => panel.id
-          );
-          const councilEventPanelIds = data.panels.map((panel) => panel.id);
+          if (data.panels[0] === undefined) {
+            
+            const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
 
-          const councilEventPanelIdDiff = _councilEventPanelIds.filter(
-            (id) => !councilEventPanelIds.includes(id)
-          );
+            if (isPanelFull) {
+              throw new Error();
+            }
+          }
 
-          await CouncilEventPanel.destroy({
-            where: {
-              id: councilEventPanelIdDiff,
-            },
+          if (data.panels[0] === undefined) {
+            const _councilEventPanels = await CouncilEventPanel.findAll({
+              where: {
+                CouncilEventId: councilEvent.id,
+              },
+            });
+
+            const _councilEventPanelIds = _councilEventPanels.map(
+              (panel) => panel.id
+            );
+            const councilEventPanelIds = data.panels.map((panel) => panel.id);
+
+            const councilEventPanelIdDiff = _councilEventPanelIds.filter(
+              (id) => !councilEventPanelIds.includes(id)
+            );
+
+            await CouncilEventPanel.destroy({
+              where: {
+                id: councilEventPanelIdDiff,
+              },
+            });
+          }
+
+          const councilEventPanels = await data.panels?.map(async (panel) => {
+            return await CouncilEventPanel.create(
+              {
+                CouncilEventId: councilEvent.id,
+                panelName: panel.panelName,
+                panelStartAndEndDate: data.panelStartAndEndDate,
+                numberOfPanelists: panel.numberOfPanelists,
+                linkToJoin: panel.linkToJoin,
+                startDate: panel.startDate,
+                endDate: panel.endDate,
+              }
+            );
           });
-        }
 
-        const councilEventPanels = data.panels?.map((panel) => {
-          return CouncilEventPanel.upsert(
-            {
-              ...panel,
-              CouncilEventId: councilEvent.id,
-            },
-            { returning: true, raw: true }
-          );
-        });
+          if (!isEmpty(councilEventPanels)) {
+            await Promise.all(councilEventPanels);
+          }
 
-        if (!isEmpty(councilEventPanels)) {
-          await Promise.all(councilEventPanels);
-        }
-
-        const _councilEvent = await CouncilEvent.findOne({
-          where: {
-            id: councilEvent.id,
-          },
-          order: [[CouncilEventPanel, "startDate", "ASC"]],
-          include: [
-            {
-              model: CouncilEventPanel,
-              include: [
-                {
-                  model: CouncilEventPanelist,
-                  include: [
-                    {
-                      model: User,
-                      attributes: [
-                        "id",
-                        "firstName",
-                        "lastName",
-                        "titleProfessions",
-                        "img",
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        });
-
-        return _councilEvent;
-      });
-
-      if (!councilEvent.isEmailSent && councilEvent.status === "active") {
-        const users = await User.findAll({
-          where: {
-            councilMember: "TRUE",
-          },
-        });
-
-        const timezone = TimeZoneList.find(
-          (tz) => tz.value === councilEvent.timezone
-        );
-
-        const startDate = moment.tz(councilEvent.startDate, timezone.utc[0]);
-        const endDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
-
-        const event = {
-          startDate: startDate.format("LL"),
-          startTime: startDate.format("HH:mm"),
-          endDate: endDate.format("LL"),
-          endTime: endDate.format("HH:mm"),
-          numberOfPanels: councilEvent.CouncilEventPanels.length,
-          maxNumberOfPanelsUsersCanJoin:
-            councilEvent.maxNumberOfPanelsUsersCanJoin,
-          eventName: councilEvent.eventName,
-        };
-
-        const panels = councilEvent.CouncilEventPanels.map((panel) => {
-        const startDate = moment.tz(panel.startDate, timezone.utc[0]);
-
-          return `<p>${startDate.format("LL")} at ${startDate.format(
-            "HH:mm"
-          )} (${data.timezone}) : ${panel.panelName}</p>`;
-        }).join("");
-
-        users.forEach((user) => {
-          const mailOptions = {
-            from: process.env.SEND_IN_BLUE_SMTP_USER,
-            to: user.email,
-            subject:
-              LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.subject(
-                councilEvent.eventName
-              ),
-            html: LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.body(
-              user.firstName,
-              event,
-              panels
-            ),
-            contentType: "text/html",
-          };
-
-          smtpService().sendMailUsingSendInBlue(mailOptions);
-        });
-
-        await CouncilEvent.update(
-          { isEmailSent: "TRUE" },
-          {
+          const _councilEvent = await CouncilEvent.findOne({
             where: {
               id: councilEvent.id,
             },
-          }
-        );
-      }
+            order: [[CouncilEventPanel, "startDate", "ASC"]],
+            include: [
+              {
+                model: CouncilEventPanel,
+                include: [
+                  {
+                    model: CouncilEventPanelist,
+                    include: [
+                      {
+                        model: User,
+                        attributes: [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "titleProfessions",
+                          "img",
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          });
 
-      return res.status(HttpCodes.OK).json({ councilEvent });
+          return _councilEvent;
+        });
+
+        if (!councilEvent.isEmailSent && councilEvent.status === "active") {
+          const users = await User.findAll({
+            where: {
+              councilMember: "TRUE",
+            },
+          });
+
+          const timezone = TimeZoneList.find(
+            (tz) => tz.value === councilEvent.timezone
+          );
+
+          const startDate = moment.tz(councilEvent.startDate, timezone.utc[0]);
+          const endDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
+
+          const event = {
+            startDate: startDate.format("LL"),
+            startTime: startDate.format("HH:mm"),
+            endDate: endDate.format("LL"),
+            endTime: endDate.format("HH:mm"),
+            numberOfPanels: councilEvent.CouncilEventPanels.length,
+            maxNumberOfPanelsUsersCanJoin:
+              councilEvent.maxNumberOfPanelsUsersCanJoin,
+            eventName: councilEvent.eventName,
+          };
+
+          const panels = councilEvent.CouncilEventPanels.map((panel) => {
+          const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+
+            return `<p>${startDate.format("LL")} at ${startDate.format(
+              "HH:mm"
+            )} (${data.timezone}) : ${panel.panelName}</p>`;
+          }).join("");
+
+          users.forEach((user) => {
+            const mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_USER,
+              to: user.email,
+              subject:
+                LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.subject(
+                  councilEvent.eventName
+                ),
+              html: LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.body(
+                user.firstName,
+                event,
+                panels
+              ),
+              contentType: "text/html",
+            };
+
+            smtpService().sendMailUsingSendInBlue(mailOptions);
+          });
+
+          await CouncilEvent.update(
+            { isEmailSent: "TRUE" },
+            {
+              where: {
+                id: councilEvent.id,
+              },
+            }
+          );
+        }
+
+        return res.status(HttpCodes.OK).json({ councilEvent });
+      }else{
+        const councilEvent = await db.sequelize.transaction(async (t) => {
+          const councilEvent = await CouncilEvent.update({
+            eventName: data.eventName,
+            startDate: data.startDate,
+            endDate: data.endDate,
+            description: data.description,
+            numberOfPanels: data.numberOfPanels,
+            timezone: data.timezone,
+            maxNumberOfPanelsUsersCanJoin: data.maxNumberOfPanelsUsersCanJoin,
+            status: data.status
+          },{where: { id: data.id }}
+          );
+
+          if (data.panels[0] === undefined) {
+            
+            const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
+
+            if (isPanelFull) {
+              throw new Error();
+            }
+          }
+
+          if (data.panels[0] === undefined) {
+            const _councilEventPanels = await CouncilEventPanel.findAll({
+              where: {
+                CouncilEventId: councilEvent.id,
+              },
+            });
+
+            const _councilEventPanelIds = _councilEventPanels.map(
+              (panel) => panel.id
+            );
+            const councilEventPanelIds = data.panels.map((panel) => panel.id);
+
+            const councilEventPanelIdDiff = _councilEventPanelIds.filter(
+              (id) => !councilEventPanelIds.includes(id)
+            );
+
+            await CouncilEventPanel.destroy({
+              where: {
+                id: councilEventPanelIdDiff,
+              },
+            });
+          }
+
+          const councilEventPanels = await data.panels?.map(async (panel) => {
+              return await CouncilEventPanel.update(
+                {
+                  CouncilEventId: data.id,
+                  panelName: panel.panelName,
+                  panelStartAndEndDate: data.panelStartAndEndDate,
+                  numberOfPanelists: panel.numberOfPanelists,
+                  linkToJoin: panel.linkToJoin,
+                  startDate: panel.startDate,
+                  endDate: panel.endDate,
+                },{where: { id: panel.id }}
+              );
+          });
+
+          if (!isEmpty(councilEventPanels)) {
+            await Promise.all(councilEventPanels);
+          }
+
+          const _councilEvent = await CouncilEvent.findOne({
+            where: {
+              id: data.id,
+            },
+            order: [[CouncilEventPanel, "startDate", "ASC"]],
+            include: [
+              {
+                model: CouncilEventPanel,
+                include: [
+                  {
+                    model: CouncilEventPanelist,
+                    include: [
+                      {
+                        model: User,
+                        attributes: [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "titleProfessions",
+                          "img",
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          });
+
+          return _councilEvent;
+        });
+
+        if (!councilEvent.isEmailSent && councilEvent.status === "active") {
+          const users = await User.findAll({
+            where: {
+              councilMember: "TRUE",
+            },
+          });
+
+          const timezone = TimeZoneList.find(
+            (tz) => tz.value === councilEvent.timezone
+          );
+
+          const startDate = moment.tz(councilEvent.startDate, timezone.utc[0]);
+          const endDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
+
+          const event = {
+            startDate: startDate.format("LL"),
+            startTime: startDate.format("HH:mm"),
+            endDate: endDate.format("LL"),
+            endTime: endDate.format("HH:mm"),
+            numberOfPanels: councilEvent.CouncilEventPanels.length,
+            maxNumberOfPanelsUsersCanJoin:
+              councilEvent.maxNumberOfPanelsUsersCanJoin,
+            eventName: councilEvent.eventName,
+          };
+
+          const panels = councilEvent.CouncilEventPanels.map((panel) => {
+          const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+
+            return `<p>${startDate.format("LL")} at ${startDate.format(
+              "HH:mm"
+            )} (${data.timezone}) : ${panel.panelName}</p>`;
+          }).join("");
+
+          users.forEach((user) => {
+            const mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_USER,
+              to: user.email,
+              subject:
+                LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.subject(
+                  councilEvent.eventName
+                ),
+              html: LabEmails.EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED.body(
+                user.firstName,
+                event,
+                panels
+              ),
+              contentType: "text/html",
+            };
+
+            smtpService().sendMailUsingSendInBlue(mailOptions);
+          });
+
+          await CouncilEvent.update(
+            { isEmailSent: "TRUE" },
+            {
+              where: {
+                id: councilEvent.id,
+              },
+            }
+          );
+        }
+
+        return res.status(HttpCodes.OK).json({ councilEvent });
+      }
     } catch (err) {
       console.log(err);
       return res
@@ -251,7 +417,56 @@ const CouncilEventController = () => {
         },
       });
 
-      const councilEvents = await CouncilEvent.findAll();
+      const councilEvents = await CouncilEvent.findAll({
+        order: [[CouncilEventPanel, "startDate", "ASC"]],
+        include: [
+          {
+            model: CouncilEventPanel,
+            include: [
+              {
+                model: CouncilEventPanelComment,
+                separate: true,
+                order: [["createdAt", "ASC"]],
+                include: [
+                  {
+                    model: CouncilEventPanelist,
+                    duplicating: true,
+                    include: [
+                      {
+                        model: User,
+                        attributes: [
+                          "id",
+                          "firstName",
+                          "lastName",
+                          "titleProfessions",
+                          "img",
+                          "abbrName"
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+              {
+                model: CouncilEventPanelist,
+                include: [
+                  {
+                    model: User,
+                    attributes: [
+                      "id",
+                      "firstName",
+                      "lastName",
+                      "titleProfessions",
+                      "img",
+                      "abbrName"
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
 
       return res.status(HttpCodes.OK).json({ councilEvents });
     } catch (err) {
