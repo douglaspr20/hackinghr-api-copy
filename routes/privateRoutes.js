@@ -262,7 +262,7 @@ const privateRoutes = {
   "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
   "POST /ad/click": "AdvertisementController.createAdvertisementClick",
   "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
-  "POST /council/event": "CouncilEventController.upsert",
+  "POST /council/event": "CouncilEventController.createOrEditConcil",
   "GET /council/events": "CouncilEventController.getAll",
   "DELETE /council/event/:id": "CouncilEventController.destroy",
   "POST /council/event/panelist":

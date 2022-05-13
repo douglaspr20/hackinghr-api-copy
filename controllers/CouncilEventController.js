@@ -16,7 +16,7 @@ const User = db.User;
 const CouncilEventPanelComment = db.CouncilEventPanelComment;
 
 const CouncilEventController = () => {
-  const upsert = async (req, res) => {
+  const createOrEditConcil = async (req, res) => {
     const data = req.body;
     try {
       if(data.isEdit === false){
@@ -1455,7 +1455,7 @@ const CouncilEventController = () => {
   };
 
   return {
-    upsert,
+    createOrEditConcil,
     getAll,
     destroy,
     joinCouncilEventPanelist,
