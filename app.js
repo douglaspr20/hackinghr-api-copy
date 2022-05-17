@@ -543,10 +543,23 @@ io.on("connection", (socket) => {
   });
 
   socket.on(SocketEventTypes.SEND_MESSAGE, async (message) => {
-    const newMessage = await MessageController().create(message);
-    delete newMessage.dataValues.createdAt;
-    newMessage.dataValues.messageDate = newMessage.dataValues.updatedAt;
-    io.local.emit(SocketEventTypes.MESSAGE, newMessage);
+    if (message.files?.length > 0) {
+      for (const messageFile of message.files) {
+        const newMessage = await MessageController().create({
+          ...messageFile,
+          ConversationId: message.ConversationId,
+          sender: message.sender,
+          viewedUser: message.viewedUser,
+        });
+        io.local.emit(SocketEventTypes.MESSAGE, newMessage);
+      }
+    }
+
+    if (message.text) {
+      const newMessage = await MessageController().create(message);
+      newMessage.dataValues.messageDate = newMessage.dataValues.createdAt;
+      io.local.emit(SocketEventTypes.MESSAGE, newMessage);
+    }
   });
 });
 
