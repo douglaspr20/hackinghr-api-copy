@@ -1,6 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
+const { Op } = require("sequelize");
 
 const BlogPost = db.BlogPost;
 const User = db.User;
@@ -40,16 +41,35 @@ const BlogPostController = () => {
       .json({ msg: "Bad Request: Title and Description are needed." });
   };
 
-  const getAll = async (req, res) => {
-    const { page = 1 } = req.query;
+  const search = async (req, res) => {
+    const { page = 1, category = [] } = req.query;
+
+    let categoryParsed = category.length > 0 ? JSON.parse(category) : category;
+    let where = {};
+
+    if (categoryParsed.length > 0) {
+      where = {
+        categories: {
+          [Op.overlap]: categoryParsed,
+        },
+      };
+    }
+
     try {
-      const allBlogsPost = await BlogPost.findAll({
+      const count = await BlogPost.count({
+        where,
+      });
+
+      const blogsPosts = await BlogPost.findAll({
+        where,
         order: [["createdAt", "DESC"]],
         limit: 20,
         offset: (page - 1) * 20,
       });
 
-      return res.status(HttpCodes.OK).json({ allBlogsPost });
+      console.log(blogsPosts);
+
+      return res.status(HttpCodes.OK).json({ blogsPosts, count });
     } catch (error) {
       console.log(error);
       return res
@@ -159,7 +179,7 @@ const BlogPostController = () => {
 
   return {
     create,
-    getAll,
+    search,
     getByChannelId,
     getBlogPost,
     update,
