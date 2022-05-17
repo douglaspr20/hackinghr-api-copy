@@ -1353,7 +1353,7 @@ const CouncilEventController = () => {
 
       const councilEventPanels = await CouncilEventPanel.findAll({
         where: {
-          startDateStartOfHour: {
+          startDate: {
             [Op.gt]: moment().tz("America/Los_Angeles").format(),
           },
         },
