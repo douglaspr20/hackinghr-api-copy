@@ -1,6 +1,7 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Sequelize, Op } = require("sequelize");
+const s3Service = require("../services/s3.service");
 const socketService = require("../services/socket.service");
 const SocketEventTypes = require("../enum/SocketEventTypes");
 const Message = db.Message;
@@ -8,6 +9,34 @@ const Message = db.Message;
 const MessageController = () => {
   const create = async (message) => {
     try {
+      if (message.thumbUrl) {
+        const fileType = message.thumbUrl.match(/[^:]\w+\/[\w-+\d.]+(?=;|,)/);
+
+        const index = fileType[0].indexOf("/");
+
+        let type = fileType[0];
+
+        if (index !== -1) {
+          type = fileType[0].slice(0, index);
+        }
+
+        const { Location: documentFileUrl } = await s3Service().uploadFile(
+          message.thumbUrl,
+          fileType[0],
+          message.name
+        );
+
+        const newMessage = await Message.create({
+          ConversationId: message.ConversationId,
+          sender: message.sender,
+          viewedUser: message.viewedUser,
+          documentFileUrl: documentFileUrl,
+          type: type === "application" ? "document" : type,
+        });
+
+        return newMessage;
+      }
+
       const newMessage = await Message.create(message);
       return newMessage;
     } catch (error) {

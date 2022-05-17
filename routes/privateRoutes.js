@@ -244,6 +244,8 @@ const privateRoutes = {
   "POST /conversations": "ConversationController.create",
   "GET /conversation/:conversationId": "ConversationController.get",
   "GET /conversations/:userId": "ConversationController.getAll",
+  "PUT /conversation/:conversationId":
+    "ConversationController.hideConversation",
   "POST /messages/": "MessageController.create",
   "GET /messages/:conversationId": "MessageController.getAll",
   "PUT /messages/:ConversationId": "MessageController.readMessages",
