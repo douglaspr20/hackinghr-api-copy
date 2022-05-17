@@ -41,9 +41,12 @@ const BlogPostController = () => {
   };
 
   const getAll = async (req, res) => {
+    const { page = 1 } = req.query;
     try {
       const allBlogsPost = await BlogPost.findAll({
         order: [["createdAt", "DESC"]],
+        limit: 20,
+        offset: (page - 1) * 20,
       });
 
       return res.status(HttpCodes.OK).json({ allBlogsPost });
