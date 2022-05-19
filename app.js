@@ -27,6 +27,7 @@ const MessageController = require("./controllers/MessageController");
 const BusinessPartnerController = require("./controllers/BusinessPartnerController");
 const AdvertisementController = require("./controllers/AdvertisementController");
 const CouncilEventController = require("./controllers/CouncilEventController");
+const BlogPostController = require("./controllers/BlogPostController");
 
 const moment = require("moment-timezone");
 
@@ -462,6 +463,14 @@ cron.schedule(
   },
   {
     timezone: "America/Los_Angeles",
+  }
+);
+
+cron.schedule(
+  "* 7 * * 5", // running task at 7am every friday.
+  () => {
+    console.log("running a task every friday at 07:00.");
+    BlogPostController().getBlogPostsOfLastWeek();
   }
 );
 

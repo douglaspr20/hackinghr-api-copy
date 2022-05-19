@@ -21,6 +21,8 @@ module.exports = (sequelize, DataTypes) => {
       categories: DataTypes.ARRAY(DataTypes.STRING),
       UserId: DataTypes.INTEGER,
       ChannelId: DataTypes.INTEGER,
+      summary: DataTypes.TEXT,
+      send: DataTypes.BOOLEAN,
     },
     {
       sequelize,

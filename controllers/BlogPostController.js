@@ -2,6 +2,7 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
+const moment = require("moment-timezone");
 
 const BlogPost = db.BlogPost;
 const User = db.User;
@@ -127,6 +128,38 @@ const BlogPostController = () => {
     }
   };
 
+  const getBlogPostsOfLastWeek = async (req, res) => {
+    try {
+      const tz = moment.tz.guess();
+
+      const date = moment().tz(tz).subtract(1, "week").format();
+
+      const blogPost = await BlogPost.findAll({
+        where: {
+          [Op.or]: [
+            {
+              createdAt: {
+                [Op.gte]: date,
+              },
+            },
+            {
+              send: false,
+            },
+          ],
+        },
+      });
+
+      if (blogPost.length > 5) {
+        // console.log(blogPost);
+      }
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   const update = async (req, res) => {
     const { body, params } = req;
     try {
@@ -182,6 +215,7 @@ const BlogPostController = () => {
     search,
     getByChannelId,
     getBlogPost,
+    getBlogPostsOfLastWeek,
     update,
     remove,
   };
