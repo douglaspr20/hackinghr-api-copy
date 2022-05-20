@@ -86,7 +86,7 @@ const BlogPostController = () => {
         where: {
           ChannelId,
         },
-        order: [["createdAt", "ASC"]],
+        order: [["createdAt", "DESC"]],
       });
 
       return res.status(HttpCodes.OK).json({ blogsPostByChannel });
