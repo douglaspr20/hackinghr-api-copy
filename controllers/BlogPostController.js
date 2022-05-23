@@ -3,6 +3,8 @@ const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
 const moment = require("moment-timezone");
+const { LabEmails } = require("../enum");
+const smtpService = require("../services/smtp.service");
 
 const BlogPost = db.BlogPost;
 const User = db.User;
@@ -134,24 +136,66 @@ const BlogPostController = () => {
 
       const date = moment().tz(tz).subtract(1, "week").format();
 
+      console.log({ hola: "hola" });
+
       const blogPost = await BlogPost.findAll({
         where: {
-          [Op.or]: [
-            {
-              createdAt: {
-                [Op.gte]: date,
-              },
-            },
-            {
-              send: false,
-            },
-          ],
+          send: false,
         },
+        include: [
+          {
+            model: User,
+            attributes: ["id", "firstName", "lastName", "img"],
+          },
+        ],
+
+        attributes: ["id", "title", "summary", "createdAt"],
       });
 
-      if (blogPost.length > 5) {
-        // console.log(blogPost);
+      if (blogPost.length > 1) {
+        const users = await User.findAll({});
+
+        let content = ``;
+
+        blogPost.forEach((blog) => {
+          content += `
+          <h2>${blog.title}</h2>
+          <p>${blog.summary}</p>
+          <a href="${process.env.DOMAIN_URL}blogs/${blog.id}">View Blog</a>
+          <p>By ${blog.User.firstName} ${
+            blog.User.lastName
+          } | Posted on ${moment(blog.createdAt).format("MM/DD/YYYY")}"</p>
+          `;
+        });
+
+        await Promise.all(
+          users.map((user) => {
+            const _user = user.toJSON();
+
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: _user.email,
+              subject: LabEmails.EMAIL_NEWSLETTER_WEEKLY.subject(),
+              html: LabEmails.EMAIL_NEWSLETTER_WEEKLY.body(content),
+            };
+
+            console.log("***** mailOptions ", mailOptions);
+
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
+          })
+        );
+
+        await BlogPost.update(
+          {
+            send: true,
+          },
+          {
+            where: { send: false },
+          }
+        );
       }
+
+      return;
     } catch (error) {
       console.log(error);
       return res
