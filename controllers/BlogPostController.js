@@ -136,6 +136,8 @@ const BlogPostController = () => {
 
       const date = moment().tz(tz).subtract(1, "week").format();
 
+      console.log({ hola: "hola" });
+
       const blogPost = await BlogPost.findAll({
         where: {
           [Op.or]: [
