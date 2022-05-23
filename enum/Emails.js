@@ -1262,10 +1262,10 @@ module.exports = {
       `,
   },
   NOTICE_NEW_MESSAGE_MODERATOR: {
-    subject: (firstName, panelName) => 
-    `Hi ${firstName}, in the event: ${panelName}`,
-    message: (name, lastName) => 
-    `<p>There is a new message from: ${name} ${lastName}</p>`
+    subject: (firstName, panelName) =>
+      `Hi ${firstName}, in the event: ${panelName}`,
+    message: (name, lastName) =>
+      `<p>There is a new message from: ${name} ${lastName}</p>`,
   },
   COUNCIL_EVENT_JOIN: {
     subject: (firstName, panelName, eventName) =>
@@ -1531,6 +1531,13 @@ module.exports = {
       <p>Thank you!</p>
 
       <p>Enrique</p>
+    `,
+  },
+  EMAIL_NEWSLETTER_WEEKLY: {
+    subject: () => `These are the new blogs`,
+    body: (blogs) => `
+    these are the new blogs that have been created by our content creators
+    ${blogs}
     `,
   },
 };
