@@ -132,12 +132,6 @@ const BlogPostController = () => {
 
   const getBlogPostsOfLastWeek = async (req, res) => {
     try {
-      const tz = moment.tz.guess();
-
-      const date = moment().tz(tz).subtract(1, "week").format();
-
-      console.log({ hola: "hola" });
-
       const blogPost = await BlogPost.findAll({
         where: {
           send: false,
@@ -153,7 +147,21 @@ const BlogPostController = () => {
       });
 
       if (blogPost.length > 1) {
-        const users = await User.findAll({});
+        const users = await User.findAll({
+          where: {
+            [Op.or]: [
+              {
+                firstName: "Enrique",
+              },
+              {
+                email: "douglas.eduardo2000@gmail.com",
+              },
+            ],
+          },
+          attributes: ["email"],
+        });
+
+        const usersEmails = users.map((user) => user.toJSON().email);
 
         let content = ``;
 
@@ -168,13 +176,11 @@ const BlogPostController = () => {
           `;
         });
 
-        await Promise.all(
-          users.map((user) => {
-            const _user = user.toJSON();
-
+        await Promise.resolve(
+          (() => {
             let mailOptions = {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-              to: _user.email,
+              to: usersEmails,
               subject: LabEmails.EMAIL_NEWSLETTER_WEEKLY.subject(),
               html: LabEmails.EMAIL_NEWSLETTER_WEEKLY.body(content),
             };
@@ -182,7 +188,7 @@ const BlogPostController = () => {
             console.log("***** mailOptions ", mailOptions);
 
             return smtpService().sendMailUsingSendInBlue(mailOptions);
-          })
+          })()
         );
 
         await BlogPost.update(
