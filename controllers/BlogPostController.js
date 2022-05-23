@@ -140,16 +140,7 @@ const BlogPostController = () => {
 
       const blogPost = await BlogPost.findAll({
         where: {
-          [Op.or]: [
-            {
-              createdAt: {
-                [Op.gte]: date,
-              },
-            },
-            {
-              send: false,
-            },
-          ],
+          send: false,
         },
         include: [
           {
