@@ -163,6 +163,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      partnersManual: {
+        type: DataTypes.STRING,
+        defaultValue: null,
+      }
     },
     {
       sequelize,

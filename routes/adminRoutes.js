@@ -97,6 +97,10 @@ const adminRoutes = {
   "DELETE /partner/:id": "PartnerController.remove",
   "GET /session/get-users-joined/:id":
     "AnnualConferenceController.getUsersJoinedSession",
+  "GET /get-partners": "UserController.getAllBusinessPartner",
+  "GET /get-partners-search": "UserController.getAllBusinessPartnerSearch",
+  "POST /add-permission-partners": "UserController.addBusinessPartner",
+  "POST /remove-permission-partners": "UserController.removeBusinessPartner",
 };
 
 module.exports = adminRoutes;
