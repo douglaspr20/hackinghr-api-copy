@@ -467,7 +467,12 @@ cron.schedule(
 );
 
 cron.schedule(
+<<<<<<< Updated upstream
   "* 7 * * 5", // running task at 7am every friday.
+=======
+  // "* 7 * * 5", // running task at 7am every friday.
+  "*/5 * * * *",
+>>>>>>> Stashed changes
   () => {
     console.log("running a task every friday at 07:00.");
     BlogPostController().getBlogPostsOfLastWeek();
