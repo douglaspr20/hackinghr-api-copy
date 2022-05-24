@@ -1345,12 +1345,12 @@ module.exports = {
   },
   ADVERTISEMENT_CAMPAIGN_START: {
     subject: () => `(Hacking HR LAB) Your campaign is now LIVE!`,
-    body: (user, endDate) => `
+    body: (user) => `
     <p>Hi ${user.firstName},</p>
 
     <p>We just wanted to send you a quick note to let you know that your campaign is now LIVE! </p>
 
-    <p>Starting now until the end of your campaign on ${endDate} you can only edit the link and image of the campaign. You can’t edit dates or the page you originally selected it to be published. </p>
+    <p>Starting now until the end of your campaign on ${user.endDate} you can only edit the link and image of the campaign. You can’t edit dates or the page you originally selected it to be published. </p>
 
     <p>We will provide impressions and clicks data at the end of your campaign. </p>
 

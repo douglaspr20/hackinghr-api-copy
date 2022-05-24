@@ -1328,6 +1328,124 @@ const UserController = () => {
     }
   };
 
+  const getAllBusinessPartner = async (req, res) => {
+    try {
+      const users = await User.findAll({
+        where: {
+          isBusinessPartner: "accepted",
+          partnersManual: "accepted"
+        },
+        attributes: ["advertisementCredits","firstName","lastName","email","id"]
+      });
+
+      if (!users) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Bad Request: Users not found" });
+      }
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const getAllBusinessPartnerSearch = async (req, res) => {
+    try {
+      const users = await User.findAll({
+        where: {
+          isBusinessPartner: { [Op.notLike]: "accepted"},
+          partnersManual: {[Op.notLike]: "accepted"}
+        },
+        attributes: ["advertisementCredits","firstName","lastName","email","id"]
+      });
+
+      if (!users) {
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Bad Request: Users not found" });
+      }
+
+      return res.status(HttpCodes.OK).json({ users });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const addBusinessPartner = async (req, res) => {
+    const {usersNames} = req.body
+
+    try {
+      await usersNames.forEach( async (idUser) => {
+        return await User.update({
+          isBusinessPartner: "accepted",
+          partnersManual: "accepted"
+        },
+        {
+            where: {
+                id: idUser
+            },
+        })
+      })
+
+      const user = await User.findAll(
+        {
+          where: {
+            isBusinessPartner: "accepted",
+            partnersManual: "accepted"
+          }
+        }
+      );
+      
+      return res.status(HttpCodes.OK).json({ user });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const removeBusinessPartner = async (req, res) => {
+    const { id } = req.body;
+    console.log(id)
+    try {
+      await User.update(
+        { 
+          isBusinessPartner: "",
+          partnersManual: ""
+        },
+        {
+          where: {
+            id: id,
+          },
+        }
+      );
+
+      const user = await User.findAll(
+        {
+          where: {
+            isBusinessPartner: "accepted",
+            partnersManual: "accepted"
+          }
+        }
+      );
+      
+      return res.status(HttpCodes.OK).json({ user });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const confirmInvitationApplyBusiness = async (req, res) => {
     const { id } = req.params;
     const { accepted } = req.body;
@@ -1757,6 +1875,10 @@ const UserController = () => {
     viewRulesGConference,
     countAllUsers,
     _addEvent,
+    getAllBusinessPartner,
+    addBusinessPartner,
+    removeBusinessPartner,
+    getAllBusinessPartnerSearch
   };
 };
 
