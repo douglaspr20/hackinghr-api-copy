@@ -1372,7 +1372,7 @@ const UserController = () => {
 
       if (users.length === 0) {
         return res
-          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .status(HttpCodes.BAD_REQUEST)
           .json({ msg: "Bad Request: Users not found" });
       }
 
