@@ -158,6 +158,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      speakersAuthorization: {
+        type: DataTypes.STRING,
+        defaultValue: null,
+      },
       advertisementCredits: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
