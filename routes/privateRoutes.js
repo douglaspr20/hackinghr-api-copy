@@ -294,6 +294,8 @@ const privateRoutes = {
   "GET /blogpost/:ChannelId": "BlogPostController.getByChannelId",
   "PUT /blogpost/:blogPostId": "BlogPostController.update",
   "DELETE /blogpost/:blogPostId": "BlogPostController.remove",
+  "POST /blogPostLike/": "BlogPostLikeController.add",
+  "DELETE /blogPostLike /:id": "BlogPostLikeController.remove",
 };
 
 module.exports = privateRoutes;

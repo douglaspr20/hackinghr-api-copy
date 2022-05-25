@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       ChannelId: DataTypes.INTEGER,
       summary: DataTypes.TEXT,
       send: DataTypes.BOOLEAN,
+      status: DataTypes.ENUM("draft", "published"),
     },
     {
       sequelize,
