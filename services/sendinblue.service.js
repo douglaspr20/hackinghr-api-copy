@@ -53,10 +53,11 @@ const sendInBlueService = () => {
       sender: {
         id: 5,
       },
-      name: "Blog Post test",
+      name: "Hacking HR's CREATORS content: check out the latest blog posts by our community",
       templateId,
-      scheduledAt: moment().add(5, "minutes").format(),
-      subject: "test blogs subject",
+      scheduledAt: moment().add(2, "minutes").format(),
+      subject:
+        "Hacking HR's CREATORS content: check out the latest blog posts by our community",
       recipients: { listIds: [41] },
     };
 
