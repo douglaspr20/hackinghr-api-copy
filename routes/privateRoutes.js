@@ -285,6 +285,7 @@ const privateRoutes = {
     "CouncilEventController.removePanelist",
   "GET /council/event/search-user": "CouncilEventController.search",
   "POST /council/event/panel/comment": "CouncilEventController.upsertComment",
+  //"POST /user/email-authorization-speakers2023": "UserController.sendEmailAuthorizationSpeakersEndPoint"
 };
 
 module.exports = privateRoutes;
