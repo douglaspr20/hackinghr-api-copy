@@ -5,6 +5,7 @@ const { Op } = require("sequelize");
 const moment = require("moment-timezone");
 const { LabEmails } = require("../enum");
 const smtpService = require("../services/smtp.service");
+const sendInBlueService = require("../services/sendinblue.service");
 
 const BlogPost = db.BlogPost;
 const User = db.User;
@@ -132,7 +133,7 @@ const BlogPostController = () => {
 
   const getBlogPostsOfLastWeek = async (req, res) => {
     try {
-      const blogPost = await BlogPost.findAll({
+      const blogsPost = await BlogPost.findAll({
         where: {
           send: false,
         },
@@ -146,50 +147,8 @@ const BlogPostController = () => {
         attributes: ["id", "title", "summary", "createdAt"],
       });
 
-      if (blogPost.length > 1) {
-        const users = await User.findAll({
-          where: {
-            [Op.or]: [
-              {
-                firstName: "Enrique",
-              },
-              {
-                email: "douglas.eduardo2000@gmail.com",
-              },
-            ],
-          },
-          attributes: ["email"],
-        });
-
-        const usersEmails = users.map((user) => user.toJSON().email);
-
-        let content = ``;
-
-        blogPost.forEach((blog) => {
-          content += `
-          <h2>${blog.title}</h2>
-          <p>${blog.summary}</p>
-          <a href="${process.env.DOMAIN_URL}blogs/${blog.id}">View Blog</a>
-          <p>By ${blog.User.firstName} ${
-            blog.User.lastName
-          } | Posted on ${moment(blog.createdAt).format("MM/DD/YYYY")}"</p>
-          `;
-        });
-
-        await Promise.resolve(
-          (() => {
-            let mailOptions = {
-              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-              to: usersEmails,
-              subject: LabEmails.EMAIL_NEWSLETTER_WEEKLY.subject(),
-              html: LabEmails.EMAIL_NEWSLETTER_WEEKLY.body(content),
-            };
-
-            console.log("***** mailOptions ", mailOptions);
-
-            return smtpService().sendMailUsingSendInBlue(mailOptions);
-          })()
-        );
+      if (blogsPost.length > 5) {
+        await sendInBlueService().updateWeeklyBlogPostEmailTemplate(blogsPost);
 
         await BlogPost.update(
           {
