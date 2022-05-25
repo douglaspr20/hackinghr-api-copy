@@ -1340,7 +1340,7 @@ const UserController = () => {
 
       if (users.length === 0) {
         return res
-          .status(HttpCodes.BAD_REQUEST)
+          .status(HttpCodes.NOT_FOUND)
           .json({ msg: "Bad Request: Users not found" });
       }
 
@@ -1372,7 +1372,7 @@ const UserController = () => {
 
       if (users.length === 0) {
         return res
-          .status(HttpCodes.BAD_REQUEST)
+          .status(HttpCodes.NOT_FOUND)
           .json({ msg: "Bad Request: Users not found" });
       }
 
