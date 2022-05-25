@@ -1332,7 +1332,7 @@ const UserController = () => {
     try {
       const users = await User.findAll({
         where: {
-          isBusinessPartner: "accepted",
+          isAdvertiser: true,
           partnersManual: "accepted"
         },
         attributes: ["advertisementCredits","firstName","lastName","email","id"]
@@ -1358,7 +1358,7 @@ const UserController = () => {
       const users = await User.findAll({
         where: {
           [Op.and]: [
-            {isBusinessPartner: { [Op.ne]: "accepted"}},
+            {isAdvertiser: false},
             {partnersManual: {
               [Op.or]: {
                 [Op.ne]: "accepted",
@@ -1391,7 +1391,7 @@ const UserController = () => {
     try {
       await usersNames.forEach( async (idUser) => {
         return await User.update({
-          isBusinessPartner: "accepted",
+          isAdvertiser: true,
           partnersManual: "accepted"
         },
         {
@@ -1404,7 +1404,7 @@ const UserController = () => {
       const user = await User.findAll(
         {
           where: {
-            isBusinessPartner: "accepted",
+            isAdvertiser: true,
             partnersManual: "accepted"
           }
         }
@@ -1425,7 +1425,7 @@ const UserController = () => {
     try {
       await User.update(
         { 
-          isBusinessPartner: "",
+          isAdvertiser: false,
           partnersManual: ""
         },
         {
@@ -1438,7 +1438,7 @@ const UserController = () => {
       const user = await User.findAll(
         {
           where: {
-            isBusinessPartner: "accepted",
+            isAdvertiser: true,
             partnersManual: "accepted"
           }
         }
