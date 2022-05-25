@@ -1338,9 +1338,9 @@ const UserController = () => {
         attributes: ["advertisementCredits","firstName","lastName","email","id"]
       });
 
-      if (!users) {
+      if (users.length === 0) {
         return res
-          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .status(HttpCodes.NOT_FOUND)
           .json({ msg: "Bad Request: Users not found" });
       }
 
@@ -1357,15 +1357,22 @@ const UserController = () => {
     try {
       const users = await User.findAll({
         where: {
-          isBusinessPartner: { [Op.notLike]: "accepted"},
-          partnersManual: {[Op.notLike]: "accepted"}
+          [Op.and]: [
+            {isBusinessPartner: { [Op.ne]: "accepted"}},
+            {partnersManual: {
+              [Op.or]: {
+                [Op.ne]: "accepted",
+                [Op.is]: null
+              }
+            }},
+          ]
         },
         attributes: ["advertisementCredits","firstName","lastName","email","id"]
       });
 
-      if (!users) {
+      if (users.length === 0) {
         return res
-          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .status(HttpCodes.NOT_FOUND)
           .json({ msg: "Bad Request: Users not found" });
       }
 
