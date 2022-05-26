@@ -13,22 +13,26 @@ const BlogPostLikeController = () => {
   const add = async (req, res) => {
     try {
       let data = { ...req.body };
-      const { firstName, lastName } = req.user;
-      data.UserId = req.user.id;
+      const { firstName, lastName, id: UserId } = req.user;
+
+      data = {
+        ...data,
+        UserId,
+      };
       const blogPostLike = await BlogPostLike.create(data);
 
-      //   if (data.UserId !== data.postOwnerUserId) {
-      //     await NotificationController().createNotification({
-      //       message: `${firstName} ${lastName} liked your post.`,
-      //       type: "post",
-      //       meta: {
-      //         ...postLike,
-      //       },
-      //       onlyFor: [data.postOwnerUserId],
-      //     });
-      //   }
+      if (data.UserId !== data.blogPostOwnerUserId) {
+        await NotificationController().createNotification({
+          message: `${firstName} ${lastName} liked your post.`,
+          type: "post",
+          meta: {
+            ...blogPostLike,
+          },
+          onlyFor: [data.blogPostOwnerUserId],
+        });
+      }
 
-      return res.status(HttpCodes.OK).send();
+      return res.status(HttpCodes.OK).send({ blogPostLike });
     } catch (error) {
       console.log(error);
       return res

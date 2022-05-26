@@ -2,19 +2,17 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
-const moment = require("moment-timezone");
-const { LabEmails } = require("../enum");
-const smtpService = require("../services/smtp.service");
 const sendInBlueService = require("../services/sendinblue.service");
 
 const BlogPost = db.BlogPost;
 const User = db.User;
+const BlogPostLike = db.BlogPostLike;
 
 const BlogPostController = () => {
   const create = async (req, res) => {
     const { body } = req;
 
-    if (body.title && body.description) {
+    if (body.title && body.description && body.categories) {
       try {
         if (body.imageUrl) {
           body.imageUrl = await s3Service().getChannelImageUrl(
@@ -23,7 +21,10 @@ const BlogPostController = () => {
           );
         }
 
-        const newBlogPost = await BlogPost.create({ ...body });
+        const newBlogPost = await BlogPost.create({
+          ...body,
+          status: body.status ? body.status : "published",
+        });
 
         if (!newBlogPost) {
           return res
@@ -71,8 +72,6 @@ const BlogPostController = () => {
         offset: (page - 1) * 20,
       });
 
-      console.log(blogsPosts);
-
       return res.status(HttpCodes.OK).json({ blogsPosts, count });
     } catch (error) {
       console.log(error);
@@ -112,6 +111,9 @@ const BlogPostController = () => {
           {
             model: User,
             attributes: ["id", "firstName", "lastName", "img"],
+          },
+          {
+            model: BlogPostLike,
           },
         ],
       });

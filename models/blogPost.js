@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       BlogPost.belongsTo(models.Channel);
       BlogPost.belongsTo(models.User);
+      BlogPost.hasMany(models.BlogPostLike);
     }
   }
 
