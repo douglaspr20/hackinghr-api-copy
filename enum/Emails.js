@@ -1324,6 +1324,12 @@ module.exports = {
       <br />
       `,
   },
+  NOTICE_NEW_MESSAGE_MODERATOR: {
+    subject: (firstName, panelName) =>
+      `Hi ${firstName}, in the event: ${panelName}`,
+    message: (name, lastName) =>
+      `<p>There is a new message from: ${name} ${lastName}</p>`,
+  },
   COUNCIL_EVENT_JOIN: {
     subject: (firstName, panelName, eventName) =>
       `${firstName}, thank you for joining the panel: ${panelName} as part of the event ${eventName}`,
@@ -1430,12 +1436,12 @@ module.exports = {
   },
   ADVERTISEMENT_CAMPAIGN_START: {
     subject: () => `(Hacking HR LAB) Your campaign is now LIVE!`,
-    body: (user, endDate) => `
+    body: (user) => `
     <p>Hi ${user.firstName},</p>
 
     <p>We just wanted to send you a quick note to let you know that your campaign is now LIVE! </p>
 
-    <p>Starting now until the end of your campaign on ${endDate} you can only edit the link and image of the campaign. You can’t edit dates or the page you originally selected it to be published. </p>
+    <p>Starting now until the end of your campaign on ${user.endDate} you can only edit the link and image of the campaign. You can’t edit dates or the page you originally selected it to be published. </p>
 
     <p>We will provide impressions and clicks data at the end of your campaign. </p>
 
@@ -1500,5 +1506,129 @@ module.exports = {
 
     <p>Hacking HR Team</p>
   `,
+  },
+  REMINDER_TO_ADD_QUESTION_ONE_WEEK_BEFORE_THE_EVENT: {
+    subject: (eventName) => `REMINDER! In one week: ${eventName}`,
+    body: (firstName, event, panels) => `
+      <p>Hi ${firstName},</p>
+
+      <p>This is a reminder that ${event.eventName} is coming up in one week. </p>
+
+      <p>This event is on: ${event.startDate} until ${event.endDate}. </p>
+
+      <p>You are signed up as a panelist in the panel/s:</p>
+
+      <p>${panels}</p>
+
+      <p>Please make sure you have the calendar invite in your calendar with the corresponding link. </p>
+
+      <p>Also, please add the questions/topics you want the panel to cover. You have until one day before the event to do this. This is how: </p>
+
+      <ol>
+        <li>Log in the Hacking HR LAB: https://www.hackinghrlab.io/</li>
+        <li>Click on Experts Council under your profile, then click on EVENTS</li>
+        <li>Click on ${event.eventName}</li>
+        <li>Click on the panels you joined and add your questions/comments in the corresponding section. </li>
+      </ol>
+
+      <p>Thank you!</p>
+
+      <p>Enrique</p>
+    `,
+  },
+  REMINDER_TO_ADD_QUESTION_ONE_DAY_BEFORE_THE_EVENT: {
+    subject: (eventName) => `STARTING TOMORROW: ${eventName}! `,
+    body: (firstName, panels, eventName) => `
+      <p>Hello ${firstName},</p>
+
+      <p>We are kicking this off tomorrow! </p>
+      <p>You are signed up as a panelist in the panel/s:</p>
+      ${panels}
+
+      <p>Please make sure you have the calendar invite in your calendar with the corresponding link. </p>
+
+      <p>Also, please add the questions/topics you want the panel to cover. You have until one day before the event to do this. This is how: </p>
+      <ol>
+        <li>Log in the Hacking HR LAB: https://www.hackinghrlab.io/</li>
+        <li>Click on Experts Council under your profile, then click on EVENTS</li>
+        <li>Click on ${eventName}</li>
+        <li>Click on the panels you joined and add your questions/comments in the corresponding section. </li>
+      </ol>
+
+      <p>Thank you!</p>
+
+      <p>Enrique</p>
+    `,
+  },
+  REMIND_PANELIST_ONE_HOUR_BEFORE_THE_EVENT_AND_ATTACH_ALL_COMMENTS: {
+    subject: (panelName) =>
+      `Your panel ${panelName} is kicking off in one hour! (link and questions/topics included in this email)`,
+    body: (firstName, panel, comments, moderatorName) => `
+      <p>Hello ${firstName},</p>
+
+      <p>Your panel: ${panel.panelName} is kicking off in one hour, at ${panel.startTime}. Please connect five minutes before the kick off time. </p>
+
+      <p>This is the link to connect: ${panel.linkToJoin}. </p>
+      <p>These are the questions/topics entered by the panelists, which will be the core of the conversation: </p>
+
+      <ul>
+        ${comments}
+      </ul>
+
+      <p>${moderatorName}</p>
+
+      <p>Thank you and see you shortly!</p>
+
+      <p>Enrique</p>
+    `,
+  },
+  SEND_DAILY_COMMENTS_TO_MODERATOR: {
+    subject: (panelName) =>
+      `Here are yesterday's comments on panel ${panelName}`,
+    body: (comment) => `
+    <p>Hi</p>
+
+    ${comment}
+    `,
+  },
+  EMAIL_ALL_COUNCIL_MEMBERS_WHEN_NEW_EVENT_IS_CREATED: {
+    subject: (eventName) =>
+      `(For Hacking HR’s Experts Council Founding Members) CALL FOR SPEAKERS! NEW EVENT: ${eventName}`,
+    body: (firstName, event, panels) => `
+      <p>Hi ${firstName},</p>
+
+      <p>I am excited to share with you that we are planning a new event: ${event.eventName}</p>
+
+      <p>This event is on: ${event.startDate} until ${event.endDate}. </p>
+      <p>Check out the ${event.numberOfPanels} panels we will have at the event: </p>
+
+      <p>${panels}</p>
+
+      <p>Do you want to join us? </p>
+
+      <p>This is how: </p>
+
+      <ol>
+        <li>Log in the Hacking HR LAB: https://www.hackinghrlab.io/</li>
+        <li>Click on Experts Council under your profile, then click on EVENTS</li>
+        <li>Click on ${event.eventName}</li>
+        <li>Click on JOIN to confirm your participation in the panel of your interest. Please note that you can only join up to ${event.maxNumberOfPanelsUsersCanJoin} panels. </li>
+      </ol>
+
+      <p>You will receive an email for each of the panels you join. Just make sure that after clicking on JOIN you download the calendar invite and add it in your calendars. We will not send a separate calendar invite.</p>
+
+      <p>THANK YOU and stay tuned for more information! </p>
+
+      <p>Thank you!</p>
+
+      <p>Enrique</p>
+    `,
+  },
+  EMAIL_NEWSLETTER_WEEKLY: {
+    subject: () => `These are the new blogs`,
+    body: (blogs) => `
+    these are the new blogs that have been created by our content creators
+    ${blogs}
+    `,
   },
 };

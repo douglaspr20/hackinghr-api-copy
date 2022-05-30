@@ -280,16 +280,9 @@ const AdvertisementController = () => {
       }
 
       const [totalCredits, adCostPerDay] = calculateCosts(
-        advertisement.page,
-        advertisement.adDurationByDays
+        advertisement.dataValues.page,
+        advertisement.dataValues.adDurationByDays
       );
-
-      if (advertisementCredits < totalCredits) {
-        return res
-          .status(HttpCodes.ACCEPTED)
-          .json({ msg: "You don't have enough credits." });
-      }
-      _advertisement["adCostPerDay"] = adCostPerDay;
 
       const advertisementsCount = await Advertisement.count({
         where: {
@@ -366,19 +359,30 @@ const AdvertisementController = () => {
         };
 
         if (_advertisement.status === "active") {
-          [user] = await User.decrement(
-            { advertisementCredits: totalCredits },
-            {
-              where: {
-                id,
-              },
-              attributes: { exclude: ["password"] },
-              returning: true,
-              plain: true,
-            }
-          );
 
-          user = user[0];
+          if(_advertisement.status === "active" && advertisement.dataValues.status === "draft"){
+      
+            if (advertisementCredits < totalCredits) {
+              return res
+                .status(HttpCodes.ACCEPTED)
+                .json({ msg: "You don't have enough credits." });
+            }
+            _advertisement["adCostPerDay"] = adCostPerDay;
+
+            [user] = await User.decrement(
+              { advertisementCredits: totalCredits },
+              {
+                where: {
+                  id,
+                },
+                attributes: { exclude: ["password"] },
+                returning: true,
+                plain: true,
+              }
+            );
+
+            user = user[0];
+        }
 
           const isDraft = advertisement.status === "draft";
 

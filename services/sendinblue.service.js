@@ -1,4 +1,7 @@
+const moment = require("moment-timezone");
+
 const SibApiV3Sdk = require("sib-api-v3-sdk");
+const { formatEmailBlogsPostWeekly } = require("../utils/formatEmails");
 let defaultClient = SibApiV3Sdk.ApiClient.instance;
 
 const sendInBlueService = () => {
@@ -36,8 +39,50 @@ const sendInBlueService = () => {
     }
   };
 
+  const updateWeeklyBlogPostEmailTemplate = async (blogs) => {
+    let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
+    let apiInstance2 = new SibApiV3Sdk.EmailCampaignsApi();
+    let emailCampaigns = new SibApiV3Sdk.CreateEmailCampaign();
+    let smtpTemplate = new SibApiV3Sdk.UpdateSmtpTemplate();
+
+    smtpTemplate.htmlContent = formatEmailBlogsPostWeekly(blogs);
+
+    const templateId = process.env.NODE_ENV === "production" ? 313 : 315;
+
+    emailCampaigns = {
+      sender: {
+        id: 5,
+      },
+      name: "Hacking HR's CREATORS content: check out the latest blog posts by our community",
+      templateId,
+      scheduledAt: moment().add(2, "minutes").format(),
+      subject:
+        "Hacking HR's CREATORS content: check out the latest blog posts by our community",
+      recipients: { listIds: [41] },
+    };
+
+    try {
+      const data = await apiInstance.updateSmtpTemplate(
+        templateId,
+        smtpTemplate
+      );
+      console.log(
+        "API called successfully. Returned data: " + JSON.stringify(data)
+      );
+
+      const data2 = await apiInstance2.createEmailCampaign(emailCampaigns);
+
+      console.log(
+        "API called successfully. Returned data: " + JSON.stringify(data2)
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return {
     updateWeeklyDigestEmailTemplate,
+    updateWeeklyBlogPostEmailTemplate,
   };
 };
 

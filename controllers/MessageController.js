@@ -2,6 +2,8 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const { Sequelize, Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
+const socketService = require("../services/socket.service");
+const SocketEventTypes = require("../enum/SocketEventTypes");
 const Message = db.Message;
 
 const MessageController = () => {
@@ -36,7 +38,6 @@ const MessageController = () => {
       }
 
       const newMessage = await Message.create(message);
-
       return newMessage;
     } catch (error) {
       // res

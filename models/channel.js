@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
           allowNull: true,
         },
       });
+
+      Channel.hasMany(models.BlogPost);
     }
   }
   Channel.init(
