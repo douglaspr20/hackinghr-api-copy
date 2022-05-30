@@ -34,6 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.CouncilConversationLike);
       User.hasMany(models.AdvertisementImpression);
       User.hasMany(models.AdvertisementClick);
+      User.hasMany(models.SpeakerPanel,{foreignKey: 'OwnerId'});
+      User.hasMany(models.SpeakerMemberPanel,{foreignKey: 'UserId'});
     }
   }
   User.init(
