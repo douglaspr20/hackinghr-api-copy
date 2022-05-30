@@ -24,7 +24,7 @@ const SpeakersController = () => {
     
             if (!user) {
             return res
-                .status(HttpCodes.NOT_FOUND)
+                .status(HttpCodes.BAD_REQUEST)
                 .json({ msg: "You must to be admin" });
             }
 
@@ -80,7 +80,7 @@ const SpeakersController = () => {
     
             if (!user) {
             return res
-                .status(HttpCodes.NOT_FOUND)
+                .status(HttpCodes.BAD_REQUEST)
                 .json({ msg: "Host user not found" });
             }
 
@@ -119,37 +119,33 @@ const SpeakersController = () => {
     const addUserSpeakerToPanel = async (req, res) => {
         const { data } = req.body;
 
-        const { id } = req.user.dataValues;
+        const { id, role } = req.user.dataValues;
 
         let panelsSpeakers
 
         try {
 
-            const user = await User.findOne({
-                where: { id: id }
-            });
+            if(role === "admin"){
 
-            if (user) {
-
-                if(user.dataValues.role === "admin"){
-                    await data?.usersNames.map(async (idMap) => {
+                const response = await Promise.all(
+                    data?.usersNames.map(async (idMap) => {
                         const userReadyJoin = await SpeakerMemberPanel.findOne({
                             where: { UserId: idMap, SpeakersPanelId: data.idPanel},
                         })
-
+    
                         const panel = await SpeakersPanel.findOne({
                             where: {id: data.idPanel},
                         })
-                         
+                            
                         const user = await User.findOne({
                             where: {id: idMap},
                         })
-
+    
                         if(!userReadyJoin){
-
+    
                             await Promise.resolve(
                                 (() => {
-                                  let mailOptions = {
+                                    let mailOptions = {
                                     from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                                     to: user.dataValues.email,
                                     subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.dataValues.firstName,panel.dataValues.panelName),
@@ -157,12 +153,12 @@ const SpeakersController = () => {
                                         user.dataValues.firstName,
                                         panel.dataValues,
                                     ),
-                                  };
-                       
-                                  return smtpService().sendMailUsingSendInBlue(mailOptions);
+                                    };
+                        
+                                    return smtpService().sendMailUsingSendInBlue(mailOptions);
                                 })()
                             );
-
+    
                             await SpeakerMemberPanel.create({
                                 UserId: idMap, 
                                 SpeakersPanelId: data.idPanel, 
@@ -175,106 +171,101 @@ const SpeakersController = () => {
                         }
                         
                     })
-        
-                    panelsSpeakers = await SpeakersPanel.findAll({
-                        order: [["id", "DESC"]],
-                        include: [
-                            {
-                                model: SpeakerMemberPanel,
-                                include: [
-                                    {
-                                        model: User,
-                                        attributes: [
-                                            "id",
-                                            "firstName",
-                                            "lastName",
-                                            "titleProfessions",
-                                            "img",
-                                            "abbrName"
-                                        ],
-                                    }
-                                ]
-                            }
-                        ],
-                    })
-                }else{
-                    const userReadyJoin = await SpeakerMemberPanel.findOne({
-                        where: { UserId: id, SpeakersPanelId: data.idPanel},
-                    })
+                );
+    
+                panelsSpeakers = await SpeakersPanel.findAll({
+                    order: [["id", "DESC"]],
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                            include: [
+                                {
+                                    model: User,
+                                    attributes: [
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "titleProfessions",
+                                        "img",
+                                        "abbrName"
+                                    ],
+                                }
+                            ]
+                        }
+                    ],
+                })
+            }else{
+                const userReadyJoin = await SpeakerMemberPanel.findOne({
+                    where: { UserId: id, SpeakersPanelId: data.idPanel},
+                })
 
-                    if(userReadyJoin){
-                        return res
-                            .status(HttpCodes.INTERNAL_SERVER_ERROR)
-                            .json({ msg: "You are ready join to this panel." });
-                    }
-
-                    const userLimit = await SpeakerMemberPanel.findAll({
-                        where: { UserId: id },
-                    })
-
-                    if(userLimit.length > 1){
-                        return res
-                            .status(HttpCodes.INTERNAL_SERVER_ERROR)
-                            .json({ msg: "User can't join to more of two panels." });
-                    }
-
-                    const panel = await SpeakersPanel.findOne({
-                        where: {id: data.idPanel},
-                    })
-                     
-                    const user = await User.findOne({
-                        where: {id: id},
-                    })
-
-                    await Promise.resolve(
-                        (() => {
-                          let mailOptions = {
-                            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                            to: user.dataValues.email,
-                            subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.dataValues.firstName,panel.dataValues.panelName),
-                            html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                                user.dataValues.firstName,
-                                panel.dataValues,
-                            ),
-                          };
-               
-                          return smtpService().sendMailUsingSendInBlue(mailOptions);
-                        })()
-                    );
-
-                    await SpeakerMemberPanel.create({
-                        UserId: data?.usersNames[0], 
-                        SpeakersPanelId: data.idPanel, 
-                        isModerator: data.bul, 
-                    })
-        
-                    panelsSpeakers = await SpeakersPanel.findAll({
-                        order: [["id", "DESC"]],
-                        include: [
-                            {
-                                model: SpeakerMemberPanel,
-                                include: [
-                                    {
-                                        model: User,
-                                        attributes: [
-                                            "id",
-                                            "firstName",
-                                            "lastName",
-                                            "titleProfessions",
-                                            "img",
-                                            "abbrName"
-                                        ],
-                                    }
-                                ]
-                            }
-                        ],
-                    })
+                if(userReadyJoin){
+                    return res
+                        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                        .json({ msg: "You are ready join to this panel." });
                 }
 
-            }else{
-                return res
-                    .status(HttpCodes.NOT_FOUND)
-                    .json({ msg: "User not found" });
+                const userLimit = await SpeakerMemberPanel.findAll({
+                    where: { UserId: id },
+                })
+
+                if(userLimit.length > 1){
+                    return res
+                        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                        .json({ msg: "User can't join to more of two panels." });
+                }
+
+                const panel = await SpeakersPanel.findOne({
+                    where: {id: data.idPanel},
+                })
+                    
+                const user = await User.findOne({
+                    where: {id: id},
+                })
+
+                await Promise.resolve(
+                    (() => {
+                        let mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: user.dataValues.email,
+                        subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.dataValues.firstName,panel.dataValues.panelName),
+                        html: LabEmails.SPEAKERS_PANEL_JOIN.body(
+                            user.dataValues.firstName,
+                            panel.dataValues,
+                        ),
+                        };
+            
+                        return smtpService().sendMailUsingSendInBlue(mailOptions);
+                    })()
+                );
+
+                await SpeakerMemberPanel.create({
+                    UserId: data?.usersNames[0], 
+                    SpeakersPanelId: data.idPanel, 
+                    isModerator: data.bul, 
+                })
+    
+                panelsSpeakers = await SpeakersPanel.findAll({
+                    order: [["id", "DESC"]],
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                            include: [
+                                {
+                                    model: User,
+                                    attributes: [
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "titleProfessions",
+                                        "img",
+                                        "abbrName"
+                                    ],
+                                }
+                            ]
+                        }
+                    ],
+                })
             }
 
             return res.status(HttpCodes.OK).json({ panelsSpeakers });

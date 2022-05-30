@@ -1287,7 +1287,7 @@ const UserController = () => {
            returning: true,
          }
        );
-       console.log(affectedRows)
+ 
       await Promise.resolve(
          (() => {
            let mailOptions = {
@@ -1329,8 +1329,8 @@ const UserController = () => {
   }
 
   const sendActiveOrDenyAuthorizationEndPoint = async (req, res) => {
-    const { userId, type } = req.body;
-
+    const { userId, typeAuthorization } = req.body;
+    
     try {
       const { dataValues: user } = await User.findOne({
         where: { id: userId },
@@ -1342,19 +1342,17 @@ const UserController = () => {
           .json({ msg: "Host user not found" });
       }
 
-      let data;
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        { speakersAuthorization: typeAuthorization },
+        {
+          where: {
+            id: userId,
+          },
+          returning: true,
+        }
+      );
 
-      if(type === "true"){
-        const [numberOfAffectedRows, affectedRows] = await User.update(
-          { speakersAuthorization: "accepted" },
-          {
-            where: {
-              id: userId,
-            },
-            returning: true,
-          }
-        );
-        data = affectedRows
+      if(typeAuthorization === "accepted"){
         await Promise.resolve(
           (() => {
             let mailOptions = {
@@ -1371,18 +1369,7 @@ const UserController = () => {
             return smtpService().sendMailUsingSendInBlue(mailOptions);
           })()
         );
-      }
-      if(type === "false"){
-        const [numberOfAffectedRows, affectedRows2] = await User.update(
-          { speakersAuthorization: "reject" },
-          {
-            where: {
-              id: userId,
-            },
-            returning: true,
-          }
-        );
-        data = affectedRows2
+      }else{
         await Promise.resolve(
           (() => {
             let mailOptions = {
@@ -1401,7 +1388,7 @@ const UserController = () => {
       }
 
       return res.status(HttpCodes.OK).json({
-        userUpdated: data,
+        userUpdated: affectedRows,
       });
     } catch (error) {
       console.log(error);
@@ -1871,17 +1858,8 @@ const UserController = () => {
   };
 
   const getAllUserSpeaker = async (req, res) => {
-    const { id } = req.token;
 
     try {
-
-      const user = await User.findOne({
-        where: { id: id, role: "admin" },
-      });
-
-      if (!user) {
-        return
-      }
        
       const userSpeakers = await User.findAll({
         where: {
