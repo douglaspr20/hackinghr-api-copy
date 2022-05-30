@@ -1263,6 +1263,141 @@ const UserController = () => {
     }
   };
 
+  const sendEmailAuthorizationSpeakersEndPoint = async (req, res) => {
+    const { userId } = req.body;
+
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: { id: userId },
+      });
+
+       if (!user) {
+         return res
+           .status(HttpCodes.NOT_FOUND)
+           .json({ msg: "Host user not found" });
+       }
+
+       const link = `${process.env.DOMAIN_URL}speakers2023?id=${userId}`;
+       const [numberOfAffectedRows, affectedRows] = await User.update(
+         { speakersAuthorization: "pending" },
+         {
+           where: {
+             id: userId,
+           },
+           returning: true,
+         }
+       );
+ 
+      await Promise.resolve(
+         (() => {
+           let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: "enrique@hackinghr.io",
+              subject: LabEmails.USER_BECOME_SPEAKER_2023.subject,
+              html: LabEmails.USER_BECOME_SPEAKER_2023.body(
+                user,
+                link,
+              ),
+           };
+
+           return smtpService().sendMailUsingSendInBlue(mailOptions);
+         })()
+      );
+
+      await Promise.resolve(
+         (() => {
+           let mailOptions = {
+             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+             to: user.email,
+             subject: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.subject,
+             html: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.body(user),
+           };
+
+           return smtpService().sendMailUsingSendInBlue(mailOptions);
+         })()
+      );
+      return res.status(HttpCodes.OK).json({
+        msg: `Thank you for applying. You will receive a response within  the next 48 hours`,
+        userUpdated: affectedRows,
+      });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  }
+
+  const sendActiveOrDenyAuthorizationEndPoint = async (req, res) => {
+    const { userId, typeAuthorization } = req.body;
+    
+    try {
+      const { dataValues: user } = await User.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        return res
+          .status(HttpCodes.NOT_FOUND)
+          .json({ msg: "Host user not found" });
+      }
+
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        { speakersAuthorization: typeAuthorization },
+        {
+          where: {
+            id: userId,
+          },
+          returning: true,
+        }
+      );
+
+      if(typeAuthorization === "accepted"){
+        await Promise.resolve(
+          (() => {
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
+              //to: "enrique@hackinghr.io",
+              subject: LabEmails.USER_ACCEPTED_SPEAKER.subject,
+              html: LabEmails.USER_ACCEPTED_SPEAKER.body(
+                user,
+                `${process.env.DOMAIN_URL}speakers2023`
+              ),
+            };
+ 
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
+          })()
+        );
+      }else{
+        await Promise.resolve(
+          (() => {
+            let mailOptions = {
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+              to: user.email,
+              //to: "enrique@hackinghr.io",
+              subject: LabEmails.USER_REJECT_SPEAKER.subject,
+              html: LabEmails.USER_REJECT_SPEAKER.body(
+                user
+              ),
+            };
+ 
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
+          })()
+        );
+      }
+
+      return res.status(HttpCodes.OK).json({
+        userUpdated: affectedRows,
+      });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const acceptInvitationApplyBusinessPartner = async (req, res) => {
     const { userId, applyState } = req.body;
     try {
@@ -1847,7 +1982,30 @@ const UserController = () => {
     }
   };
 
+  const getAllUserSpeaker = async (req, res) => {
+
+    try {
+       
+      const userSpeakers = await User.findAll({
+        where: {
+            speakersAuthorization: {[Op.eq]: "accepted"}
+        },
+        attributes: ["advertisementCredits","firstName","lastName","email","id"]
+      });
+
+      return res.status(HttpCodes.OK).json({ userSpeakers });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
+    sendEmailAuthorizationSpeakersEndPoint,
+    sendActiveOrDenyAuthorizationEndPoint,
+    getAllUserSpeaker,
     getUser,
     updateUser,
     searchUser,

@@ -803,6 +803,59 @@ module.exports = {
   `,
   },
 
+  USER_BECOME_SPEAKER_2023: {
+    subject: `User want apply to the business partner community`,
+    body: (user, link) => `
+      <p>
+      ${user.firstName} ${user.lastName} <br>
+      </p>
+      <p>
+      <strong>Email:</strong> ${user.email}<br>
+      </p>
+      <p><strong>Company:</strong> ${user.company}</p>
+      <p><strong>Company size:</strong> ${user.sizeOfOrganization}</p>
+      <p></p>
+      <p>
+        <strong>Linkedin:</strong> ${user.personalLinks.linkedin}<br>
+      </p>
+      </p>
+      <div>
+        <a href="${link}&accepted=true">${"Accept"}</a><br>
+        <a href="${link}&accepted=false">${"Reject"}</a><br>
+      </div>
+      <p>
+        Hacking HR Team
+      </p>
+    `,
+  },
+
+  USER_ACCEPTED_SPEAKER: {
+    subject: `you have been accepted for speakers 2023.`,
+    body: (user, link) => `
+      <p>
+      Hi ${user.firstName} ${user.lastName} <br>
+      </p>
+      <p>Thank you for apply to speakers 2023, you have been accepted, come to join to this new coference.</p><br>
+      <a href="${link}">Speakers 2023</a><br>
+      <p>
+        Hacking HR Team
+      </p>
+    `,
+  },
+
+  USER_REJECT_SPEAKER: {
+    subject: `You have been rejected for speakers 2023.`,
+    body: (user) => `
+      <p>
+      Hi ${user.firstName} ${user.lastName} <br>
+      </p>
+      <p>Thank you for apply to speakers 2023, unfortunately, your permissions have been rejected</p>
+      <p>
+        Hacking HR Team
+      </p>
+    `,
+  },
+
   REJECT_USER_APPLY_PARTNER_BUSSINESS: {
     subject:
       "Your Application for Hacking HR’s HR Business Partners Community was not approved",
@@ -881,6 +934,16 @@ module.exports = {
       <p>Thank you for sending your application to be part of the HR Business Partners 
       Community.</p>
       <p>We will review your application and you should receive a response within the next 
+      48 hours.</p> 
+      <p>Thank you so much.</p> 
+      <p>The Hacking HR Team</p>`,
+  },
+  USER_AFTER_APPLY_SPEAKER_2023: {
+    subject: `Your request has been received`,
+    body: (user) =>
+      `<p>Hi ${user.firstName},</p>
+      <p>Thank you for contact us.</p>
+      <p>We will answer you in the next
       48 hours.</p> 
       <p>Thank you so much.</p> 
       <p>The Hacking HR Team</p>`,
@@ -1327,6 +1390,34 @@ module.exports = {
       Hacking HR
       <br />
       `,
+  },
+  SPEAKERS_PANEL_JOIN: {
+    subject: (firstName, panelName) =>
+      `${firstName}, thank you for joining the panel: ${panelName}`,
+    body: (firstName, panel) => `
+    <p>
+      Hi ${firstName},
+      </p>
+      <p>
+      Thank you for joining as a panelist in the panel: ${panel.panelName} which starts on ${panel.startDate} and ends on ${panel.endDate}.  
+      </p>
+      <p>
+      Please make sure you add the calendar invite attached to this email in your calendar. We will not send another calendar invite.
+      </p>
+      <p>
+      Thank you so much and please stay tuned for more information coming in soon to prepare for the panel. 
+      </p>
+      <p>
+        Thank you so much! 
+      </p>
+      <br />
+      Enrique Rubio
+      <br />
+      Founder
+      <br />
+      Hacking HR
+      <br />
+      `
   },
   USER_PURCHASE_ADVERTISEMENT_CREDITS: {
     subject: (numOfCredits) =>

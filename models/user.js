@@ -34,6 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.CouncilConversationLike);
       User.hasMany(models.AdvertisementImpression);
       User.hasMany(models.AdvertisementClick);
+      User.hasMany(models.SpeakerPanel,{foreignKey: 'OwnerId'});
+      User.hasMany(models.SpeakerMemberPanel,{foreignKey: 'UserId'});
       User.hasMany(models.CouncilEventPanelist);
       User.hasMany(models.BlogPost);
     }
@@ -159,6 +161,10 @@ module.exports = (sequelize, DataTypes) => {
       isExpertCouncilAdmin: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+      },
+      speakersAuthorization: {
+        type: DataTypes.STRING,
+        defaultValue: null,
       },
       advertisementCredits: {
         type: DataTypes.INTEGER,
