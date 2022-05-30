@@ -18,6 +18,22 @@ const ConversationController = () => {
         },
       });
 
+      if (prevConversation.showConversation === false) {
+        const [numberOfAffectedRows, affectedRows] = await Conversation.update(
+          { showConversation: true },
+          {
+            where: { id: prevConversation.id },
+            returning: true,
+            plain: true,
+          }
+        );
+
+        return socketService().emit(
+          SocketEventTypes.NEW_CONVERSATION,
+          affectedRows
+        );
+      }
+
       if (prevConversation) {
         return socketService().emit(
           SocketEventTypes.NEW_CONVERSATION,
@@ -75,9 +91,9 @@ const ConversationController = () => {
         conversations = await Promise.all(
           conversations.map(async (conversation) => {
             const query2 = `SELECT public."Messages".id, public."Messages".sender, public."Messages"."ConversationId", public."Messages".text,
-          public."Messages"."createdAt" as "messageDate", public."Messages"."viewedUser", public."Messages"."documentFileUrl", public."Messages"."type"
-          FROM public."Messages" WHERE public."Messages"."ConversationId" = ${conversation.id} 
-          ORDER BY public."Messages"."createdAt" DESC LIMIT 50`;
+            public."Messages"."createdAt" as "messageDate", public."Messages"."viewedUser", public."Messages"."documentFileUrl", public."Messages"."type"
+            FROM public."Messages" WHERE public."Messages"."ConversationId" = ${conversation.id} 
+            ORDER BY public."Messages"."createdAt" DESC LIMIT 50`;
 
             let messages = await db.sequelize.query(query2, {
               type: QueryTypes.SELECT,
@@ -124,10 +140,32 @@ const ConversationController = () => {
     }
   };
 
+  const hideConversation = async (req, res) => {
+    const { conversationId } = req.params;
+    try {
+      const [numberOfAffectedRows, affectedRows] = await Conversation.update(
+        { showConversation: false },
+        {
+          where: { id: conversationId },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ conversation: affectedRows });
+    } catch (error) {
+      res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
+        msg: "Something went wrong",
+      });
+      console.log(error);
+    }
+  };
+
   return {
     create,
     getAll,
     get,
+    hideConversation,
   };
 };
 

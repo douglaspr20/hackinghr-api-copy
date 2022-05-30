@@ -10,7 +10,6 @@ if (env === "production") {
 const Sequelize = require("sequelize");
 const basename = path.basename(__filename);
 const config = require(__dirname + "/../config/config.js")[env];
-
 const db = {};
 
 let sequelize;
@@ -39,10 +38,10 @@ fs.readdirSync(__dirname)
     db[model.name] = model;
   });
 
-Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
+  Object.keys(db).forEach((modelName) => {
+    if (db[modelName].associate) {
+      db[modelName].associate(db);
+    }
 });
 
 db.sequelize = sequelize;

@@ -73,6 +73,7 @@ const privateRoutes = {
   "GET /library/channel/": "LibraryController.getChannelLibraries",
   "GET /library/recommendations/": "HomeController.getRecommendations",
   "GET /library/:id/": "LibraryController.getLibrary",
+  "DELETE /library/delete/:id": "LibraryController.deleteLibrary",
   "PUT /library/:id/save-for-later": "LibraryController.saveForLater",
   "POST /mentoring": "MentoringController.create",
   "GET /mentoring": "MentoringController.getMentoringInfo",
@@ -243,6 +244,8 @@ const privateRoutes = {
   "POST /conversations": "ConversationController.create",
   "GET /conversation/:conversationId": "ConversationController.get",
   "GET /conversations/:userId": "ConversationController.getAll",
+  "PUT /conversation/:conversationId":
+    "ConversationController.hideConversation",
   "POST /messages/": "MessageController.create",
   "GET /messages/:conversationId": "MessageController.getAll",
   "PUT /messages/:ConversationId": "MessageController.readMessages",
@@ -261,7 +264,7 @@ const privateRoutes = {
   "PUT /ad/:AdvertisementId": "AdvertisementController.editAdvertisement",
   "POST /ad/click": "AdvertisementController.createAdvertisementClick",
   "POST /matchmake/send-email": "MatchmakingController.sendMatchEmail",
-  "POST /council/event": "CouncilEventController.upsert",
+  "POST /council/event": "CouncilEventController.createOrEditConcil",
   "GET /council/events": "CouncilEventController.getAll",
   "DELETE /council/event/:id": "CouncilEventController.destroy",
   "POST /council/event/panelist":
@@ -292,6 +295,14 @@ const privateRoutes = {
   "GET /users/all-users-speakers": "UserController.getAllUserSpeaker",
   "POST /speakers/add-speaker-to-panel": "Speakers2023Controller.addUserSpeakerToPanel",
   "POST /speakers/remove-user-panel": "Speakers2023Controller.removeUserSpeakerToPanel"
+  "POST /blogpost": "BlogPostController.create",
+  "GET /blogpost": "BlogPostController.search",
+  "GET /blogpost/blog/:blogPostId": "BlogPostController.getBlogPost",
+  "GET /blogpost/:ChannelId": "BlogPostController.getByChannelId",
+  "PUT /blogpost/:blogPostId": "BlogPostController.update",
+  "DELETE /blogpost/:blogPostId": "BlogPostController.remove",
+  "POST /blogPostLike/": "BlogPostLikeController.add",
+  "DELETE /blogPostLike/:id": "BlogPostLikeController.remove",
 };
 
 module.exports = privateRoutes;

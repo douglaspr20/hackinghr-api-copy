@@ -26,6 +26,8 @@ const MatchmakingController = require("./controllers/MatchmakingController");
 const MessageController = require("./controllers/MessageController");
 const BusinessPartnerController = require("./controllers/BusinessPartnerController");
 const AdvertisementController = require("./controllers/AdvertisementController");
+const CouncilEventController = require("./controllers/CouncilEventController");
+const BlogPostController = require("./controllers/BlogPostController");
 
 const moment = require("moment-timezone");
 
@@ -64,10 +66,27 @@ cron.schedule("0 8 * * SUN", () => {
 });
 
 // Creating a cron job which runs on every an hour.
-cron.schedule("25 * * * *", () => {
+cron.schedule("0 */59 * * * *", () => {
   console.log("running a task every 1 hour.");
   EventController().emailAfterEventThread();
+
+  CouncilEventController().reminderToAddQuestionAWeekBeforeTheEvent();
+  CouncilEventController().remindToAddQuestionsAndRemindTheEventStartsTomorrow();
+  CouncilEventController().remindPanelistOneHourBeforeTheEvent();
 });
+
+// Creating a cron job which runs on every an hour.
+cron.schedule(
+  "30 0 * * *",
+  () => {
+    console.log("running a task every day at 12:30 AM.");
+
+    CouncilEventController().sendDailyCommentToModerator();
+  },
+  {
+    timezone: "America/Los_Angeles",
+  }
+);
 
 // Creating a cron job which runs on every day.
 // TO DO: Journey process will be reimplement.
@@ -444,6 +463,14 @@ cron.schedule(
   },
   {
     timezone: "America/Los_Angeles",
+  }
+);
+
+cron.schedule(
+  "* 8 * * 5", // running task at 8am every friday.
+  () => {
+    console.log("running a task every friday at 07:00.");
+    BlogPostController().getBlogPostsOfLastWeek();
   }
 );
 

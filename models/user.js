@@ -36,6 +36,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.AdvertisementClick);
       User.hasMany(models.SpeakerPanel,{foreignKey: 'OwnerId'});
       User.hasMany(models.SpeakerMemberPanel,{foreignKey: 'UserId'});
+      User.hasMany(models.CouncilEventPanelist);
+      User.hasMany(models.BlogPost);
     }
   }
   User.init(
@@ -168,6 +170,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      partnersManual: {
+        type: DataTypes.STRING,
+        defaultValue: null,
+      }
     },
     {
       sequelize,

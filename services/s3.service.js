@@ -182,6 +182,15 @@ const s3Service = () => {
 
     return url;
   };
+  const getBlogPostImageUrl = async (prevImg, base64Image) => {
+    const url = await getImageUrl(
+      S3.BLOG_POST_IMAGE_FOLDER,
+      prevImg,
+      base64Image
+    );
+
+    return url;
+  };
 
   const uploadResume = async (file, user) => {
     const fileName = `${user.id}_${
