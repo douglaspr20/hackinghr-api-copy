@@ -294,7 +294,7 @@ const privateRoutes = {
   "GET /speakers/all-panel": "Speakers2023Controller.allPanelSpeakers",
   "GET /users/all-users-speakers": "UserController.getAllUserSpeaker",
   "POST /speakers/add-speaker-to-panel": "Speakers2023Controller.addUserSpeakerToPanel",
-  "POST /speakers/remove-user-panel": "Speakers2023Controller.removeUserSpeakerToPanel"
+  "POST /speakers/remove-user-panel": "Speakers2023Controller.removeUserSpeakerToPanel",
   "POST /blogpost": "BlogPostController.create",
   "GET /blogpost": "BlogPostController.search",
   "GET /blogpost/blog/:blogPostId": "BlogPostController.getBlogPost",
