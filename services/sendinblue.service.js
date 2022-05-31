@@ -58,7 +58,7 @@ const sendInBlueService = () => {
       scheduledAt: moment().add(2, "minutes").format(),
       subject:
         "Hacking HR's CREATORS content: check out the latest blog posts by our community",
-      recipients: { listIds: [41] },
+      recipients: { listIds: [11] },
     };
 
     try {
