@@ -469,7 +469,7 @@ cron.schedule(
 cron.schedule(
   "* 8 * * 5", // running task at 8am every friday.
   () => {
-    console.log("running a task every friday at 07:00.");
+    console.log("running a task every friday at 08:00.");
     BlogPostController().getBlogPostsOfLastWeek();
   }
 );
