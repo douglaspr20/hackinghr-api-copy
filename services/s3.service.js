@@ -315,6 +315,7 @@ const s3Service = () => {
     getAdvertisementImageUrl,
     uploadFile,
     getCouncilConversationImageUrl,
+    getBlogPostImageUrl,
   };
 };
 

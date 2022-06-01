@@ -1,7 +1,9 @@
 const moment = require("moment-timezone");
 
-const formatEmailBlogsPostWeekly = (blogs) => {
+const formatEmailBlogsPostWeekly = (blogs, resources) => {
   let content = ``;
+
+  let contentResources = ``;
 
   blogs.forEach((blog) => {
     content += `
@@ -16,6 +18,22 @@ const formatEmailBlogsPostWeekly = (blogs) => {
      </div>
       
         `;
+  });
+
+  resources.forEach((resource) => {
+    contentResources = `
+    <div style="background: #f5f5f8; padding: 10px 15px; border: 1px solid #e1e2ee;  border-radius: 5px; margin-left: auto; 
+    margin-top: 10px; margin-right: auto; width: 500px">
+        <h2>${resource.title}</h2>
+         <p>t${resource.summary}</p>
+         <a href="${
+           resource.link
+             ? resource.link
+             : `${process.env.DOMAIN_URL}/library-item/podcast/${resource.id}`
+         }">View Resource</a>
+         <p> Posted on ${moment(resource.createdAt).format("MM/DD/YYYY")}</p>
+     </div>
+    `;
   });
 
   return `
@@ -37,6 +55,20 @@ const formatEmailBlogsPostWeekly = (blogs) => {
       ${content}
        
       </div>
+
+      ${
+        contentResources === ""
+          ? ""
+          : `
+          <h1 style="text-align: center">Resources by CREATORS in the Hacking HR LAB</h1>
+          <div>
+          ${contentResources}
+          </div>
+          `
+      }
+
+
+    
 
       <hr style="border: 2px solid #e1e2ee; margin-top: 20px">
 

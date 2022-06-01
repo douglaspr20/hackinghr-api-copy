@@ -298,7 +298,7 @@ const EventController = () => {
           eventInfo.images = await Promise.all(images);
         }
 
-        const event = await Event.create(eventInfo);
+        const event = await Event.create({ ...eventInfo, sendInEmail: false });
 
         if (!event) {
           return res
@@ -1222,6 +1222,41 @@ const EventController = () => {
       .json({ msg: "Bad Request: Event id is wrong" });
   };
 
+  const getChannelsEventsOfLastWeek = async (req, res) => {
+    try {
+      const eventsLastWeek = await Event.findAll({
+        where: {
+          [Op.and]: [
+            {
+              sendInEmail: false,
+            },
+            {
+              channel: {
+                [Op.not]: null,
+              },
+            },
+          ],
+        },
+      });
+
+      await Event.update(
+        {
+          sendInEmail: true,
+        },
+        {
+          where: { sendInEmail: false },
+        }
+      );
+
+      return eventsLastWeek;
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Somenthing went wrong" });
+    }
+  };
+
   const eventCertificateMetaData = async (req, res) => {
     const { metadata } = req.body;
     const metaTags = `<meta name="description" content="We are a community of business and HR leaders, HR practitioners, technologists, entrepreneurs, consultants." data-react-helmet="true"/>
@@ -1258,6 +1293,7 @@ const EventController = () => {
     resetEmailReminders,
     claimCredit,
     claimAttendance,
+    getChannelsEventsOfLastWeek,
     eventCertificateMetaData,
   };
 };
