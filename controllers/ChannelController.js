@@ -125,10 +125,6 @@ const ChannelController = () => {
         owner: { [Op.in]: users.map((u) => u.id) },
       };
 
-      console.log(
-        "Users Ids:",
-        users.map((u) => u.id)
-      );
       if (params.category && !isEmpty(JSON.parse(params.category))) {
         where = {
           ...where,
