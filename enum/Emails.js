@@ -1419,6 +1419,13 @@ module.exports = {
       <br />
       `
   },
+  REGISTER_CONFERENCE_2023: {
+    subject: () =>
+      `Thanks for register in speaker2023`,
+    body: (firstName) => `
+      <p>Hi ${firstName}, you just logged in to coference 202</p>
+      `
+  },
   USER_PURCHASE_ADVERTISEMENT_CREDITS: {
     subject: (numOfCredits) =>
       `(Hacking HR LAB) Thank you for purchasing ${numOfCredits} credits!`,
