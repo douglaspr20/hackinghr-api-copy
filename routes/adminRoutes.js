@@ -29,6 +29,7 @@ const adminRoutes = {
   "PUT /category/:id": "CategoryController.update",
   "DELETE /category/:id": "CategoryController.remove",
   "GET /user/all": "UserController.getAll",
+  "GET /user/channels-owners": "UserController.getAllUsersChannelOwner",
   "GET /session/users": "UserController.getSessionUsers",
   "PUT /session/user-remove/:id": "UserController.removeSessionUser",
   "GET /conference/:id/": "ConferenceController.get",
