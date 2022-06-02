@@ -113,6 +113,18 @@ const ChannelController = () => {
       let where = {};
       let order = [];
 
+      const users = await User.findAll({
+        where: {
+          channelsSubscription: true,
+        },
+        attributes: ["id"],
+      });
+
+      where = {
+        ...where,
+        owner: { [Op.in]: users.map((u) => u.id) },
+      };
+
       if (params.category && !isEmpty(JSON.parse(params.category))) {
         where = {
           ...where,

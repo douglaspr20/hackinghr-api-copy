@@ -86,9 +86,9 @@ const StripeController = () => {
               metadata: {
                 credits,
                 isBuyingCredits: true,
-              }
-            }
-          }
+              },
+            },
+          };
         }
         if (isPaidEvent) {
           sessionData = {
@@ -370,10 +370,10 @@ const StripeController = () => {
 
       return newUserData;
     } catch (error) {
-      console.log(error)
-      return {}
+      console.log(error);
+      return {};
     }
-  }
+  };
   const paidEventValidation = async (user, customerInformation, event) => {
     try {
       await stripe.customers.update(customerInformation.id, {
@@ -575,7 +575,7 @@ const StripeController = () => {
                 isSubscribed = true;
                 newUserData["channelsSubscription"] = true;
                 if (user.role !== "admin") {
-                  newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+                  newUserData["role"] = UserRoles.USER;
                 }
                 newUserData["channelsSubscription_startdate"] = moment
                   .unix(subChannelsItem.current_period_start)
@@ -698,6 +698,9 @@ const StripeController = () => {
                   subRecruiterItem.status === "canceled")
               ) {
                 isSubscribed = true;
+                if (user.role !== "admin") {
+                  newUserData["role"] = UserRoles.USER;
+                }
                 newUserData["recruiterSubscription"] = false;
                 if (
                   user.recruiterSubscription === true &&
