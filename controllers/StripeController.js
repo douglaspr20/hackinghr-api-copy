@@ -575,7 +575,7 @@ const StripeController = () => {
                 isSubscribed = true;
                 newUserData["channelsSubscription"] = true;
                 if (user.role !== "admin") {
-                  newUserData["role"] = UserRoles.CHANNEL_ADMIN;
+                  newUserData["role"] = UserRoles.USER;
                 }
                 newUserData["channelsSubscription_startdate"] = moment
                   .unix(subChannelsItem.current_period_start)
