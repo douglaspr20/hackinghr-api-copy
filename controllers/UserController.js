@@ -1566,7 +1566,6 @@ const UserController = () => {
 
   const removeBusinessPartner = async (req, res) => {
     const { id } = req.body;
-    console.log(id);
     try {
       await User.update(
         {
