@@ -15,7 +15,7 @@ const BlogPostController = () => {
     if (body.title && body.description && body.categories) {
       try {
         if (body.imageUrl) {
-          body.imageUrl = await s3Service().getChannelImageUrl(
+          body.imageUrl = await s3Service().getBlogPostImageUrl(
             "",
             body.imageUrl
           );
@@ -136,9 +136,9 @@ const BlogPostController = () => {
   const getBlogPostsOfLastWeek = async (req, res) => {
     try {
       const blogsPost = await BlogPost.findAll({
-        where: {
-          send: false,
-        },
+        // where: {
+        //   send: false,
+        // },
         include: [
           {
             model: User,
@@ -150,8 +150,6 @@ const BlogPostController = () => {
       });
 
       if (blogsPost.length > 5) {
-        await sendInBlueService().updateWeeklyBlogPostEmailTemplate(blogsPost);
-
         await BlogPost.update(
           {
             send: true,
@@ -162,7 +160,7 @@ const BlogPostController = () => {
         );
       }
 
-      return;
+      return blogsPost;
     } catch (error) {
       console.log(error);
       return res
@@ -174,6 +172,13 @@ const BlogPostController = () => {
   const update = async (req, res) => {
     const { body, params } = req;
     try {
+      if (body.imageUrl) {
+        body.imageUrl = await s3Service().getBlogPostImageUrl(
+          "",
+          body.imageUrl
+        );
+      }
+
       const [numberOfAffectedRows, affectedRows] = await BlogPost.update(
         { ...body },
         {

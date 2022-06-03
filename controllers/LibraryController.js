@@ -1,9 +1,10 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
+const moment = require("moment-timezone");
 const { isValidURL } = require("../utils/profile");
 const isEmpty = require("lodash/isEmpty");
-const { Op, where } = require("sequelize");
+const { Op } = require("sequelize");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const { ReviewStatus, Settings } = require("../enum");
 const NotificationController = require("../controllers/NotificationController");
@@ -39,7 +40,10 @@ const LibraryController = () => {
           );
         }
 
-        const newLibrary = await Library.create(libraryInfo);
+        const newLibrary = await Library.create({
+          ...libraryInfo,
+          sendInEmail: false,
+        });
 
         if (!newLibrary) {
           return res
@@ -74,7 +78,7 @@ const LibraryController = () => {
   const deleteLibrary = async (req, res) => {
     const { id } = req.params;
 
-    try{
+    try {
       await Library.destroy({
         where: {
           id,
@@ -82,12 +86,11 @@ const LibraryController = () => {
       });
 
       return res.status(HttpCodes.OK).json({});
-    }catch (error) {
+    } catch (error) {
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error", error: error });
     }
-    
   };
   const share = async (req, res) => {
     const { body } = req;
@@ -710,6 +713,41 @@ const LibraryController = () => {
     }
   };
 
+  const getChannelLibrariesOfLastWeek = async (req, res) => {
+    try {
+      const librariesLastWeek = await Library.findAll({
+        where: {
+          [Op.and]: [
+            {
+              sendInEmail: false,
+            },
+            {
+              channel: {
+                [Op.not]: null,
+              },
+            },
+          ],
+        },
+      });
+
+      await Library.update(
+        {
+          sendInEmail: true,
+        },
+        {
+          where: { sendInEmail: false },
+        }
+      );
+
+      return librariesLastWeek;
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Somenthing went wrong" });
+    }
+  };
+
   return {
     create,
     share,
@@ -726,7 +764,8 @@ const LibraryController = () => {
     claim,
     markAsViewed,
     saveForLater,
-    deleteLibrary
+    deleteLibrary,
+    getChannelLibrariesOfLastWeek,
   };
 };
 

@@ -2,6 +2,7 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const isEmpty = require("lodash/isEmpty");
 const { Op } = require("sequelize");
+const moment = require("moment-timezone");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 const NotificationController = require("../controllers/NotificationController");
@@ -160,6 +161,7 @@ const PodcastController = () => {
       let podcast = await Podcast.create({
         ...req.body,
         contentType: "podcast",
+        sendInEmail: false,
       });
       if (imageData) {
         let imageUrl = await s3Service().getPodcastImageUrl("", imageData);
@@ -453,6 +455,41 @@ const PodcastController = () => {
     }
   };
 
+  const getChannelPodcastOfLastWeek = async (req, res) => {
+    try {
+      const podcastLastWeek = await Podcast.findAll({
+        where: {
+          [Op.and]: [
+            {
+              sendInEmail: false,
+            },
+            {
+              channel: {
+                [Op.not]: null,
+              },
+            },
+          ],
+        },
+      });
+
+      await Podcast.update(
+        {
+          sendInEmail: true,
+        },
+        {
+          where: { sendInEmail: false },
+        }
+      );
+
+      return podcastLastWeek;
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Somenthing went wrong" });
+    }
+  };
+
   return {
     getAll,
     get,
@@ -464,6 +501,7 @@ const PodcastController = () => {
     searchPodcast,
     markAsViewed,
     saveForLater,
+    getChannelPodcastOfLastWeek,
   };
 };
 
