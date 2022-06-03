@@ -136,9 +136,9 @@ const BlogPostController = () => {
   const getBlogPostsOfLastWeek = async (req, res) => {
     try {
       const blogsPost = await BlogPost.findAll({
-        // where: {
-        //   send: false,
-        // },
+        where: {
+          send: false,
+        },
         include: [
           {
             model: User,
