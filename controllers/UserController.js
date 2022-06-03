@@ -1989,30 +1989,6 @@ const UserController = () => {
     }
   };
 
-  const getAllUserSpeaker = async (req, res) => {
-    try {
-      const userSpeakers = await User.findAll({
-        where: {
-          speakersAuthorization: { [Op.eq]: "accepted" },
-        },
-        attributes: [
-          "advertisementCredits",
-          "firstName",
-          "lastName",
-          "email",
-          "id",
-        ],
-      });
-
-      return res.status(HttpCodes.OK).json({ userSpeakers });
-    } catch (error) {
-      console.log(error);
-      return res
-        .status(HttpCodes.INTERNAL_SERVER_ERROR)
-        .json({ msg: "Internal server error" });
-    }
-  };
-
   const getAllUsersChannelOwner = async (req, res) => {
     try {
       const channelsOwners = await User.findAll({
@@ -2047,7 +2023,6 @@ const UserController = () => {
   return {
     sendEmailAuthorizationSpeakersEndPoint,
     sendActiveOrDenyAuthorizationEndPoint,
-    getAllUserSpeaker,
     getUser,
     updateUser,
     searchUser,

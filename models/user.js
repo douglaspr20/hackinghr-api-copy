@@ -173,6 +173,10 @@ module.exports = (sequelize, DataTypes) => {
       partnersManual: {
         type: DataTypes.STRING,
         defaultValue: null,
+      },
+      registerConference2023: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       }
     },
     {
