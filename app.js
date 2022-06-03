@@ -6,7 +6,6 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
 const authPolicy = require("./policies/auth.policy");
-const { isEmpty } = require("lodash");
 const cron = require("node-cron");
 const EventController = require("./controllers/EventController");
 // const JourneyController = require("./controllers/JourneyController");
@@ -17,10 +16,7 @@ const NotificationController = require("./controllers/NotificationController");
 const SkillCohortGroupingsController = require("./controllers/SkillCohortGroupingsController");
 const SkillCohortController = require("./controllers/SkillCohortController");
 const SkillCohortResourceResponseController = require("./controllers/SkillCohortResourceResponseController");
-const SkillCohortResourceResponseAssessmentController = require("./controllers/SkillCohortResourceResponseAssessmentController");
-const JobPostController = require("./controllers/JobPostController");
 const UserController = require("./controllers/UserController");
-const ConversationController = require("./controllers/ConversationController");
 const WeeklyDigestController = require("./controllers/WeeklyDigestController");
 const MatchmakingController = require("./controllers/MatchmakingController");
 const MessageController = require("./controllers/MessageController");
@@ -28,13 +24,12 @@ const BusinessPartnerController = require("./controllers/BusinessPartnerControll
 const AdvertisementController = require("./controllers/AdvertisementController");
 const CouncilEventController = require("./controllers/CouncilEventController");
 const BlogPostController = require("./controllers/BlogPostController");
+const smtpService = require("./services/smtp.service");
+const socketService = require("./services/socket.service");
 
 const moment = require("moment-timezone");
 
 const { LabEmails } = require("./enum");
-
-const smtpService = require("./services/smtp.service");
-const socketService = require("./services/socket.service");
 
 dotenv.config();
 
@@ -43,6 +38,9 @@ dotenv.config();
  */
 const routes = require("./routes");
 const SocketEventTypes = require("./enum/SocketEventTypes");
+const PodcastController = require("./controllers/PodcastController");
+const LibraryController = require("./controllers/LibraryController");
+const sendInBlueService = require("./services/sendinblue.service");
 
 /**
  * express application
@@ -468,9 +466,26 @@ cron.schedule(
 
 cron.schedule(
   "* 8 * * 5", // running task at 8am every friday.
-  () => {
-    console.log("running a task every friday at 07:00.");
-    BlogPostController().getBlogPostsOfLastWeek();
+  async () => {
+    console.log("running a task every friday at 08:00.");
+    const blogsLastWeek = await BlogPostController().getBlogPostsOfLastWeek();
+
+    if (blogsLastWeek.length > 5) {
+      let resources = [];
+      const eventsLastWeek =
+        await EventController().getChannelsEventsOfLastWeek();
+      const podcastLastWeek =
+        await PodcastController().getChannelPodcastOfLastWeek();
+      const librariesLastWeek =
+        await LibraryController().getChannelLibrariesOfLastWeek();
+
+      resources = [...eventsLastWeek, ...podcastLastWeek, ...librariesLastWeek];
+
+      await sendInBlueService().updateWeeklyBlogPostEmailTemplate(
+        blogsLastWeek,
+        resources
+      );
+    }
   }
 );
 

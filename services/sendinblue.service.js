@@ -39,13 +39,13 @@ const sendInBlueService = () => {
     }
   };
 
-  const updateWeeklyBlogPostEmailTemplate = async (blogs) => {
+  const updateWeeklyBlogPostEmailTemplate = async (blogs, resources) => {
     let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
     let apiInstance2 = new SibApiV3Sdk.EmailCampaignsApi();
     let emailCampaigns = new SibApiV3Sdk.CreateEmailCampaign();
     let smtpTemplate = new SibApiV3Sdk.UpdateSmtpTemplate();
 
-    smtpTemplate.htmlContent = formatEmailBlogsPostWeekly(blogs);
+    smtpTemplate.htmlContent = formatEmailBlogsPostWeekly(blogs, resources);
 
     const templateId = process.env.NODE_ENV === "production" ? 313 : 315;
 
@@ -58,6 +58,7 @@ const sendInBlueService = () => {
       scheduledAt: moment().add(2, "minutes").format(),
       subject:
         "Hacking HR's CREATORS content: check out the latest blog posts by our community",
+      // recipients: { listIds: [11] },
       recipients: { listIds: [41] },
     };
 

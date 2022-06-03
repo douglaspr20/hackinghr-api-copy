@@ -31,6 +31,7 @@ const User = db.User;
 const Event = db.Event;
 const AnnualConference = db.AnnualConference;
 const Bonfire = db.Bonfire;
+const Channel = db.Channel;
 
 const UserController = () => {
   const getUser = async (req, res) => {
@@ -1271,50 +1272,47 @@ const UserController = () => {
         where: { id: userId },
       });
 
-       if (!user) {
-         return res
-           .status(HttpCodes.NOT_FOUND)
-           .json({ msg: "Host user not found" });
-       }
+      if (!user) {
+        return res
+          .status(HttpCodes.NOT_FOUND)
+          .json({ msg: "Host user not found" });
+      }
 
-       const link = `${process.env.DOMAIN_URL}speakers2023?id=${userId}`;
-       const [numberOfAffectedRows, affectedRows] = await User.update(
-         { speakersAuthorization: "pending" },
-         {
-           where: {
-             id: userId,
-           },
-           returning: true,
-         }
-       );
- 
-      await Promise.resolve(
-         (() => {
-           let mailOptions = {
-              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-              to: "enrique@hackinghr.io",
-              subject: LabEmails.USER_BECOME_SPEAKER_2023.subject,
-              html: LabEmails.USER_BECOME_SPEAKER_2023.body(
-                user,
-                link,
-              ),
-           };
-
-           return smtpService().sendMailUsingSendInBlue(mailOptions);
-         })()
+      const link = `${process.env.DOMAIN_URL}speakers2023?id=${userId}`;
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        { speakersAuthorization: "pending" },
+        {
+          where: {
+            id: userId,
+          },
+          returning: true,
+        }
       );
 
       await Promise.resolve(
-         (() => {
-           let mailOptions = {
-             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-             to: user.email,
-             subject: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.subject,
-             html: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.body(user),
-           };
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: "enrique@hackinghr.io",
+            subject: LabEmails.USER_BECOME_SPEAKER_2023.subject,
+            html: LabEmails.USER_BECOME_SPEAKER_2023.body(user, link),
+          };
 
-           return smtpService().sendMailUsingSendInBlue(mailOptions);
-         })()
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+      );
+
+      await Promise.resolve(
+        (() => {
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: user.email,
+            subject: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.subject,
+            html: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.body(user),
+          };
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
       );
       return res.status(HttpCodes.OK).json({
         msg: `Thank you for applying. You will receive a response within  the next 48 hours`,
@@ -1326,11 +1324,11 @@ const UserController = () => {
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
     }
-  }
+  };
 
   const sendActiveOrDenyAuthorizationEndPoint = async (req, res) => {
     const { userId, typeAuthorization } = req.body;
-    
+
     try {
       const { dataValues: user } = await User.findOne({
         where: { id: userId },
@@ -1352,7 +1350,7 @@ const UserController = () => {
         }
       );
 
-      if(typeAuthorization === "accepted"){
+      if (typeAuthorization === "accepted") {
         await Promise.resolve(
           (() => {
             let mailOptions = {
@@ -1365,11 +1363,11 @@ const UserController = () => {
                 `${process.env.DOMAIN_URL}speakers2023`
               ),
             };
- 
+
             return smtpService().sendMailUsingSendInBlue(mailOptions);
           })()
         );
-      }else{
+      } else {
         await Promise.resolve(
           (() => {
             let mailOptions = {
@@ -1377,11 +1375,9 @@ const UserController = () => {
               to: user.email,
               //to: "enrique@hackinghr.io",
               subject: LabEmails.USER_REJECT_SPEAKER.subject,
-              html: LabEmails.USER_REJECT_SPEAKER.body(
-                user
-              ),
+              html: LabEmails.USER_REJECT_SPEAKER.body(user),
             };
- 
+
             return smtpService().sendMailUsingSendInBlue(mailOptions);
           })()
         );
@@ -1468,9 +1464,15 @@ const UserController = () => {
       const users = await User.findAll({
         where: {
           isAdvertiser: true,
-          partnersManual: "accepted"
+          partnersManual: "accepted",
         },
-        attributes: ["advertisementCredits","firstName","lastName","email","id"]
+        attributes: [
+          "advertisementCredits",
+          "firstName",
+          "lastName",
+          "email",
+          "id",
+        ],
       });
 
       if (users.length === 0) {
@@ -1493,16 +1495,24 @@ const UserController = () => {
       const users = await User.findAll({
         where: {
           [Op.and]: [
-            {isAdvertiser: false},
-            {partnersManual: {
-              [Op.or]: {
-                [Op.ne]: "accepted",
-                [Op.is]: null
-              }
-            }},
-          ]
+            { isAdvertiser: false },
+            {
+              partnersManual: {
+                [Op.or]: {
+                  [Op.ne]: "accepted",
+                  [Op.is]: null,
+                },
+              },
+            },
+          ],
         },
-        attributes: ["advertisementCredits","firstName","lastName","email","id"]
+        attributes: [
+          "advertisementCredits",
+          "firstName",
+          "lastName",
+          "email",
+          "id",
+        ],
       });
 
       if (users.length === 0) {
@@ -1521,30 +1531,30 @@ const UserController = () => {
   };
 
   const addBusinessPartner = async (req, res) => {
-    const {usersNames} = req.body
+    const { usersNames } = req.body;
 
     try {
-      await usersNames.forEach( async (idUser) => {
-        return await User.update({
-          isAdvertiser: true,
-          partnersManual: "accepted"
-        },
-        {
-            where: {
-                id: idUser
-            },
-        })
-      })
-
-      const user = await User.findAll(
-        {
-          where: {
+      await usersNames.forEach(async (idUser) => {
+        return await User.update(
+          {
             isAdvertiser: true,
-            partnersManual: "accepted"
+            partnersManual: "accepted",
+          },
+          {
+            where: {
+              id: idUser,
+            },
           }
-        }
-      );
-      
+        );
+      });
+
+      const user = await User.findAll({
+        where: {
+          isAdvertiser: true,
+          partnersManual: "accepted",
+        },
+      });
+
       return res.status(HttpCodes.OK).json({ user });
     } catch (error) {
       console.log(error);
@@ -1556,12 +1566,11 @@ const UserController = () => {
 
   const removeBusinessPartner = async (req, res) => {
     const { id } = req.body;
-    console.log(id)
     try {
       await User.update(
-        { 
+        {
           isAdvertiser: false,
-          partnersManual: ""
+          partnersManual: "",
         },
         {
           where: {
@@ -1570,15 +1579,13 @@ const UserController = () => {
         }
       );
 
-      const user = await User.findAll(
-        {
-          where: {
-            isAdvertiser: true,
-            partnersManual: "accepted"
-          }
-        }
-      );
-      
+      const user = await User.findAll({
+        where: {
+          isAdvertiser: true,
+          partnersManual: "accepted",
+        },
+      });
+
       return res.status(HttpCodes.OK).json({ user });
     } catch (error) {
       console.log(error);
@@ -1982,6 +1989,37 @@ const UserController = () => {
     }
   };
 
+  const getAllUsersChannelOwner = async (req, res) => {
+    try {
+      const channelsOwners = await User.findAll({
+        where: {
+          role: USER_ROLE.CHANNEL_ADMIN,
+          channel: {
+            [Op.not]: null,
+          },
+        },
+        include: {
+          model: Channel,
+          attributes: ["name"],
+        },
+        attributes: [
+          "firstName",
+          "lastName",
+          "email",
+          "role",
+          "subscription_enddate",
+        ],
+      });
+
+      return res.status(HttpCodes.OK).json({ channelsOwners });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     sendEmailAuthorizationSpeakersEndPoint,
     sendActiveOrDenyAuthorizationEndPoint,
@@ -2022,7 +2060,8 @@ const UserController = () => {
     getAllBusinessPartner,
     addBusinessPartner,
     removeBusinessPartner,
-    getAllBusinessPartnerSearch
+    getAllBusinessPartnerSearch,
+    getAllUsersChannelOwner,
   };
 };
 
