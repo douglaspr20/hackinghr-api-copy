@@ -294,23 +294,40 @@ const SpeakersController = () => {
         }
     };
 
-    const sendEmailRegisterConference2023 = async (req, res) => {
+    const registerUserIfNotAreRegisterConference2023 = async (req, res) => {
 
-        const { email, firstName } = req.user.dataValues;
+        const { email, firstName, id } = req.user.dataValues;
 
         try{
-            await Promise.resolve(
-                (() => {
-                    let mailOptions = {
-                    from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                    to: email,
-                    subject: LabEmails.REGISTER_CONFERENCE_2023.subject(),
-                    html: LabEmails.REGISTER_CONFERENCE_2023.body(firstName),
-                    };
-        
-                    return smtpService().sendMailUsingSendInBlue(mailOptions);
-                })()
-            );
+            const user = await User.findOne({
+                where: { id: id, registerConference2023: true },
+            });
+            
+            if(!user){
+
+                await Promise.resolve(
+                    (() => {
+                        let mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: email,
+                        subject: LabEmails.REGISTER_CONFERENCE_2023.subject(),
+                        html: LabEmails.REGISTER_CONFERENCE_2023.body(firstName),
+                        };
+            
+                        return smtpService().sendMailUsingSendInBlue(mailOptions);
+                    })()
+                );
+
+                await User.update({
+                    registerConference2023: true
+                },
+                {
+                    where: {
+                        id: id
+                    },
+                })
+
+            }
             return res.status(HttpCodes.OK);   
         }catch (error) {
             console.log(error);
@@ -320,12 +337,64 @@ const SpeakersController = () => {
         }
     };
 
+    const getAllUserSpeaker = async (req, res) => {
+
+        try {
+           
+          const userSpeakers = await User.findAll({
+            where: {
+                speakersAuthorization: {[Op.eq]: "accepted"}
+            },
+            attributes: ["firstName","lastName","email","id", "abbrName", "img", "titleProfessions", "personalLinks"],
+            order: [["firstName", "ASC"]],
+          });
+    
+          return res.status(HttpCodes.OK).json({ userSpeakers });
+        } catch (error) {
+          console.log(error);
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+      };
+
+    const excelAllUserRegisterConference2023 = async (req, res) => {
+
+    }
+
+    const getAllPanelsOfOneUser = async (req, res) => {
+        const {id} = req.params
+        try {
+           
+            const userSpeakers = await SpeakerMemberPanel.findAll({
+              where: {
+                  UserId: id
+              },
+              include: [
+                    {
+                        model: SpeakersPanel,
+                    }
+                ],
+            });
+      
+            return res.status(HttpCodes.OK).json({ userSpeakers });
+          } catch (error) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+          }
+    }
+
     return {
         addNewPanelSpeaker,
         allPanelSpeakers,
         addUserSpeakerToPanel,
         removeUserSpeakerToPanel,
-        sendEmailRegisterConference2023
+        registerUserIfNotAreRegisterConference2023,
+        excelAllUserRegisterConference2023,
+        getAllUserSpeaker,
+        getAllPanelsOfOneUser
     }
 }
 
