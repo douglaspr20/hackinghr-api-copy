@@ -288,16 +288,24 @@ const privateRoutes = {
     "CouncilEventController.removePanelist",
   "GET /council/event/search-user": "CouncilEventController.search",
   "POST /council/event/panel/comment": "CouncilEventController.upsertComment",
-  "POST /user/email-authorization-speakers2023": "UserController.sendEmailAuthorizationSpeakersEndPoint",
-  "POST /user/email-authorization-action-speakers2023": "UserController.sendActiveOrDenyAuthorizationEndPoint",
+  "POST /user/email-authorization-speakers2023":
+    "UserController.sendEmailAuthorizationSpeakersEndPoint",
+  "POST /user/email-authorization-action-speakers2023":
+    "UserController.sendActiveOrDenyAuthorizationEndPoint",
   "POST /speakers/add-new-panel": "Speakers2023Controller.addNewPanelSpeaker",
   "GET /speakers/all-panel": "Speakers2023Controller.allPanelSpeakers",
-  "GET /speakers/all-users-speakers": "Speakers2023Controller.getAllUserSpeaker",
-  "GET /speakers/all-panel-of-user/:id": "Speakers2023Controller.getAllPanelsOfOneUser",
-  "POST /speakers/add-speaker-to-panel": "Speakers2023Controller.addUserSpeakerToPanel",
-  "POST /speakers/remove-user-panel": "Speakers2023Controller.removeUserSpeakerToPanel",
-  "POST /speakers/send-email-register-conference": "Speakers2023Controller.registerUserIfNotAreRegisterConference2023",
-  "GET /speakers/get-excel-all-person-register": "Speakers2023Controller.excelAllUserRegisterConference2023",
+  "GET /speakers/all-users-speakers":
+    "Speakers2023Controller.getAllUserSpeaker",
+  "GET /speakers/all-panel-of-user/:id":
+    "Speakers2023Controller.getAllPanelsOfOneUser",
+  "POST /speakers/add-speaker-to-panel":
+    "Speakers2023Controller.addUserSpeakerToPanel",
+  "POST /speakers/remove-user-panel":
+    "Speakers2023Controller.removeUserSpeakerToPanel",
+  "POST /speakers/send-email-register-conference":
+    "Speakers2023Controller.registerUserIfNotAreRegisterConference2023",
+  "GET /speakers/get-excel-all-person-register":
+    "Speakers2023Controller.excelAllUserRegisterConference2023",
   "POST /blogpost": "BlogPostController.create",
   "GET /blogpost": "BlogPostController.search",
   "GET /blogpost/blog/:blogPostId": "BlogPostController.getBlogPost",
@@ -306,6 +314,10 @@ const privateRoutes = {
   "DELETE /blogpost/:blogPostId": "BlogPostController.remove",
   "POST /blogPostLike/": "BlogPostLikeController.add",
   "DELETE /blogPostLike/:id": "BlogPostLikeController.remove",
+  "GET /simulation-sprints": "SimulationSprintController.getAll",
+  "GET /simulation-sprints/:id": "SimulationSprintController.get",
+  "GET /simulation-sprint/resource/:id":
+    "SimulationSprintResourcesController.get",
 };
 
 module.exports = privateRoutes;

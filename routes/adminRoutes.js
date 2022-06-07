@@ -103,11 +103,17 @@ const adminRoutes = {
   "POST /add-permission-partners": "UserController.addBusinessPartner",
   "POST /remove-permission-partners": "UserController.removeBusinessPartner",
   "POST /simulation-sprints": "SimulationSprintController.create",
-  "GET /simulation-sprints": "SimulationSprintController.getAll",
-  "GET /simulation-sprints/:id": "SimulationSprintController.get",
   "PUT /simulation-sprints/:id": "SimulationSprintController.update",
   "DELETE /simulation-sprints/:id": "SimulationSprintController.remove",
   "POST /simulation-sprints/duplicate": "SimulationSprintController.duplicate",
+  "GET /simulation-sprint/:SimulationSprintId/resources":
+    "SimulationSprintResourcesController.getAll",
+  "POST /simulation-sprint/resource":
+    "SimulationSprintResourcesController.create",
+  "PUT /simulation-sprint/resource/:id":
+    "SimulationSprintResourcesController.update",
+  "DELETE /simulation-sprint/resource/:id":
+    "SimulationSprintResourcesController.remove",
 };
 
 module.exports = adminRoutes;

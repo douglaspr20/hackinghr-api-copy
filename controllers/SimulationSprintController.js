@@ -5,7 +5,6 @@ const s3Service = require("../services/s3.service");
 
 const SimulationSprint = db.SimulationSprint;
 const SimulationSprintResource = db.SimulationSprintResource;
-const User = db.User;
 
 const SimulationSprintController = () => {
   /**
