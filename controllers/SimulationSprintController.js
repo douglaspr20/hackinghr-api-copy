@@ -8,6 +8,8 @@ const { convertToLocalTime } = require("../utils/format");
 
 const SimulationSprint = db.SimulationSprint;
 const SimulationSprintResource = db.SimulationSprintResource;
+const SimulationSprintParticipant = db.SimulationSprintParticipant;
+const User = db.User;
 
 const SimulationSprintController = () => {
   /**
@@ -52,6 +54,17 @@ const SimulationSprintController = () => {
           where: {
             id,
           },
+          include: [
+            {
+              model: SimulationSprintParticipant,
+              include: [
+                {
+                  model: User,
+                  attributes: ["firstName", "lastName", "email"],
+                },
+              ],
+            },
+          ],
         });
 
         if (!simulationSprint) {
@@ -79,9 +92,20 @@ const SimulationSprintController = () => {
     try {
       const simulationSprints = await SimulationSprint.findAll({
         order: [["id", "ASC"]],
-        include: {
-          model: SimulationSprintResource,
-        },
+        include: [
+          {
+            model: SimulationSprintResource,
+          },
+          {
+            model: SimulationSprintParticipant,
+            include: [
+              {
+                model: User,
+                attributes: ["firstName", "lastName", "email"],
+              },
+            ],
+          },
+        ],
       });
 
       return res.status(HttpCodes.OK).json({ simulationSprints });
