@@ -5,6 +5,7 @@ const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
 const smtpService = require("../services/smtp.service");
 const { convertToLocalTime } = require("../utils/format");
+const { Op } = require("sequelize");
 
 const SimulationSprint = db.SimulationSprint;
 const SimulationSprintResource = db.SimulationSprintResource;
@@ -89,8 +90,24 @@ const SimulationSprintController = () => {
    * @param {*} res
    */
   const getAll = async (req, res) => {
+    const { date } = req.query;
     try {
+      const timezone = moment.tz.guess();
+
+      const dateTransform = moment(date).tz(timezone).format();
+
+      let where = {};
+
+      if (date) {
+        where = {
+          ...where,
+          startDate: {
+            [Op.gte]: dateTransform,
+          },
+        };
+      }
       const simulationSprints = await SimulationSprint.findAll({
+        where,
         order: [["id", "ASC"]],
         include: [
           {
