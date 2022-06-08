@@ -48,8 +48,14 @@ const smtpService = () => {
         host: process.env.SMTP_HOST,
         secure: process.env.SMTP_SECURE,
         auth: {
+          type: "OAuth2",
+          clientId: process.env.FEEDBACK_EMAIL_CONFIG_CLIENTID,
+          clientSecret: process.env.FEEDBACK_EMAIL_CONFIG_CLIENT_SECRET,
           user: process.env.FEEDBACK_EMAIL_CONFIG_USER,
           pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
+          refreshToken: process.env.FEEDBACK_EMAIL_CONFIG_REFRESH_TOKEN,
+          accessToken: FEEDBACK_EMAIL_CONFIG_ACCESS_TOKEN,
+          expires: 1654704600986,
         },
         debug: false,
       });
