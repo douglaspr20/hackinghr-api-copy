@@ -26,6 +26,19 @@ const SimulationSprintParticipantController = () => {
       });
 
       if (simulationSprint) {
+        const simulationSprintParticipantExist =
+          await SimulationSprintParticipant.findOne({
+            where: {
+              SimulationSprintId,
+              UserId: user.id,
+            },
+          });
+
+        if (simulationSprintParticipantExist) {
+          return res.status(HttpCodes.BAD_REQUEST).json({
+            msg: "Bad Request: You have already joined this Simulation Sprint.",
+          });
+        }
         const simulationSprintParticipant =
           await SimulationSprintParticipant.create({
             ...req.body,
@@ -61,75 +74,10 @@ const SimulationSprintParticipantController = () => {
     }
   };
 
-  /**
-   * Get a skill cohort participant
-   * @param {*} req
-   * @param {*} res
-   */
-  const get = async (req, res) => {
-    const { skillCohortId, userId } = req.params;
-
-    try {
-      const skillCohortParticipant = await SkillCohortParticipant.findOne({
-        where: {
-          SkillCohortId: skillCohortId,
-          UserId: userId,
-        },
-      });
-
-      if (!skillCohortParticipant) {
-        return res.status(HttpCodes.BAD_REQUEST).json({
-          msg: "Bad Request: Skill Cohort Participant not found.",
-        });
-      }
-
-      return res.status(HttpCodes.OK).json({ skillCohortParticipant });
-    } catch (error) {
-      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
-        msg: "Internal server error",
-        error,
-      });
-    }
-  };
-
-  /**
-   * Get all skill cohort participants
-   * @param {*} req
-   * @param {*} res
-   */
-  const getAll = async (req, res) => {
-    const { SkillCohortId } = req.params;
-
-    let where = {};
-    try {
-      if (SkillCohortId) {
-        where = {
-          SkillCohortId,
-        };
-      }
-
-      const allSkillCohortParticipants = await SkillCohortParticipant.findAll({
-        where: {
-          ...where,
-          hasAccess: true,
-        },
-        include: db.User,
-      });
-
-      return res.status(HttpCodes.OK).json({ allSkillCohortParticipants });
-    } catch (error) {
-      console.log(error);
-      return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
-        msg: "Internal Server error",
-        error,
-      });
-    }
-  };
-
   const getParticipantsBySimulationSprint = async (req, res) => {
     const { SimulationSprintId } = req.params;
     try {
-      const simulattionSprintParticipants =
+      const simulationSprintParticipants =
         await SimulationSprintParticipant.findAll({
           where: {
             SimulationSprintId,
@@ -142,7 +90,7 @@ const SimulationSprintParticipantController = () => {
           ],
         });
 
-      return res.status(HttpCodes.OK).json({ simulattionSprintParticipants });
+      return res.status(HttpCodes.OK).json({ simulationSprintParticipants });
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -154,8 +102,6 @@ const SimulationSprintParticipantController = () => {
 
   return {
     create,
-    get,
-    getAll,
     getParticipantsBySimulationSprint,
   };
 };
