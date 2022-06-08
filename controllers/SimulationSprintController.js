@@ -1,7 +1,10 @@
 const db = require("../models");
+const moment = require("moment-timezone");
 const HttpCodes = require("http-codes");
 const { isValidURL } = require("../utils/profile");
 const s3Service = require("../services/s3.service");
+const smtpService = require("../services/smtp.service");
+const { convertToLocalTime } = require("../utils/format");
 
 const SimulationSprint = db.SimulationSprint;
 const SimulationSprintResource = db.SimulationSprintResource;
@@ -201,6 +204,71 @@ const SimulationSprintController = () => {
       .json({ msg: "Bad Request: Skill Cohort id is wrong." });
   };
 
+  const downloadICS = async (req, res) => {
+    const { id } = req.params;
+    try {
+      const simulationSprint = await SimulationSprint.findOne({
+        where: { id },
+      });
+
+      if (!simulationSprint) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      let startDate = moment(simulationSprint.startDate)
+        .tz("America/Los_Angeles")
+        .utcOffset(-7, true);
+
+      let endDate = moment(simulationSprint.endDate)
+        .tz("America/Los_Angeles")
+        .utcOffset(-7, true);
+
+      startDate = convertToLocalTime(startDate);
+      endDate = convertToLocalTime(endDate);
+
+      startDate = startDate.format("YYYY-MM-DD h:mm a");
+
+      endDate = endDate.format("YYYY-MM-DD h:mm a");
+
+      const localTimezone = moment.tz.guess();
+
+      const calendarInvite = smtpService().generateCalendarInvite(
+        startDate,
+        endDate,
+        simulationSprint.title,
+        simulationSprint.description.html.replace(/<[^>]+>/g, ""),
+        "https://www.hackinghrlab.io/simulation-sprints",
+        // event.location,
+        `${process.env.DOMAIN_URL}/simulation-sprints${simulationSprint.id}`,
+        "hacking Lab HR",
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        localTimezone
+      );
+
+      let icsContent = calendarInvite.toString();
+      icsContent = icsContent.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
+
+      res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${encodeURIComponent(simulationSprint.title)}.ics`
+      );
+      res.setHeader("Content-Length", icsContent.length);
+      return res.end(icsContent);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     get,
@@ -208,6 +276,7 @@ const SimulationSprintController = () => {
     update,
     getAll,
     duplicate,
+    downloadICS,
   };
 };
 

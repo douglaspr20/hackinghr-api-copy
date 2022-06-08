@@ -318,6 +318,10 @@ const privateRoutes = {
   "GET /simulation-sprints/:id": "SimulationSprintController.get",
   "GET /simulation-sprint/resource/:id":
     "SimulationSprintResourcesController.get",
+  "POST /simulation-sprint/participant":
+    "SimulationSprintParticipantController.create",
+  "GET /simulation-sprint/participant/:SimulationSprintId":
+    "SimulationSprintParticipantController.getParticipantsBySimulationSprint",
 };
 
 module.exports = privateRoutes;
