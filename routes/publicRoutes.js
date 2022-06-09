@@ -21,6 +21,9 @@ const publicRoutes = {
   "GET /channel-category": "ChannelCategoryController.getAll",
   "GET /env/editor": "UserController.getEditorSignature",
   "GET /council/event/panel/:id/ics": "CouncilEventController.downloadICS",
+  "GET /speakers/all-panel": "Speakers2023Controller.allPanelSpeakers",
+  "GET /speakers/all-users-speakers": "Speakers2023Controller.getAllUserSpeaker",
+  "GET /speakers/all-panel-of-user/:id": "Speakers2023Controller.getAllPanelsOfOneUser",
 };
 
 module.exports = publicRoutes;

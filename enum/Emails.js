@@ -805,18 +805,18 @@ module.exports = {
 
   USER_BECOME_SPEAKER_2023: {
     subject: `User want apply to the business partner community`,
-    body: (user, link) => `
+    body: (firstName, lastName, email, company, sizeOfOrganization, personalLinks, link) => `
       <p>
-      ${user.firstName} ${user.lastName} <br>
+      ${firstName} ${lastName} <br>
       </p>
       <p>
-      <strong>Email:</strong> ${user.email}<br>
+      <strong>Email:</strong> ${email}<br>
       </p>
-      <p><strong>Company:</strong> ${user.company}</p>
-      <p><strong>Company size:</strong> ${user.sizeOfOrganization}</p>
+      <p><strong>Company:</strong> ${company}</p>
+      <p><strong>Company size:</strong> ${sizeOfOrganization}</p>
       <p></p>
       <p>
-        <strong>Linkedin:</strong> ${user.personalLinks.linkedin}<br>
+        <strong>Linkedin:</strong> ${personalLinks.linkedin}<br>
       </p>
       </p>
       <div>
@@ -940,8 +940,8 @@ module.exports = {
   },
   USER_AFTER_APPLY_SPEAKER_2023: {
     subject: `Your request has been received`,
-    body: (user) =>
-      `<p>Hi ${user.firstName},</p>
+    body: (firstName) =>
+      `<p>Hi ${firstName},</p>
       <p>Thank you for contact us.</p>
       <p>We will answer you in the next
       48 hours.</p> 

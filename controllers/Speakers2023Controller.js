@@ -4,6 +4,12 @@ const { Op } = Sequelize;
 const HttpCodes = require("http-codes");
 const smtpService = require("../services/smtp.service");
 const { LabEmails } = require("../enum");
+const path = require("path")
+const fs = require("fs")
+const moment = require("moment")
+const {
+    convertJSONToExcel, convertJSONToExcelBlob
+  } = require("../utils/format");
 
 const User = db.User;
 const SpeakersPanel = db.SpeakerPanel;
@@ -48,19 +54,8 @@ const SpeakersController = () => {
     };
 
     const allPanelSpeakers = async (req, res) => {
-        const { id } = req.user.dataValues;
 
         try {
-
-            const { dataValues: user } = await User.findOne({
-                where: { id: id, speakersAuthorization: "accepted" },
-            });
-    
-            if (!user) {
-            return res
-                .status(HttpCodes.BAD_REQUEST)
-                .json({ msg: "Host user not found" });
-            }
 
             const panelsSpeakers = await SpeakersPanel.findAll({
                 order: [["id", "DESC"]],
@@ -105,8 +100,7 @@ const SpeakersController = () => {
         try {
 
             if(role === "admin"){
-
-                const response = await Promise.all(
+                await Promise.all(
                     usersNames.map(async (user) => {
                         const userReadyJoin = await SpeakerMemberPanel.findOne({
                             where: { UserId: user[0], SpeakersPanelId: panel.id},
@@ -296,15 +290,11 @@ const SpeakersController = () => {
 
     const registerUserIfNotAreRegisterConference2023 = async (req, res) => {
 
-        const { email, firstName, id } = req.user.dataValues;
+        const { email, firstName, id, registerConference2023 } = req.user.dataValues;
 
         try{
-            const user = await User.findOne({
-                where: { id: id, registerConference2023: true },
-            });
-            
-            if(!user){
-
+        
+            if(!registerConference2023){
                 await Promise.resolve(
                     (() => {
                         let mailOptions = {
@@ -326,9 +316,11 @@ const SpeakersController = () => {
                         id: id
                     },
                 })
+                return res.status(HttpCodes.OK).json('funciona'); 
 
-            }
-            return res.status(HttpCodes.OK);   
+            }else{
+                return res.status(HttpCodes.OK); 
+            }  
         }catch (error) {
             console.log(error);
             return res
@@ -356,10 +348,48 @@ const SpeakersController = () => {
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
-      };
+    };
 
     const excelAllUserRegisterConference2023 = async (req, res) => {
 
+        try{
+
+            const allUserConference = await User.findAll({where: {registerConference2023: true}})
+
+            const nombre = moment().format("MM-DD-HH-mm-s")
+
+            await convertJSONToExcelBlob(
+                nombre,
+                [
+                  {
+                    label: "First Name",
+                    value: "firstName",
+                    width: 20,
+                  },
+                  {
+                    label: "Last Name",
+                    value: "lastName",
+                    width: 20,
+                  },
+                  {
+                    label: "Email",
+                    value: "email",
+                    width: 20,
+                  },
+                ],
+                allUserConference.map((user) => user.toJSON())
+            );
+
+            await res.status(HttpCodes.OK).download(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`, function(){
+                fs.unlinkSync(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`)
+            })
+
+        }catch (error) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+          }
     }
 
     const getAllPanelsOfOneUser = async (req, res) => {
