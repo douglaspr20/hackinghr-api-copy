@@ -1265,18 +1265,9 @@ const UserController = () => {
   };
 
   const sendEmailAuthorizationSpeakersEndPoint = async (req, res) => {
-    const { userId } = req.body;
+    const { userId, firstName, email, lastName, company, sizeOfOrganization, personalLinks } = req.body;
 
     try {
-      const { dataValues: user } = await User.findOne({
-        where: { id: userId },
-      });
-
-      if (!user) {
-        return res
-          .status(HttpCodes.NOT_FOUND)
-          .json({ msg: "Host user not found" });
-      }
 
       const link = `${process.env.DOMAIN_URL}speakers2023?id=${userId}`;
       const [numberOfAffectedRows, affectedRows] = await User.update(
@@ -1295,7 +1286,7 @@ const UserController = () => {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: "enrique@hackinghr.io",
             subject: LabEmails.USER_BECOME_SPEAKER_2023.subject,
-            html: LabEmails.USER_BECOME_SPEAKER_2023.body(user, link),
+            html: LabEmails.USER_BECOME_SPEAKER_2023.body(firstName, email, lastName, company, sizeOfOrganization, personalLinks, link),
           };
 
           return smtpService().sendMailUsingSendInBlue(mailOptions);
@@ -1306,9 +1297,9 @@ const UserController = () => {
         (() => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-            to: user.email,
+            to: email,
             subject: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.subject,
-            html: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.body(user),
+            html: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.body(firstName),
           };
 
           return smtpService().sendMailUsingSendInBlue(mailOptions);
