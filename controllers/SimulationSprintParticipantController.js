@@ -2,7 +2,6 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const smtpService = require("../services/smtp.service");
 const { LabEmails } = require("../enum");
-const moment = require("moment");
 
 const SimulationSprintParticipant = db.SimulationSprintParticipant;
 const SimulationSprint = db.SimulationSprint;
@@ -85,7 +84,7 @@ const SimulationSprintParticipantController = () => {
           include: [
             {
               model: User,
-              attributes: ["firstName", "lastName", "email"],
+              attributes: ["firstName", "lastName", "email", "img"],
             },
           ],
         });

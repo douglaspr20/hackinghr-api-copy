@@ -114,6 +114,10 @@ const adminRoutes = {
     "SimulationSprintResourcesController.update",
   "DELETE /simulation-sprint/resource/:id":
     "SimulationSprintResourcesController.remove",
+  "POST /simulation-sprint/group": "SimulationSprintGroupController.create",
+  "PUT /simulation-sprint/group/:id": "SimulationSprintGroupController.update",
+  "DELETE /simulation-sprint/group/:id":
+    "SimulationSprintGroupController.remove",
 };
 
 module.exports = adminRoutes;

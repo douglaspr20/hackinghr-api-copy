@@ -146,7 +146,7 @@ const SimulationSprintResourcesController = () => {
 
     return res
       .status(HttpCodes.BAD_REQUEST)
-      .json({ msg: "Bad Request: Skill Cohort id is wrong." });
+      .json({ msg: "Bad Request: Simulation Sprint Resource id is wrong." });
   };
 
   return {

@@ -322,6 +322,7 @@ const privateRoutes = {
     "SimulationSprintParticipantController.create",
   "GET /simulation-sprint/participant/:SimulationSprintId":
     "SimulationSprintParticipantController.getParticipantsBySimulationSprint",
+  "GET /simulation-sprint/group/:id": "SimulationSprintGroupController.get",
 };
 
 module.exports = privateRoutes;

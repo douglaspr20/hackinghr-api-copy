@@ -10,6 +10,8 @@ const { Op } = require("sequelize");
 const SimulationSprint = db.SimulationSprint;
 const SimulationSprintResource = db.SimulationSprintResource;
 const SimulationSprintParticipant = db.SimulationSprintParticipant;
+const SimulationSprintGroup = db.SimulationSprintGroup;
+
 const User = db.User;
 
 const SimulationSprintController = () => {
@@ -57,11 +59,19 @@ const SimulationSprintController = () => {
           },
           include: [
             {
+              model: SimulationSprintGroup,
+              include: [
+                {
+                  model: SimulationSprintParticipant,
+                },
+              ],
+            },
+            {
               model: SimulationSprintParticipant,
               include: [
                 {
                   model: User,
-                  attributes: ["firstName", "lastName", "email"],
+                  attributes: ["firstName", "lastName", "email", "img"],
                 },
               ],
             },
