@@ -2,6 +2,7 @@ const moment = require("moment-timezone");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Parser } = require("json2csv");
 const isEmpty = require("lodash/isEmpty");
+const path = require("path")
 const Excel = require("exceljs");
 
 const workbook = new Excel.Workbook();
@@ -88,6 +89,7 @@ function convertJSONToCSV(content) {
 }
 
 async function convertJSONToExcel(sheet, fields, content) {
+
   // Create page
   const ws1 = workbook.addWorksheet(sheet);
   ws1.addRow(fields.map((item) => item.label));
@@ -105,6 +107,27 @@ async function convertJSONToExcel(sheet, fields, content) {
   return buffer;
 }
 
+
+async function convertJSONToExcelBlob(sheet, fields, content) {
+
+  // Create page
+  const wb = workbook.addWorksheet(sheet);
+  wb.addRow(fields.map((item) => item.label));
+  fields.forEach((field, index) => {
+    wb.getColumn(index + 1).width = field.width;
+  });
+
+  content.forEach((item) => {
+    const row = fields.map((field) => item[field.value]);
+    wb.addRow(row);
+  });
+
+  await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
+
+  return;
+}
+
+
 module.exports = {
   getEventPeriod,
   convertToCertainTime,
@@ -113,4 +136,5 @@ module.exports = {
   convertJSONToCSV,
   convertJSONToExcel,
   convertToUserTimezone,
+  convertJSONToExcelBlob
 };

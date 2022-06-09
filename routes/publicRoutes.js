@@ -22,6 +22,11 @@ const publicRoutes = {
   "GET /env/editor": "UserController.getEditorSignature",
   "GET /council/event/panel/:id/ics": "CouncilEventController.downloadICS",
   "GET /simulation-sprint/ics/:id": "SimulationSprintController.downloadICS",
+  "GET /speakers/all-panel": "Speakers2023Controller.allPanelSpeakers",
+  "GET /speakers/all-users-speakers":
+    "Speakers2023Controller.getAllUserSpeaker",
+  "GET /speakers/all-panel-of-user/:id":
+    "Speakers2023Controller.getAllPanelsOfOneUser",
 };
 
 module.exports = publicRoutes;
