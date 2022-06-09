@@ -6,6 +6,8 @@ const s3Service = require("../services/s3.service");
 const smtpService = require("../services/smtp.service");
 const { convertToLocalTime } = require("../utils/format");
 const { Op } = require("sequelize");
+const cronService = require("../services/cron.service");
+const { LabEmails } = require("../enum");
 
 const SimulationSprint = db.SimulationSprint;
 const SimulationSprintResource = db.SimulationSprintResource;
@@ -15,11 +17,119 @@ const SimulationSprintGroup = db.SimulationSprintGroup;
 const User = db.User;
 
 const SimulationSprintController = () => {
-  /**
-   * Method to create skill cohorts
-   * @param {*} req
-   * @param {*} res
-   */
+  const setSimulationSprintReminders = (simulationSprint) => {
+    const dateBefore24Hours = convertToLocalTime(
+      simulationSprint.startDate
+    ).subtract(1, "days");
+
+    const dayStart = convertToLocalTime(simulationSprint.startDate);
+
+    const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
+    const interval2 = `0 ${dayStart.minutes()} ${dayStart.hours()} ${dayStart.date()} ${dayStart.month()} *`;
+
+    console.log("////////////////////////////////////////////");
+    console.log("/////// setSimulationSprint //////");
+
+    if (dateBefore24Hours.isAfter(moment())) {
+      cronService().addTask(
+        `${simulationSprint.id}-24`,
+        interval1,
+        true,
+        async () => {
+          let targetSimulationSprint = await SimulationSprint.findOne({
+            where: { id: simulationSprint.id },
+          });
+          targetSimulationSprint = targetSimulationSprint.toJSON();
+
+          const simulationSprintParticipants =
+            await SimulationSprintParticipant.findAll({
+              where: {
+                SimulationSprintId: targetSimulationSprint.id,
+              },
+              include: [
+                {
+                  model: User,
+                  attributes: ["firstName", "lastName", "email"],
+                },
+              ],
+            });
+
+          await Promise.all(
+            simulationSprintParticipants.map((participant) => {
+              const _participant = participant.User.toJSON();
+
+              let mailOptions = {
+                from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+                subject: LabEmails.SIMULATION_SPRINT_REMINDER_24_HOURS.subject(
+                  targetSimulationSprint
+                ),
+                html: LabEmails.SIMULATION_SPRINT_REMINDER_24_HOURS.body(
+                  _participant,
+                  targetSimulationSprint
+                ),
+              };
+
+              console.log("***** mailOptions ", mailOptions);
+
+              return smtpService().sendMailUsingSendInBlue(mailOptions);
+            })
+          );
+        }
+      );
+    }
+
+    if (dayStart.isAfter(moment())) {
+      cronService().addTask(
+        `${simulationSprint.id}-0`,
+        interval2,
+        true,
+        async () => {
+          let targetSimulationSprint = await SimulationSprint.findOne({
+            where: { id: simulationSprint.id },
+          });
+          targetSimulationSprint = targetSimulationSprint.toJSON();
+
+          const simulationSprintParticipants =
+            await SimulationSprintParticipant.findAll({
+              where: {
+                SimulationSprintId: targetSimulationSprint.id,
+              },
+              include: [
+                {
+                  model: User,
+                  attributes: ["firstName", "lastName", "email"],
+                },
+              ],
+            });
+
+          await Promise.all(
+            simulationSprintParticipants.map((participant) => {
+              const _participant = participant.User.toJSON();
+              let mailOptions = {
+                from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+                subject: LabEmails.SIMULATION_SPRINT_REMINDER_SAME_DAY.subject(
+                  targetSimulationSprint
+                ),
+                html: LabEmails.SIMULATION_SPRINT_REMINDER_SAME_DAY.body(
+                  _participant,
+                  targetSimulationSprint
+                ),
+              };
+
+              console.log("***** mailOptions ", mailOptions);
+              return smtpService().sendMailUsingSendInBlue(mailOptions);
+            })
+          );
+        }
+      );
+    }
+  };
+
+  const removeSimulationSprintReminders = (simulationSprintId) => {
+    cronService().stopTask(`${simulationSprintId}-24`);
+    cronService().stopTask(`${simulationSprintId}-0`);
+  };
+
   const create = async (req, res) => {
     const { body } = req;
 
@@ -32,6 +142,8 @@ const SimulationSprintController = () => {
       }
 
       const simulationSprint = await SimulationSprint.create({ ...body });
+
+      setSimulationSprintReminders(simulationSprint);
 
       return res.status(HttpCodes.OK).json({ simulationSprint });
     } catch (error) {
@@ -240,6 +352,8 @@ const SimulationSprintController = () => {
             id,
           },
         });
+
+        removeSimulationSprintReminders(id);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {

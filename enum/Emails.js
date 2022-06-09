@@ -1638,4 +1638,43 @@ module.exports = {
     <p>Thanks for join to simulation Sprint</p>
     `,
   },
+  SIMULATION_SPRINT_REMINDER_24_HOURS: {
+    subject: (simulationSprint) =>
+      `${simulationSprint.title} is coming up in one day!`,
+    body: (user, simulationSprint) => `
+      <p>
+      Hi, ${user.firstName}
+      </p>
+      <p>
+      We are so excited you are joining us at ${simulationSprint.title}.
+      </p>
+      <p>
+      remember that tomorrow the simulation starts so don't miss it!
+      </p>
+      <br />
+      Thank you!
+      <br />
+      Hacking HR Team
+      <br/>
+    `,
+  },
+  SIMULATION_SPRINT_REMINDER_SAME_DAY: {
+    subject: (simulationSprint) => `${simulationSprint.title} starts today!`,
+    body: (user, simulationSprint) => `
+    <p>
+    Hi, ${user.firstName}
+    </p>
+    <p>
+    today we start the simulation ${simulationSprint.title}.
+    </p>
+    <p>
+    Remember to fulfill each of your assignments
+    </p>
+    <br />
+    Thank you!
+    <br />
+    Hacking HR Team
+    <br/>
+  `,
+  },
 };
