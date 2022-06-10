@@ -66,7 +66,7 @@ const EventController = () => {
             const _user = user.toJSON();
             const targetEventDate = moment(targetEvent.startDate);
             let mailOptions = {
-              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               subject: LabEmails.EVENT_REMINDER_24_HOURS.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_24_HOURS.body(
                 _user,
@@ -78,7 +78,7 @@ const EventController = () => {
 
             console.log("***** mailOptions ", mailOptions);
 
-            return smtpService().sendMail(mailOptions);
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
           })
         );
       });
@@ -102,7 +102,7 @@ const EventController = () => {
           eventUsers.map((user) => {
             const _user = user.toJSON();
             let mailOptions = {
-              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               subject: LabEmails.EVENT_REMINDER_45_MINUTES.subject(targetEvent),
               html: LabEmails.EVENT_REMINDER_45_MINUTES.body(
                 _user,
@@ -111,7 +111,7 @@ const EventController = () => {
             };
 
             console.log("***** mailOptions ", mailOptions);
-            return smtpService().sendMail(mailOptions);
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
           })
         );
       });
@@ -137,7 +137,7 @@ const EventController = () => {
           eventUsers.map((user) => {
             const _user = user.toJSON();
             let mailOptions = {
-              from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+              from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               to: _user.email,
               subject: LabEmails.EVENT_JUST_END.subject(targetEvent),
               html: LabEmails.EVENT_JUST_END.body(_user, targetEvent, link),
@@ -145,7 +145,7 @@ const EventController = () => {
 
             console.log("***** mailOptions ", mailOptions);
 
-            return smtpService().sendMail(mailOptions);
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
           })
         );
       });
@@ -204,7 +204,7 @@ const EventController = () => {
     );
 
     let mailOptions = {
-      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
       subject: LabEmails.PARTICIPANTS_LIST_TO_ORGANIZER.subject(),
       attachments: [
         {
@@ -215,7 +215,7 @@ const EventController = () => {
     };
     console.log("******* start sending email ******");
     console.log("***** mailOptions = ", mailOptions);
-    await smtpService().sendMail(mailOptions);
+    await smtpService().sendMailUsingSendInBlue(mailOptions);
     console.log("******* end sending email ******");
   };
 
@@ -247,7 +247,7 @@ const EventController = () => {
 
   const sendMessage = async (users, subject, message) => {
     let mailOptions = {
-      from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
       subject,
       html: message,
     };
@@ -258,7 +258,7 @@ const EventController = () => {
           ...mailOptions,
         };
 
-        return smtpService().sendMail(mailOptions);
+        return smtpService().sendMailUsingSendInBlue(mailOptions);
       })
     );
   };
@@ -744,7 +744,7 @@ const EventController = () => {
               }),
             };
             console.log("***** mailOptions ", mailOptions);
-            smtpService().sendMail(mailOptions);
+            smtpService().sendMailUsingSendInBlue(mailOptions);
           })()
         );
 
@@ -774,14 +774,14 @@ const EventController = () => {
       const users = await Promise.all(requests);
 
       let mailOptions = {
-        from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         subject: `Did you attend ${event.title}? – Get Your Digital Certificate!`,
       };
 
       requests = users.map((user) => {
         mailOptions.html = EmailContent.CLAIM_EMAIL(user, event);
 
-        return smtpService().sendMail(mailOptions);
+        return smtpService().sendMailUsingSendInBlue(mailOptions);
       });
       await Promise.all(requests);
     } catch (error) {
@@ -902,7 +902,7 @@ const EventController = () => {
 
     try {
       let mailOptions = {
-        from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         subject,
         html: message,
       };
@@ -913,7 +913,7 @@ const EventController = () => {
             ...mailOptions,
           };
 
-          return smtpService().sendMail(mailOptions);
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
         })
       );
 
@@ -1011,7 +1011,7 @@ const EventController = () => {
         // event.location,
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
-        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        process.env.SEND_IN_BLUE_SMTP_SENDER,
         _userTimezone.utc[0]
       );
 
@@ -1148,7 +1148,7 @@ const EventController = () => {
 
         if (event.showClaim === 1) {
           let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             subject: LabEmails.EVENT_CLAIM_CREDIT.subject(event.title),
             html: LabEmails.EVENT_CLAIM_CREDIT.body(user, event),
             attachments: [
@@ -1163,7 +1163,7 @@ const EventController = () => {
             ],
           };
 
-          await smtpService().sendMail(mailOptions);
+          await smtpService().sendMailUsingSendInBlue(mailOptions);
 
           return res.status(HttpCodes.OK).json({});
         }
@@ -1202,12 +1202,12 @@ const EventController = () => {
         event = event.toJSON();
 
         let mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           subject: LabEmails.EVENT_CLAIM_ATTENDANCE.subject(event.title),
           html: LabEmails.EVENT_CLAIM_ATTENDANCE.body(user, event),
         };
 
-        await smtpService().sendMail(mailOptions);
+        await smtpService().sendMailUsingSendInBlue(mailOptions);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {

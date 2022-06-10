@@ -211,13 +211,13 @@ const ConferenceController = () => {
 
         if (library.showClaim === 1) {
           let mailOptions = {
-            from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: user.email,
             subject: LabEmails.LIBRARY_CLAIM.subject(library.title),
             html: LabEmails.LIBRARY_CLAIM.body(user, library),
           };
 
-          await smtpService().sendMail(mailOptions);
+          await smtpService().sendMailUsingSendInBlue(mailOptions);
 
           return res.status(HttpCodes.OK).json({});
         }
