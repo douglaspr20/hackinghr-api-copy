@@ -55,7 +55,6 @@ const smtpService = () => {
           // pass: process.env.FEEDBACK_EMAIL_CONFIG_PASSWORD,
           refreshToken: process.env.FEEDBACK_EMAIL_CONFIG_REFRESH_TOKEN,
           accessToken: process.env.FEEDBACK_EMAIL_CONFIG_ACCESS_TOKEN,
-          expires: 1654704600986,
         },
         debug: false,
       });
