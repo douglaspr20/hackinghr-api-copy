@@ -365,7 +365,7 @@ const AnnualConferenceController = () => {
         };
 
         let mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
           subject: LabEmails.LIBRARY_CLAIM.subject(session.title),
           html: LabEmails.LIBRARY_CLAIM.body(user, session),
@@ -373,7 +373,7 @@ const AnnualConferenceController = () => {
 
         // console.log(mailOptions);
 
-        await smtpService().sendMail(mailOptions);
+        await smtpService().sendMailUsingSendInBlue(mailOptions);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {
@@ -541,7 +541,7 @@ const AnnualConferenceController = () => {
         // event.location,
         `${process.env.DOMAIN_URL}${annualConference.id}`,
         "hacking Lab HR",
-        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        process.env.SEND_IN_BLUE_SMTP_SENDER,
         localTimezone
       );
 

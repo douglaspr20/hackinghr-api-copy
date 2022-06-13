@@ -187,7 +187,9 @@ const AuthController = () => {
                   `,
         };
 
-        const sentResult = await smtpService().sendMail(mailOptions);
+        const sentResult = await smtpService().sendMailUsingSendInBlue(
+          mailOptions
+        );
         if (sentResult) {
           return res
             .status(HttpCodes.OK)

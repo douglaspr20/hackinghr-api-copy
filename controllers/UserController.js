@@ -217,7 +217,7 @@ const UserController = () => {
             // event.location,
             `${process.env.DOMAIN_URL}${event.id}`,
             event.organizer,
-            process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            process.env.SEND_IN_BLUE_SMTP_SENDER,
             userTimezone.utc[0]
           );
         } catch (error) {
@@ -566,13 +566,13 @@ const UserController = () => {
 
       email.map((item) => {
         const mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: item.trim(),
           subject: `${user.firstName} thought you’d like to join the best platform for HR pros`,
           html: EmailContent.INVITE_EMAIL(user),
           contentType: "text/html",
         };
-        listPromises.push(smtpService().sendMail(mailOptions));
+        listPromises.push(smtpService().sendMailUsingSendInBlue(mailOptions));
       });
 
       await Promise.all(listPromises);
@@ -1265,10 +1265,17 @@ const UserController = () => {
   };
 
   const sendEmailAuthorizationSpeakersEndPoint = async (req, res) => {
-    const { userId, firstName, email, lastName, company, sizeOfOrganization, personalLinks } = req.body;
+    const {
+      userId,
+      firstName,
+      email,
+      lastName,
+      company,
+      sizeOfOrganization,
+      personalLinks,
+    } = req.body;
 
     try {
-
       const link = `${process.env.DOMAIN_URL}speakers2023?id=${userId}`;
       const [numberOfAffectedRows, affectedRows] = await User.update(
         { speakersAuthorization: "pending" },
@@ -1286,7 +1293,15 @@ const UserController = () => {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: "enrique@hackinghr.io",
             subject: LabEmails.USER_BECOME_SPEAKER_2023.subject,
-            html: LabEmails.USER_BECOME_SPEAKER_2023.body(firstName, email, lastName, company, sizeOfOrganization, personalLinks, link),
+            html: LabEmails.USER_BECOME_SPEAKER_2023.body(
+              firstName,
+              email,
+              lastName,
+              company,
+              sizeOfOrganization,
+              personalLinks,
+              link
+            ),
           };
 
           return smtpService().sendMailUsingSendInBlue(mailOptions);
