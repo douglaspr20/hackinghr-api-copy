@@ -41,6 +41,25 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.DATE,
       },
+      metaData: {
+        type: DataTypes.STRING,
+      },
+      recertificactionCredits: {
+        type: DataTypes.STRING,
+      },
+      link: {
+        type: DataTypes.STRING,
+      },
+      objetives: {
+        type: DataTypes.STRING,
+      },
+      category: {
+        type: DataTypes.ARRAY(DataTypes.STRING),
+        defaultValue: [],
+      },
+      type: {
+        type: DataTypes.STRING,
+      }
     },
 
     {

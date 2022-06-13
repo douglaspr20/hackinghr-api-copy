@@ -293,6 +293,10 @@ const privateRoutes = {
   "POST /speakers/add-new-panel": "Speakers2023Controller.addNewPanelSpeaker",
   "POST /speakers/add-speaker-to-panel": "Speakers2023Controller.addUserSpeakerToPanel",
   "POST /speakers/remove-user-panel": "Speakers2023Controller.removeUserSpeakerToPanel",
+  "GET /speakers/get-one-panel/:id": "Speakers2023Controller.panelForId",
+  "GET /speakers/get-panel-admin": "Speakers2023Controller.allPanelSpeakersAdmin",
+  "POST /speakers/edit-panel": "Speakers2023Controller.editPanelsSpeaker2023",
+  "DELETE /speakers/delete-panel/:PanelId": "Speakers2023Controller.deletePanelsSpeaker2023",
   "POST /speakers/send-email-register-conference": "Speakers2023Controller.registerUserIfNotAreRegisterConference2023",
   "GET /speakers/get-excel-all-person-register": "Speakers2023Controller.excelAllUserRegisterConference2023",
   "POST /blogpost": "BlogPostController.create",
@@ -303,6 +307,16 @@ const privateRoutes = {
   "DELETE /blogpost/:blogPostId": "BlogPostController.remove",
   "POST /blogPostLike/": "BlogPostLikeController.add",
   "DELETE /blogPostLike/:id": "BlogPostLikeController.remove",
+  "POST /speakers/add-sponsor": "Speakers2023Controller.addSponsor",
+  "GET /speakers/get-all-sponsor": "Speakers2023Controller.getAllSponsor",
+  "GET /speakers/get-one-sponsor/:SponsorId": "Speakers2023Controller.getOneSponsor",
+  "POST /speakers/edit-sponsor": "Speakers2023Controller.editSponsor",
+  "DELETE /speakers/delete-sponsor/:SponsorId": "Speakers2023Controller.deleteSponsor",
+  "POST /speakers/add-parraf": "Speakers2023Controller.addParraf",
+  "GET /speakers/get-all-parraf": "Speakers2023Controller.getAllParraf",
+  "GET /speakers/get-one-parraf/:ParrafId": "Speakers2023Controller.getOneParraf",
+  "DELETE /speakers/delete-parraf/:ParrafId": "Speakers2023Controller.deleteParraf",
+  "POST /speakers/edit-parraf": "Speakers2023Controller.editParraf",
 };
 
 module.exports = privateRoutes;
