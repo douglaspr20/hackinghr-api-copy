@@ -445,7 +445,7 @@ const CourseController = () => {
         };
 
         let mailOptions = {
-          from: process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+          from: process.env.SEND_IN_BLUE_SMTP_SENDER,
           to: user.email,
           subject: LabEmails.COURSE_CLAIM.subject(course.title),
           html: LabEmails.COURSE_CLAIM.body(user, course),
@@ -458,7 +458,7 @@ const CourseController = () => {
           ],
         };
 
-        await smtpService().sendMail(mailOptions);
+        await smtpService().sendMailUsingSendInBlue(mailOptions);
 
         return res.status(HttpCodes.OK).json({});
       } catch (error) {

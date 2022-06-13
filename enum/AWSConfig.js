@@ -19,6 +19,7 @@ module.exports = {
     POST_IMAGE_FOLDER: "post",
     SKILL_COHORT_IMAGE_FOLDER: "skill-cohort",
     BLOG_POST_IMAGE_FOLDER: "blogPost",
+    SIMULATION_SPRINT_IMAGE_FOLDER: "simulationSprints",
     //FILES
     UPLOAD_FILES_LAB: "upload-files-lab",
     // Resume
