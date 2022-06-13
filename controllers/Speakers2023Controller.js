@@ -606,7 +606,7 @@ const SpeakersController = () => {
                 type
             },{where: {id: PanelId}})
 
-            return res.status(HttpCodes.OK).json("funcionando");
+            return res.status(HttpCodes.OK).json({msg: "Speaker update"})
 
         } catch (error) {
             console.log(error);
@@ -665,7 +665,7 @@ const SpeakersController = () => {
                 title,
             })
 
-            return res.status(HttpCodes.OK).json("funciona");
+            return res.status(HttpCodes.OK).json({msg: "Sponsors create"})
 
         } catch (error) {
             console.log(error);
@@ -733,7 +733,7 @@ const SpeakersController = () => {
                 title,
             },{where: {id: id}})
 
-            return res.status(HttpCodes.OK).json("funcionando");
+            return res.status(HttpCodes.OK).json({msg: "Sponsor update"});
 
         } catch (error) {
             console.log(error);
@@ -758,7 +758,7 @@ const SpeakersController = () => {
 
             await SponsorsConference2023.destroy({where: {id: SponsorId}})
 
-            return res.status(HttpCodes.OK).json("todo bien");
+            return res.status(HttpCodes.OK).json({msg: "Delete sponsor"});
 
         } catch (error) {
             console.log(error);
@@ -771,7 +771,6 @@ const SpeakersController = () => {
     const addParraf = async (req, res) => {
 
         const { parraf } = req.body;
-        console.log(parraf)
         
         const { role } = req.user.dataValues;
 
@@ -791,7 +790,7 @@ const SpeakersController = () => {
                 text,
             })
 
-            return res.status(HttpCodes.OK).json("funciona");
+            return res.status(HttpCodes.OK).json({msg: "Add parraf"})
 
         } catch (error) {
             console.log(error);
@@ -858,7 +857,7 @@ const SpeakersController = () => {
                 text,
             },{where: {id: id}})
 
-            return res.status(HttpCodes.OK).json("funcionando");
+            return res.status(HttpCodes.OK).json({msg: "Edit parraf"})
 
         } catch (error) {
             console.log(error);
@@ -883,7 +882,7 @@ const SpeakersController = () => {
 
             await ParrafConference2023.destroy({where: {id: ParrafId}})
 
-            return res.status(HttpCodes.OK).json("todo bien");
+            return res.status(HttpCodes.OK).json({msg: "delete parraf"})
 
         } catch (error) {
             console.log(error);
