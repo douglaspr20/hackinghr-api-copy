@@ -1266,22 +1266,22 @@ const UserController = () => {
 
   const sendEmailAuthorizationSpeakersEndPoint = async (req, res) => {
     const {
-      userId,
+      id,
       firstName,
       email,
       lastName,
       company,
       sizeOfOrganization,
       personalLinks,
-    } = req.body;
+    } = req.user.dataValues;
 
     try {
-      const link = `${process.env.DOMAIN_URL}speakers2023?id=${userId}`;
+      const link = `${process.env.DOMAIN_URL}speakers2023?id=${id}`;
       const [numberOfAffectedRows, affectedRows] = await User.update(
         { speakersAuthorization: "pending" },
         {
           where: {
-            id: userId,
+            id: id,
           },
           returning: true,
         }

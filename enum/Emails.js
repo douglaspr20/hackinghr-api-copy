@@ -816,7 +816,7 @@ module.exports = {
       <p><strong>Company size:</strong> ${sizeOfOrganization}</p>
       <p></p>
       <p>
-        <strong>Linkedin:</strong> ${personalLinks.linkedin}<br>
+        <strong>Linkedin:</strong> ${personalLinks.contact}<br>
       </p>
       </p>
       <div>
