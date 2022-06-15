@@ -7,8 +7,9 @@ const { LabEmails } = require("../enum");
 const path = require("path")
 const fs = require("fs")
 const moment = require("moment")
+const {formatExcelUsers} = require("../utils/formatExportUsersExcel.js")
 const {
-    convertJSONToExcel, convertJSONToExcelBlob
+    convertJSONToExcelBlob
   } = require("../utils/format");
 
 const User = db.User;
@@ -212,7 +213,7 @@ const SpeakersController = () => {
 
     const addUserSpeakerToPanel = async (req, res) => {
         const { data } = req.body;
-        const {usersNames, bul, panel} = data
+        const {usersNames, bul, panel, type} = data
 
         const { id, role } = req.user.dataValues;
 
@@ -220,11 +221,12 @@ const SpeakersController = () => {
 
         try {
 
-            if(role === "admin"){
+            if(role === "admin" && type === "addUserAdmin"){
                 await Promise.all(
-                    usersNames.map(async (user) => {
+                    usersNames.map(async (data) => {
+                        const user = JSON.parse(data)
                         const userReadyJoin = await SpeakerMemberPanel.findOne({
-                            where: { UserId: user[0], SpeakersPanelId: panel.id},
+                            where: { UserId: user.userId, SpeakersPanelId: panel.id},
                         })
     
                         if(!userReadyJoin){
@@ -233,20 +235,21 @@ const SpeakersController = () => {
                                 (() => {
                                     let mailOptions = {
                                     from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                    to: user[2],
-                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user[1],panel),
+                                    to: user.userEmail,
+                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.userName,panel),
                                     html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                                        user[1],
+                                        user.userName,
                                         panel,
                                     ),
-                                    };
+                                };
                         
-                                    return smtpService().sendMailUsingSendInBlue(mailOptions);
+                                return smtpService().sendMailUsingSendInBlue(mailOptions);
+
                                 })()
                             );
     
                             await SpeakerMemberPanel.create({
-                                UserId: user[0], 
+                                UserId: user.userId, 
                                 SpeakersPanelId: panel.id, 
                                 isModerator: bul, 
                             }) 
@@ -280,7 +283,8 @@ const SpeakersController = () => {
                         }
                     ],
                 })
-            }else{
+            }
+            if(type === "joinUser"){
                 const userReadyJoin = await SpeakerMemberPanel.findOne({
                     where: { UserId: id, SpeakersPanelId: panel.id},
                 })
@@ -305,10 +309,10 @@ const SpeakersController = () => {
                     (() => {
                         let mailOptions = {
                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                        to: usersNames[0][2],
-                        subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames[0][1],panel.panelName),
+                        to: usersNames[0].userEmail,
+                        subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames[0].userName,panel.panelName),
                         html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                            usersNames[0][1],
+                            usersNames[0].userName,
                             panel,
                         ),
                         };
@@ -318,7 +322,7 @@ const SpeakersController = () => {
                 );
 
                 await SpeakerMemberPanel.create({
-                    UserId: usersNames[0][0], 
+                    UserId: usersNames[0].userId, 
                     SpeakersPanelId: panel.id, 
                     isModerator: bul, 
                 })
@@ -481,63 +485,7 @@ const SpeakersController = () => {
 
             await convertJSONToExcelBlob(
                 nombre,
-                [
-                  {
-                    label: "First Name",
-                    value: "firstName",
-                    width: 20,
-                  },
-                  {
-                    label: "Last Name",
-                    value: "lastName",
-                    width: 20,
-                  },
-                  {
-                    label: "Email",
-                    value: "email",
-                    width: 40,
-                  },
-                  {
-                    label: "Role",
-                    value: "role",
-                    width: 20,
-                  },
-                  {
-                    label: "Company",
-                    value: "company",
-                    width: 20,
-                  },
-                  {
-                    label: "titleProfessions",
-                    value: "titleProfessions",
-                    width: 20,
-                  },
-                  {
-                    label: "About",
-                    value: "about",
-                    width: 20,
-                  },
-                  {
-                    label: "About",
-                    value: "about",
-                    width: 20,
-                  },
-                  {
-                    label: "Timezone",
-                    value: "timezone",
-                    width: 40,
-                  },
-                  {
-                    label: "Location",
-                    value: "location",
-                    width: 20,
-                  },
-                  {
-                    label: "City",
-                    value: "city",
-                    width: 20,
-                  },
-                ],
+                formatExcelUsers,
                 allUserConference.map((user) => user.toJSON())
             );
 
@@ -592,7 +540,7 @@ const SpeakersController = () => {
                     .json({ msg: "You must to be admin" });
             }
 
-            const panelsSpeakers = await SpeakersPanel.update({ 
+            const [numberOfAffectedRows, affectedRows] = await SpeakersPanel.update({ 
                 metaData,
                 recertificactionCredits,
                 description, 
@@ -606,7 +554,7 @@ const SpeakersController = () => {
                 type
             },{where: {id: PanelId}})
 
-            return res.status(HttpCodes.OK).json({msg: "Speaker update"})
+            return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
 
         } catch (error) {
             console.log(error);
@@ -623,7 +571,7 @@ const SpeakersController = () => {
         const { role } = req.user.dataValues;
 
         try {
-    
+
             if (role !== "admin") {
                 return res
                     .status(HttpCodes.BAD_REQUEST)
@@ -632,7 +580,7 @@ const SpeakersController = () => {
 
             await SpeakersPanel.destroy({where: {id: PanelId}})
 
-            return res.status(HttpCodes.OK).json("todo bien");
+            return res.status(HttpCodes.OK).json({});
 
         } catch (error) {
             console.log(error);
@@ -658,14 +606,14 @@ const SpeakersController = () => {
                     .json({ msg: "You must to be admin" });
             }
 
-            await SponsorsConference2023.create({
+            const sponsorCreate = await SponsorsConference2023.create({
                 logo,
                 link,
                 description,
                 title,
             })
 
-            return res.status(HttpCodes.OK).json({msg: "Sponsors create"})
+            return res.status(HttpCodes.OK).json({sponsorCreate})
 
         } catch (error) {
             console.log(error);
@@ -726,14 +674,14 @@ const SpeakersController = () => {
                     .json({ msg: "You must to be admin" });
             }
 
-            await SponsorsConference2023.update({ 
+            const [numberOfAffectedRows, affectedRows] = await SponsorsConference2023.update({ 
                 logo,
                 link,
                 description,
                 title,
             },{where: {id: id}})
 
-            return res.status(HttpCodes.OK).json({msg: "Sponsor update"});
+            return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows });
 
         } catch (error) {
             console.log(error);
@@ -758,7 +706,7 @@ const SpeakersController = () => {
 
             await SponsorsConference2023.destroy({where: {id: SponsorId}})
 
-            return res.status(HttpCodes.OK).json({msg: "Delete sponsor"});
+            return res.status(HttpCodes.OK).json({});
 
         } catch (error) {
             console.log(error);
@@ -784,13 +732,13 @@ const SpeakersController = () => {
                     .json({ msg: "You must to be admin" });
             }
 
-            await ParrafConference2023.create({
+            const parrafCreate = await ParrafConference2023.create({
                 visual, 
                 type, 
                 text,
             })
 
-            return res.status(HttpCodes.OK).json({msg: "Add parraf"})
+            return res.status(HttpCodes.OK).json({parrafCreate})
 
         } catch (error) {
             console.log(error);
@@ -851,13 +799,13 @@ const SpeakersController = () => {
                     .json({ msg: "You must to be admin" });
             }
 
-            await ParrafConference2023.update({ 
+            const [numberOfAffectedRows, affectedRows] = await ParrafConference2023.update({ 
                 visual,
                 type, 
                 text,
             },{where: {id: id}})
 
-            return res.status(HttpCodes.OK).json({msg: "Edit parraf"})
+            return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
 
         } catch (error) {
             console.log(error);
@@ -882,7 +830,7 @@ const SpeakersController = () => {
 
             await ParrafConference2023.destroy({where: {id: ParrafId}})
 
-            return res.status(HttpCodes.OK).json({msg: "delete parraf"})
+            return res.status(HttpCodes.OK).json({})
 
         } catch (error) {
             console.log(error);
