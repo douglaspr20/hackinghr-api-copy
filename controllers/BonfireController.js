@@ -208,13 +208,6 @@ const BonfireController = () => {
             timezoneUser.utc[0]
           );
 
-          // const calendarInvite = generateIcsCalendar(
-          //   bonfire.dataValues,
-          //   timezoneUser.utc[0]
-          // );
-
-          // let icsContent = calendarInvite.toString();
-
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: _user.email,
@@ -230,15 +223,6 @@ const BonfireController = () => {
               googleLink,
               yahooLink
             ),
-            // contentType: "text/calendar",
-            // attachments: [
-            //   {
-            //     filename: `${bonfire.dataValues.title}-invite.ics`,
-            //     content: icsContent,
-            //     contentType: "application/ics; charset=UTF-8; method=REQUEST",
-            //     contentDisposition: "inline",
-            //   },
-            // ],
           };
 
           console.log("***** mailOptions ", mailOptions);
@@ -257,10 +241,26 @@ const BonfireController = () => {
   };
 
   const getAll = async (req, res) => {
-    let where = `WHERE public."Bonfires"."endTime" >='${moment()
-      .utc()
-      .format()}'`;
+    const { category } = req.query;
+    const categories = category ? JSON.parse(category) : [];
+
     try {
+      let where = `WHERE public."Bonfires"."endTime" >='${moment()
+        .utc()
+        .format()}'`;
+
+      if (categories && categories.length > 0) {
+        let categoriesToString = [];
+
+        for (const cat of categories) {
+          categoriesToString.push(`'${cat}'`);
+        }
+
+        where += `AND public."Bonfires"."categories" && ARRAY[${categoriesToString.join(
+          ","
+        )}]::VARCHAR(255)[]`;
+      }
+
       const query = `SELECT public."Bonfires".*, public."Users"."id" as "bonfireOrganizerId", public."Users"."firstName", public."Users"."lastName", public."Users"."img",
       public."Users"."company", public."Users"."titleProfessions", public."Users"."personalLinks" FROM public."Bonfires" LEFT JOIN public."Users" ON public."Users".id = public."Bonfires"."bonfireCreator" ${where}`;
 
