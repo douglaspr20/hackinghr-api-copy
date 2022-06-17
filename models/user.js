@@ -34,8 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.CouncilConversationLike);
       User.hasMany(models.AdvertisementImpression);
       User.hasMany(models.AdvertisementClick);
-      User.hasMany(models.SpeakerPanel,{foreignKey: 'OwnerId'});
-      User.hasMany(models.SpeakerMemberPanel,{foreignKey: 'UserId'});
+      User.hasMany(models.SpeakerPanel, { foreignKey: "OwnerId" });
+      User.hasMany(models.SpeakerMemberPanel, { foreignKey: "UserId" });
       User.hasMany(models.CouncilEventPanelist);
       User.hasMany(models.BlogPost);
     }
@@ -177,7 +177,11 @@ module.exports = (sequelize, DataTypes) => {
       registerConference2023: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-      }
+      },
+      receiveCommunityNotification: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

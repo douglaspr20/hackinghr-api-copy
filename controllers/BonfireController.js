@@ -7,6 +7,7 @@ const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
+const NotificationController = require("./NotificationController");
 
 const Bonfire = db.Bonfire;
 const User = db.User;
@@ -230,6 +231,20 @@ const BonfireController = () => {
           return smtpService().sendMailUsingSendInBlue(mailOptions);
         })
       );
+
+      const usersReceivingNotification = await User.findAll({
+        where: { receiveCommunityNotification: true },
+        attributes: ["id"],
+      });
+
+      await NotificationController().createNotification({
+        message: `New Bonfire "${bonfire.title || bonfire.title}" was created.`,
+        type: "Bonfire",
+        meta: {
+          ...bonfire,
+        },
+        onlyFor: usersReceivingNotification,
+      });
 
       return res.status(HttpCodes.OK).json({ bonfire });
     } catch (error) {
