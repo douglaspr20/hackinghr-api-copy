@@ -804,7 +804,7 @@ module.exports = {
   },
 
   USER_BECOME_SPEAKER_2023: {
-    subject: `User want apply to the business partner community`,
+    subject: `User want apply to the speakers2023 community`,
     body: (firstName, lastName, email, company, sizeOfOrganization, personalLinks, link) => `
       <p>
       ${firstName} ${lastName} <br>

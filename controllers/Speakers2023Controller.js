@@ -53,9 +53,11 @@ const SpeakersController = () => {
 
             if(speakers?.length !== 0 && speakers !== undefined){
                 await Promise.all(
-                    speakers.map(async (user) => {
+                    speakers.map(async (data) => {
+                        const user = JSON.parse(data)
+
                         const userReadyJoin = await SpeakerMemberPanel.findOne({
-                            where: { UserId: Number(user[0]), SpeakersPanelId: panelsSpeakers.dataValues.id},
+                            where: { UserId: Number(user.userId), SpeakersPanelId: panelsSpeakers.dataValues.id},
                         })
 
                         if(!userReadyJoin){
@@ -64,10 +66,10 @@ const SpeakersController = () => {
                                 (() => {
                                     let mailOptions = {
                                     from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                    to: user[2],
-                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user[1], panelsSpeakers.dataValues.id),
+                                    to: user.userEmail,
+                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.userName, panelsSpeakers.dataValues.id),
                                     html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                                        user[1],
+                                        user.userName,
                                         panelsSpeakers.dataValues,
                                     ),
                                     };
@@ -77,7 +79,7 @@ const SpeakersController = () => {
                             );
 
                             await SpeakerMemberPanel.create({
-                                UserId: Number(user[0]), 
+                                UserId: Number(user.userId), 
                                 SpeakersPanelId: panelsSpeakers.dataValues.id, 
                                 isModerator: false, 
                             }) 
@@ -285,6 +287,7 @@ const SpeakersController = () => {
                 })
             }
             if(type === "joinUser"){
+
                 const userReadyJoin = await SpeakerMemberPanel.findOne({
                     where: { UserId: id, SpeakersPanelId: panel.id},
                 })
@@ -295,24 +298,26 @@ const SpeakersController = () => {
                         .json({ msg: "You are ready join to this panel." });
                 }
 
-                const userLimit = await SpeakerMemberPanel.findAll({
-                    where: { UserId: id },
-                })
+                if(role !== "admin"){
+                    const userLimit = await SpeakerMemberPanel.findAll({
+                        where: { UserId: id },
+                    })
 
-                if(userLimit.length > 1){
-                    return res
-                        .status(HttpCodes.BAD_REQUEST)
-                        .json({ msg: "User can't join to more of two panels." });
+                    if(userLimit.length > 1){
+                        return res
+                            .status(HttpCodes.BAD_REQUEST)
+                            .json({ msg: "User can't join to more of two panels." });
+                    }
                 }
 
                 await Promise.resolve(
                     (() => {
                         let mailOptions = {
                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                        to: usersNames[0].userEmail,
-                        subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames[0].userName,panel.panelName),
+                        to: usersNames.userEmail,
+                        subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames.userName,panel.panelName),
                         html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                            usersNames[0].userName,
+                            usersNames.userName,
                             panel,
                         ),
                         };
@@ -322,7 +327,7 @@ const SpeakersController = () => {
                 );
 
                 await SpeakerMemberPanel.create({
-                    UserId: usersNames[0].userId, 
+                    UserId: usersNames.userId, 
                     SpeakersPanelId: panel.id, 
                     isModerator: bul, 
                 })
