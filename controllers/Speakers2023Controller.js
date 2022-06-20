@@ -11,6 +11,7 @@ const {formatExcelUsers} = require("../utils/formatExportUsersExcel.js")
 const {
     convertJSONToExcelBlob
   } = require("../utils/format");
+const speakerPanel = require("../models/speakerPanel");
 
 const User = db.User;
 const SpeakersPanel = db.SpeakerPanel;
@@ -108,7 +109,7 @@ const SpeakersController = () => {
         try {
 
             const panelsSpeakers = await SpeakersPanel.findAll({
-                order: [["id", "DESC"]],
+                order: [["startDate", "ASC"]],
                 where: {type: "Panels"},
                 include: [
                     {
@@ -845,9 +846,62 @@ const SpeakersController = () => {
         }
     }
 
+    const addToMyPersonalAgenda = async (req, res) => {
+        const { data } = req.body;
+
+        const { id } = req.user.dataValues
+
+        let { PanelId, type } = data
+
+        let newArray = [];
+
+        try {
+            const lastArrayOfThisColumn = await SpeakersPanel.findOne({where: {id: PanelId}, attributes:["usersAddedToThisAgenda"]})
+
+            if(type === "Remove"){
+                
+                newArray = await lastArrayOfThisColumn.dataValues.usersAddedToThisAgenda
+
+                await Promise.all(
+                    lastArrayOfThisColumn.dataValues.usersAddedToThisAgenda.map((idArray,index) => {
+                        if(Number(idArray) === Number(id)){
+                            newArray.splice(index,1)
+                            return
+                        }
+                    })  
+                );
+
+                const [numberOfAffectedRows, affectedRows] = await SpeakersPanel.update({ 
+                    usersAddedToThisAgenda: newArray
+                },{where: {id: PanelId}})
+
+                return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
+            }
+
+            if(type === "Added"){
+
+                await lastArrayOfThisColumn.dataValues.usersAddedToThisAgenda.push(`${id}`)
+                newArray = lastArrayOfThisColumn.dataValues.usersAddedToThisAgenda
+
+                const [numberOfAffectedRows, affectedRows] = await SpeakersPanel.update({ 
+                    usersAddedToThisAgenda: newArray
+                },{where: {id: PanelId}})
+
+                return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
+            }
+
+        } catch (error) {
+            console.log(error);
+            return res
+                .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                .json({ msg: "Internal server error" });
+        }
+    }
+
 
     return {
         addNewPanelSpeaker,
+        addToMyPersonalAgenda,
         allPanelSpeakers,
         addUserSpeakerToPanel,
         removeUserSpeakerToPanel,
