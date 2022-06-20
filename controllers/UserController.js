@@ -2026,6 +2026,32 @@ const UserController = () => {
     }
   };
 
+  const handleReceiveCommunityNotification = async (req, res) => {
+    const { id } = req.user;
+    const { receiveCommunityNotification } = req.body;
+
+    try {
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          receiveCommunityNotification,
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res.status(HttpCodes.OK).json({ user: affectedRows });
+    } catch (error) {
+      console.log(error);
+
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal Server Error" });
+    }
+  };
+
   return {
     sendEmailAuthorizationSpeakersEndPoint,
     sendActiveOrDenyAuthorizationEndPoint,
@@ -2068,6 +2094,7 @@ const UserController = () => {
     removeBusinessPartner,
     getAllBusinessPartnerSearch,
     getAllUsersChannelOwner,
+    handleReceiveCommunityNotification,
   };
 };
 
