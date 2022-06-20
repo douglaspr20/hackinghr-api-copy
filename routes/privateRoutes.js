@@ -337,10 +337,9 @@ const privateRoutes = {
     "Speakers2023Controller.deleteSponsor",
   "POST /speakers/add-parraf": "Speakers2023Controller.addParraf",
   "GET /speakers/get-all-parraf": "Speakers2023Controller.getAllParraf",
-  "GET /speakers/get-one-parraf/:ParrafId":
-    "Speakers2023Controller.getOneParraf",
-  "DELETE /speakers/delete-parraf/:ParrafId":
-    "Speakers2023Controller.deleteParraf",
+  "GET /speakers/get-one-parraf/:ParrafId": "Speakers2023Controller.getOneParraf",
+  "POST /speakers/added-to-agenda": "Speakers2023Controller.addToMyPersonalAgenda",
+  "DELETE /speakers/delete-parraf/:ParrafId": "Speakers2023Controller.deleteParraf",
   "POST /speakers/edit-parraf": "Speakers2023Controller.editParraf",
   "GET /simulation-sprints": "SimulationSprintController.getAll",
   "GET /simulation-sprints/:id": "SimulationSprintController.get",
