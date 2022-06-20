@@ -880,7 +880,7 @@ const SpeakersController = () => {
 
             if(type === "Added"){
 
-                await lastArrayOfThisColumn.dataValues.usersAddedToThisAgenda.push(`${id}`)
+                await lastArrayOfThisColumn.dataValues.usersAddedToThisAgenda.push(id)
                 newArray = lastArrayOfThisColumn.dataValues.usersAddedToThisAgenda
 
                 const [numberOfAffectedRows, affectedRows] = await SpeakersPanel.update({ 

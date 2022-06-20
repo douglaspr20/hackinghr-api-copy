@@ -61,7 +61,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
       },
       usersAddedToThisAgenda: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
         allowNull: true,
         defaultValue: [],
       }

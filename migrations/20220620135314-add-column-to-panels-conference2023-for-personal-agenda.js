@@ -4,7 +4,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     return Promise.all([
       queryInterface.addColumn("SpeakerPanels", "usersAddedToThisAgenda", {
-        type: Sequelize.ARRAY(Sequelize.STRING),
+        type: Sequelize.ARRAY(Sequelize.INTEGER),
         allowNull: true,
         defaultValue: [],
       }),
