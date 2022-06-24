@@ -980,27 +980,16 @@ const EventController = () => {
         startAndEndTimes: compact(event.startAndEndTimes),
       };
 
-      const _userTimezone = TimeZoneList.find((item) =>
-        item.utc.includes(userTimezone)
-      );
-
-      const timezone = TimeZoneList.find(
-        (item) => item.value === event.timezone
-      );
-
-      const offset = timezone.offset;
-
-      let startTime = convertToCertainTime(
+      let startTime = convertToLocalTime(
         event.startAndEndTimes[day].startTime,
-        event.timezone
+        event.timezone,
+        userTimezone
       );
-      let endTime = convertToCertainTime(
+      let endTime = convertToLocalTime(
         event.startAndEndTimes[day].endTime,
-        event.timezone
+        event.timezone,
+        userTimezone
       );
-
-      startTime = convertToLocalTime(moment(startTime).utcOffset(offset, true));
-      endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
       const calendarInvite = smtpService().generateCalendarInvite(
         startTime,
@@ -1012,7 +1001,7 @@ const EventController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.SEND_IN_BLUE_SMTP_SENDER,
-        _userTimezone.utc[0]
+        userTimezone
       );
 
       let icsContent = calendarInvite.toString();
