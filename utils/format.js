@@ -2,7 +2,7 @@ const moment = require("moment-timezone");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Parser } = require("json2csv");
 const isEmpty = require("lodash/isEmpty");
-const path = require("path")
+const path = require("path");
 const Excel = require("exceljs");
 
 const workbook = new Excel.Workbook();
@@ -33,18 +33,23 @@ function convertToUserTimezone(date, tz) {
   return res;
 }
 
-function convertToLocalTime(date, localTz = null) {
-  let localTimezone;
+function convertToLocalTime(date, timezone, userTimezone) {
+  let currentTimezone = TimeZoneList.find((item) => item.value === timezone);
 
-  if (localTz) {
-    localTimezone = localTz;
+  if (currentTimezone) {
+    currentTimezone = currentTimezone.utc[0];
   } else {
-    localTimezone = moment.tz.guess();
+    currentTimezone = timezone;
   }
 
-  console.log("localTimezone", localTimezone);
+  const dateFormatUtc = moment(date).utc().format("YYYY-MM-DD HH:mm");
 
-  return moment.utc(date).tz(localTimezone);
+  const dateWithCurrentTimezone = moment.tz(dateFormatUtc, currentTimezone);
+  const dateWithLocalTimezone = dateWithCurrentTimezone
+    .clone()
+    .tz(userTimezone);
+
+  return dateWithLocalTimezone;
 }
 
 function convertToUTCTime(date, tz) {
@@ -89,7 +94,6 @@ function convertJSONToCSV(content) {
 }
 
 async function convertJSONToExcel(sheet, fields, content) {
-
   // Create page
   const ws1 = workbook.addWorksheet(sheet);
   ws1.addRow(fields.map((item) => item.label));
@@ -107,9 +111,7 @@ async function convertJSONToExcel(sheet, fields, content) {
   return buffer;
 }
 
-
 async function convertJSONToExcelBlob(sheet, fields, content) {
-
   // Create page
   const wb = workbook.addWorksheet(sheet);
   wb.addRow(fields.map((item) => item.label));
@@ -127,7 +129,6 @@ async function convertJSONToExcelBlob(sheet, fields, content) {
   return;
 }
 
-
 module.exports = {
   getEventPeriod,
   convertToCertainTime,
@@ -136,5 +137,5 @@ module.exports = {
   convertJSONToCSV,
   convertJSONToExcel,
   convertToUserTimezone,
-  convertJSONToExcelBlob
+  convertJSONToExcelBlob,
 };
