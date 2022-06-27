@@ -1,32 +1,43 @@
 const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
+const { convertToLocalTime } = require("./format");
 
-const googleCalendar = (item, tz) => {
-  const convertedStartTime = moment.utc(item.startTime).tz(tz);
+const googleCalendar = (item, tz, userTimezone) => {
+  const convertedStartTime = convertToLocalTime(
+    item.startTime,
+    tz,
+    userTimezone
+  ).format("YYYYMMDDTHHmmss");
 
-  const convertedEndTime = moment.utc(item.endTime).tz(tz);
-
-  console.log(item);
+  const convertedEndTime = convertToLocalTime(
+    item.startTime,
+    tz,
+    userTimezone
+  ).format("YYYYMMDDTHHmmss");
 
   let googleCalendarUrl = `http://www.google.com/calendar/event?action=TEMPLATE&text=${encodeURIComponent(
     item.title
-  )}&dates=${convertedStartTime.format(
-    "YYYYMMDDTHHmm"
-  )}/${convertedEndTime.format("YYYYMMDDTHHmm")}&details=${encodeURIComponent(
+  )}&dates=${convertedStartTime}/${convertedEndTime}&details=${encodeURIComponent(
     item.description
   )}&location=${
     item.link
   }&trp=false&sprop=https://www.hackinghrlab.io/&sprop=name:`;
   return googleCalendarUrl;
 };
-const yahooCalendar = (item, tz) => {
-  const convertedStartTime = moment.utc(item.startTime).tz(tz);
+const yahooCalendar = (item, tz, userTimezone) => {
+  const convertedStartTime = convertToLocalTime(
+    item.startTime,
+    tz,
+    userTimezone
+  ).format("YYYYMMDDTHHmmss");
 
-  const convertedEndTime = moment.utc(item.endTime).tz(tz);
+  const convertedEndTime = convertToLocalTime(
+    item.startTime,
+    tz,
+    userTimezone
+  ).format("YYYYMMDDTHHmmss");
 
-  let yahooCalendarUrl = `https://calendar.yahoo.com/?v=60&st=${convertedStartTime.format(
-    "YYYYMMDDTHHmm"
-  )}&et=${convertedEndTime.format("YYYYMMDDTHHmm")}&title=${encodeURIComponent(
+  let yahooCalendarUrl = `https://calendar.yahoo.com/?v=60&st=${convertedStartTime}&et=${convertedEndTime}&title=${encodeURIComponent(
     item.title
   )}&desc=${encodeURIComponent(
     item.description

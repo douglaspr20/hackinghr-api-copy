@@ -300,7 +300,7 @@ module.exports = {
       Hi, ${user.firstName}
       </p>
       <p>
-      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}-${endTime} (${timezone}), 
+      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}-${endTime}, 
       created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email}).
       </p>
       <p>
@@ -348,7 +348,7 @@ module.exports = {
     Hi, ${bonfireCreator.firstName}
     </p>
     <p>
-    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime} (${timezone})
+    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime}
     </p>
     <p>
     <b>Quick note before moving on: time zones are always a headache for 
@@ -805,7 +805,15 @@ module.exports = {
 
   USER_BECOME_SPEAKER_2023: {
     subject: `User want apply to the speakers2023 community`,
-    body: (firstName, lastName, email, company, sizeOfOrganization, personalLinks, link) => `
+    body: (
+      firstName,
+      lastName,
+      email,
+      company,
+      sizeOfOrganization,
+      personalLinks,
+      link
+    ) => `
       <p>
       ${firstName} ${lastName} <br>
       </p>
