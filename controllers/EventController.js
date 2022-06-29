@@ -11,11 +11,7 @@ const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
 const { isEmpty, flatten, head, compact } = require("lodash");
-const {
-  convertToLocalTime,
-  convertJSONToExcel,
-  convertToCertainTime,
-} = require("../utils/format");
+const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
@@ -27,18 +23,12 @@ const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 const EventController = () => {
   const setEventReminders = (event) => {
-    const dateBefore24Hours = convertToLocalTime(event.startDate).subtract(
-      1,
-      "days"
-    );
-    const dateAfterEventEnd = convertToLocalTime(
+    const dateBefore24Hours = moment(event.startDate).subtract(1, "days");
+    const dateAfterEventEnd = moment(
       event.startAndEndTimes[event.startAndEndTimes.length - 1].endTime
     );
 
-    const dateBefore2Hours = convertToLocalTime(event.startDate).subtract(
-      45,
-      "minutes"
-    );
+    const dateBefore2Hours = moment(event.startDate).subtract(45, "minutes");
 
     const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
     const interval2 = `0 ${dateBefore2Hours.minutes()} ${dateBefore2Hours.hours()} ${dateBefore2Hours.date()} ${dateBefore2Hours.month()} *`;
@@ -221,12 +211,12 @@ const EventController = () => {
 
   const setOrganizerReminders = (event) => {
     const dates = [
-      convertToLocalTime(event.startDate).subtract(1, "week"),
-      convertToLocalTime(event.startDate).subtract(3, "days"),
-      convertToLocalTime(event.startDate).subtract(2, "days"),
-      convertToLocalTime(event.startDate).subtract(1, "days"),
-      convertToLocalTime(event.startDate).subtract(2, "hours"),
-      convertToLocalTime(event.startDate).subtract(30, "minutes"),
+      moment(event.startDate).subtract(1, "week"),
+      moment(event.startDate).subtract(3, "days"),
+      moment(event.startDate).subtract(2, "days"),
+      moment(event.startDate).subtract(1, "days"),
+      moment(event.startDate).subtract(2, "hours"),
+      moment(event.startDate).subtract(30, "minutes"),
     ];
     console.log("/////////////////////////////////////////////////////");
     console.log("//////// setOrganizerReminders ///////");
@@ -324,7 +314,7 @@ const EventController = () => {
           }
         );
 
-        setEventReminders(event);
+        setEventReminders(event.dataValues);
         setOrganizerReminders(event);
 
         const startTime = convertToLocalTime(event?.startDate);
@@ -980,27 +970,16 @@ const EventController = () => {
         startAndEndTimes: compact(event.startAndEndTimes),
       };
 
-      const _userTimezone = TimeZoneList.find((item) =>
-        item.utc.includes(userTimezone)
-      );
-
-      const timezone = TimeZoneList.find(
-        (item) => item.value === event.timezone
-      );
-
-      const offset = timezone.offset;
-
-      let startTime = convertToCertainTime(
+      let startTime = convertToLocalTime(
         event.startAndEndTimes[day].startTime,
-        event.timezone
+        event.timezone,
+        userTimezone
       );
-      let endTime = convertToCertainTime(
+      let endTime = convertToLocalTime(
         event.startAndEndTimes[day].endTime,
-        event.timezone
+        event.timezone,
+        userTimezone
       );
-
-      startTime = convertToLocalTime(moment(startTime).utcOffset(offset, true));
-      endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
 
       const calendarInvite = smtpService().generateCalendarInvite(
         startTime,
@@ -1012,7 +991,7 @@ const EventController = () => {
         `${process.env.DOMAIN_URL}${event.id}`,
         event.organizer,
         process.env.SEND_IN_BLUE_SMTP_SENDER,
-        _userTimezone.utc[0]
+        userTimezone
       );
 
       let icsContent = calendarInvite.toString();
