@@ -111,13 +111,8 @@ async function convertJSONToExcel(sheet, fields, content) {
   return buffer;
 }
 
-<<<<<<< community-education-api/speakers-2023
-
 async function convertJSONToExcelUsersSpeakers2023(sheet, fields, content) {
 
-=======
-async function convertJSONToExcelBlob(sheet, fields, content) {
->>>>>>> master
   // Create page
   const wb = workbook.addWorksheet(sheet);
   wb.addRow(fields.map((item) => item.label));
@@ -135,7 +130,6 @@ async function convertJSONToExcelBlob(sheet, fields, content) {
   return;
 }
 
-<<<<<<< community-education-api/speakers-2023
 async function convertJSONToExcelPanelsConference2023(sheet, fields1, fields2, content) {
 
   const wb = workbook.addWorksheet(sheet);
@@ -203,9 +197,6 @@ async function convertJSONToExcelPanelsConference2023(sheet, fields1, fields2, c
   return;
 }
 
-
-=======
->>>>>>> master
 module.exports = {
   getEventPeriod,
   convertToCertainTime,
@@ -214,10 +205,6 @@ module.exports = {
   convertJSONToCSV,
   convertJSONToExcel,
   convertToUserTimezone,
-<<<<<<< community-education-api/speakers-2023
   convertJSONToExcelUsersSpeakers2023,
-  convertJSONToExcelPanelsConference2023
-=======
-  convertJSONToExcelBlob,
->>>>>>> master
+  convertJSONToExcelPanelsConference2023,
 };
