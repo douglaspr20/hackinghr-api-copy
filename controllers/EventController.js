@@ -23,7 +23,6 @@ const VisibleLevel = Settings.VISIBLE_LEVEL;
 
 const EventController = () => {
   const setEventReminders = (event) => {
-    console.log(convertToLocalTime(event.startDate));
     const dateBefore24Hours = moment(event.startDate).subtract(1, "days");
     const dateAfterEventEnd = moment(
       event.startAndEndTimes[event.startAndEndTimes.length - 1].endTime
