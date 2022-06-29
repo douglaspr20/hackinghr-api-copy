@@ -8,8 +8,10 @@ const path = require("path")
 const fs = require("fs")
 const moment = require("moment")
 const {formatExcelUsers} = require("../utils/formatExportUsersExcel.js")
+const {formatExcelPanels} = require("../utils/formatExportPanelsExcel.js")
 const {
-    convertJSONToExcelBlob
+    convertJSONToExcelUsersSpeakers2023,
+    convertJSONToExcelPanelsConference2023
   } = require("../utils/format");
 const speakerPanel = require("../models/speakerPanel");
 
@@ -369,19 +371,7 @@ const SpeakersController = () => {
     const removeUserSpeakerToPanel = async (req, res) => {
         const { UserId } = req.body;
 
-        const { id } = req.user.dataValues;
-
         try {
-
-            const user = await User.findOne({
-                where: { id: id, role: "admin" },
-            });
-    
-            if (!user) {
-            return res
-                .status(HttpCodes.NOT_FOUND)
-                .json({ msg: "You must to be admin" });
-            }
 
             await SpeakerMemberPanel.destroy({
                 where:{ id: UserId}
@@ -489,7 +479,7 @@ const SpeakersController = () => {
 
             const nombre = moment().format("MM-DD-HH-mm-s")
 
-            await convertJSONToExcelBlob(
+            await convertJSONToExcelUsersSpeakers2023(
                 nombre,
                 formatExcelUsers,
                 allUserConference.map((user) => user.toJSON())
@@ -504,7 +494,58 @@ const SpeakersController = () => {
             return res
               .status(HttpCodes.INTERNAL_SERVER_ERROR)
               .json({ msg: "Internal server error" });
-          }
+        }
+    }
+
+    const excelAllPanelsRegisterConference2023 = async (req, res) => {
+        try{
+
+            const panelsSpeakers = await SpeakersPanel.findAll({
+                order: [["startDate", "ASC"]],
+                include: [
+                    {
+                        model: SpeakerMemberPanel,
+                        include: [
+                            {
+                                model: User,
+                                attributes: [
+                                    "firstName",
+                                    "lastName",
+                                    "email",
+                                    "role",
+                                    "company",
+                                    "titleProfessions",
+                                    "about",
+                                    "about",
+                                    "timezone",
+                                    "location",
+                                    "city",
+                                ],
+                            }
+                        ]
+                    }
+                ],
+            })
+
+            const nombre = moment().format("MM-DD-HH-mm-s")
+
+            await convertJSONToExcelPanelsConference2023(
+                nombre,
+                formatExcelPanels,
+                formatExcelUsers,
+                panelsSpeakers.map((panels) => panels.toJSON())
+            );
+
+            await res.status(HttpCodes.OK).download(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`, function(){
+                fs.unlinkSync(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`)
+            })
+
+        }catch (error) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+        }
     }
 
     const getAllPanelsOfOneUser = async (req, res) => {
@@ -907,6 +948,7 @@ const SpeakersController = () => {
         removeUserSpeakerToPanel,
         registerUserIfNotAreRegisterConference2023,
         excelAllUserRegisterConference2023,
+        excelAllPanelsRegisterConference2023,
         allPanelSpeakersAdmin,
         getAllUserSpeaker,
         getAllPanelsOfOneUser,
