@@ -25,6 +25,7 @@ const publicRoutes = {
   "GET /speakers/all-panel": "Speakers2023Controller.allPanelSpeakers",
   "GET /speakers/all-users-speakers":
     "Speakers2023Controller.getAllUserSpeaker",
+  "GET /speakers/get-all-sponsor": "Speakers2023Controller.getAllSponsor",
   "GET /speakers/all-panel-of-user/:id":
     "Speakers2023Controller.getAllPanelsOfOneUser",
 };
