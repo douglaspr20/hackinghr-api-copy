@@ -292,7 +292,6 @@ module.exports = {
       startDate,
       startTime,
       endTime,
-      timezone,
       googleLink,
       yahooLink
     ) => `
