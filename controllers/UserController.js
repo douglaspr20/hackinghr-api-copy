@@ -982,29 +982,22 @@ const UserController = () => {
 
       await Promise.resolve(
         (() => {
-          const timezone = TimeZoneList.find(
-            (timezone) =>
-              timezone.value === bonfireToJoin.timezone ||
-              timezone.text === bonfireToJoin.timezone
-          );
-
-          const offset = timezone.offset;
-          const targetBonfireStartDate = moment(bonfireToJoin.startTime)
-            .tz(timezone.utc[0])
-            .utcOffset(offset, true);
-
-          const targetBonfireEndDate = moment(bonfireToJoin.endTime)
-            .tz(timezone.utc[0])
-            .utcOffset(offset, true);
-
           const timezoneUser = TimeZoneList.find(
             (timezone) =>
-              timezone.value === affectedRows.dataValues.timezone ||
-              timezone.text === affectedRows.dataValues.timezone
+              timezone.value === _user.timezone ||
+              timezone.text === _user.timezone
           );
 
-          const googleLink = googleCalendar(bonfireToJoin, timezoneUser.utc[0]);
-          const yahooLink = yahooCalendar(bonfireToJoin, timezoneUser.utc[0]);
+          const googleLink = googleCalendar(
+            bonfireToJoin.dataValues,
+            bonfireToJoin.timezone,
+            timezoneUser.utc[0]
+          );
+          const yahooLink = yahooCalendar(
+            bonfireToJoin.dataValues,
+            bonfireToJoin.timezone,
+            timezoneUser.utc[0]
+          );
 
           // const calendarInvite = generateIcsCalendar(
           //   bonfireToJoin,
@@ -1021,10 +1014,10 @@ const UserController = () => {
               affectedRows.dataValues,
               bonfireToJoin,
               bonfireCreator,
-              targetBonfireStartDate.format("MMM DD"),
-              targetBonfireStartDate.format("h:mm a"),
-              targetBonfireEndDate.format("h:mm a"),
-              timezone.value,
+              moment(bonfireToJoin.dataValues.startTime).format("MMM DD"),
+              moment(bonfireToJoin.dataValues.startTime).format("h:mm a"),
+              moment(bonfireToJoin.dataValues.endTime).format("h:mm a"),
+              bonfireToJoin.dataValues.timezone,
               googleLink,
               yahooLink
             ),

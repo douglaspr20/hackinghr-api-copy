@@ -292,6 +292,7 @@ module.exports = {
       startDate,
       startTime,
       endTime,
+      timezone,
       googleLink,
       yahooLink
     ) => `
@@ -299,7 +300,7 @@ module.exports = {
       Hi, ${user.firstName}
       </p>
       <p>
-      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}-${endTime}, 
+      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}-${endTime} (${timezone}), 
       created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email}).
       </p>
       <p>
@@ -347,7 +348,7 @@ module.exports = {
     Hi, ${bonfireCreator.firstName}
     </p>
     <p>
-    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime}
+    Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime} (${timezone})
     </p>
     <p>
     <b>Quick note before moving on: time zones are always a headache for 

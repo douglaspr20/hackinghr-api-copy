@@ -206,6 +206,7 @@ const BonfireController = () => {
               moment(bonfire.dataValues.startTime).format("MMM DD"),
               moment(bonfire.dataValues.startTime).format("h:mm a"),
               moment(bonfire.dataValues.endTime).format("h:mm a"),
+              bonfire.dataValues.timezone,
               googleLink,
               yahooLink
             ),
