@@ -320,6 +320,8 @@ const privateRoutes = {
     "Speakers2023Controller.registerUserIfNotAreRegisterConference2023",
   "GET /speakers/get-excel-all-person-register":
     "Speakers2023Controller.excelAllUserRegisterConference2023",
+  "GET /speakers/get-excel-all-panels-register":
+    "Speakers2023Controller.excelAllPanelsRegisterConference2023",
   "POST /blogpost": "BlogPostController.create",
   "GET /blogpost": "BlogPostController.search",
   "GET /blogpost/blog/:blogPostId": "BlogPostController.getBlogPost",
