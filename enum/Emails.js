@@ -518,25 +518,43 @@ module.exports = {
       Welcome to Hacking HR's ProjectX!
     </p>  
     <p>
-      We are so excited to have you join the cohort ${cohort.title} starting on ${startDate}!
+      We are so excited to have you join the cohort "${cohort.title}" starting on "${startDate}"!
     </p>
     <p>
-      We created this tool with one idea in mind: to help you learn or improve your knowledge in ${cohort.title} through daily resources, personal reflections and assessment of your fellow cohort participants’ reflections! 
+    Our goal with ProjectX is to help you learn or improve your knowledge in the specific
+    skill covered in COHORT NAME HERE through daily resources and personal 
+    reflections.  
     </p>
     <p>
-    This program is intense, but light touch: we will provide a daily resource that you should be able to read, listen or watch in less than 20 minutes. After reading, listening or watching the resource, you will provide a personal reflection about what you learned and how you plan to apply the lessons learned. Finally, you will look at some of the reflections provided by other participants’ and provide your feedback. 
+    This program is intense, but light touch: we will provide a daily resource that you 
+    should be able to read, listen or watch in less than 20 minutes. Daily means daily: 
+    66 consecutive days.
     </p>
     <p>
-    This cohort program lasts 66 consecutive days. Each day, for 66 consecutive days, you will receive a daily resource, provide the reflection and assess your fellow cohort members’ reflections. This won’t take more than 20-25 minutes per day… Hey, “excellence is a habit”… and we aim to make light-touch learning a habit with discipline and commitment. 
+    Besides reading, listening or watching the daily resource, you will provide a 
+    personal reflection about what you learned and how you plan to apply the lessons 
+    learned.
     </p>
     <p>
-    There will be a few meetings with a small and selected group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. 
+    This cohort program lasts 66 consecutive days. Each day, for 66 consecutive days, 
+    you will receive a daily resource and you must provide a reflection about the 
+    resource. The reflection should address the question: “what did I learn from this 
+    resource and how can I apply it in my day to day practice/work?”
     </p>
     <p>
-    As I mentioned before, the program relies on daily consistency and discipline. Instead of bugging you with heavy daily resources, “self-pace” learning program for which you disengage too soon or long programs that lasts for hours and months, we only ask you for 20-25 minutes or less on a daily basis for 66 days. That’s it! 
+    Reading, listening or watching the resource and providing the reflection shouldn’t 
+    take more than 20-25 minutes per day... Hey, “excellence is a habit”... and we aim 
+    to make light-touch learning a habit with discipline and commitment. 
     </p>
     <p>
-      Enjoy the program. Happy learning. And please do not hesitate to reach out if you have any questions: enrique@hackinghr.io
+    The program relies on daily consistency and discipline. Instead of bugging you with 
+    heavy daily resources, “self-pace” learning program for which you disengage too 
+    soon or long programs that lasts for hours and months, we only ask you for 20-25 
+    minutes or less on a daily basis for 66 days. That’s it!
+    </p>
+    <p>
+    Enjoy the program. Happy learning. And please do not hesitate to reach out if you 
+    have any questions: <a href="mailto:enrique@hackinghr.io">enrique@hackinghr.io</a>
     </p>
     <p>
       Thank you! 
@@ -564,10 +582,37 @@ module.exports = {
       - Estimated duration: ${resource.duration} minutes <br>
     </p>
     <p>
-      Please remember to provide your response to today’s question about this resource in the cohort dashboard. This is a mandatory requirement to continue to participate in the program. We assess your completion of this requirement every Sunday. If you have missed two or more activities you will not be able to join this cohort anymore.
+    Please remember to provide your reflection about this resource. The reflection 
+    should address the question: “what did I learn from this resource and how can I 
+    apply it in my day to day practice/work?”
     </p>
     <p>
-      Please note: whether you receive the daily email or not, the resource will be posted in the Cohort dashboard in the Hacking HR LAB. Sometimes our emails get stuck somewhere in the strange world of the Internet. If that’s the case, please GO to the Cohort dashboard and review the resource. You still have to complete the daily activity, even if you don’t receive the daily resource email on a given day.  
+    To enter your reflection, please go to the Hacking HR LAB, click on ProjectX -> My 
+    Cohorts -> look for this cohort, and click on JOIN THE CONVERSATION on the 
+    corresponding resource.
+    </p>
+    <p>
+    Don’t forget that you will be removed from the program if you miss to provide your 
+    response two times during a given week. This means that you must provide on at 
+    least five resources during one week. If you fail this requirement you will be 
+    removed from the program and will not have access anymore to the dashboard. We 
+    assess the completion of this requirement on Sunday evening (Pacific Time Zone). 
+    Before then you should have completed five reflections or more to continue with the
+    program the following week. The assessment of the completion of the weekly 
+    requirement is an automated process and there is no way to include you again after
+    you are removed from the cohort for missing two or more activities.
+    </p>
+
+    <p>
+    Please note: whether you receive the daily email or not, the resource will be posted 
+    in the Cohort dashboard in the Hacking HR LAB. Sometimes our emails get stuck 
+    somewhere in the strange world of the Internet. If that’s the case, please GO to the 
+    Cohort dashboard and review the resource. You still have to complete the daily 
+    activity, even if you don’t receive the daily resource email on a given day.
+    </p>
+    <p>
+    Finally, if you have any trouble accessing the cohort on your mobile device, please 
+    try from your computer.
     </p>
     <p>
       Thank you! 
@@ -579,23 +624,24 @@ module.exports = {
   },
   KICK_OUT: {
     subject: (cohort) => `
-    You have missed two mandatory activities for Hacking HR’s ProjectX ${cohort.title} (you can’t join this cohort anymore)
+    You have missed two mandatory activities ${cohort.title} - you can’t join this cohort 
+    anymore
     `,
     body: (user, cohort) => `
     <p>
       Hi ${user.firstName}
     </p>
     <p>
-      Unfortunately you have missed two mandatory activities this week corresponding to Hacking HR’s ProjectX ${cohort.title}. 
+    Unfortunately you have missed two mandatory activities this week. We understand 
+    that life and work happen and perhaps other priorities came up and you had to 
+    reallocate your time. It’s ok. 
     </p>
     <p>
-      We understand that life and work happen and perhaps other priorities came up and you had to reallocate your time. It’s ok.  
+    We hope you can join a future cohort on the same skill or any other similar skill. 
     </p>
     <p>
-      We hope you can join a future cohort on the same skill or any other similar skill. We will be opening similar cohorts (if not the same!) several times during the year. 
-    </p>
-    <p>
-      You won’t be able to join this cohort’s dashboard anymore and you will not receive any more information about it. 
+    You won’t be able to join this cohort’s dashboard anymore and you will not receive 
+    any more information about it. 
     </p>
     <p>
       Thank you for your understanding. 
@@ -644,29 +690,71 @@ module.exports = {
         As you know, we created this tool with one idea in mind: to help you learn or improve your knowledge in ${cohort.title} through daily resources, personal reflections and assessment of your fellow cohort participants’ reflections! <br>
       </p>
       <p>
-        This program is intense, but light touch: we will provide a daily resource that you should be able to read, listen or watch in less than 20 minutes. After reading, listening or watching the resource, you will provide a personal reflection about what you learned and how you plan to apply the lessons learned. Finally, you will look at some of the reflections provided by other participants’ and provide your feedback. <br>
+      This program is intense, but light touch: we will provide a daily resource that you 
+      should be able to read, listen or watch in less than 20 minutes. Daily means daily: 
+      66 consecutive days. 
+      <br>
       </p>
       <p>
-        This cohort program lasts 66 consecutive days. Each day, for 66 consecutive days, you will receive a daily resource, provide the reflection and assess your fellow cohort members’ reflections. This won’t take more than 20-25 minutes per day.<br>
+      Besides reading, listening or watching the daily resource, you will provide a 
+      personal reflection about what you learned and how you plan to apply the lessons 
+      learned.
+      <br>
       </p>
       <p>
-        There will be a few meetings with a small and selected group of cohort participants. In addition, mid-way into the program and at the end of the program you will have to provide a resolution to a business case we will be posting. <br>
+      This cohort program lasts 66 consecutive days. Each day, for 66 consecutive days, 
+      you will receive a daily resource and you must provide a reflection about the 
+      resource. The reflection should address the question: “what did I learn from this 
+      resource and how can I apply it in my day to day practice/work?” 
+      <br>
       </p>
       <p>
-        As I mentioned before, the program relies on daily consistency and discipline. Instead of bugging you with heavy daily resources, “self-pace” learning program for which you disengage too soon or long programs that lasts for hours and months, we only ask you for 20-25 minutes or less on a daily basis for 66 days. That’s it! <br>
+      Reading, listening or watching the resource and providing the reflection shouldn’t 
+      take more than 20-25 minutes per day... Hey, “excellence is a habit”... and we aim 
+      to make light-touch learning a habit with discipline and commitment. <br>
       </p>
       <p>
-        Please note: you won’t be able to continue enrolled in the program if you miss two activities (reflections or comments on other participants’ reflections) in a given week. This is automated and there is no way to include you again after you are removed from the cohort for missing two activities. <br>
+      As I mentioned before, the program relies on daily consistency and discipline. 
+      Instead of bugging you with heavy daily resources, “self-pace” learning program for 
+      which you disengage too soon or long programs that lasts for hours and months, we
+      only ask you for 20-25 minutes or less on a daily basis for 66 days. That’s it!  <br>
       </p>
       <p>
-        Enjoy the program. Happy learning. And please do not hesitate to reach out if you have any questions:
+      Don’t forget that you will be removed from the program if you miss to provide your 
+      response two times during a given week. This means that you must provide on at 
+      least five resources during one week. If you fail this requirement you will be 
+      removed from the program and will not have access anymore to the dashboard. We 
+      assess the completion of this requirement on Sunday evening (Pacific Time Zone). 
+      Before then you should have completed five reflections or more to continue with the
+      program the following week. The assessment of the completion of the weekly 
+      requirement is an automated process and there is no way to include you again after
+      you are removed from the cohort for missing two or more activities.
       </p>
+
       <p>
-        enrique@hackinghr.io <br>
+      Please note: whether you receive the daily email or not, the resource will be posted 
+      somewhere in the strange world of the Internet. If that’s the case, please GO to the 
+      in the Cohort dashboard in the Hacking HR LAB. Sometimes our emails get stuck 
+      Cohort dashboard and review the resource. You still have to complete the daily 
+      activity, even if you don’t receive the daily resource email on a given day.
       </p>
+
+      <p>
+      Finally, if you have any trouble accessing the cohort on your mobile device, please 
+      try from your computer.
+      </p>
+
+      <p>
+      Enjoy the program. Happy learning. And please do not hesitate to reach out if you 
+      have any questions:  <a href="mailto:enrique@hackinghr.io">enrique@hackinghr.io</a>
+      </p>
+    
       <p>
         Thank you!
       </p>
+      <p>Enrique Rubio</p>
+      <p>Founder</p>
+      <p>Hacking HR</p>
     `,
   },
   SKILL_COHORT_EMAIL_DAY_BEFORE_IT_STARTS: {
@@ -695,26 +783,49 @@ module.exports = {
         <li>After reading, listening or watching the resource, you will provide a personal reflection about what you learned and how you plan to apply the lessons learned.</li>
         <li>Also, daily, you will look at some of the reflections provided by other participants’ and provide your feedback to their reflections.</li>
         <li>In addition, you have access to the participants’ tab where you can see who is part of the cohorts and further connect with them.</li>
-        <li>Finally, there will be a “playground” to start experimenting and creating ideas together and you can get involved in this playground as much as you want.</li>
+      
       </ul>
+     
       <p>
-        Please note: you won’t be able to continue enrolled in the program if you miss two activities (reflections or comments on other participants’ reflections) in a given week. This is automated and there is no way to include you again after you are removed from the cohort for missing two activities. <br>
+      You already know this: ProjectX relies on daily consistency and discipline. Instead of 
+      bugging you with heavy daily resources, “self-pace” learning program for which you
+      disengage too soon or long programs that lasts for hours and months, we only ask 
+      you for 20-25 minutes or less on a daily basis for 66 days. That’s it! <br>
       </p>
       <p>
-        You already know this: ProjectX relies on daily consistency and discipline. Instead of bugging you with heavy daily resources, “self-pace” learning program for which you disengage too soon or long programs that lasts for hours and months, we only ask you for 20-25 minutes or less on a daily basis for 66 days. That’s it! <br>
+      Don’t forget that you will be removed from the program if you miss to provide your 
+      response two times during a given week. This means that you must provide on at 
+      least five resources during one week. If you fail this requirement you will be 
+      removed from the program and will not have access anymore to the dashboard. We 
+      assess the completion of this requirement on Sunday evening (Pacific Time Zone). 
+      Before then you should have completed five reflections or more to continue with the
+      program the following week. The assessment of the completion of the weekly 
+      requirement is an automated process and there is no way to include you again after
+      you are removed from the cohort for missing two or more activities.  <br>
       </p>
       <p>
-        Please note: you won’t be able to continue enrolled in the program if you miss two activities (reflections or comments on other participants’ reflections) in a given week. This is automated and there is no way to include you again after you are removed from the cohort for missing two activities. <br>
+      
+      Please note: whether you receive the daily email or not, the resource will be posted 
+      in the Cohort dashboard in the Hacking HR LAB. Sometimes our emails get stuck 
+      somewhere in the strange world of the Internet. If that’s the case, please GO to the 
+      Cohort dashboard and review the resource. You still have to complete the daily 
+      activity, even if you don’t receive the daily resource email on a given day.
       </p>
       <p>
         Last, but not least. This cohort is starting with ${numOfParticipants} participants and they come from ${numOfCountries} countries. So, happy learning and also happy networking! <br>
       </p>
       <p>
         Enjoy the program. And please do not hesitate to reach out if you have any questions: <br>
-        enrique@hackinghr.io <br>
+        <a href="mailto:enrique@hackinghr.io">enrique@hackinghr.io</a> <br>
       </p>
       <p>
         Thank you!
+      </p>
+      <p>
+      Founder
+      </p>
+      <p>
+      Hacking HR
       </p>
     `,
   },
