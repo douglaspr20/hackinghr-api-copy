@@ -461,15 +461,25 @@ const EventController = () => {
 
       let events = await Event.findAll({
         where,
-        raw: true,
+        include: [
+          {
+            model: EventInstructor,
+            attributes: ["id"],
+            include: [
+              {
+                model: Instructor,
+              },
+            ],
+          },
+        ],
       });
 
-      events = events.map((event) => {
-        return {
-          ...event,
-          startAndEndTimes: compact(event.startAndEndTimes),
-        };
-      });
+      // events = events.map((event) => {
+      //   return {
+      //     ...event,
+      //     startAndEndTimes: compact(event.startAndEndTimes),
+      //   };
+      // });
 
       return res.status(HttpCodes.OK).json({ events });
     } catch (err) {
