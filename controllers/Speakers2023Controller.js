@@ -235,8 +235,6 @@ const SpeakersController = () => {
                         })
     
                         if(!userReadyJoin){
-
-                            console.log(bul)
     
                             if(bul){
 
