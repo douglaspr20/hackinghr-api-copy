@@ -193,20 +193,28 @@ const UserController = () => {
   };
 
   const generateAttendEmail = async (user, tz, event) => {
-    const userTimezone = TimeZoneList.find((item) => item.utc.includes(tz));
-    const timezone = TimeZoneList.find((item) => item.value === event.timezone);
-    const offset = timezone.offset;
+    let userTimezone = TimeZoneList.find(
+      (item) => item.value === tz || item.text === tz
+    );
 
+    if (!userTimezone) {
+      userTimezone = tz;
+    } else {
+      userTimezone = userTimezone.utc[0];
+    }
     try {
       const calendarInvite = event.startAndEndTimes.map((time, index) => {
         try {
-          let startTime = convertToCertainTime(time.startTime, timezone.value);
-          let endTime = convertToCertainTime(time.endTime, timezone.value);
-
-          startTime = convertToLocalTime(
-            moment(startTime).utcOffset(offset, true)
+          let startTime = convertToLocalTime(
+            time.startTime,
+            event.timezone,
+            userTimezone
           );
-          endTime = convertToLocalTime(moment(endTime).utcOffset(offset, true));
+          let endTime = convertToLocalTime(
+            time.endTime,
+            event.timezone,
+            userTimezone
+          );
 
           return smtpService().generateCalendarInvite(
             startTime,
@@ -218,7 +226,7 @@ const UserController = () => {
             `${process.env.DOMAIN_URL}${event.id}`,
             event.organizer,
             process.env.SEND_IN_BLUE_SMTP_SENDER,
-            userTimezone.utc[0]
+            userTimezone
           );
         } catch (error) {
           console.log(error);
