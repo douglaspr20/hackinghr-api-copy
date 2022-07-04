@@ -4,6 +4,7 @@ const { Parser } = require("json2csv");
 const isEmpty = require("lodash/isEmpty");
 const path = require("path");
 const Excel = require("exceljs");
+const { utc } = require("moment-timezone");
 
 const workbook = new Excel.Workbook();
 
@@ -68,17 +69,15 @@ function convertToUTCTime(date, tz) {
 }
 
 function getEventPeriod(date, startAndEndTimes, timezone) {
-  let tz = TimeZoneList.find((item) => item.value === timezone);
-
   return startAndEndTimes.map((time, index) => {
-    const day = moment.tz(time.startTime, tz.utc[0]);
-    const startTime = moment.tz(time.startTime, tz.utc[0]);
-    const endTime = moment.tz(time.endTime, tz.utc[0]);
+    const day = moment(time.startTime).utc();
+    const startTime = moment(time.startTime).utc();
+    const endTime = moment(time.endTime).utc();
 
     return `
         <br> ${moment(day).format("LL")} | ${moment(startTime).format(
       "HH:mm"
-    )} - ${moment(endTime).format("HH:mm")} ${tz.abbr}
+    )} - ${moment(endTime).format("HH:mm")} ${timezone}
       `;
   });
 }
@@ -112,7 +111,6 @@ async function convertJSONToExcel(sheet, fields, content) {
 }
 
 async function convertJSONToExcelUsersSpeakers2023(sheet, fields, content) {
-
   // Create page
   const wb = workbook.addWorksheet(sheet);
   wb.addRow(fields.map((item) => item.label));
@@ -130,66 +128,75 @@ async function convertJSONToExcelUsersSpeakers2023(sheet, fields, content) {
   return;
 }
 
-async function convertJSONToExcelPanelsConference2023(sheet, fields1, fields2, content) {
-
+async function convertJSONToExcelPanelsConference2023(
+  sheet,
+  fields1,
+  fields2,
+  content
+) {
   const wb = workbook.addWorksheet(sheet);
 
-  let number = 2
-  let number2 = 0
+  let number = 2;
+  let number2 = 0;
   const cell1 = wb.getCell(`A1`);
-  cell1.value = 'Sessions';
+  cell1.value = "Sessions";
 
   fields2.forEach((field, index) => {
     wb.getColumn(index + 1).width = field.width;
   });
 
   content.forEach((item) => {
-
     const cell2 = wb.getCell(`A${number}`);
-    cell2.value = '';
+    cell2.value = "";
     wb.getRow(`${number}`).fill = {
-      type: 'pattern',
-      pattern:'solid',
-      fgColor:{argb:'c0c0c0'},
-    }
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "c0c0c0" },
+    };
 
-    const row1 = fields1.map((item) => item.label)
-    wb.addRow(row1,`${number+1}`);
-    wb.getRow(`${number+1}`).fill = {
-      type: 'pattern',
-      pattern:'solid',
-      fgColor:{argb:'c6e9e8'},
-    }
-    wb.getRow(`${number+1}`).border = {
-      top: {style:'thin'},
-      left: {style:'thin'},
-      bottom: {style:'thin'},
-      right: {style:'thin'}
+    const row1 = fields1.map((item) => item.label);
+    wb.addRow(row1, `${number + 1}`);
+    wb.getRow(`${number + 1}`).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "c6e9e8" },
+    };
+    wb.getRow(`${number + 1}`).border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
     };
 
     const row2 = fields1.map((field) => item[field.value]);
-    wb.addRow(row2,`${number+2}`);
-    wb.getRow(`${number+2}`).fill = {
-      type: 'pattern',
-      pattern:'solid',
-      fgColor:{argb:'c6e9e8'},
-    }
-    wb.getRow(`${number+2}`).border = {
-      top: {style:'thin'},
-      left: {style:'thin'},
-      bottom: {style:'thin'},
-      right: {style:'thin'}
+    wb.addRow(row2, `${number + 2}`);
+    wb.getRow(`${number + 2}`).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "c6e9e8" },
     };
-    
-    wb.addRow(fields2.map((item) => item.label), `${number+3}`);
-    item.SpeakerMemberPanels.forEach((item,index) => {
-      const row = fields2.map((field) => item.User[field.value]);
-      wb.addRow(row,`${number+4+index}`);
-    });
-    
-    number2 = (Number(item.SpeakerMemberPanels.length) !== 0) ? Number(item.SpeakerMemberPanels.length) : 1
+    wb.getRow(`${number + 2}`).border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
 
-    number = number + 4 + number2
+    wb.addRow(
+      fields2.map((item) => item.label),
+      `${number + 3}`
+    );
+    item.SpeakerMemberPanels.forEach((item, index) => {
+      const row = fields2.map((field) => item.User[field.value]);
+      wb.addRow(row, `${number + 4 + index}`);
+    });
+
+    number2 =
+      Number(item.SpeakerMemberPanels.length) !== 0
+        ? Number(item.SpeakerMemberPanels.length)
+        : 1;
+
+    number = number + 4 + number2;
   });
 
   await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);

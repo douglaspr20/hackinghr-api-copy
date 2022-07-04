@@ -10,7 +10,7 @@ const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { Settings, EmailContent, USER_ROLE } = require("../enum");
-const { isEmpty, flatten, head, compact } = require("lodash");
+const { isEmpty, compact } = require("lodash");
 const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
@@ -461,15 +461,25 @@ const EventController = () => {
 
       let events = await Event.findAll({
         where,
-        raw: true,
+        include: [
+          {
+            model: EventInstructor,
+            attributes: ["id"],
+            include: [
+              {
+                model: Instructor,
+              },
+            ],
+          },
+        ],
       });
 
-      events = events.map((event) => {
-        return {
-          ...event,
-          startAndEndTimes: compact(event.startAndEndTimes),
-        };
-      });
+      // events = events.map((event) => {
+      //   return {
+      //     ...event,
+      //     startAndEndTimes: compact(event.startAndEndTimes),
+      //   };
+      // });
 
       return res.status(HttpCodes.OK).json({ events });
     } catch (err) {
