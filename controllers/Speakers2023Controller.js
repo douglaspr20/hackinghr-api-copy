@@ -235,24 +235,49 @@ const SpeakersController = () => {
                         })
     
                         if(!userReadyJoin){
-    
-                            await Promise.resolve(
-                                (() => {
-                                    let mailOptions = {
-                                    from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                    to: user.userEmail,
-                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.userName,panel),
-                                    html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                                        user.userName,
-                                        panel,
-                                    ),
-                                };
-                        
-                                return smtpService().sendMailUsingSendInBlue(mailOptions);
 
-                                })()
-                            );
+                            console.log(bul)
     
+                            if(bul){
+
+                                await Promise.resolve(
+                                    (() => {
+                                        let mailOptions = {
+                                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                        to: user.userEmail,
+                                        subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.subject(user.userName,panel.panelName),
+                                        html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.body(
+                                            user.userName,
+                                            panel,
+                                        ),
+                                    };
+                            
+                                    return smtpService().sendMailUsingSendInBlue(mailOptions);
+
+                                    })()
+                                );
+
+                            }else{
+
+                                await Promise.resolve(
+                                    (() => {
+                                        let mailOptions = {
+                                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                        to: user.userEmail,
+                                        subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.subject(user.userName,panel.panelName),
+                                        html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.body(
+                                            user.userName,
+                                            panel,
+                                        ),
+                                    };
+                            
+                                    return smtpService().sendMailUsingSendInBlue(mailOptions);
+
+                                    })()
+                                ); 
+
+                            }
+                            
                             await SpeakerMemberPanel.create({
                                 UserId: user.userId, 
                                 SpeakersPanelId: panel.id, 
@@ -429,7 +454,7 @@ const SpeakersController = () => {
                     })()
                 );
 
-                await User.update({
+                const [numberOfAffectedRows, affectedRows] = await User.update({
                     registerConference2023: true
                 },
                 {
@@ -437,7 +462,7 @@ const SpeakersController = () => {
                         id: id
                     },
                 })
-                return res.status(HttpCodes.OK).json('funciona'); 
+                return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows }); 
 
             }else{
                 return res.status(HttpCodes.OK); 
@@ -452,17 +477,66 @@ const SpeakersController = () => {
 
     const getAllUserSpeaker = async (req, res) => {
 
+        const {type} = req.params
+        let userSpeakers
+
         try {
            
-          const userSpeakers = await User.findAll({
-            where: {
-                speakersAuthorization: {[Op.eq]: "accepted"}
-            },
-            attributes: ["firstName","lastName","email","id", "abbrName", "img", "titleProfessions", "personalLinks"],
-            order: [["firstName", "ASC"]],
-          });
+            if(type === "tableSpeakers"){
+                userSpeakers = await User.findAll({
+                    where: {
+                        [Op.or]: [
+                            {speakersAuthorization: {[Op.eq]: "accepted"}},
+                            {speakersAuthorization: {[Op.eq]: "pending"}},
+                            {speakersAuthorization: {[Op.eq]: "reject"}}
+                        ]
+                    },
+                    attributes: [
+                        "firstName",
+                        "lastName",
+                        "email",
+                        "id",
+                        "abbrName",
+                        "img",
+                        "titleProfessions",
+                        "personalLinks",
+                        "speakersAuthorization",
+                        "role",
+                        "about",
+                        "city",
+                        "location",
+                        "timezone",
+                        "company"
+                    ],
+                    order: [["firstName", "ASC"]],
+                });
+            }else{
+                userSpeakers = await User.findAll({
+                    where: {
+                        speakersAuthorization: {[Op.eq]: "accepted"}
+                    },
+                    attributes: [
+                        "firstName",
+                        "lastName",
+                        "email",
+                        "id",
+                        "abbrName",
+                        "img",
+                        "titleProfessions",
+                        "personalLinks",
+                        "speakersAuthorization",
+                        "role",
+                        "about",
+                        "city",
+                        "location",
+                        "timezone",
+                        "company"
+                    ],
+                    order: [["firstName", "ASC"]],
+                });
+            }
     
-          return res.status(HttpCodes.OK).json({ userSpeakers });
+            return res.status(HttpCodes.OK).json({ userSpeakers });
         } catch (error) {
           console.log(error);
           return res
@@ -939,11 +1013,64 @@ const SpeakersController = () => {
         }
     }
 
+    const addNewSpeakersAdmin = async (req, res) => {
+        const {userIds} = req.body
+
+        try {
+
+            await Promise.all(
+                userIds.map(async (id) => {
+                    await User.update(
+                        {
+                            speakersAuthorization: "accepted",
+                        },
+                        {
+                            where: { id: id },
+                        }
+                    );
+                })
+            )
+
+            return res.status(HttpCodes.OK).json()
+
+        } catch (error) {
+            console.log(error);
+            return res
+                .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                .json({ msg: "Internal server error" });
+        }
+    }
+
+    const editAuthorizationSpeakers = async (req, res) => {
+        const {data} = req.body
+
+        try {
+
+            const [numberOfAffectedRows, affectedRows] = await User.update(
+                {
+                    speakersAuthorization: data.type,
+                },
+                {
+                    where: { id: data.userId },
+                }
+            );
+
+            return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
+
+        } catch (error) {
+            console.log(error);
+            return res
+                .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                .json({ msg: "Internal server error" });
+        }
+    }
 
     return {
         addNewPanelSpeaker,
+        addNewSpeakersAdmin,
         addToMyPersonalAgenda,
         allPanelSpeakers,
+        editAuthorizationSpeakers,
         addUserSpeakerToPanel,
         removeUserSpeakerToPanel,
         registerUserIfNotAreRegisterConference2023,

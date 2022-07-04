@@ -1314,7 +1314,7 @@ const UserController = () => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: email,
-            subject: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.subject,
+            subject: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.subject(firstName),
             html: LabEmails.USER_AFTER_APPLY_SPEAKER_2023.body(firstName),
           };
 
@@ -1364,7 +1364,7 @@ const UserController = () => {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               to: user.email,
               //to: "enrique@hackinghr.io",
-              subject: LabEmails.USER_ACCEPTED_SPEAKER.subject,
+              subject: LabEmails.USER_ACCEPTED_SPEAKER.subject(user.firstName),
               html: LabEmails.USER_ACCEPTED_SPEAKER.body(
                 user,
                 `${process.env.DOMAIN_URL}speakers2023`

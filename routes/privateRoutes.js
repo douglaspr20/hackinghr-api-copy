@@ -301,6 +301,7 @@ const privateRoutes = {
   "GET /speakers/get-panel-admin":
     "Speakers2023Controller.allPanelSpeakersAdmin",
   "POST /speakers/edit-panel": "Speakers2023Controller.editPanelsSpeaker2023",
+  "POST /speakers/edit-authorzation-speakers-admin": "Speakers2023Controller.editAuthorizationSpeakers",
   "DELETE /speakers/delete-panel/:PanelId":
     "Speakers2023Controller.deletePanelsSpeaker2023",
   "POST /speakers/send-email-register-conference":
@@ -308,8 +309,11 @@ const privateRoutes = {
   "GET /speakers/get-excel-all-person-register":
     "Speakers2023Controller.excelAllUserRegisterConference2023",
   "GET /speakers/all-panel": "Speakers2023Controller.allPanelSpeakers",
-  "GET /speakers/all-users-speakers":
+  "GET /speakers/all-users-speakers/:type":
     "Speakers2023Controller.getAllUserSpeaker",
+    "GET /speakers/all-users-speakers":
+    "Speakers2023Controller.getAllUserSpeaker",
+  "POST /speakers/add-new-speakers-admin": "Speakers2023Controller.addNewSpeakersAdmin",
   "GET /speakers/all-panel-of-user/:id":
     "Speakers2023Controller.getAllPanelsOfOneUser",
   "POST /speakers/add-speaker-to-panel":
