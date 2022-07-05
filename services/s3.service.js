@@ -30,6 +30,7 @@ const s3Service = () => {
     return new Promise((resolve, reject) => {
       userImageBucket.putObject(data, (err) => {
         if (err) {
+          console.log(err);
           reject(err);
         } else {
           resolve(`${S3.IMAGE_BUCKET_URL}/${path}`);
