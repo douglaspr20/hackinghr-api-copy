@@ -13,7 +13,7 @@ const {
     convertJSONToExcelUsersSpeakers2023,
     convertJSONToExcelPanelsConference2023
   } = require("../utils/format");
-const speakerPanel = require("../models/speakerPanel");
+  const { convertToLocalTime } = require("../utils/format");
 
 const User = db.User;
 const SpeakersPanel = db.SpeakerPanel;
@@ -224,6 +224,19 @@ const SpeakersController = () => {
 
         let panelsSpeakers
 
+        const moderators = await SpeakerMemberPanel.findAll({
+            where: {SpeakersPanelId: panel.id, isModerator: true},
+            include: [
+                {
+                    model: User,
+                    attributes: [
+                        "id",
+                        "email"
+                    ],
+                }
+            ],
+        })
+
         try {
 
             if(role === "admin" && type === "addUserAdmin"){
@@ -255,6 +268,25 @@ const SpeakersController = () => {
                                     })()
                                 );
 
+                                moderators.map(async (moderator) => {
+                                    await Promise.resolve(
+                                        (() => {
+                                            let mailOptions = {
+                                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                                to: moderator.User.email,
+                                                //to: "enrique@hackinghr.io",
+                                                subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.subject(user.userName,panel.panelName),
+                                                html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.body(
+                                                    user.userName,
+                                                    panel,
+                                                ),
+                                            };
+                                
+                                            return smtpService().sendMailUsingSendInBlue(mailOptions);
+                                        })()
+                                    )
+                                })
+
                             }else{
 
                                 await Promise.resolve(
@@ -273,6 +305,25 @@ const SpeakersController = () => {
 
                                     })()
                                 ); 
+
+                                moderators.map(async (moderator) => {
+                                    await Promise.resolve(
+                                        (() => {
+                                            let mailOptions = {
+                                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                                to: moderator.User.email,
+                                                //to: "enrique@hackinghr.io",
+                                                subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.subject(user.userName,panel.panelName),
+                                                html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.body(
+                                                    user.userName,
+                                                    panel,
+                                                ),
+                                            };
+                                
+                                            return smtpService().sendMailUsingSendInBlue(mailOptions);
+                                        })()
+                                    )   
+                                }) 
 
                             }
                             
@@ -332,25 +383,45 @@ const SpeakersController = () => {
                     if(userLimit.length > 1){
                         return res
                             .status(HttpCodes.BAD_REQUEST)
-                            .json({ msg: "User can't join to more of two panels." });
+                            .json({ msg: "You can't join more than two panels." });
                     }
                 }
 
                 await Promise.resolve(
                     (() => {
                         let mailOptions = {
-                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                        to: usersNames.userEmail,
-                        subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames.userName,panel.panelName),
-                        html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                            usersNames.userName,
-                            panel,
-                        ),
+                            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                            to: usersNames.userEmail,
+                            subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames.userName,panel.panelName),
+                            html: LabEmails.SPEAKERS_PANEL_JOIN.body(
+                                usersNames.userName,
+                                panel,
+                            ),
                         };
             
                         return smtpService().sendMailUsingSendInBlue(mailOptions);
                     })()
                 );
+
+                moderators.map(async (moderator) => {
+                    await Promise.resolve(
+                        (() => {
+                            let mailOptions = {
+                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                to: moderator.User.email,
+                                //to: "enrique@hackinghr.io",
+                                subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames.userName,panel.panelName),
+                                html: LabEmails.SPEAKERS_PANEL_JOIN.body(
+                                    usersNames.userName,
+                                    panel,
+                                ),
+                            };
+                
+                            return smtpService().sendMailUsingSendInBlue(mailOptions);
+                        })()
+                        
+                    )
+                })
 
                 await SpeakerMemberPanel.create({
                     UserId: usersNames.userId, 
@@ -1063,6 +1134,67 @@ const SpeakersController = () => {
         }
     }
 
+    const downloadICS = async (req, res) => {
+        const { id } = req.params;
+        const { userTimezone } = req.query;
+    
+        try {
+          const panel = await SpeakersPanel.findOne({
+            where: { id },
+          });
+    
+          if (!panel) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+          }
+    
+          let startTime = convertToLocalTime(
+            panel.dataValues.startDate,
+            panel.timezone,
+            userTimezone
+          );
+          let endTime = convertToLocalTime(
+            panel.dataValues.endDate,
+            panel.timezone,
+            userTimezone
+          );
+    
+          const calendarInvite = smtpService().generateCalendarInvite(
+            startTime,
+            endTime,
+            panel.panelName,
+            panel.description,
+            "https://www.hackinghrlab.io/global-conference",
+            // event.location,
+            `${process.env.DOMAIN_URL}${panel.id}`,
+            "hacking Lab HR",
+            process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            userTimezone
+          );
+    
+          let icsContent = calendarInvite.toString();
+          icsContent = icsContent.replace(
+            "BEGIN:VEVENT",
+            `METHOD:REQUEST\r\nBEGIN:VEVENT`
+          );
+    
+          res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+          res.setHeader(
+            "Content-Disposition",
+            `attachment; filename=${encodeURIComponent(panel.panelName)}.ics`
+          );
+          res.setHeader("Content-Length", icsContent.length);
+          return res.end(icsContent);
+        } catch (error) {
+          console.log(error);
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+        }
+      };
+
     return {
         addNewPanelSpeaker,
         addNewSpeakersAdmin,
@@ -1090,6 +1222,7 @@ const SpeakersController = () => {
         getOneParraf,
         editParraf,
         deleteParraf,
+        downloadICS
     }
 }
 

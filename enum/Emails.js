@@ -952,21 +952,17 @@ module.exports = {
     subject: (firstName) => `${firstName}: your application to join us as speaker at FORWARD2023 has been approved! Please select the panels you want to join. Thank you!`,
     body: (user) => `
       <p>
-        Hi ${user.firstName},<br>
-      </p><br>
-
+        Hi ${user.firstName},
+      </p>
       <p>
-        I am excited that you are joining us as a speaker at Hacking HR’s FORWARD2023! 
-      </p><br>
-
+        I am excited that you are joining us as a speaker at Hacking HR’s <b>FORWARD2023</b>! 
+      </p>
       <p>
         We are planning an amazing conference experience and we are thrilled to have you with us. 
-      </p><br>
-
+      </p>
       <p>
         This is what comes next: 
-      </p><br>
-
+      </p>
       <p>
         <ol>
           <li>Please go to this link: https://www.hackinghrlab.io/speakers2023</li>
@@ -974,20 +970,16 @@ module.exports = {
           <li>Please join one or up to two panels. Just click on “JOIN”. If you click on “More Information” you will be able to see the rest of the panelists for that panel. Each panel has up to five panelists and a moderator. You can join up to two panels. Please I kindly ask you to make sure you are selecting the panel you are interested to join. Withdrawing from a panel later creates a lot of problems!</li>
           <li>The panels will be recorded no later than the end of this year and released during the conference. Your panel’s moderator will be in touch within the next few weeks to schedule the logistics and recording.</li>
         </ul>
-      </p><br>
-      
+      </p>
       <p>
         Please add your name to the panels no later than August 26th. We will close the system by then and you won’t be able to join anymore.
-      </p><br>
-
+      </p>
       <p>
         Please do let me know if you have any questions. 
-      </p><br>
-
+      </p>
       <p>
         Thank you so much for being part of this experience! 
-      </p><br>
-
+      </p>
       <br />
       Enrique Rubio
       <br />
@@ -1096,16 +1088,16 @@ module.exports = {
   USER_AFTER_APPLY_SPEAKER_2023: {
     subject: (firstName) => `${firstName} your application to join us as speaker at FORWARD2023 has been received`,
     body: (firstName) =>
-      `<p>Hi ${firstName},</p><br>
+      `<p>Hi ${firstName},</p>
 
       <p>I have received your application join us as a speaker at the Hacking HR 2023 Global Conference,</p>
-      <p>now called: FORWARD 2023.</p><br>
+      <p>now called: <b>FORWARD 2023</b>.</p>
 
-      <p>I review all the applications to make sure we are only including approved speakers. </p><br>
+      <p>I review all the applications to make sure we are only including approved speakers. </p>
 
-      <p>You will receive an email shortly with your approval. As soon as your access to the speakers’ dashboard is approved you will be able to see all the sessions (panels) and select one or two that you want to join. </p><br>
+      <p>You will receive an email shortly with your approval. As soon as your access to the speakers’ dashboard is approved you will be able to see all the sessions (panels) and select one or two that you want to join. </p>
 
-      <p>Thank you!</p><br>
+      <p>Thank you!</p>
 
       <br />
       Enrique Rubio
@@ -1561,31 +1553,25 @@ module.exports = {
   },
   SPEAKERS_PANEL_JOIN: {
     subject: (firstName, panelName) =>
-      `${firstName}: thank you for joining the panel ${panelName} as part of Hacking HR’s FORWARD2023`,
+      `${firstName}: thank you for joining the panel “${panelName}” as part of Hacking HR’s FORWARD2023`,
     body: (firstName, panel) => `
       <p>
         Hi ${firstName},
-      </p><br>
-
+      </p>
       <p>
-        You have joined the panel ${panel.panelName} as part of Hacking HR’s FORWARD2023 agenda.   
-      </p><br>
-
+        You have joined the panel “${panel.panelName}” as part of Hacking HR’s <b>FORWARD2023</b> agenda.   
+      </p>
       <p>
       <p>
         Thank you so much! 
-      </p><br>
-
+      </p>
       <p>
-        The panel moderator will be in touch with you and your fellow panelist starting at the end of August to coordinate the panel logistics and schedule the recording. 
-      </p><br>
-
+        The panel moderator will be in touch with you and your fellow panelists starting at the end of August to coordinate the panel logistics and schedule the recording. 
+      </p>
       <p>
         Please do let me know if you have any questions. 
-      </p><br>
-
-      <p>Thank you so much for being part of this experience!</p><br>
-
+      </p>
+      <p>Thank you so much for being part of this experience!</p>
       <br />
       Enrique Rubio
       <br />
@@ -1601,25 +1587,20 @@ module.exports = {
     body: (firstName, panel) => `
       <p>
         Hi ${firstName},
-      </p><br>
-      
+      </p>
       <p>
-        You have been added as a speaker in the panel ${panel.panelName}: as part of Hacking HR’s FORWARD2023 conference. 
-      </p><br>
-
+        You have been added as a speaker in the panel “${panel.panelName}” as part of Hacking HR’s <b>FORWARD2023</b> conference. 
+      </p>
       <p>
       <p>
         We are planning an amazing conference experience and we are thrilled to have you with us. 
-      </p><br>
-
+      </p>
       <p>
         The panels will be recorded no later than the end of this year and released during the conference. Your panel’s moderator will be in touch within the next few weeks to schedule the logistics and recording.  
-      </p><br>
-
+      </p>
       <p>
         Please do let me know if you have any questions. Thank you so much for being part of this experience! 
-      </p><br>
-
+      </p>
       <br />
       Enrique Rubio
       <br />
@@ -1635,21 +1616,17 @@ module.exports = {
     body: (firstName, panel) => `
       <p>
         Hi ${firstName},
-      </p><br>
-      
+      </p>
       <p>
-        You have been added as moderator in the panel ${panel.panelName}: as part of Hacking HR’s FORWARD2023 conference.  
-      </p><br>
-
+        You have been added as moderator in the panel “${panel.panelName}” as part of Hacking HR’s <b>FORWARD2023</b> conference.  
+      </p>
       <p>
       <p>
         I will be in touch with more details soon! 
-      </p><br>
-
+      </p>
       <p>
         Please do let me know if you have any questions. Thank you so much for being part of this experience!   
-      </p><br>
-
+      </p>
       <br />
       Enrique Rubio
       <br />

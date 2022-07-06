@@ -17,6 +17,7 @@ const publicRoutes = {
   "GET /event/ics/:id": "EventController.downloadICS",
   "GET /global-conference/ics/:id": "AnnualConferenceController.downloadICS",
   "GET /bonfire/ics/:id": "BonfireController.downloadICS",
+  "GET /speakers/ics/:id": "Speakers2023Controller.downloadICS",
   "GET /category": "CategoryController.getAll",
   "GET /channel-category": "ChannelCategoryController.getAll",
   "GET /env/editor": "UserController.getEditorSignature",
