@@ -1164,7 +1164,7 @@ const SpeakersController = () => {
           const calendarInvite = smtpService().generateCalendarInvite(
             startTime,
             endTime,
-            panel.title,
+            panel.panelName,
             panel.description,
             "https://www.hackinghrlab.io/global-conference",
             // event.location,
@@ -1183,7 +1183,7 @@ const SpeakersController = () => {
           res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
           res.setHeader(
             "Content-Disposition",
-            `attachment; filename=${encodeURIComponent(panel.title)}.ics`
+            `attachment; filename=${encodeURIComponent(panel.panelName)}.ics`
           );
           res.setHeader("Content-Length", icsContent.length);
           return res.end(icsContent);
