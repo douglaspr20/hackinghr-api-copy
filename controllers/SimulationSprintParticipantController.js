@@ -24,6 +24,24 @@ const SimulationSprintParticipantController = () => {
         },
       });
 
+      const userFound = await User.findOne({
+        where: {
+          id: user.id,
+        },
+      });
+
+      if (!userFound) {
+        return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({ msg: "user not found" });
+      }
+
+      if (userFound.simulationSprintsAvailable < 1) {
+        return res.status(HttpCodes.BAD_REQUEST).json({
+          msg: "You have no more simulations available, please purchase more.",
+        });
+      }
+
       if (simulationSprint) {
         const simulationSprintParticipantExist =
           await SimulationSprintParticipant.findOne({
@@ -50,6 +68,17 @@ const SimulationSprintParticipantController = () => {
             subject: LabEmails.JOIN_SIMULATION_SPRINT.subject,
             html: LabEmails.JOIN_SIMULATION_SPRINT.body(user),
           };
+
+          await User.increment(
+            {
+              simulationSprintsAvailable: -1,
+            },
+            {
+              where: {
+                id: user.id,
+              },
+            }
+          );
 
           await smtpService().sendMailUsingSendInBlue(mailOptions);
 

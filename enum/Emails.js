@@ -949,7 +949,8 @@ module.exports = {
   },
 
   USER_ACCEPTED_SPEAKER: {
-    subject: (firstName) => `${firstName}: your application to join us as speaker at FORWARD2023 has been approved! Please select the panels you want to join. Thank you!`,
+    subject: (firstName) =>
+      `${firstName}: your application to join us as speaker at FORWARD2023 has been approved! Please select the panels you want to join. Thank you!`,
     body: (user) => `
       <p>
         Hi ${user.firstName},
@@ -1086,7 +1087,8 @@ module.exports = {
       <p>The Hacking HR Team</p>`,
   },
   USER_AFTER_APPLY_SPEAKER_2023: {
-    subject: (firstName) => `${firstName} your application to join us as speaker at FORWARD2023 has been received`,
+    subject: (firstName) =>
+      `${firstName} your application to join us as speaker at FORWARD2023 has been received`,
     body: (firstName) =>
       `<p>Hi ${firstName},</p>
 
@@ -1656,6 +1658,21 @@ module.exports = {
 
       <p>Hacking HR Team</p>
     `,
+  },
+  USER_PURCHARSE_SIMULATIONS_SPRINTS: {
+    subject: (numOfSimulations) =>
+      `(Hacking HR LAB) Thank you for purchasing ${numOfSimulations} credits!`,
+    body: (firstName, numOfSimulations) => `
+    <p>Hi ${firstName},</p>
+
+    <p>We just wanted to send you a quick note to confirm your purchase of ${numOfSimulations} to use in yours simulations sprint the Hacking HR LAB.</p>
+
+    <p>Do not hesitate to let us know if you have any question.</p>
+
+    <p>Thank you!</p>
+
+    <p>Hacking HR Team</p>
+  `,
   },
   ADVERTISEMENT_CAMPAIGN_START: {
     subject: () => `(Hacking HR LAB) Your campaign is now LIVE!`,

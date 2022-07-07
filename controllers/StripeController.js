@@ -25,9 +25,11 @@ const StripeController = () => {
     const {
       prices,
       user,
+      isBuyingSimulations = false,
       isAdvertisement = false,
       isBuyingCredits = false,
       credits = 0,
+      simulations = 0,
       isPaidEvent = false,
       event = {},
       callback_url,
@@ -86,6 +88,19 @@ const StripeController = () => {
               metadata: {
                 credits,
                 isBuyingCredits: true,
+              },
+            },
+          };
+        }
+
+        if (isBuyingSimulations) {
+          sessionData = {
+            ...sessionData,
+            mode: "payment",
+            payment_intent_data: {
+              metadata: {
+                simulations,
+                isBuyingSimulations: true,
               },
             },
           };
@@ -311,6 +326,21 @@ const StripeController = () => {
 
           newUserData = { ...newUserData, ...data };
         }
+
+        if (
+          metadata.isBuyingSimulations === "true" &&
+          paid &&
+          status === "succeeded"
+        ) {
+          const data = await simulationsSprintValidation(
+            user,
+            customerInformation,
+            metadata.simulations
+          );
+
+          newUserData = { ...newUserData, ...data };
+        }
+
         if (metadata.isPaidEvent === "true" && paid && status === "succeeded") {
           await paidEventValidation(user, customerInformation, {
             id: metadata.eventId,
@@ -374,6 +404,54 @@ const StripeController = () => {
       return {};
     }
   };
+
+  const simulationsSprintValidation = async (
+    user,
+    customerInformation,
+    simulations = 0
+  ) => {
+    let newUserData = {};
+
+    try {
+      const totalSimulationsPurchased =
+        (+customerInformation.metadata.totalSimulationsPurchased || 0) +
+        +simulations;
+
+      await stripe.customers.update(customerInformation.id, {
+        metadata: { totalSimulationsPurchased },
+      });
+
+      await User.increment(
+        {
+          simulationSprintsAvailable: +simulations,
+        },
+        {
+          where: {
+            email: user.email,
+          },
+        }
+      );
+
+      const mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: user.email,
+        subject:
+          LabEmails.USER_PURCHARSE_SIMULATIONS_SPRINTS.subject(simulations),
+        html: LabEmails.USER_PURCHARSE_SIMULATIONS_SPRINTS.body(
+          user.firstName,
+          simulations
+        ),
+      };
+
+      await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+      return newUserData;
+    } catch (error) {
+      console.log(error);
+      return {};
+    }
+  };
+
   const paidEventValidation = async (user, customerInformation, event) => {
     try {
       await stripe.customers.update(customerInformation.id, {
