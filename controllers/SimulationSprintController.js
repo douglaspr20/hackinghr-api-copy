@@ -257,6 +257,31 @@ const SimulationSprintController = () => {
     }
   };
 
+  const getSimulationSprintByUser = async (req, res) => {
+    const { user } = req;
+
+    try {
+      const simulationSprintofUser = await SimulationSprintParticipant.findAll({
+        where: {
+          UserId: user.id,
+        },
+        include: [
+          {
+            model: SimulationSprint,
+          },
+        ],
+        raw: true,
+      });
+
+      return res.status(HttpCodes.OK).json({ simulationSprintofUser });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   const duplicate = async (req, res) => {
     const { simulationSprint, simulationSprintResources } = req.body;
 
@@ -440,6 +465,7 @@ const SimulationSprintController = () => {
     remove,
     update,
     getAll,
+    getSimulationSprintByUser,
     duplicate,
     downloadICS,
   };

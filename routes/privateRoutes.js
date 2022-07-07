@@ -301,7 +301,8 @@ const privateRoutes = {
   "GET /speakers/get-panel-admin":
     "Speakers2023Controller.allPanelSpeakersAdmin",
   "POST /speakers/edit-panel": "Speakers2023Controller.editPanelsSpeaker2023",
-  "POST /speakers/edit-authorzation-speakers-admin": "Speakers2023Controller.editAuthorizationSpeakers",
+  "POST /speakers/edit-authorzation-speakers-admin":
+    "Speakers2023Controller.editAuthorizationSpeakers",
   "DELETE /speakers/delete-panel/:PanelId":
     "Speakers2023Controller.deletePanelsSpeaker2023",
   "POST /speakers/send-email-register-conference":
@@ -311,9 +312,10 @@ const privateRoutes = {
   "GET /speakers/all-panel": "Speakers2023Controller.allPanelSpeakers",
   "GET /speakers/all-users-speakers/:type":
     "Speakers2023Controller.getAllUserSpeaker",
-    "GET /speakers/all-users-speakers":
+  "GET /speakers/all-users-speakers":
     "Speakers2023Controller.getAllUserSpeaker",
-  "POST /speakers/add-new-speakers-admin": "Speakers2023Controller.addNewSpeakersAdmin",
+  "POST /speakers/add-new-speakers-admin":
+    "Speakers2023Controller.addNewSpeakersAdmin",
   "GET /speakers/all-panel-of-user/:id":
     "Speakers2023Controller.getAllPanelsOfOneUser",
   "POST /speakers/add-speaker-to-panel":
@@ -343,9 +345,12 @@ const privateRoutes = {
     "Speakers2023Controller.deleteSponsor",
   "POST /speakers/add-parraf": "Speakers2023Controller.addParraf",
   "GET /speakers/get-all-parraf": "Speakers2023Controller.getAllParraf",
-  "GET /speakers/get-one-parraf/:ParrafId": "Speakers2023Controller.getOneParraf",
-  "POST /speakers/added-to-agenda": "Speakers2023Controller.addToMyPersonalAgenda",
-  "DELETE /speakers/delete-parraf/:ParrafId": "Speakers2023Controller.deleteParraf",
+  "GET /speakers/get-one-parraf/:ParrafId":
+    "Speakers2023Controller.getOneParraf",
+  "POST /speakers/added-to-agenda":
+    "Speakers2023Controller.addToMyPersonalAgenda",
+  "DELETE /speakers/delete-parraf/:ParrafId":
+    "Speakers2023Controller.deleteParraf",
   "POST /speakers/edit-parraf": "Speakers2023Controller.editParraf",
   "GET /simulation-sprints": "SimulationSprintController.getAll",
   "GET /simulation-sprints/:id": "SimulationSprintController.get",
@@ -356,6 +361,8 @@ const privateRoutes = {
   "GET /simulation-sprint/participant/:SimulationSprintId":
     "SimulationSprintParticipantController.getParticipantsBySimulationSprint",
   "GET /simulation-sprint/group/:id": "SimulationSprintGroupController.get",
+  "GET /simulation-sprint-by-user":
+    "SimulationSprintController.getSimulationSprintByUser",
   "PUT /users/handle-receive-community-notification":
     "UserController.handleReceiveCommunityNotification",
 };
