@@ -178,6 +178,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      simulationSprintsAvailable: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+      },
       receiveCommunityNotification: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
