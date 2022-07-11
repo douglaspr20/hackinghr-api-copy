@@ -18,11 +18,12 @@ const User = db.User;
 
 const SimulationSprintController = () => {
   const setSimulationSprintReminders = (simulationSprint) => {
-    const dateBefore24Hours = convertToLocalTime(
-      simulationSprint.startDate
-    ).subtract(1, "days");
+    const dateBefore24Hours = moment(simulationSprint.startDate).subtract(
+      1,
+      "days"
+    );
 
-    const dayStart = convertToLocalTime(simulationSprint.startDate);
+    const dayStart = moment(simulationSprint.startDate);
 
     const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
     const interval2 = `0 ${dayStart.minutes()} ${dayStart.hours()} ${dayStart.date()} ${dayStart.month()} *`;
