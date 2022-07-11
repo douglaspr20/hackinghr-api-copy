@@ -238,7 +238,6 @@ const SpeakersController = () => {
         })
 
         const emailsModerators = moderators.map((moderator) => {return moderator.User.email})
-        console.log(emailsModerators)
 
         try {
 
