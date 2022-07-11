@@ -237,6 +237,8 @@ const SpeakersController = () => {
             ],
         })
 
+        const emailsModerators = moderators.map((moderator) => {return moderator.User.email})
+
         try {
 
             if(role === "admin" && type === "addUserAdmin"){
@@ -256,6 +258,7 @@ const SpeakersController = () => {
                                         let mailOptions = {
                                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                                         to: user.userEmail,
+                                        cc: emailsModerators,
                                         subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.subject(user.userName,panel.panelName),
                                         html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.body(
                                             user.userName,
@@ -268,25 +271,6 @@ const SpeakersController = () => {
                                     })()
                                 );
 
-                                moderators.map(async (moderator) => {
-                                    await Promise.resolve(
-                                        (() => {
-                                            let mailOptions = {
-                                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                                to: moderator.User.email,
-                                                //to: "enrique@hackinghr.io",
-                                                subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.subject(user.userName,panel.panelName),
-                                                html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.body(
-                                                    user.userName,
-                                                    panel,
-                                                ),
-                                            };
-                                
-                                            return smtpService().sendMailUsingSendInBlue(mailOptions);
-                                        })()
-                                    )
-                                })
-
                             }else{
 
                                 await Promise.resolve(
@@ -294,6 +278,7 @@ const SpeakersController = () => {
                                         let mailOptions = {
                                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                                         to: user.userEmail,
+                                        cc: emailsModerators,
                                         subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.subject(user.userName,panel.panelName),
                                         html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.body(
                                             user.userName,
@@ -304,26 +289,7 @@ const SpeakersController = () => {
                                     return smtpService().sendMailUsingSendInBlue(mailOptions);
 
                                     })()
-                                ); 
-
-                                moderators.map(async (moderator) => {
-                                    await Promise.resolve(
-                                        (() => {
-                                            let mailOptions = {
-                                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                                to: moderator.User.email,
-                                                //to: "enrique@hackinghr.io",
-                                                subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.subject(user.userName,panel.panelName),
-                                                html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.body(
-                                                    user.userName,
-                                                    panel,
-                                                ),
-                                            };
-                                
-                                            return smtpService().sendMailUsingSendInBlue(mailOptions);
-                                        })()
-                                    )   
-                                }) 
+                                );  
 
                             }
                             
@@ -392,6 +358,7 @@ const SpeakersController = () => {
                         let mailOptions = {
                             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                             to: usersNames.userEmail,
+                            cc: emailsModerators,
                             subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames.userName,panel.panelName),
                             html: LabEmails.SPEAKERS_PANEL_JOIN.body(
                                 usersNames.userName,
@@ -402,26 +369,6 @@ const SpeakersController = () => {
                         return smtpService().sendMailUsingSendInBlue(mailOptions);
                     })()
                 );
-
-                moderators.map(async (moderator) => {
-                    await Promise.resolve(
-                        (() => {
-                            let mailOptions = {
-                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                to: moderator.User.email,
-                                //to: "enrique@hackinghr.io",
-                                subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames.userName,panel.panelName),
-                                html: LabEmails.SPEAKERS_PANEL_JOIN.body(
-                                    usersNames.userName,
-                                    panel,
-                                ),
-                            };
-                
-                            return smtpService().sendMailUsingSendInBlue(mailOptions);
-                        })()
-                        
-                    )
-                })
 
                 await SpeakerMemberPanel.create({
                     UserId: usersNames.userId, 
