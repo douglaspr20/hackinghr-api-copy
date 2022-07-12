@@ -254,7 +254,7 @@ const EventController = () => {
   };
 
   const create = async (req, res) => {
-    const { body } = req;
+    const { body, user } = req;
 
     if (body.title) {
       try {
@@ -317,7 +317,11 @@ const EventController = () => {
         setEventReminders(event.dataValues);
         setOrganizerReminders(event);
 
-        const startTime = convertToLocalTime(event?.startDate);
+        const startTime = convertToLocalTime(
+          event?.startDate,
+          event.timezone,
+          user.timezone
+        );
         if (startTime?.isAfter(moment())) {
           await NotificationController().createNotification({
             message: `New Event "${
