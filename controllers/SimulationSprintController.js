@@ -284,14 +284,15 @@ const SimulationSprintController = () => {
   };
 
   const duplicate = async (req, res) => {
-    const { simulationSprint, simulationSprintResources } = req.body;
+    const { simulationSprint } = req.body;
+    const { SimulationSprintResources } = simulationSprint;
 
     try {
       const newSimulationSprint = await SimulationSprint.create(
         simulationSprint
       );
 
-      const tranformedSimulationSprintResources = simulationSprintResources.map(
+      const tranformedSimulationSprintResources = SimulationSprintResources.map(
         (resource) => ({
           ...resource,
           SimulationSprintId: newSimulationSprint.id,
