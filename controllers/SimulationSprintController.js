@@ -339,10 +339,6 @@ const SimulationSprintController = () => {
             "",
             req.body.image
           );
-
-          if (simulationSprint.image) {
-            await s3Service().deleteUserPicture(simulationSprint.image);
-          }
         }
 
         const [numberOfAffectedRows, affectedRows] =
