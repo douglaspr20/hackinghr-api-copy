@@ -148,14 +148,20 @@ const BonfireController = () => {
         }
       );
 
+      const targetBonfireDate = convertToLocalTime(
+        bonfire.dataValues.startTime,
+        bonfire.dataValues.timezone,
+        userTimezone
+      );
+
+      const convertedEndTime = convertToLocalTime(
+        bonfire.dataValues.endTime,
+        bonfire.dataValues.timezone,
+        userTimezone
+      );
+
       await Promise.resolve(
         (() => {
-          const targetBonfireDate = convertToLocalTime(
-            bonfire.dataValues.startTime,
-            bonfire.dataValues.timezone,
-            userTimezone
-          );
-
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: bonfireCreatorInfo.email,
@@ -165,9 +171,38 @@ const BonfireController = () => {
               bonfire,
               targetBonfireDate.format("MMM DD"),
               targetBonfireDate.format("h:mm a"),
-              bonfire.dataValues.timezone
+              userTimezone
             ),
+            contentType: "text/calendar",
           };
+
+          const calendarInvite = smtpService()
+            .generateCalendarInvite(
+              targetBonfireDate,
+              convertedEndTime,
+              bonfire.dataValues.title,
+              bonfire.dataValues.description,
+              "",
+              bonfire.dataValues.link,
+              bonfireCreatorInfo.firstName,
+              process.env.SEND_IN_BLUE_SMTP_SENDER,
+              userTimezone
+            )
+            .toString();
+
+          let icsContent = calendarInvite.replace(
+            "BEGIN:VEVENT",
+            `METHOD:REQUEST\r\nBEGIN:VEVENT`
+          );
+
+          mailOptions["attachments"] = [
+            {
+              filename: "invite.ics",
+              content: icsContent,
+              contentType: "application/ics; charset=UTF-8; method=REQUEST",
+              contentDisposition: "inline",
+            },
+          ];
           console.log("***** mailOptions ", mailOptions);
 
           return smtpService().sendMailUsingSendInBlue(mailOptions);
@@ -203,14 +238,43 @@ const BonfireController = () => {
               _user,
               bonfire,
               bonfireCreatorInfo,
-              moment(bonfire.dataValues.startTime).format("MMM DD"),
-              moment(bonfire.dataValues.startTime).format("h:mm a"),
-              moment(bonfire.dataValues.endTime).format("h:mm a"),
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a"),
+              convertedEndTime.format("h:mm a"),
               bonfire.dataValues.timezone,
               googleLink,
               yahooLink
             ),
+            contentType: "text/calendar",
           };
+
+          const calendarInvite = smtpService()
+            .generateCalendarInvite(
+              targetBonfireDate,
+              convertedEndTime,
+              bonfire.dataValues.title,
+              bonfire.dataValues.description,
+              "",
+              bonfire.dataValues.link,
+              bonfireCreator.firstName,
+              process.env.SEND_IN_BLUE_SMTP_SENDER,
+              userTimezone
+            )
+            .toString();
+
+          let icsContent = calendarInvite.replace(
+            "BEGIN:VEVENT",
+            `METHOD:REQUEST\r\nBEGIN:VEVENT`
+          );
+
+          mailOptions["attachments"] = [
+            {
+              filename: "invite.ics",
+              content: icsContent,
+              contentType: "application/ics; charset=UTF-8; method=REQUEST",
+              contentDisposition: "inline",
+            },
+          ];
 
           console.log("***** mailOptions ", mailOptions);
 

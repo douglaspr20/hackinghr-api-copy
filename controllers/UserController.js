@@ -944,6 +944,7 @@ const UserController = () => {
   const addBonfire = async (req, res) => {
     const { user } = req;
     const { id } = req.params;
+    const { userTimezone } = req.body;
 
     try {
       const query = `
@@ -993,31 +994,49 @@ const UserController = () => {
         }
       );
 
+      const targetBonfireDate = convertToLocalTime(
+        bonfireToJoin.startTime,
+        bonfireToJoin.timezone,
+        userTimezone
+      );
+
+      const convertedEndTime = convertToLocalTime(
+        bonfireToJoin.endTime,
+        bonfireToJoin.timezone,
+        userTimezone
+      );
+
       await Promise.resolve(
         (() => {
-          const timezoneUser = TimeZoneList.find(
-            (timezone) =>
-              timezone.value === _user.timezone ||
-              timezone.text === _user.timezone
-          );
-
           const googleLink = googleCalendar(
-            bonfireToJoin.dataValues,
+            bonfireToJoin.startTime,
             bonfireToJoin.timezone,
-            timezoneUser.utc[0]
+            userTimezone
           );
           const yahooLink = yahooCalendar(
-            bonfireToJoin.dataValues,
+            bonfireToJoin.endTime,
             bonfireToJoin.timezone,
-            timezoneUser.utc[0]
+            userTimezone
           );
 
-          // const calendarInvite = generateIcsCalendar(
-          //   bonfireToJoin,
-          //   timezoneUser.utc[0]
-          // );
+          const calendarInvite = smtpService()
+            .generateCalendarInvite(
+              targetBonfireDate,
+              convertedEndTime,
+              bonfireToJoin.title,
+              bonfireToJoin.description,
+              "",
+              bonfireToJoin.link,
+              bonfireCreator.firstName,
+              process.env.SEND_IN_BLUE_SMTP_SENDER,
+              userTimezone
+            )
+            .toString();
 
-          // let icsContent = calendarInvite.toString();
+          let icsContent = calendarInvite.replace(
+            "BEGIN:VEVENT",
+            `METHOD:REQUEST\r\nBEGIN:VEVENT`
+          );
 
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
@@ -1027,23 +1046,24 @@ const UserController = () => {
               affectedRows.dataValues,
               bonfireToJoin,
               bonfireCreator,
-              moment(bonfireToJoin.dataValues.startTime).format("MMM DD"),
-              moment(bonfireToJoin.dataValues.startTime).format("h:mm a"),
-              moment(bonfireToJoin.dataValues.endTime).format("h:mm a"),
-              bonfireToJoin.dataValues.timezone,
+              targetBonfireDate.format("MMM DD"),
+              targetBonfireDate.format("h:mm a"),
+              convertedEndTime.format("h:mm a"),
+              userTimezone,
               googleLink,
               yahooLink
             ),
-            // contentType: "text/calendar",
-            // attachments: [
-            //   {
-            //     filename: `${bonfireToJoin.title}-invite.ics`,
-            //     content: icsContent,
-            //     contentType: "application/ics; charset=UTF-8; method=REQUEST",
-            //     contentDisposition: "inline",
-            //   },
-            // ],
+            contentType: "text/calendar",
           };
+
+          mailOptions["attachments"] = [
+            {
+              filename: "invite.ics",
+              content: icsContent,
+              contentType: "application/ics; charset=UTF-8; method=REQUEST",
+              contentDisposition: "inline",
+            },
+          ];
           console.log("***** mailOptions ", mailOptions);
 
           return smtpService().sendMailUsingSendInBlue(mailOptions);
