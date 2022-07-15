@@ -1357,7 +1357,6 @@ const UserController = () => {
           where: {
             id: userId,
           },
-          returning: true,
         }
       );
 
