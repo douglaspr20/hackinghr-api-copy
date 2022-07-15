@@ -108,66 +108,58 @@ const SpeakersController = () => {
 
     const allPanelSpeakers = async (req, res) => {
 
-        try {
+        const type = req.params
 
-            const panelsSpeakers = await SpeakersPanel.findAll({
-                order: [["startDate", "ASC"]],
-                where: {type: "Panels"},
-                include: [
-                    {
-                        model: SpeakerMemberPanel,
-                        include: [
-                            {
-                                model: User,
-                                attributes: [
-                                    "id",
-                                    "firstName",
-                                    "lastName",
-                                    "titleProfessions",
-                                    "img",
-                                    "abbrName"
-                                ],
-                            }
-                        ]
-                    }
-                ],
-            })
-
-            return res.status(HttpCodes.OK).json({ panelsSpeakers });
-
-        } catch (error) {
-            console.log(error);
-            return res
-                .status(HttpCodes.INTERNAL_SERVER_ERROR)
-                .json({ msg: "Internal server error" });
-        }
-    };
-
-    const allPanelSpeakersAdmin = async (req, res) => {
+        let panelsSpeakers
 
         try {
 
-            const panelsSpeakers = await SpeakersPanel.findAll({
-                order: [["id", "DESC"]],
-                include: [
-                    {
-                        model: SpeakerMemberPanel,
-                        include: [
-                            {
-                                model: User,
-                                attributes: [
-                                    "id",
-                                    "firstName",
-                                    "lastName",
-                                    "titleProfessions",
-                                    "img",
-                                    "abbrName"
-                                ],
-                            }
-                        ]
-                    }
-                ],
-            })
+            if(type.type !== "All"){
+                panelsSpeakers = await SpeakersPanel.findAll({
+                    order: [["startDate", "ASC"]],
+                    where: {type: type.type},
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                            include: [
+                                {
+                                    model: User,
+                                    attributes: [
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "titleProfessions",
+                                        "img",
+                                        "abbrName"
+                                    ],
+                                }
+                            ]
+                        }
+                    ],
+                })
+            }else{
+                panelsSpeakers = await SpeakersPanel.findAll({
+                    order: [["startDate", "ASC"]],
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                            include: [
+                                {
+                                    model: User,
+                                    attributes: [
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "titleProfessions",
+                                        "img",
+                                        "abbrName"
+                                    ],
+                                }
+                            ]
+                        }
+                    ],
+                })
+            }
 
             return res.status(HttpCodes.OK).json({ panelsSpeakers });
 
@@ -639,7 +631,9 @@ const SpeakersController = () => {
     }
 
     const getAllPanelsOfOneUser = async (req, res) => {
+
         const {id} = req.params
+
         try {
            
             const userSpeakers = await SpeakerMemberPanel.findAll({
@@ -982,12 +976,46 @@ const SpeakersController = () => {
 
         const { id } = req.user.dataValues
 
-        let { PanelId, type } = data
+        let { PanelId, type, startTime, endTime } = data
 
         let newArray = [];
 
         try {
+
             const lastArrayOfThisColumn = await SpeakersPanel.findOne({where: {id: PanelId}, attributes:["usersAddedToThisAgenda"]})
+
+            if(startTime !== undefined){
+                const sessionCompareTime = await SpeakersPanel.findAll({where: 
+                    {
+                        [Op.or]: [
+                            {
+                                startDate: {
+                                    [Op.lte]: startTime
+                                },
+                                endDate: {
+                                    [Op.gte]: startTime,
+                                }, 
+                            }, 
+                            {
+                                startDate: {
+                                    [Op.lte]: endTime
+                                },
+                                endDate: {
+                                    [Op.gte]: endTime,
+                                }, 
+                            },
+                            
+                        ],
+                        usersAddedToThisAgenda: [id],
+                    }
+                })
+
+                if(sessionCompareTime.length !== 0){
+                    return res
+                        .status(HttpCodes.BAD_REQUEST)
+                        .json({ msg: "You already registered for a session on this same date and same time, You can't register for two sessions on the same date and same time."});
+                }
+            }
 
             if(type === "Remove"){
                 
@@ -1067,9 +1095,28 @@ const SpeakersController = () => {
                     speakersAuthorization: data.type,
                 },
                 {
-                    where: { id: data.userId },
+                    where: { id: data.userData.id },
                 }
             );
+
+            if(data.type === "accepted"){
+                await Promise.resolve(
+                    (() => {
+                      let mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: data.userData.email,
+                        //to: "enrique@hackinghr.io",
+                        subject: LabEmails.USER_ACCEPTED_SPEAKER.subject(data.userData.firstName),
+                        html: LabEmails.USER_ACCEPTED_SPEAKER.body(
+                            data.userData,
+                          `${process.env.DOMAIN_URL}speakers2023`
+                        ),
+                      };
+          
+                      return smtpService().sendMailUsingSendInBlue(mailOptions);
+                    })()
+                );
+            }
 
             return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
 
@@ -1099,12 +1146,12 @@ const SpeakersController = () => {
     
           let startTime = convertToLocalTime(
             panel.dataValues.startDate,
-            panel.timezone,
+            panel.dataValues.timeZone,
             userTimezone
           );
           let endTime = convertToLocalTime(
             panel.dataValues.endDate,
-            panel.timezone,
+            panel.dataValues.timeZone,
             userTimezone
           );
     
@@ -1140,7 +1187,7 @@ const SpeakersController = () => {
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
-      };
+    };
 
     return {
         addNewPanelSpeaker,
@@ -1153,7 +1200,6 @@ const SpeakersController = () => {
         registerUserIfNotAreRegisterConference2023,
         excelAllUserRegisterConference2023,
         excelAllPanelsRegisterConference2023,
-        allPanelSpeakersAdmin,
         getAllUserSpeaker,
         getAllPanelsOfOneUser,
         panelForId,

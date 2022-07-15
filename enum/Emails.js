@@ -1092,8 +1092,7 @@ module.exports = {
     body: (firstName) =>
       `<p>Hi ${firstName},</p>
 
-      <p>I have received your application join us as a speaker at the Hacking HR 2023 Global Conference,</p>
-      <p>now called: <b>FORWARD 2023</b>.</p>
+      <p>I have received your application to join us as a speaker at the Hacking HR 2023 Global Conference, now called: <b>FORWARD 2023</b>.</p>
 
       <p>I review all the applications to make sure we are only including approved speakers. </p>
 

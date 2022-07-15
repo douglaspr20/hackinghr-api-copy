@@ -617,6 +617,11 @@ const UserController = () => {
           },
         },
         {
+          email: {
+            [Op.iLike]: `%${search}%`,
+          },
+        },
+        {
           lastName: {
             [Op.iLike]: `%${search}%`,
           },
