@@ -256,7 +256,7 @@ const BonfireController = () => {
               bonfire.dataValues.description,
               "",
               bonfire.dataValues.link,
-              bonfireCreator.firstName,
+              bonfireCreatorInfo.firstName,
               process.env.SEND_IN_BLUE_SMTP_SENDER,
               userTimezone
             )
