@@ -559,8 +559,8 @@ const StripeController = () => {
           }
         }
       } else if (
-        subscriptionInformation.data[0].status === "past_due" ||
-        subscriptionInformation.data[0].status === "canceled"
+        subscriptionInformation?.data[0]?.status === "past_due" ||
+        subscriptionInformation?.data[0]?.status === "canceled"
       ) {
         isSubscribed = true;
         newUserData["memberShip"] = "free";
