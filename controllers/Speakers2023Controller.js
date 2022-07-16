@@ -521,7 +521,8 @@ const SpeakersController = () => {
             }else{
                 userSpeakers = await User.findAll({
                     where: {
-                        speakersAuthorization: {[Op.eq]: "accepted"}
+                        speakersAuthorization: {[Op.eq]: "accepted"},
+                        percentOfCompletion: 100
                     },
                     attributes: [
                         "firstName",
@@ -538,7 +539,8 @@ const SpeakersController = () => {
                         "city",
                         "location",
                         "timezone",
-                        "company"
+                        "company",
+                        "percentOfCompletion"
                     ],
                     order: [["firstName", "ASC"]],
                 });
@@ -881,11 +883,23 @@ const SpeakersController = () => {
     }
 
     const getAllParraf = async (req, res) => {
+
+        const {type} = req.params
+
         try {
 
-            const parraf = await ParrafConference2023.findAll({
-                order: [["id", "DESC"]]
-            })
+            let parraf
+
+            if(type === undefined){
+                parraf = await ParrafConference2023.findAll({
+                    order: [["id", "DESC"]]
+                })
+            }else{
+                parraf = await ParrafConference2023.findAll({
+                    order: [["id", "DESC"]],
+                    where: {type: type}
+                })
+            }
 
             return res.status(HttpCodes.OK).json({ parraf });
 
