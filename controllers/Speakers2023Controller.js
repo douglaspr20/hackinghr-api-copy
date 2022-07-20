@@ -116,7 +116,7 @@ const SpeakersController = () => {
 
             if(type.type !== "All"){
                 panelsSpeakers = await SpeakersPanel.findAll({
-                    order: [["startDate", "ASC"]],
+                    order: [["startDate", "DESC"]],
                     where: {type: type.type},
                     include: [
                         {
@@ -139,7 +139,7 @@ const SpeakersController = () => {
                 })
             }else{
                 panelsSpeakers = await SpeakersPanel.findAll({
-                    order: [["startDate", "ASC"]],
+                    order: [["startDate", "DESC"]],
                     include: [
                         {
                             model: SpeakerMemberPanel,
@@ -634,20 +634,66 @@ const SpeakersController = () => {
 
     const getAllPanelsOfOneUser = async (req, res) => {
 
-        const {id} = req.params
+        const {id, type} = req.query
+        let userSpeakers
 
         try {
-           
-            const userSpeakers = await SpeakerMemberPanel.findAll({
-              where: {
-                  UserId: id
-              },
-              include: [
-                    {
-                        model: SpeakersPanel,
-                    }
-                ],
-            });
+
+            if(type === "mySessions"){
+                userSpeakers = await SpeakersPanel.findAll({
+                    order: [["startDate", "DESC"]],
+                    where: {
+                        usersAddedToThisAgenda: [id]
+                    },
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                            include: [
+                                {
+                                    model: User,
+                                    attributes: [
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "titleProfessions",
+                                        "img",
+                                        "abbrName"
+                                    ],
+                                }
+                            ]
+                        }
+                    ],
+                })
+            }else{
+                userSpeakers = await SpeakerMemberPanel.findAll({
+                    where: {
+                        UserId: id
+                    },
+                    include: [
+                        {
+                            model: SpeakersPanel,
+                            include: [
+                                {
+                                    model: SpeakerMemberPanel,
+                                    include: [
+                                        {
+                                            model: User,
+                                            attributes: [
+                                                "id",
+                                                "firstName",
+                                                "lastName",
+                                                "titleProfessions",
+                                                "img",
+                                                "abbrName"
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                });
+            }
       
             return res.status(HttpCodes.OK).json({ userSpeakers });
           } catch (error) {
