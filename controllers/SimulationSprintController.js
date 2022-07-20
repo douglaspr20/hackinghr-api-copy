@@ -18,11 +18,12 @@ const User = db.User;
 
 const SimulationSprintController = () => {
   const setSimulationSprintReminders = (simulationSprint) => {
-    const dateBefore24Hours = convertToLocalTime(
-      simulationSprint.startDate
-    ).subtract(1, "days");
+    const dateBefore24Hours = moment(simulationSprint.startDate).subtract(
+      1,
+      "days"
+    );
 
-    const dayStart = convertToLocalTime(simulationSprint.startDate);
+    const dayStart = moment(simulationSprint.startDate);
 
     const interval1 = `0 ${dateBefore24Hours.minutes()} ${dateBefore24Hours.hours()} ${dateBefore24Hours.date()} ${dateBefore24Hours.month()} *`;
     const interval2 = `0 ${dayStart.minutes()} ${dayStart.hours()} ${dayStart.date()} ${dayStart.month()} *`;
@@ -257,15 +258,41 @@ const SimulationSprintController = () => {
     }
   };
 
+  const getSimulationSprintByUser = async (req, res) => {
+    const { user } = req;
+
+    try {
+      const simulationSprintofUser = await SimulationSprintParticipant.findAll({
+        where: {
+          UserId: user.id,
+        },
+        include: [
+          {
+            model: SimulationSprint,
+          },
+        ],
+        raw: true,
+      });
+
+      return res.status(HttpCodes.OK).json({ simulationSprintofUser });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Something went wrong" });
+    }
+  };
+
   const duplicate = async (req, res) => {
-    const { simulationSprint, simulationSprintResources } = req.body;
+    const { simulationSprint } = req.body;
+    const { SimulationSprintResources } = simulationSprint;
 
     try {
       const newSimulationSprint = await SimulationSprint.create(
         simulationSprint
       );
 
-      const tranformedSimulationSprintResources = simulationSprintResources.map(
+      const tranformedSimulationSprintResources = SimulationSprintResources.map(
         (resource) => ({
           ...resource,
           SimulationSprintId: newSimulationSprint.id,
@@ -312,10 +339,6 @@ const SimulationSprintController = () => {
             "",
             req.body.image
           );
-
-          if (simulationSprint.image) {
-            await s3Service().deleteUserPicture(simulationSprint.image);
-          }
         }
 
         const [numberOfAffectedRows, affectedRows] =
@@ -440,6 +463,7 @@ const SimulationSprintController = () => {
     remove,
     update,
     getAll,
+    getSimulationSprintByUser,
     duplicate,
     downloadICS,
   };

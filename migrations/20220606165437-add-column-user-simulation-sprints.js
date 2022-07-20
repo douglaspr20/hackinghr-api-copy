@@ -10,7 +10,8 @@ module.exports = {
      */
     await queryInterface.addColumn("Users", "simulationSprintsAvailable", {
       type: Sequelize.INTEGER,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: 0,
     });
 
     await queryInterface.addColumn(
@@ -32,7 +33,8 @@ module.exports = {
      */
     await queryInterface.removeColumn("Users", "simulationSprintsAvailable", {
       type: Sequelize.INTEGER,
-      defaultValue: true,
+      allowNull: false,
+      defaultValue: 0,
     });
 
     await queryInterface.removeColumn(

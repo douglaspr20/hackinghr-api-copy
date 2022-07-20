@@ -39,23 +39,23 @@ module.exports = (sequelize, DataTypes) => {
       registrationLink: DataTypes.STRING,
       credit: {
         type: DataTypes.JSON,
-        get() {
-          const rawValue = this.getDataValue("credit");
+        // get() {
+        //   const rawValue = this.getDataValue("credit");
 
-          const shrmCode =
-            rawValue && rawValue.SHRM ? rawValue.SHRM.money || "" : "";
-          const hrciCode =
-            rawValue && rawValue.HRCI ? rawValue.HRCI.money || "" : "";
+        //   const shrmCode =
+        //     rawValue && rawValue.SHRM ? rawValue.SHRM.money || "" : "";
+        //   const hrciCode =
+        //     rawValue && rawValue.HRCI ? rawValue.HRCI.money || "" : "";
 
-          return {
-            SHRM: {
-              money: cryptoService().encrypt(shrmCode),
-            },
-            HRCI: {
-              money: cryptoService().encrypt(hrciCode),
-            },
-          };
-        },
+        //   return {
+        //     SHRM: {
+        //       money: cryptoService().encrypt(shrmCode),
+        //     },
+        //     HRCI: {
+        //       money: cryptoService().encrypt(hrciCode),
+        //     },
+        //   };
+        // },
       },
       code: DataTypes.STRING,
       image: DataTypes.STRING,
