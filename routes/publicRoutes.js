@@ -30,7 +30,7 @@ const publicRoutes = {
     "Speakers2023Controller.getAllUserSpeaker",
   "GET /speakers/get-all-parrafs/:type": "Speakers2023Controller.getAllParraf",
   "GET /speakers/get-all-sponsor": "Speakers2023Controller.getAllSponsor",
-  "GET /speakers/all-panel-of-user/:id":
+  "GET /speakers/all-panel-of-user":
     "Speakers2023Controller.getAllPanelsOfOneUser",
 };
 
