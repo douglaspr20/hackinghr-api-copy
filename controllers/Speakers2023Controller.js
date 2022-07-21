@@ -11,7 +11,8 @@ const {formatExcelUsers} = require("../utils/formatExportUsersExcel.js")
 const {formatExcelPanels} = require("../utils/formatExportPanelsExcel.js")
 const {
     convertJSONToExcelUsersSpeakers2023,
-    convertJSONToExcelPanelsConference2023
+    convertJSONToExcelPanelsConference2023,
+    convertJSONToExcelRegisterConference2023
   } = require("../utils/format");
   const { convertToLocalTime } = require("../utils/format");
 
@@ -29,7 +30,21 @@ const SpeakersController = () => {
         
         const { id, role } = req.user.dataValues;
 
-        const { description, endDate, startDate, timeZone, panelName, type, category, objetives, link, recertificactionCredits, metaData, speakers } = panels
+        const { 
+            description, 
+            endDate, 
+            startDate, 
+            timeZone, 
+            panelName, 
+            type, 
+            category, 
+            objetives, 
+            link, 
+            recertificactionCredits, 
+            metaData, 
+            speakers, 
+            speakersModerator 
+        } = panels
 
         try {
     
@@ -70,7 +85,7 @@ const SpeakersController = () => {
                                     let mailOptions = {
                                     from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                                     to: user.userEmail,
-                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.userName, panelsSpeakers.dataValues.id),
+                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.userName, panelsSpeakers.dataValues.panelName),
                                     html: LabEmails.SPEAKERS_PANEL_JOIN.body(
                                         user.userName,
                                         panelsSpeakers.dataValues,
@@ -85,6 +100,49 @@ const SpeakersController = () => {
                                 UserId: Number(user.userId), 
                                 SpeakersPanelId: panelsSpeakers.dataValues.id, 
                                 isModerator: false, 
+                            }) 
+                        }else{
+                            return res
+                            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                            .json({ msg: `Users has already been added.` });
+                        }
+                        
+                    })
+                );
+            }
+
+            if(speakersModerator?.length !== 0 && speakersModerator !== undefined){
+                await Promise.all(
+                    speakersModerator.map(async (data) => {
+                        const user = JSON.parse(data)
+
+                        const userReadyJoin = await SpeakerMemberPanel.findOne({
+                            where: { UserId: Number(user.userId), SpeakersPanelId: panelsSpeakers.dataValues.id},
+                        })
+
+                        if(!userReadyJoin){
+
+                            await Promise.resolve(
+                                (() => {
+                                    let mailOptions = {
+                                    from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                    to: user.userEmail,
+                                    subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.subject(user.userName,panelsSpeakers.dataValues.panelName),
+                                    html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.body(
+                                        user.userName,
+                                        panelsSpeakers.dataValues,
+                                    ),
+                                };
+                        
+                                return smtpService().sendMailUsingSendInBlue(mailOptions);
+
+                                })()
+                            );
+
+                            await SpeakerMemberPanel.create({
+                                UserId: Number(user.userId), 
+                                SpeakersPanelId: panelsSpeakers.dataValues.id, 
+                                isModerator: true, 
                             }) 
                         }else{
                             return res
@@ -130,7 +188,8 @@ const SpeakersController = () => {
                                         "lastName",
                                         "titleProfessions",
                                         "img",
-                                        "abbrName"
+                                        "abbrName",
+                                        "email"
                                     ],
                                 }
                             ]
@@ -152,7 +211,8 @@ const SpeakersController = () => {
                                         "lastName",
                                         "titleProfessions",
                                         "img",
-                                        "abbrName"
+                                        "abbrName",
+                                        "email"
                                     ],
                                 }
                             ]
@@ -191,7 +251,8 @@ const SpeakersController = () => {
                                 "lastName",
                                 "titleProfessions",
                                 "img",
-                                "abbrName"
+                                "abbrName",
+                                "email"
                             ],
                         }
                     ]
@@ -313,7 +374,8 @@ const SpeakersController = () => {
                                         "lastName",
                                         "titleProfessions",
                                         "img",
-                                        "abbrName"
+                                        "abbrName",
+                                        "email"
                                     ],
                                 }
                             ]
@@ -382,7 +444,8 @@ const SpeakersController = () => {
                                         "lastName",
                                         "titleProfessions",
                                         "img",
-                                        "abbrName"
+                                        "abbrName",
+                                        "email"
                                     ],
                                 }
                             ]
@@ -617,7 +680,72 @@ const SpeakersController = () => {
                 nombre,
                 formatExcelPanels,
                 formatExcelUsers,
-                panelsSpeakers.map((panels) => panels.toJSON())
+                panelsSpeakers.map((panels) => {
+                    return panels.toJSON()
+                })
+            );
+
+            await res.status(HttpCodes.OK).download(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`, function(){
+                fs.unlinkSync(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`)
+            })
+
+        }catch (error) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+        }
+    }
+
+    const excelAllsersSpeakersAndPanels = async (req, res) => {
+        try{
+
+            const userAddedInConferece = await SpeakersPanel.findAll({
+                where:{usersAddedToThisAgenda: { [Op.ne] : []}},
+            });
+
+            const userConference = await User.findAll({
+                where:{registerConference2023: true}, attributes: ["id","firstName","lastName","email"],
+            });
+
+            let dataExcel = []
+
+            for(let i = 0; i < userConference.length; i++){
+
+                let arraySessionUsers = []
+
+                for(let y = 0; y < userAddedInConferece.length ;y++){
+    
+                    for(let x = 0; x < userAddedInConferece[y].dataValues.usersAddedToThisAgenda.length ; x++){
+                        if(userAddedInConferece[y].dataValues.usersAddedToThisAgenda[x] === userConference[i].dataValues.id){
+                            arraySessionUsers.push(userAddedInConferece[y])
+                        }
+                    }
+                }
+
+                if(arraySessionUsers.length !== 0){
+                    dataExcel.push({
+                        firstName: userConference[i].dataValues.firstName,
+                        lastName: userConference[i].dataValues.lastName,
+                        email: userConference[i].dataValues.email,
+                        panel: arraySessionUsers
+                    })  
+                }else{
+                    dataExcel.push({
+                        firstName: userConference[i].dataValues.firstName,
+                        lastName: userConference[i].dataValues.lastName,
+                        email: userConference[i].dataValues.email,
+                        panel: undefined
+                    }) 
+                }
+            }
+
+            const nombre = moment().format("MM-DD-HH-mm-s")
+
+            await convertJSONToExcelRegisterConference2023(
+                nombre,
+                formatExcelPanels,
+                dataExcel
             );
 
             await res.status(HttpCodes.OK).download(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`, function(){
@@ -643,7 +771,7 @@ const SpeakersController = () => {
                 userSpeakers = await SpeakersPanel.findAll({
                     order: [["startDate", "DESC"]],
                     where: {
-                        usersAddedToThisAgenda: [id]
+                        usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
                     },
                     include: [
                         {
@@ -657,7 +785,8 @@ const SpeakersController = () => {
                                         "lastName",
                                         "titleProfessions",
                                         "img",
-                                        "abbrName"
+                                        "abbrName",
+                                        "email"
                                     ],
                                 }
                             ]
@@ -684,7 +813,8 @@ const SpeakersController = () => {
                                                 "lastName",
                                                 "titleProfessions",
                                                 "img",
-                                                "abbrName"
+                                                "abbrName",
+                                                "email"
                                             ],
                                         }
                                     ]
@@ -710,7 +840,23 @@ const SpeakersController = () => {
 
         const { role } = req.user.dataValues;
 
-        const { description, endDate, startDate, timeZone, panelName, type, category, objetives, link, recertificactionCredits, metaData, PanelId } = panels
+        const { 
+            description, 
+            endDate, 
+            startDate, 
+            timeZone, 
+            panelName, 
+            type, 
+            category, 
+            objetives, 
+            link, 
+            recertificactionCredits, 
+            metaData, 
+            PanelId,
+            speakers, 
+            speakersModerator 
+        } = panels
+
         try {
     
             if (role !== "admin") {
@@ -731,7 +877,114 @@ const SpeakersController = () => {
                 objetives,
                 category,
                 type
-            },{where: {id: PanelId}})
+            },{where: {id: PanelId},returning: true,})
+
+            const usersReadyJoin = await SpeakerMemberPanel.findAll({
+                where: {SpeakersPanelId: affectedRows[0].dataValues.id},
+            })
+
+            usersReadyJoin.forEach(element => {
+                element.destroy()
+            });
+
+            const speakerRepeat = []
+
+            for(let i = 0; i < speakersModerator.length ;i++){
+                const id1 = JSON.parse(speakersModerator[i])
+
+                for(let y = 0; y < speakers.length ; y++){
+                    const id2 = JSON.parse(speakers[y])
+
+                    if(id1.userId === id2.userId){
+                        speakerRepeat.push(id1)
+                    }
+                }
+            }
+
+            if(speakerRepeat.length !== 0){
+                res
+                .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                .json({ msg: `Users can't repeat on input speakers and moderators.` });
+            }
+
+            if(speakers?.length !== 0 && speakers !== undefined){
+                await Promise.all(
+                    speakers.map(async (data) => {
+                        const user = JSON.parse(data)
+
+                        const userReadyJoin = usersReadyJoin.filter((data) => {
+                            return data.dataValues.UserId === Number(user.userId) && data.dataValues.SpeakersPanelId === affectedRows[0].dataValues.id
+                        })
+
+                        await SpeakerMemberPanel.create({
+                            UserId: Number(user.userId), 
+                            SpeakersPanelId: affectedRows[0].dataValues.id, 
+                            isModerator: false, 
+                        })
+
+                        if(userReadyJoin.length === 0){
+
+                            await Promise.resolve(
+                                (() => {
+                                    let mailOptions = {
+                                    from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                    to: user.userEmail,
+                                    subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(user.userName, affectedRows[0].dataValues.panelName),
+                                    html: LabEmails.SPEAKERS_PANEL_JOIN.body(
+                                        user.userName,
+                                        affectedRows[0].dataValues,
+                                    ),
+                                    };
+                        
+                                    return smtpService().sendMailUsingSendInBlue(mailOptions);
+                                })()
+                            );
+ 
+                        }
+                        
+                    })
+                );
+            }
+
+            if(speakersModerator?.length !== 0 && speakersModerator !== undefined){
+                await Promise.all(
+                    speakersModerator.map(async (data) => {
+                        const user = JSON.parse(data)
+
+                        const userReadyJoin = usersReadyJoin.filter((data) => {
+                            return data.dataValues.UserId === Number(user.userId) && data.dataValues.SpeakersPanelId === affectedRows[0].dataValues.id
+                        })
+
+                        await SpeakerMemberPanel.create({
+                            UserId: Number(user.userId), 
+                            SpeakersPanelId: affectedRows[0].dataValues.id, 
+                            isModerator: true, 
+                        })
+
+                        if(userReadyJoin.length === 0){
+
+                            await Promise.resolve(
+                                (() => {
+                                    let mailOptions = {
+                                    from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                    to: user.userEmail,
+                                    subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.subject(user.userName,affectedRows[0].dataValues.panelName),
+                                    html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.body(
+                                        user.userName,
+                                        affectedRows[0].dataValues,
+                                    ),
+                                };
+                        
+                                return smtpService().sendMailUsingSendInBlue(mailOptions);
+
+                                })()
+                            );
+ 
+                        }
+                        
+                    })
+                );
+            }
 
             return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
 
@@ -1275,7 +1528,8 @@ const SpeakersController = () => {
         getOneParraf,
         editParraf,
         deleteParraf,
-        downloadICS
+        downloadICS,
+        excelAllsersSpeakersAndPanels,
     }
 }
 
