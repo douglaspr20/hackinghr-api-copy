@@ -517,7 +517,7 @@ const SpeakersController = () => {
                         let mailOptions = {
                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                         to: email,
-                        subject: LabEmails.REGISTER_CONFERENCE_2023.subject(),
+                        subject: LabEmails.REGISTER_CONFERENCE_2023.subject(firstName),
                         html: LabEmails.REGISTER_CONFERENCE_2023.body(firstName),
                         };
             

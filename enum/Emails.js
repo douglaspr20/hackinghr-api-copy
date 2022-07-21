@@ -1638,10 +1638,49 @@ module.exports = {
       `,
   },
   REGISTER_CONFERENCE_2023: {
-    subject: () => `Thanks for register in speaker2023`,
+    subject: (firstName) => `${firstName}: Thank you for registering to participate in Hacking HR’s FORWARD2023!  Please read this email with further information.`,
     body: (firstName) => `
-      <p>Hi ${firstName}, you just logged in to coference 202</p>
-      `,
+        <p>Hi ${firstName},</p>
+        <p>I am excited that you are joining us as a participating at Hacking HR’s <b>FORWARD2023</b>!</p>
+        <p>We are planning an amazing conference experience and we are thrilled to have you with us.</p>
+        <p>Please read some important information below:</p>
+        <br/>
+        <h1><u>Agenda</u></h1>
+        <p>The conference includes: panels, presentations and simulations. All of these sessions are complimentary.</p>
+        <p><b>Panels:</b> these are pre-recorded sessions with up to five panelists each one covering interesting topics. Each panelist shares insights and ideas from their own experience.</p>
+        <p><b>Presentations:</b> these are short LIVE sessions where presenters will cover a very specific topic in less than 15 minutes.</p>
+        <p><b>Simulations:</b> these sessions are the core of the event. A Simulation is a peer-to-peer conversation in small groups. The goal of the Simulation is for a small group of peers to solve a complex business case pertaining to the topic of the Simulation. The business case will be as close as possible to reality so that it resonates with your work and, more importantly, what you learned during the discussions becomes applicable! To participate in this Simulation during the conference you MUST connect via audio and video, otherwise you will not be able to join the session (no exceptions: no video and audio, no simulation).  Each Simulation will last up to three hours (you are expected to participate the full time. We kindly ask you to schedule the time for this. Please do not join unless you can be present during the entire Simulation Sprint).</p>
+        <br/>
+        <h1><u>Create Your Own Agenda</u></h1>
+        <p>Please go to the conference link (<a href="https://www.hackinghrlab.io/conference2023">click here</a>) and start creating your personalized agenda. This is how:</p>
+        <p>
+          <ol>
+            <li>Go to the link above and click on Agenda</li>
+            <li>Check the sessions you are most interested in and click on ADD TO MY PERSONALIZED AGENDA</li>
+            <li>In “Agenda” you will be able to see both the Full Conference Schedule and your specific agenda (in “My Sessions”). Make sure to download the calendar invite and save  it in your calendar</li>
+            <li>During the week of the conference you will get access to the links for each session in “My Sessions” in the Agenda</li>
+          </ul>
+        </p>
+        <p>Note: you can’t add more than one session on the same date at the same time (because, well, you can’t be in two places at once).</p>
+        <br/>
+        <h1><u>HR Credits</u></h1>
+        <p>The panels and simulations at Hacking HR’s <b>FORWARD2023</b> offer hundreds of HR recertification credits (between SHRM and HRCI). The credit codes corresponding to the sessions you are participating in will be ready two weeks after the conference and they will be available in your Hacking HR LAB profile (you don’t need to email us asking for them).</p>
+        <p>Two weeks after the conference you will receive an email notifying you that your <b>personalized online participation report</b> is ready. The report will include all the sessions you joined and the codes for the corresponding credits, and also a digital certificate of participation.</p>
+        <p><u><b>Please note that you MUST be a PREMIUM member to see the codes in the personalized participation report. If you are not a PREMIUM member the credits will not be visible. To become a PREMIUM member, go to the Hacking HR LAB and click on UPGRADE on the top right to process your membership fees.</b></u></p>
+        <p>You can also collect credits by watching the recorded panels after the conference. The recorded panels will be available two weeks after the conference and you can watch the replay and then claim the corresponding credits. You also have to be PREMIUM member to claim the credits of recorded sessions.</p>
+        <p><span style="background:#ffff00;">Please note: we will not respond any email asking us why the credits are not free or requesting free credits or requesting the codes to be sent via email, or complaining that the credits are not free. Please be mindful and respectful of this.</span></p>
+        <p>Please do let me know if you have any questions. Thank you so much for being part of this experience!</p>  
+        <br />
+        Enrique Rubio
+        <br />
+        Founder
+        <br />
+        Hacking HR
+        <br />
+        <h1><u>A Request</u></h1>
+        <p>Things happen. Technology bugs and glitches occur. And they seem to always happen to us on Day 1 of the conference. Information that we thought was clear may not be that clear. We understand that. And we welcome your requests for additional information or your reports of tech glitches or bugs.</p>
+        <p>But we do request that if you need something from us, your request comes with patience, care, understanding and grace. We are a tiny team, delivering the largest HR conference in the world. Please take this into account when you write us an email to request information or report a technical issue. We will have no tolerance for offensive emails and anyone sending us such an email will be removed from our conference and banned from participation in any Hacking HR events in the future. We appreciate this in more ways that you can imagine. Thank you.</p>
+        `,
   },
   USER_PURCHASE_ADVERTISEMENT_CREDITS: {
     subject: (numOfCredits) =>
