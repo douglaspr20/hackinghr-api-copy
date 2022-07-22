@@ -265,49 +265,6 @@ async function convertJSONToExcelRegisterConference2023(
       number = number + 4
     }
 
-    // const row1 = fields1.map((item) => item.label);
-    // wb.addRow(row1, `${number + 1}`);
-    // wb.getRow(`${number + 1}`).fill = {
-    //   type: "pattern",
-    //   pattern: "solid",
-    //   fgColor: { argb: "c6e9e8" },
-    // };
-    // wb.getRow(`${number + 1}`).border = {
-    //   top: { style: "thin" },
-    //   left: { style: "thin" },
-    //   bottom: { style: "thin" },
-    //   right: { style: "thin" },
-    // };
-
-    // const row2 = fields1.map((field) => item[field.value]);
-    // wb.addRow(row2, `${number + 2}`);
-    // wb.getRow(`${number + 2}`).fill = {
-    //   type: "pattern",
-    //   pattern: "solid",
-    //   fgColor: { argb: "c6e9e8" },
-    // };
-    // wb.getRow(`${number + 2}`).border = {
-    //   top: { style: "thin" },
-    //   left: { style: "thin" },
-    //   bottom: { style: "thin" },
-    //   right: { style: "thin" },
-    // };
-
-    // wb.addRow(
-    //   fields2.map((item) => item.label),
-    //   `${number + 3}`
-    // );
-    // item.SpeakerMemberPanels.forEach((item, index) => {
-    //   const row = fields2.map((field) => item.User[field.value]);
-    //   wb.addRow(row, `${number + 4 + index}`);
-    // });
-
-    // number2 =
-    //   Number(item.SpeakerMemberPanels.length) !== 0
-    //     ? Number(item.SpeakerMemberPanels.length)
-    //     : 1;
-
-    // number = number + 4 + number2;
   });
 
   await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
