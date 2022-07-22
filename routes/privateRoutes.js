@@ -312,6 +312,8 @@ const privateRoutes = {
     "Speakers2023Controller.getAllUserSpeaker",
   "GET /speakers/all-users-speakers":
     "Speakers2023Controller.getAllUserSpeaker",
+  "GET /speakers/get-excel-all-user-speakers":
+    "Speakers2023Controller.excelAllsersSpeakersAndPanels",
   "POST /speakers/add-new-speakers-admin": "Speakers2023Controller.addNewSpeakersAdmin",
   "GET /speakers/all-panel-of-user":
     "Speakers2023Controller.getAllPanelsOfOneUser",

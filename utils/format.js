@@ -204,6 +204,74 @@ async function convertJSONToExcelPanelsConference2023(
   return;
 }
 
+async function convertJSONToExcelRegisterConference2023(
+  sheet,
+  fields1,
+  content
+) {
+
+  const wb = workbook.addWorksheet(sheet);
+
+  let number = 2;
+  const cell1 = wb.getCell(`A1`);
+  cell1.value = "Conference2023";
+
+  content.forEach((item) => {
+    const cell2 = wb.getCell(`A${number}`);
+    cell2.value = "";
+
+    if(item.panel !== undefined){
+      item.panel.forEach((itemsPanel) => {
+        wb.getRow(`${number}`).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "c0c0c0" },
+        };
+        const row1 = ["firstName", item.firstName]
+        wb.addRow(row1, `${number + 1}`);
+        const row2 = ["lastName", item.lastName]
+        wb.addRow(row2, `${number + 2}`);
+        const row3 = ["email", item.email]
+        wb.addRow(row3, `${number + 3}`);
+
+        const row5 = fields1.map((field) => itemsPanel[field.value]);
+        wb.addRow(row5, `${number + 4}`);
+        wb.getRow(`${number + 4}`).fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "c6e9e8" },
+        };
+        wb.getRow(`${number + 4}`).border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+
+        number = number + 5
+      })
+    }else{
+      wb.getRow(`${number}`).fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "c0c0c0" },
+      };
+      const row1 = ["firstName", item.firstName]
+      wb.addRow(row1, `${number + 1}`);
+      const row2 = ["lastName", item.lastName]
+      wb.addRow(row2, `${number + 2}`);
+      const row3 = ["email", item.email]
+      wb.addRow(row3, `${number + 3}`);
+      number = number + 4
+    }
+
+  });
+
+  await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
+
+  return;
+}
+
 module.exports = {
   getEventPeriod,
   convertToCertainTime,
@@ -214,4 +282,5 @@ module.exports = {
   convertToUserTimezone,
   convertJSONToExcelUsersSpeakers2023,
   convertJSONToExcelPanelsConference2023,
+  convertJSONToExcelRegisterConference2023
 };
