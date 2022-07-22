@@ -435,8 +435,10 @@ const StripeController = () => {
       const mailOptions = {
         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
         to: user.email,
-        subject:
-          LabEmails.USER_PURCHARSE_SIMULATIONS_SPRINTS.subject(simulations),
+        subject: LabEmails.USER_PURCHARSE_SIMULATIONS_SPRINTS.subject(
+          user.firstName,
+          simulations
+        ),
         html: LabEmails.USER_PURCHARSE_SIMULATIONS_SPRINTS.body(
           user.firstName,
           simulations

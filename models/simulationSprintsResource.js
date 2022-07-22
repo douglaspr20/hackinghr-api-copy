@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
       SimulationSprintResource.belongsTo(models.SimulationSprint, {
         foreignKey: "SimulationSprintId",
       });
+      SimulationSprintResource.belongsTo(models.SimulationSprintDeliverable, {
+        foreignKey: "SimulationSprintDeliverableId",
+      });
     }
   }
   SimulationSprintResource.init(

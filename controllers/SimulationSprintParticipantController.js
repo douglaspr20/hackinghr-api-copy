@@ -69,7 +69,7 @@ const SimulationSprintParticipantController = () => {
             html: LabEmails.JOIN_SIMULATION_SPRINT.body(user),
           };
 
-          await User.increment(
+          const userUpdated = await User.increment(
             {
               simulationSprintsAvailable: -1,
             },
@@ -82,7 +82,9 @@ const SimulationSprintParticipantController = () => {
 
           await smtpService().sendMailUsingSendInBlue(mailOptions);
 
-          return res.status(HttpCodes.OK).json({ simulationSprintParticipant });
+          return res
+            .status(HttpCodes.OK)
+            .json({ simulationSprintParticipant, userUpdated });
         }
 
         return res

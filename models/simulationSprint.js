@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       SimulationSprint.hasMany(models.SimulationSprintResource);
       SimulationSprint.hasMany(models.SimulationSprintGroup);
       SimulationSprint.hasMany(models.SimulationSprintParticipant);
+      SimulationSprint.hasMany(models.SimulationSprintDeliverable);
     }
   }
   SimulationSprint.init(

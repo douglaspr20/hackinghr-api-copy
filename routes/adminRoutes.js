@@ -106,6 +106,12 @@ const adminRoutes = {
   "PUT /simulation-sprints/:id": "SimulationSprintController.update",
   "DELETE /simulation-sprints/:id": "SimulationSprintController.remove",
   "POST /simulation-sprints/duplicate": "SimulationSprintController.duplicate",
+  "POST /simulation-sprints/deliverable":
+    "SimulationSprintDeliverableController.create",
+  "PUT /simulation-sprints/deliverable/:id":
+    "SimulationSprintDeliverableController.update",
+  "DELETE /simulation-sprints/deliverable/:id":
+    "SimulationSprintDeliverableController.remove",
   "GET /simulation-sprint/:SimulationSprintId/resources":
     "SimulationSprintResourcesController.getAll",
   "POST /simulation-sprint/resource":

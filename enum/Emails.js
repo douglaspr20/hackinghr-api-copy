@@ -1659,18 +1659,44 @@ module.exports = {
     `,
   },
   USER_PURCHARSE_SIMULATIONS_SPRINTS: {
-    subject: (numOfSimulations) =>
-      `(Hacking HR LAB) Thank you for purchasing ${numOfSimulations} credits!`,
+    subject: (firstName, numOfSimulations) =>
+      `${firstName} Thank you for purchasing a package of ${numOfSimulations} Hacking HR’s Simulation Sprints!`,
     body: (firstName, numOfSimulations) => `
     <p>Hi ${firstName},</p>
 
-    <p>We just wanted to send you a quick note to confirm your purchase of ${numOfSimulations} to use in yours simulations sprint the Hacking HR LAB.</p>
+    <p>Thank you so much for joining our flagship learning program: Simulation 
+    Sprints, and purchasing ${numOfSimulations} sprints.</p>
 
-    <p>Do not hesitate to let us know if you have any question.</p>
+    <p>We hope that you find this learning approach to be useful and valuable. So, 
+    this is what’s next:</p>
+
+    <ol>
+    <li>Your available Simulation Sprints credits don’t have an expiration date.
+    In the menu bar in Simulation Sprints in the <a href="${process.env.DOMAIN_URL}">Hacking HR LAB</a> you will be
+    able to see how many you have available.
+    </li>
+
+    <li>
+    You can sign up for any of the open Simulation Sprints. If you don’t see
+    anything of your interest, please wait for the new ones to be posted. 
+    We are planning to open one or two Simulation Sprints per month. 
+    Please note that you can only withdraw from a Simulation Sprint up to 
+    the day before it starts for it not to count toward your available credits.
+    You will still be using one available credit if you don’t withdraw on time
+    or don’t complete the program requirements.
+    </li>
+    </ol>
+
+    <p>
+    We are excited to have you joining us in this program. Please do let us know 
+    any feedback you have! You can find me here: <a href="mailto:webmaster@example.com">enrique@hackinghr.io</a>
+    </p>
 
     <p>Thank you!</p>
 
-    <p>Hacking HR Team</p>
+    <p>Enrique Rubio</p>
+    <p>Founder</p>
+    <p>Hackig Hr</p>
   `,
   },
   ADVERTISEMENT_CAMPAIGN_START: {
@@ -1864,11 +1890,71 @@ module.exports = {
     `,
   },
   JOIN_SIMULATION_SPRINT: {
-    subject: `You have joined a Simulation Sprint`,
-    body: (user) => `
-    <p>Hi ${user.firstName}</p>
+    subject: (
+      firstName,
+      simulationSprint
+    ) => `${firstName} Thank you for registering for Hacking HR’s 
+    Simulation Sprint: ${simulationSprint.title}`,
+    body: (firstName, simulationSprint) => `
+    <p>Hi ${firstName}</p>
 
-    <p>Thanks for join to simulation Sprint</p>
+    <p>Thank you so much for registering for Hacking HR’s Simulation Sprint: ${simulationSprint.title}.</p>
+
+    <p>This Simulation Sprint starts on ${simulationSprint.startDate} and ends on ${simulationSprint.endDate}. </p>
+
+    <p>
+    We are very excited to have you with us in this unique learning program. 
+    This is what comes next:
+    </p>
+
+    <ol>
+    <li>
+    The first day of the Simulation Sprint (${simulationSprint.startDate}) you will receive a 
+    package that includes: names and contact information of your 
+    teammates in your small working team, the business case you and 
+    your team will be working on for the next four weeks and the 
+    deliverables that you and your team (together) will be submitting each 
+    week as required by the program. Also, on day 1 of the Simulation 
+    Sprint you will receive the full calendar of the Sprint which includes 
+    attached calendar reminders (so that you don’t forget to submit your 
+    requirements! This is a no-excuse-learning-program!).
+    </li>
+
+    <li>
+    Every week you will receive a package of resources in the form of links 
+    to available and free resources that we selected and curated for you. 
+    The resources in each weekly package were curated to help you 
+    navigate the complexity of the business case and, more specifically, 
+    help you craft the content of each weekly submission. 
+    </li>
+
+    <li>
+    Finally, you can go back to the Simulation Sprint’s Dashboard (go to 
+      the <a href="${process.env.DOMAIN_URL}">Hacking HR LAB</a>, click on Simulations on the left side menu, then 
+      click on My Sprints and Enter Dashboard on the corresponding 
+      Simulation Sprint). The dashboard will include a list of the weekly 
+      resources, the calendar, your team members and their contact 
+      information as well.
+    </li>
+    </ol>
+
+    <p>
+    ${firstName}: I am thrilled you decided to be part of this learning program. 
+    We hope it is valuable and, more importantly, that as you go through the 
+    program you can also reflect and find ways to apply what you are learning in 
+    your own HR practice/job.
+    </p>
+
+    <p>
+    Do not hesitate to let me know if you have any questions! Reach out to me 
+    at any time, for anything you need! I am here: <a href="mailto:webmaster@example.com">enrique@hackinghr.io</a>
+    </p>
+
+    <p>Thank you!</p>
+
+    <p>Enrique Rubio</p>
+    <p>Founder</p>
+    <p>Hackig Hr</p>
     `,
   },
   SIMULATION_SPRINT_REMINDER_24_HOURS: {
