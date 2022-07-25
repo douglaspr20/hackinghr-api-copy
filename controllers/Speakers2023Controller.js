@@ -762,68 +762,35 @@ const SpeakersController = () => {
 
     const getAllPanelsOfOneUser = async (req, res) => {
 
-        const {id, type} = req.query
-        let userSpeakers
+        const {id} = req.query
 
         try {
 
-            if(type === "mySessions"){
-                userSpeakers = await SpeakersPanel.findAll({
-                    order: [["startDate", "DESC"]],
-                    where: {
-                        usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
-                    },
-                    include: [
-                        {
-                            model: SpeakerMemberPanel,
-                            include: [
-                                {
-                                    model: User,
-                                    attributes: [
-                                        "id",
-                                        "firstName",
-                                        "lastName",
-                                        "titleProfessions",
-                                        "img",
-                                        "abbrName",
-                                        "email"
-                                    ],
-                                }
-                            ]
-                        }
-                    ],
-                })
-            }else{
-                userSpeakers = await SpeakerMemberPanel.findAll({
-                    where: {
-                        UserId: id
-                    },
-                    include: [
-                        {
-                            model: SpeakersPanel,
-                            include: [
-                                {
-                                    model: SpeakerMemberPanel,
-                                    include: [
-                                        {
-                                            model: User,
-                                            attributes: [
-                                                "id",
-                                                "firstName",
-                                                "lastName",
-                                                "titleProfessions",
-                                                "img",
-                                                "abbrName",
-                                                "email"
-                                            ],
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
-                });
-            }
+            const userSpeakers = await SpeakersPanel.findAll({
+                order: [["startDate", "DESC"]],
+                where: {
+                    usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
+                },
+                include: [
+                    {
+                        model: SpeakerMemberPanel,
+                        include: [
+                            {
+                                model: User,
+                                attributes: [
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "titleProfessions",
+                                    "img",
+                                    "abbrName",
+                                    "email"
+                                ],
+                            }
+                        ]
+                    }
+                ],
+            })
       
             return res.status(HttpCodes.OK).json({ userSpeakers });
           } catch (error) {
