@@ -1892,15 +1892,20 @@ module.exports = {
   JOIN_SIMULATION_SPRINT: {
     subject: (
       firstName,
-      simulationSprint
+      simulationSprintTitle
     ) => `${firstName} Thank you for registering for Hacking HR’s 
-    Simulation Sprint: ${simulationSprint.title}`,
-    body: (firstName, simulationSprint) => `
+    Simulation Sprint: ${simulationSprintTitle}`,
+    body: (
+      firstName,
+      simulationSprintTitle,
+      simulationSprintStartDate,
+      simulationSprintEndDate
+    ) => `
     <p>Hi ${firstName}</p>
 
-    <p>Thank you so much for registering for Hacking HR’s Simulation Sprint: ${simulationSprint.title}.</p>
+    <p>Thank you so much for registering for Hacking HR’s Simulation Sprint: ${simulationSprintTitle}.</p>
 
-    <p>This Simulation Sprint starts on ${simulationSprint.startDate} and ends on ${simulationSprint.endDate}. </p>
+    <p>This Simulation Sprint starts on ${simulationSprintStartDate} and ends on ${simulationSprintEndDate}. </p>
 
     <p>
     We are very excited to have you with us in this unique learning program. 
@@ -1909,7 +1914,7 @@ module.exports = {
 
     <ol>
     <li>
-    The first day of the Simulation Sprint (${simulationSprint.startDate}) you will receive a 
+    The first day of the Simulation Sprint (${simulationSprintStartDate}) you will receive a 
     package that includes: names and contact information of your 
     teammates in your small working team, the business case you and 
     your team will be working on for the next four weeks and the 

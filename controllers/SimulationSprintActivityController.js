@@ -1,9 +1,9 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 
-const SimulationSprintDeliverable = db.SimulationSprintDeliverable;
+const SimulationSprintActivity = db.SimulationSprintActivity;
 
-const SimulationSprintDeliverableController = () => {
+const SimulationSprintActivityController = () => {
   /**
    * Create resources
    * @param {*} req
@@ -13,12 +13,11 @@ const SimulationSprintDeliverableController = () => {
     const { body } = req;
 
     try {
-      const simulationSprintDeliverable =
-        await SimulationSprintDeliverable.create({
-          ...body,
-        });
+      const simulationSprintActivity = await SimulationSprintActivity.create({
+        ...body,
+      });
 
-      return res.status(HttpCodes.OK).json({ simulationSprintDeliverable });
+      return res.status(HttpCodes.OK).json({ simulationSprintActivity });
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -37,15 +36,16 @@ const SimulationSprintDeliverableController = () => {
     const { id: SimulationSprintId } = req.params;
 
     try {
-      const simulationSprintDeliverables =
-        await SimulationSprintDeliverable.findAll({
+      const simulationSprintActivities = await SimulationSprintActivity.findAll(
+        {
           where: {
             SimulationSprintId,
           },
-          order: [["dueDate"]],
-        });
+          order: [["deliveryDate"]],
+        }
+      );
 
-      return res.status(HttpCodes.OK).json({ simulationSprintDeliverables });
+      return res.status(HttpCodes.OK).json({ simulationSprintActivities });
     } catch (error) {
       console.log(error);
       return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
@@ -64,20 +64,21 @@ const SimulationSprintDeliverableController = () => {
 
     if (id) {
       try {
-        const simulationSprintDeliverable =
-          await SimulationSprintDeliverable.findOne({
+        const simulationSprintActivity = await SimulationSprintActivity.findOne(
+          {
             where: {
               id,
             },
-          });
+          }
+        );
 
-        if (!simulationSprintDeliverable) {
+        if (!simulationSprintActivity) {
           return res.status(HttpCodes.BAD_REQUEST).json({
-            msg: "Bad Request: Simulation Sprint Deliverable not found.",
+            msg: "Bad Request: Simulation Sprint Acitvity not found.",
           });
         }
 
-        return res.status(HttpCodes.OK).json({ simulationSprintDeliverable });
+        return res.status(HttpCodes.OK).json({ simulationSprintActivity });
       } catch (error) {
         console.log(error);
         return res
@@ -98,7 +99,7 @@ const SimulationSprintDeliverableController = () => {
     if (id) {
       try {
         const [numberOfAffectedRows, affectedRows] =
-          await SimulationSprintDeliverable.update(
+          await SimulationSprintActivity.update(
             { ...req.body },
             {
               where: { id },
@@ -129,7 +130,7 @@ const SimulationSprintDeliverableController = () => {
 
     if (id) {
       try {
-        await SimulationSprintDeliverable.destroy({
+        await SimulationSprintActivity.destroy({
           where: {
             id,
           },
@@ -158,4 +159,4 @@ const SimulationSprintDeliverableController = () => {
   };
 };
 
-module.exports = SimulationSprintDeliverableController;
+module.exports = SimulationSprintActivityController;

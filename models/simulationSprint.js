@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       SimulationSprint.hasMany(models.SimulationSprintGroup);
       SimulationSprint.hasMany(models.SimulationSprintParticipant);
       SimulationSprint.hasMany(models.SimulationSprintDeliverable);
+      SimulationSprint.hasMany(models.SimulationSprintActivity);
     }
   }
   SimulationSprint.init(
@@ -22,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
       image: DataTypes.STRING,
       startDate: DataTypes.DATE,
       endDate: DataTypes.DATE,
+      open: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
     },
     {
       sequelize,

@@ -106,11 +106,11 @@ const adminRoutes = {
   "PUT /simulation-sprints/:id": "SimulationSprintController.update",
   "DELETE /simulation-sprints/:id": "SimulationSprintController.remove",
   "POST /simulation-sprints/duplicate": "SimulationSprintController.duplicate",
-  "POST /simulation-sprints/deliverable":
+  "POST /simulation-sprint/deliverable":
     "SimulationSprintDeliverableController.create",
-  "PUT /simulation-sprints/deliverable/:id":
+  "PUT /simulation-sprint/deliverable/:id":
     "SimulationSprintDeliverableController.update",
-  "DELETE /simulation-sprints/deliverable/:id":
+  "DELETE /simulation-sprint/deliverable/:id":
     "SimulationSprintDeliverableController.remove",
   "GET /simulation-sprint/:SimulationSprintId/resources":
     "SimulationSprintResourcesController.getAll",
@@ -120,6 +120,12 @@ const adminRoutes = {
     "SimulationSprintResourcesController.update",
   "DELETE /simulation-sprint/resource/:id":
     "SimulationSprintResourcesController.remove",
+  "POST /simulation-sprint/activity":
+    "SimulationSprintActivityController.create",
+  "PUT /simulation-sprint/activity/:id":
+    "SimulationSprintActivityController.update",
+  "DELETE /simulation-sprint/activity/:id":
+    "SimulationSprintActivityController.remove",
   "POST /simulation-sprint/group": "SimulationSprintGroupController.create",
   "PUT /simulation-sprint/group/:id": "SimulationSprintGroupController.update",
   "DELETE /simulation-sprint/group/:id":

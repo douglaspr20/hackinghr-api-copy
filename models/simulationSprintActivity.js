@@ -25,7 +25,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "SimulationSprintDeliverable",
+      modelName: "SimulationSprintActivity",
+      tableName: "SimulationSprintActivites",
     }
   );
   return SimulationSprintActivity;
