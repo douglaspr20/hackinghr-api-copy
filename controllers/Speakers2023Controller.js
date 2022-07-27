@@ -269,6 +269,26 @@ const SpeakersController = () => {
           }
     };
 
+    const allMemberSpeakerToPanel = async (req, res) => {
+
+        const { id } = req.user.dataValues;
+
+        try {
+
+            const member = await SpeakerMemberPanel.findAll({
+                where: { UserId: id },
+            })
+
+            return res.status(HttpCodes.OK).json({ member });
+
+        } catch (error) {
+            console.log(error);
+            return res
+                .status(HttpCodes.INTERNAL_SERVER_ERROR)
+                .json({ msg: "Internal server error" });
+        }
+    };
+
     const addUserSpeakerToPanel = async (req, res) => {
         const { data } = req.body;
         const {usersNames, bul, panel, type} = data
@@ -393,6 +413,16 @@ const SpeakersController = () => {
                     return res
                         .status(HttpCodes.BAD_REQUEST)
                         .json({ msg: "You are ready join to this panel." });
+                }
+
+                const userLimitPanel =  await SpeakerMemberPanel.findAll({
+                    where: { SpeakersPanelId: panel.id},
+                })
+
+                if(userLimitPanel.length > 4){
+                    return res
+                        .status(HttpCodes.BAD_REQUEST)
+                        .json({ msg: "This panel is full."});
                 }
 
                 const userLimit = await SpeakerMemberPanel.findAll({
@@ -1298,6 +1328,7 @@ const SpeakersController = () => {
             const lastArrayOfThisColumn = await SpeakersPanel.findOne({where: {id: PanelId}, attributes:["usersAddedToThisAgenda"]})
 
             if(startTime !== undefined){
+
                 const sessionCompareTime = await SpeakersPanel.findAll({where: 
                     {
                         [Op.or]: [
@@ -1319,7 +1350,13 @@ const SpeakersController = () => {
                             },
                             
                         ],
-                        usersAddedToThisAgenda: [id],
+                        usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
+                        [Op.or]: [
+                            {type: 'Keynote/Fireside Chat'},
+                            {type: 'Presentation'},
+                            {type: 'Roundtable'},
+                            {type: 'Simulations'}
+                        ],
                     }
                 })
 
@@ -1530,6 +1567,7 @@ const SpeakersController = () => {
         deleteParraf,
         downloadICS,
         excelAllsersSpeakersAndPanels,
+        allMemberSpeakerToPanel
     }
 }
 
