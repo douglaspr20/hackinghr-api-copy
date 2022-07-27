@@ -357,6 +357,14 @@ const privateRoutes = {
   "POST /speakers/edit-parraf": "Speakers2023Controller.editParraf",
   "GET /simulation-sprints": "SimulationSprintController.getAll",
   "GET /simulation-sprints/:id": "SimulationSprintController.get",
+  "GET /simulation-sprint-deliverable/:id":
+    "SimulationSprintDeliverableController.get",
+  "GET /simulation-sprint/:id/deliverables":
+    "SimulationSprintDeliverableController.getAll",
+  "GET /simulation-sprint-activity/:id":
+    "SimulationSprintActivityController.get",
+  "GET /simulation-sprint/:id/activities":
+    "SimulationSprintActivityController.getAll",
   "GET /simulation-sprint/resource/:id":
     "SimulationSprintResourcesController.get",
   "POST /simulation-sprint/participant":
