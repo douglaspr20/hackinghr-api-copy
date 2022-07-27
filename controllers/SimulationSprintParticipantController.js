@@ -65,11 +65,19 @@ const SimulationSprintParticipantController = () => {
           const mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: user.email,
-            subject: LabEmails.JOIN_SIMULATION_SPRINT.subject,
-            html: LabEmails.JOIN_SIMULATION_SPRINT.body(user),
+            subject: LabEmails.JOIN_SIMULATION_SPRINT.subject(
+              user.firstName,
+              simulationSprint.title
+            ),
+            html: LabEmails.JOIN_SIMULATION_SPRINT.body(
+              user.firstName,
+              simulationSprint.tile,
+              moment(simulationSprint.startDate).format(),
+              moment(simulationSprint.endDate).format()
+            ),
           };
 
-          await User.increment(
+          const userUpdated = await User.increment(
             {
               simulationSprintsAvailable: -1,
             },
@@ -82,7 +90,9 @@ const SimulationSprintParticipantController = () => {
 
           await smtpService().sendMailUsingSendInBlue(mailOptions);
 
-          return res.status(HttpCodes.OK).json({ simulationSprintParticipant });
+          return res
+            .status(HttpCodes.OK)
+            .json({ simulationSprintParticipant, userUpdated });
         }
 
         return res

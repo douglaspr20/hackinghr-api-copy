@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -8,16 +8,12 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    return Promise.all([
-      queryInterface.addColumn("Events", "status", {
-        type: Sequelize.JSON,
-        defaultValue: {},
-      }),
-      queryInterface.addColumn("Events", "users", {
-        type: Sequelize.ARRAY(Sequelize.INTEGER),
-        defaultValue: [],
-      }),
-    ]); 
+
+    await queryInterface.addColumn("SimulationSprints", "open", {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    });
   },
 
   down: async (queryInterface, Sequelize) => {
@@ -27,5 +23,7 @@ module.exports = {
      * Example:
      * await queryInterface.dropTable('users');
      */
-  }
+
+    await queryInterface.removeColumn("SimulationSprints", "open");
+  },
 };
