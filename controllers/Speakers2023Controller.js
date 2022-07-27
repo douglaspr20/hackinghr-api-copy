@@ -764,8 +764,6 @@ const SpeakersController = () => {
 
         let userSpeakers
 
-        console.log(type)
-
         try {
 
             if(type !== "speakers"){
