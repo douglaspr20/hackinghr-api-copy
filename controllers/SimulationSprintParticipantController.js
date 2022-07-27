@@ -1,5 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
 const { LabEmails } = require("../enum");
 
@@ -71,9 +72,9 @@ const SimulationSprintParticipantController = () => {
             ),
             html: LabEmails.JOIN_SIMULATION_SPRINT.body(
               user.firstName,
-              simulationSprint.tile,
-              moment(simulationSprint.startDate).format(),
-              moment(simulationSprint.endDate).format()
+              simulationSprint.title,
+              moment(simulationSprint.startDate).format("LL"),
+              moment(simulationSprint.endDate).format("LL")
             ),
           };
 
