@@ -395,16 +395,14 @@ const SpeakersController = () => {
                         .json({ msg: "You are ready join to this panel." });
                 }
 
-                if(role !== "admin"){
-                    const userLimit = await SpeakerMemberPanel.findAll({
-                        where: { UserId: id },
-                    })
+                const userLimit = await SpeakerMemberPanel.findAll({
+                    where: { UserId: id },
+                })
 
-                    if(userLimit.length > 1){
-                        return res
-                            .status(HttpCodes.BAD_REQUEST)
-                            .json({ msg: "You can't join more than two panels." });
-                    }
+                if(userLimit.length > 1){
+                    return res
+                        .status(HttpCodes.BAD_REQUEST)
+                        .json({ msg: "You can't join more than two panels." });
                 }
 
                 await Promise.resolve(
@@ -762,35 +760,72 @@ const SpeakersController = () => {
 
     const getAllPanelsOfOneUser = async (req, res) => {
 
-        const {id} = req.query
+        const {id, type} = req.query
+
+        let userSpeakers
+
+        console.log(type)
 
         try {
 
-            const userSpeakers = await SpeakersPanel.findAll({
-                order: [["startDate", "DESC"]],
-                where: {
-                    usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
-                },
-                include: [
-                    {
-                        model: SpeakerMemberPanel,
-                        include: [
-                            {
-                                model: User,
-                                attributes: [
-                                    "id",
-                                    "firstName",
-                                    "lastName",
-                                    "titleProfessions",
-                                    "img",
-                                    "abbrName",
-                                    "email"
-                                ],
-                            }
-                        ]
-                    }
-                ],
-            })
+            if(type !== "speakers"){
+
+                userSpeakers = await SpeakersPanel.findAll({
+                    order: [["startDate", "DESC"]],
+                    where: {
+                        usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
+                    },
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                            include: [
+                                {
+                                    model: User,
+                                    attributes: [
+                                        "id",
+                                        "firstName",
+                                        "lastName",
+                                        "titleProfessions",
+                                        "img",
+                                        "abbrName",
+                                        "email"
+                                    ],
+                                }
+                            ]
+                        }
+                    ],
+                })
+            }else{
+                userSpeakers = await SpeakerMemberPanel.findAll({
+                    where: {
+                        UserId: id
+                    },
+                    include: [
+                        {
+                            model: SpeakersPanel,
+                            include: [
+                                {
+                                    model: SpeakerMemberPanel,
+                                    include: [
+                                        {
+                                            model: User,
+                                            attributes: [
+                                                "id",
+                                                "firstName",
+                                                "lastName",
+                                                "titleProfessions",
+                                                "img",
+                                                "abbrName",
+                                                "email"
+                                            ],
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                });
+            }
       
             return res.status(HttpCodes.OK).json({ userSpeakers });
           } catch (error) {
