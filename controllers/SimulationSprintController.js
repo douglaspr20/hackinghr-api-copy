@@ -197,7 +197,16 @@ const SimulationSprintController = () => {
               include: [
                 {
                   model: User,
-                  attributes: ["firstName", "lastName", "email", "img"],
+                  attributes: [
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "img",
+                    "abbrName",
+                    "titleProfessions",
+                    "company",
+                    "personalLinks",
+                  ],
                 },
               ],
             },
