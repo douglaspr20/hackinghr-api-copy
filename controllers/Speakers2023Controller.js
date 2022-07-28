@@ -414,10 +414,11 @@ const SpeakersController = () => {
                         .status(HttpCodes.BAD_REQUEST)
                         .json({ msg: "You are ready join to this panel." });
                 }
-
+     
                 const userLimitPanel =  await SpeakerMemberPanel.findAll({
-                    where: { SpeakersPanelId: panel.id},
+                    where: { SpeakersPanelId: panel.id, isModerator: false},
                 })
+                
 
                 if(userLimitPanel.length > 4){
                     return res
@@ -425,14 +426,16 @@ const SpeakersController = () => {
                         .json({ msg: "This panel is full."});
                 }
 
-                const userLimit = await SpeakerMemberPanel.findAll({
-                    where: { UserId: id },
-                })
-
-                if(userLimit.length > 1){
-                    return res
-                        .status(HttpCodes.BAD_REQUEST)
-                        .json({ msg: "You can't join more than two panels." });
+                if(role !== "admin"){
+                    const userLimit = await SpeakerMemberPanel.findAll({
+                        where: { UserId: id },
+                    })
+                    
+                    if(userLimit.length > 1){
+                        return res
+                            .status(HttpCodes.BAD_REQUEST)
+                            .json({ msg: "You can't join more than two panels." });
+                    }
                 }
 
                 await Promise.resolve(
@@ -796,7 +799,7 @@ const SpeakersController = () => {
 
         try {
 
-            if(type !== "speakers"){
+            if(type === "mySessions"){
 
                 userSpeakers = await SpeakersPanel.findAll({
                     order: [["startDate", "DESC"]],
@@ -823,7 +826,8 @@ const SpeakersController = () => {
                         }
                     ],
                 })
-            }else{
+            }
+            if(type === "speakers"){
                 userSpeakers = await SpeakerMemberPanel.findAll({
                     where: {
                         UserId: id
@@ -854,6 +858,54 @@ const SpeakersController = () => {
                     ],
                 });
             }
+      
+            return res.status(HttpCodes.OK).json({ userSpeakers });
+          } catch (error) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+          }
+    }
+
+    const getAllMyPanels = async (req, res) => {
+
+        const { id } = req.user.dataValues;
+
+        try {
+
+            const userSpeakers = await SpeakerMemberPanel.findAll({
+                where: {
+                    UserId: id
+                },
+                include: [
+                    {
+                        model: SpeakersPanel,
+                        where: {
+                            type: "Panels"
+                        },
+                        include: [
+                            {
+                                model: SpeakerMemberPanel,
+                                include: [
+                                    {
+                                        model: User,
+                                        attributes: [
+                                            "id",
+                                            "firstName",
+                                            "lastName",
+                                            "titleProfessions",
+                                            "img",
+                                            "abbrName",
+                                            "email"
+                                        ],
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+            });
       
             return res.status(HttpCodes.OK).json({ userSpeakers });
           } catch (error) {
@@ -1567,7 +1619,8 @@ const SpeakersController = () => {
         deleteParraf,
         downloadICS,
         excelAllsersSpeakersAndPanels,
-        allMemberSpeakerToPanel
+        allMemberSpeakerToPanel,
+        getAllMyPanels
     }
 }
 

@@ -319,6 +319,8 @@ const privateRoutes = {
   "POST /speakers/add-new-speakers-admin": "Speakers2023Controller.addNewSpeakersAdmin",
   "GET /speakers/all-panel-of-user":
     "Speakers2023Controller.getAllPanelsOfOneUser",
+    "GET /speakers/all-my-panel-of-user":
+    "Speakers2023Controller.getAllMyPanels",
   "POST /speakers/add-new-speakers-admin":
     "Speakers2023Controller.addNewSpeakersAdmin",
   "POST /speakers/add-speaker-to-panel":
