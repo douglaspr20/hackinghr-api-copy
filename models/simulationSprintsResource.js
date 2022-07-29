@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
   SimulationSprintResource.init(
     {
       title: DataTypes.STRING,
-      description: DataTypes.STRING,
+      description: DataTypes.TEXT,
       level: DataTypes.ENUM("basic", "intermediate", "advance"),
       type: DataTypes.ENUM("video", "article", "podcast"),
       resourceLink: DataTypes.STRING,
