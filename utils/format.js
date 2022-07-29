@@ -112,6 +112,7 @@ async function convertJSONToExcel(sheet, fields, content) {
 
 async function convertJSONToExcelUsersSpeakers2023(sheet, fields, content) {
   // Create page
+
   const wb = workbook.addWorksheet(sheet);
   wb.addRow(fields.map((item) => item.label));
   fields.forEach((field, index) => {
@@ -125,6 +126,9 @@ async function convertJSONToExcelUsersSpeakers2023(sheet, fields, content) {
 
   await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
 
+  const worksheet = workbook.getWorksheet(sheet);
+  workbook.removeWorksheet(worksheet.id);
+
   return;
 }
 
@@ -134,6 +138,7 @@ async function convertJSONToExcelPanelsConference2023(
   fields2,
   content
 ) {
+
   const wb = workbook.addWorksheet(sheet);
 
   let number = 2;
@@ -200,6 +205,9 @@ async function convertJSONToExcelPanelsConference2023(
   });
 
   await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
+
+  const worksheet = workbook.getWorksheet(sheet);
+  workbook.removeWorksheet(worksheet.id);
 
   return;
 }
@@ -268,6 +276,9 @@ async function convertJSONToExcelRegisterConference2023(
   });
 
   await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
+
+  const worksheet = workbook.getWorksheet(sheet);
+  workbook.removeWorksheet(worksheet.id);
 
   return;
 }
