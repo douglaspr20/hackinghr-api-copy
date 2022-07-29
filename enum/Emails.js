@@ -1638,7 +1638,8 @@ module.exports = {
       `,
   },
   REGISTER_CONFERENCE_2023: {
-    subject: (firstName) => `${firstName}: Thank you for registering to participate in Hacking HR’s FORWARD2023!  Please read this email with further information.`,
+    subject: (firstName) =>
+      `${firstName}: Thank you for registering to participate in Hacking HR’s FORWARD2023!  Please read this email with further information.`,
     body: (firstName) => `
         <p>Hi ${firstName},</p>
         <p>I am excited that you are joining us as a participating at Hacking HR’s <b>FORWARD2023</b>!</p>
@@ -1735,7 +1736,7 @@ module.exports = {
 
     <p>Enrique Rubio</p>
     <p>Founder</p>
-    <p>Hackig Hr</p>
+    <p>Hacking Hr</p>
   `,
   },
   ADVERTISEMENT_CAMPAIGN_START: {
@@ -1929,18 +1930,15 @@ module.exports = {
     `,
   },
   JOIN_SIMULATION_SPRINT: {
-    subject: (
-      firstName,
-      simulationSprintTitle
-    ) => `${firstName} Thank you for registering for Hacking HR’s 
-    Simulation Sprint: ${simulationSprintTitle}`,
+    subject: (firstName, simulationSprintTitle) =>
+      `${firstName}: Thank you for registering for Hacking HR’s Simulation Sprint: ${simulationSprintTitle}`,
     body: (
       firstName,
       simulationSprintTitle,
       simulationSprintStartDate,
       simulationSprintEndDate
     ) => `
-    <p>Hi ${firstName}</p>
+    <p>Hi ${firstName},</p>
 
     <p>Thank you so much for registering for Hacking HR’s Simulation Sprint: ${simulationSprintTitle}.</p>
 

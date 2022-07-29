@@ -9,7 +9,7 @@ const User = db.User;
 
 const SimulationSprintGroupController = () => {
   const create = async (req, res) => {
-    const { SimulationSprintId, members, groupNumber } = req.body;
+    const { SimulationSprintId, members, groupName } = req.body;
 
     try {
       const simulationSprint = await SimulationSprint.findOne({
@@ -22,7 +22,7 @@ const SimulationSprintGroupController = () => {
         const simulationSprintGroupExist = await SimulationSprintGroup.findOne({
           where: {
             SimulationSprintId,
-            groupNumber,
+            groupName,
           },
         });
 
