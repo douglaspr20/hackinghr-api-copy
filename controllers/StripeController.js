@@ -593,7 +593,7 @@ const StripeController = () => {
             subject: LabEmails.USER_BECOME_PREMIUM.subject(),
             html: LabEmails.USER_BECOME_PREMIUM.body(user),
           };
-          await smtpService().sendMailUsingSendInBlue(mailOptions);
+          // await smtpService().sendMailUsingSendInBlue(mailOptions);
         } catch (error) {
           console.log(error);
         }
@@ -607,7 +607,7 @@ const StripeController = () => {
             subject: LabEmails.USER_RENEW_PREMIUM.subject(),
             html: LabEmails.USER_RENEW_PREMIUM.body(user),
           };
-          await smtpService().sendMailUsingSendInBlue(mailOptions);
+          // await smtpService().sendMailUsingSendInBlue(mailOptions);
         } catch (error) {
           console.log(error);
         }
@@ -673,7 +673,7 @@ const StripeController = () => {
                       html: LabEmails.USER_BECOME_CREATOR.body(user),
                     };
 
-                    await smtpService().sendMailUsingSendInBlue(mailOptions);
+                    // await smtpService().sendMailUsingSendInBlue(mailOptions);
                   } catch (error) {
                     console.log(error);
                   }
@@ -766,7 +766,7 @@ const StripeController = () => {
                       html: LabEmails.USER_BECOME_RECRUITER.body(user),
                     };
 
-                    await smtpService().sendMailUsingSendInBlue(mailOptions);
+                    // await smtpService().sendMailUsingSendInBlue(mailOptions);
                   } catch (error) {
                     console.log(error);
                   }
@@ -829,43 +829,6 @@ const StripeController = () => {
       return false;
     }
   };
-
-  /*
-  * TO DO: Only use when you need upgrade prices of subscriptios.
-  const upgradeSubscription = async (req, res) => {
-    let price = "{}";
-    let customerIds = [];
-    const subscriptions = await stripe.subscriptions.list({
-      price,
-      limit: 200,
-    });
-
-    for (let item of subscriptions.data) {
-      const subscription = await stripe.subscriptions.retrieve(item.id);
-      for (let i of subscription.items.data) {
-        let itemId = null;
-        if (i.price.id === price) {
-          itemId = i.id;
-        }
-        if (itemId != null) {
-          stripe.subscriptions.update(item.id, {
-            proration_behavior: "none",
-            items: [
-              {
-                id: itemId,
-                price: "{}",
-              },
-            ],
-          });
-          customerIds.push(item.customer);
-          break;
-        }
-      }
-    }
-
-    return res.status(HttpCodes.OK).json({ customerIds });
-  };
-  */
 
   return {
     createCheckoutSession,
