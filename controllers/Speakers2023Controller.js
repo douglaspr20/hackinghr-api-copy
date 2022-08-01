@@ -1371,7 +1371,7 @@ const SpeakersController = () => {
 
         const { id } = req.user.dataValues
 
-        let { PanelId, type, startTime, endTime } = data
+        let { PanelId, type, startTime, endTime, panelType } = data
 
         let newArray = [];
 
@@ -1379,7 +1379,7 @@ const SpeakersController = () => {
 
             const lastArrayOfThisColumn = await SpeakersPanel.findOne({where: {id: PanelId}, attributes:["usersAddedToThisAgenda"]})
 
-            if(startTime !== undefined){
+            if(startTime !== undefined && panelType !== 'Panels'){
 
                 const sessionCompareTime = await SpeakersPanel.findAll({where: 
                     {
@@ -1403,12 +1403,7 @@ const SpeakersController = () => {
                             
                         ],
                         usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
-                        [Op.or]: [
-                            {type: 'Keynote/Fireside Chat'},
-                            {type: 'Presentation'},
-                            {type: 'Roundtable'},
-                            {type: 'Simulations'}
-                        ],
+                        type: {[Op.ne] : 'Panels'}
                     }
                 })
 
