@@ -24,6 +24,7 @@ const BusinessPartnerController = require("./controllers/BusinessPartnerControll
 const AdvertisementController = require("./controllers/AdvertisementController");
 const CouncilEventController = require("./controllers/CouncilEventController");
 const BlogPostController = require("./controllers/BlogPostController");
+const Speakers2023Controller = require("./controllers/Speakers2023Controller")
 const smtpService = require("./services/smtp.service");
 const socketService = require("./services/socket.service");
 
@@ -61,6 +62,13 @@ const mappedAdminRoutes = mapRoutes(routes.adminRoutes, "controllers/", [
 cron.schedule("0 8 * * SUN", () => {
   console.log("running a task every sunday");
   BusinessPartnerController().changePendingStatusToReject();
+});
+
+//*/59 * * * * *
+// cron.schedule("WED") 0 8 * * 3
+cron.schedule("0 8 * * 3", () => {
+  console.log("running a task every sunday");
+  Speakers2023Controller().sendEmailsAutomaticToSpeakers();
 });
 
 // Creating a cron job which runs on every an hour.

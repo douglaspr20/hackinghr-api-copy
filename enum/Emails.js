@@ -1637,6 +1637,30 @@ module.exports = {
       <br />
       `,
   },
+  NEW_PANEL_CONFERENCE_2023: {
+    subject: (firstName) => `${firstName}: a new panel has been added to the sessions at Hacking HR’s FORWARD2023. In case you want to join this session!`,
+    body: (firstName, panelName) => `
+        <p>Hi ${firstName},</p>
+        <p>We have added a new panel to the agenda of the Hacking HR 2023 Global Conference, now called: <b>FORWARD 2023</b>!</p>
+        <p>The new session is: ${panelName}.</p>
+        <p>If you want to be a panelist in this session, please follow this process:</p>
+        <p>
+          <ol>
+            <li>Please go to this link: https://www.hackinghrlab.io/speakers2023</li>
+            <li>Search for ${panelName}</li>
+            <li>Click on JOIN (note: you can only join up to two panels. If you are already included in two panels you will not be able to join another panel).</li>
+            <li>The panels will be recorded no later than the end of this year and released during the conference. Your panel’s moderator will be in touch within the next few weeks to schedule the logistics and recording.</li>
+          </ul>
+        </p>
+        <p>Thank you!</p> 
+        <br />
+        Enrique Rubio
+        <br />
+        Founder
+        <br />
+        Hacking HR
+        <br />`,
+  },
   REGISTER_CONFERENCE_2023: {
     subject: (firstName) => `${firstName}: Thank you for registering to participate in Hacking HR’s FORWARD2023!  Please read this email with further information.`,
     body: (firstName) => `

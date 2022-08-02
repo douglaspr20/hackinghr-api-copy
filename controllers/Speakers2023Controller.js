@@ -69,6 +69,29 @@ const SpeakersController = () => {
                 type
             },{order: [["id", "DESC"]]})
 
+            if(type === "Panels"){
+                const allSpeakersAccepted = await User.findAll({where: {speakersAuthorization: {[Op.eq]: "accepted"}}});
+
+                await Promise.all(
+                    allSpeakersAccepted.map(async (data) => {
+    
+                        await Promise.resolve(
+                            (() => {
+                                let mailOptions = {
+                                    from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                    to: data.email,
+                                    subject: LabEmails.NEW_PANEL_CONFERENCE_2023.subject(data.firstName),
+                                    html: LabEmails.NEW_PANEL_CONFERENCE_2023.body(data.firstName, panelName),
+                                };
+                    
+                                return smtpService().sendMailUsingSendInBlue(mailOptions);
+                            })()
+                        );
+                        
+                    })
+                );
+            }
+
             if(speakers?.length !== 0 && speakers !== undefined){
                 await Promise.all(
                     speakers.map(async (data) => {
@@ -1586,12 +1609,61 @@ const SpeakersController = () => {
         }
     };
 
+    const sendEmailsAutomaticToSpeakers = async (req, res) => {
+
+        try{
+
+            const allUserSpeakersWithoutSession = await User.findAll(
+                {
+                    where: {speakersAuthorization: {[Op.eq]: "accepted"}},
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                        }
+                    ]
+                }
+            )
+
+            let newArray = allUserSpeakersWithoutSession.filter(data => {
+                return data.SpeakerMemberPanels.length === 0
+            })
+
+            await Promise.all(
+                newArray.map(async (data) => {
+
+                    await Promise.resolve(
+                        (() => {
+                            let mailOptions = {
+                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                to: data.email,
+                                subject: LabEmails.REGISTER_CONFERENCE_2023.subject(data.firstName),
+                                html: LabEmails.REGISTER_CONFERENCE_2023.body(data.firstName),
+                            };
+                
+                            return smtpService().sendMailUsingSendInBlue(mailOptions);
+                        })()
+                    );
+                    
+                })
+            );
+
+
+        }catch (error) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+        }
+
+    }
+
     return {
         addNewPanelSpeaker,
         addNewSpeakersAdmin,
         addToMyPersonalAgenda,
         allPanelSpeakers,
         editAuthorizationSpeakers,
+        sendEmailsAutomaticToSpeakers,
         addUserSpeakerToPanel,
         removeUserSpeakerToPanel,
         registerUserIfNotAreRegisterConference2023,
