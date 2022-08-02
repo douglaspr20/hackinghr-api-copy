@@ -37,9 +37,9 @@ const SimulationSprintParticipantController = () => {
           .json({ msg: "user not found" });
       }
 
-      if (userFound.simulationSprintsAvailable < 1) {
+      if (userFound.memberShip !== "premium") {
         return res.status(HttpCodes.BAD_REQUEST).json({
-          msg: "You have no more simulations available, please purchase more.",
+          msg: "You have to be a premium user to join the simulations ",
         });
       }
 
