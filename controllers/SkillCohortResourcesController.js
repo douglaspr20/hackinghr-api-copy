@@ -389,7 +389,6 @@ const SkillCohortResourcesController = () => {
       const allSkillCohortResources = SkillCohortResources.bulkCreate(
         transformedSkillCohortResources
       );
-      // const allSkillCohortResources = [];
 
       return res.status(HttpCodes.OK).json({ allSkillCohortResources });
     } catch (error) {
