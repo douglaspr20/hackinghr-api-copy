@@ -66,10 +66,10 @@ cron.schedule("0 8 * * SUN", () => {
 
 //*/59 * * * * *
 // cron.schedule("WED") 0 8 * * 3
-cron.schedule("0 8 * * 3", () => {
-  console.log("running a task every sunday");
-  Speakers2023Controller().sendEmailsAutomaticToSpeakers();
-});
+// cron.schedule("0 8 * * 3", () => {
+//   console.log("running a task every sunday");
+//   Speakers2023Controller().sendEmailsAutomaticToSpeakers();
+// });
 
 // Creating a cron job which runs on every an hour.
 cron.schedule("0 */59 * * * *", () => {
