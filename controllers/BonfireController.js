@@ -148,15 +148,14 @@ const BonfireController = () => {
         }
       );
 
-      const targetBonfireDate = convertToLocalTime(
+      let startTime = convertToLocalTime(
         bonfire.dataValues.startTime,
-        bonfire.dataValues.timezone,
+        bonfire.timezone,
         userTimezone
       );
-
-      const convertedEndTime = convertToLocalTime(
+      let endTime = convertToLocalTime(
         bonfire.dataValues.endTime,
-        bonfire.dataValues.timezone,
+        bonfire.timezone,
         userTimezone
       );
 
@@ -165,32 +164,33 @@ const BonfireController = () => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: bonfireCreatorInfo.email,
-            subject: LabEmails.BONFIRE_CREATOR.subject,
+            subject: LabEmails.BONFIRE_CREATOR.subject(
+              bonfireCreatorInfo.firstName
+            ),
             html: LabEmails.BONFIRE_CREATOR.body(
-              bonfireCreatorInfo,
+              bonfireCreatorInfo.firstName,
               bonfire,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a"),
+              startTime.format("MMM DD"),
+              startTime.format("h:mm a"),
               userTimezone
             ),
             contentType: "text/calendar",
           };
 
-          const calendarInvite = smtpService()
-            .generateCalendarInvite(
-              targetBonfireDate,
-              convertedEndTime,
-              bonfire.dataValues.title,
-              bonfire.dataValues.description,
-              "",
-              bonfire.dataValues.link,
-              bonfireCreatorInfo.firstName,
-              process.env.SEND_IN_BLUE_SMTP_SENDER,
-              userTimezone
-            )
-            .toString();
+          const calendarInvite = smtpService().generateCalendarInvite(
+            startTime,
+            endTime,
+            bonfire.title,
+            bonfire.description,
+            bonfire.link,
+            `${process.env.DOMAIN_URL}${bonfire.id}`,
+            "hacking Lab HR",
+            process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+            userTimezone
+          );
 
-          let icsContent = calendarInvite.replace(
+          let icsContent = calendarInvite.toString();
+          icsContent = icsContent.replace(
             "BEGIN:VEVENT",
             `METHOD:REQUEST\r\nBEGIN:VEVENT`
           );
@@ -233,14 +233,13 @@ const BonfireController = () => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: _user.email,
-            subject: LabEmails.BONFIRE_INVITATION.subject,
+            subject: LabEmails.BONFIRE_INVITATION.subject(_user.firstName),
             html: LabEmails.BONFIRE_INVITATION.body(
-              _user,
+              _user.firstName,
               bonfire,
               bonfireCreatorInfo,
-              targetBonfireDate.format("MMM DD"),
-              targetBonfireDate.format("h:mm a"),
-              convertedEndTime.format("h:mm a"),
+              startTime.format("MMM DD"),
+              startTime.format("h:mm a"),
               bonfire.dataValues.timezone,
               googleLink,
               yahooLink
@@ -250,8 +249,8 @@ const BonfireController = () => {
 
           const calendarInvite = smtpService()
             .generateCalendarInvite(
-              targetBonfireDate,
-              convertedEndTime,
+              startTime,
+              endTime,
               bonfire.dataValues.title,
               bonfire.dataValues.description,
               "",
@@ -423,36 +422,30 @@ const BonfireController = () => {
 
         await Promise.all(
           usersJoinedToBonfire.map((user) => {
-            const timezone = TimeZoneList.find(
-              (timezone) =>
-                timezone.value === affectedRows.dataValues.timezone ||
-                timezone.text === affectedRows.dataValues.timezone
+            const userTimezone = TimeZoneList.find(
+              (timezone) => timezone.value === user.timezone
             );
-            const offset = timezone.offset;
-            const targetBonfireStartDate = moment(
-              affectedRows.dataValues.startTime
-            )
-              .tz(timezone.utc[0])
-              .utcOffset(offset, true);
 
-            const targetBonfireEndDate = moment(affectedRows.dataValues.endTime)
-              .tz(timezone.utc[0])
-              .utcOffset(offset, true);
+            const targetBonfireDate = convertToLocalTime(
+              affectedRows.dataValues.startTime,
+              affectedRows.dataValues.timezone,
+              userTimezone.utc[0]
+            );
 
             let mailOptions = {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               to: user.email,
               subject: LabEmails.BONFIRE_EDITED.subject(
+                user.firstName,
                 affectedRows.dataValues.title
               ),
               html: LabEmails.BONFIRE_EDITED.body(
-                user,
+                user.firstName,
                 prevBonfire.dataValues.title,
                 affectedRows.dataValues,
-                targetBonfireStartDate.format("MMM DD"),
-                targetBonfireStartDate.format("h:mm a"),
-                targetBonfireEndDate.format("h:mm a"),
-                timezone.value
+                targetBonfireDate.format("MMM DD"),
+                targetBonfireDate.format("h:mm a"),
+                userTimezone.utc[0]
               ),
             };
 
@@ -535,31 +528,29 @@ const BonfireController = () => {
 
         await Promise.all(
           usersJoinedToBonfire.map((user) => {
-            const timezone = TimeZoneList.find(
-              (timezone) =>
-                timezone.value === bonfireToDelete.timezone ||
-                timezone.text === bonfireToDelete.timezone
+            const userTimezone = TimeZoneList.find(
+              (timezone) => timezone.value === user.timezone
             );
-            const offset = timezone.offset;
-            const targetBonfireStartDate = moment(bonfireToDelete.startTime)
-              .tz(timezone.utc[0])
-              .utcOffset(offset, true);
 
-            const targetBonfireEndDate = moment(bonfireToDelete.endTime)
-              .tz(timezone.utc[0])
-              .utcOffset(offset, true);
+            const targetBonfireDate = convertToLocalTime(
+              bonfireToDelete.startTime,
+              bonfireToDelete.timezone,
+              userTimezone.utc[0]
+            );
 
             let mailOptions = {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               to: user.email,
-              subject: LabEmails.BONFIRE_DELETED.subject(bonfireToDelete.title),
+              subject: LabEmails.BONFIRE_DELETED.subject(
+                user.firstName,
+                bonfireToDelete.title
+              ),
               html: LabEmails.BONFIRE_DELETED.body(
-                user,
+                user.firstName,
                 bonfireToDelete,
-                targetBonfireStartDate.format("MMM DD"),
-                targetBonfireStartDate.format("h:mm a"),
-                targetBonfireEndDate.format("h:mm a"),
-                timezone.value
+                targetBonfireDate.format("MMM DD"),
+                targetBonfireDate.format("h:mm a"),
+                userTimezone.utc[0]
               ),
             };
 
@@ -717,7 +708,7 @@ const BonfireController = () => {
         endTime,
         bonfire.title,
         bonfire.description,
-        "https://www.hackinghrlab.io/global-conference",
+        "https://www.hackinghrlab.io/bonfires",
         // event.location,
         `${process.env.DOMAIN_URL}${bonfire.id}`,
         "hacking Lab HR",

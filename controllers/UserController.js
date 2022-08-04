@@ -1068,6 +1068,21 @@ const UserController = () => {
         }
       );
 
+      await Bonfire.update(
+        {
+          uninvitedJoinedUsers: Sequelize.fn(
+            "array_append",
+            Sequelize.col("uninvitedJoinedUsers"),
+            affectedRows.dataValues.id
+          ),
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
       await User.increment(
         {
           pointsConferenceLeaderboard: +200,
@@ -1092,12 +1107,12 @@ const UserController = () => {
       await Promise.resolve(
         (() => {
           const googleLink = googleCalendar(
-            bonfireToJoin.startTime,
+            bonfireToJoin,
             bonfireToJoin.timezone,
             userTimezone
           );
           const yahooLink = yahooCalendar(
-            bonfireToJoin.endTime,
+            bonfireToJoin,
             bonfireToJoin.timezone,
             userTimezone
           );
@@ -1124,14 +1139,15 @@ const UserController = () => {
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: affectedRows.dataValues.email,
-            subject: LabEmails.BONFIRE_JOINING.subject,
+            subject: LabEmails.BONFIRE_JOINING.subject(
+              affectedRows.dataValues.firstName
+            ),
             html: LabEmails.BONFIRE_JOINING.body(
-              affectedRows.dataValues,
+              affectedRows.dataValues.firstName,
               bonfireToJoin,
               bonfireCreator,
               targetBonfireDate.format("MMM DD"),
               targetBonfireDate.format("h:mm a"),
-              convertedEndTime.format("h:mm a"),
               userTimezone,
               googleLink,
               yahooLink
