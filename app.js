@@ -65,11 +65,25 @@ cron.schedule("0 8 * * SUN", () => {
 });
 
 //*/59 * * * * *
-// cron.schedule("WED") 0 8 * * 3
-// cron.schedule("0 8 * * 3", () => {
-//   console.log("running a task every sunday");
-//   Speakers2023Controller().sendEmailsAutomaticToSpeakers();
-// });
+// cron.schedule("FRI") 0 8 * * 3
+cron.schedule("0 8 * * 5", () => {
+  console.log("running a task every friday");
+  Speakers2023Controller().sendEmailsAutomaticToSpeakers();
+});
+
+//*/59 * * * * *
+// cron.schedule("MON") 0 8 * * 3
+cron.schedule("0 8 * * 1", () => {
+  console.log("running a task every monday");
+  Speakers2023Controller().sendEmailsAutomaticToSpeakers();
+});
+
+//*/59 * * * * *
+// cron.schedule("TUE") 0 8 * * 3
+cron.schedule("0 8 * * 2", () => {
+  console.log("running a task every tuesday");
+  Speakers2023Controller().sendEmailsAutomaticToSpeakersCompleteProfile();
+});
 
 // Creating a cron job which runs on every an hour.
 cron.schedule("0 */59 * * * *", () => {

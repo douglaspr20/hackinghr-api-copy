@@ -1621,6 +1621,55 @@ module.exports = {
         Hacking HR
         <br />`,
   },
+  REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE: {
+    subject: (firstName) => `${firstName}: please complete your speaker profile in the Hacking HR LAB for FORWARD2023`,
+    body: (firstName) => `
+        <p>Hi ${firstName},</p>
+        <p>I am excited that you are in our roster of speakers for the Hacking HR 2023 Global Conference, now called: <b>FORWARD 2023</b>!</p>
+        <p>I noticed that you haven’t fully completed your profile in the Hacking HR LAB. Your profile must be fully completed to select the panel(s) in which you want to speak and for your information to show in the Speakers page. </p>
+        <p>This is how you can complete your profile: </p>
+        <p>
+          <ol>
+            <li>Go to the Hacking HR LAB: https://www.hackinghrlab.io/</li>
+            <li>Click on your profile headshot on the top right and then click on your name</li>
+            <li>Click on the orange button COMPLETE PROFILE and complete the missing fields</li>
+          </ul>
+        </p>
+        <p>As soon as you have completed your profile, please go to this link: https://www.hackinghrlab.io/speakers2023 and join the panel(s) in which you want to speak at the conference. </p> 
+        <p>Please let me know if you have any questions. Thank you! </p> 
+        <br />
+        Enrique Rubio
+        <br />
+        Founder
+        <br />
+        Hacking HR
+        <br />`,
+  },
+  REMEMBER_TO_SPEAKERS: {
+    subject: (firstName) => `${firstName}: you haven’t selected the panel(s) you will join at Hacking HR’s FORWARD2023. Please select soon!`,
+    body: (firstName) => `
+        <p>Hi ${firstName},</p>
+        <p>I am excited that you are in our roster of speakers for the Hacking HR 2023 Global Conference, now called: <b>FORWARD 2023</b>!</p>
+        <p>But… we have something missing from you to get things rolling: you need to select the one or up to two panels you want to join at the conference. This is how:</p>
+        <p>
+          <ol>
+            <li>Please go to this link: https://www.hackinghrlab.io/speakers2023</li>
+            <li>The panels are listed in that link. We may add more panels later on, but those are the ones we have for now.</li>
+            <li>Please join one or up to two panels. Just click on “JOIN”. If you click on “More Information” you will be able to see the rest of the panelists for that panel. Each panel has up to five panelists and a moderator. You can join up to two panels. Please I kindly ask you to make sure you are selecting the panel you are interested to join. Withdrawing from a panel later creates a lot of problems!</li>
+            <li>The panels will be recorded no later than the end of this year and released during the conference. Your panel’s moderator will be in touch within the next few weeks to schedule the logistics and recording.</li>
+          </ul>
+        </p>
+        <p>Please add your name to the panels no later than August 26th. We will close the system by then and you won’t be able to join anymore.</p> 
+        <p>Let me know if you have any questions.</p> 
+        <p>Thank you!</p> 
+        <br />
+        Enrique Rubio
+        <br />
+        Founder
+        <br />
+        Hacking HR
+        <br />`,
+  },
   REGISTER_CONFERENCE_2023: {
     subject: (firstName) =>
       `${firstName}: Thank you for registering to participate in Hacking HR’s FORWARD2023!  Please read this email with further information.`,

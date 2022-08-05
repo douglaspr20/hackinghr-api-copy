@@ -198,7 +198,7 @@ const SpeakersController = () => {
             if(type.type !== "All"){
                 panelsSpeakers = await SpeakersPanel.findAll({
                     order: [["startDate", "DESC"]],
-                    where: {type: type.type},
+                    where: {type: type.type, visible: true},
                     include: [
                         {
                             model: SpeakerMemberPanel,
@@ -222,6 +222,7 @@ const SpeakersController = () => {
             }else{
                 panelsSpeakers = await SpeakersPanel.findAll({
                     order: [["startDate", "DESC"]],
+                    where: {visible: true},
                     include: [
                         {
                             model: SpeakerMemberPanel,
@@ -260,7 +261,8 @@ const SpeakersController = () => {
            
             const userSpeakers = await SpeakersPanel.findOne({
               where: {
-                  id: id
+                  id: id,
+                  visible: true
               },
               include: [
                 {
@@ -333,8 +335,6 @@ const SpeakersController = () => {
             ],
         })
 
-        const emailsModerators = moderators.map((moderator) => {return moderator.User.email})
-
         try {
 
             if(role === "admin" && type === "addUserAdmin"){
@@ -354,7 +354,6 @@ const SpeakersController = () => {
                                         let mailOptions = {
                                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                                         to: user.userEmail,
-                                        cc: emailsModerators,
                                         subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.subject(user.userName,panel.panelName),
                                         html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN_MODERATOR.body(
                                             user.userName,
@@ -374,7 +373,6 @@ const SpeakersController = () => {
                                         let mailOptions = {
                                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                                         to: user.userEmail,
-                                        cc: emailsModerators,
                                         subject: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.subject(user.userName,panel.panelName),
                                         html: LabEmails.SPEAKERS_PANEL_JOIN_FOR_ADMIN.body(
                                             user.userName,
@@ -405,6 +403,7 @@ const SpeakersController = () => {
     
                 panelsSpeakers = await SpeakersPanel.findAll({
                     order: [["id", "DESC"]],
+                    where: {visible: true},
                     include: [
                         {
                             model: SpeakerMemberPanel,
@@ -466,7 +465,6 @@ const SpeakersController = () => {
                         let mailOptions = {
                             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                             to: usersNames.userEmail,
-                            cc: emailsModerators,
                             subject: LabEmails.SPEAKERS_PANEL_JOIN.subject(usersNames.userName,panel.panelName),
                             html: LabEmails.SPEAKERS_PANEL_JOIN.body(
                                 usersNames.userName,
@@ -486,6 +484,7 @@ const SpeakersController = () => {
     
                 panelsSpeakers = await SpeakersPanel.findAll({
                     order: [["id", "DESC"]],
+                    where: {visible: true},
                     include: [
                         {
                             model: SpeakerMemberPanel,
@@ -529,6 +528,7 @@ const SpeakersController = () => {
 
             const panelsSpeakers = await SpeakersPanel.findAll({
                 order: [["id", "DESC"]],
+                where: {visible: true},
                 include: [
                     {
                         model: SpeakerMemberPanel,
@@ -703,6 +703,7 @@ const SpeakersController = () => {
 
             const panelsSpeakers = await SpeakersPanel.findAll({
                 order: [["startDate", "ASC"]],
+                where: {visible: true},
                 include: [
                     {
                         model: SpeakerMemberPanel,
@@ -755,7 +756,7 @@ const SpeakersController = () => {
         try{
 
             const userAddedInConferece = await SpeakersPanel.findAll({
-                where:{usersAddedToThisAgenda: { [Op.ne] : []}},
+                where:{usersAddedToThisAgenda: { [Op.ne] : []}, visible: true},
             });
 
             const userConference = await User.findAll({
@@ -828,6 +829,7 @@ const SpeakersController = () => {
                     order: [["startDate", "DESC"]],
                     where: {
                         usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
+                        visible: true
                     },
                     include: [
                         {
@@ -1115,7 +1117,7 @@ const SpeakersController = () => {
                     .json({ msg: "You must to be admin" });
             }
 
-            await SpeakersPanel.destroy({where: {id: PanelId}})
+            await SpeakersPanel.update({visible: false},{where: {id: PanelId}})
 
             return res.status(HttpCodes.OK).json({});
 
@@ -1400,7 +1402,7 @@ const SpeakersController = () => {
 
         try {
 
-            const lastArrayOfThisColumn = await SpeakersPanel.findOne({where: {id: PanelId}, attributes:["usersAddedToThisAgenda"]})
+            const lastArrayOfThisColumn = await SpeakersPanel.findOne({where: {id: PanelId, visible: true}, attributes:["usersAddedToThisAgenda"]})
 
             if(startTime !== undefined && panelType !== 'Panels'){
 
@@ -1426,7 +1428,8 @@ const SpeakersController = () => {
                             
                         ],
                         usersAddedToThisAgenda: {[Op.overlap]: [`${id}`]},
-                        type: {[Op.ne] : 'Panels'}
+                        type: {[Op.ne] : 'Panels'},
+                        visible: true
                     }
                 })
 
@@ -1452,7 +1455,7 @@ const SpeakersController = () => {
 
                 const [numberOfAffectedRows, affectedRows] = await SpeakersPanel.update({ 
                     usersAddedToThisAgenda: newArray
-                },{where: {id: PanelId}})
+                },{where: {id: PanelId, visible: true}})
 
                 return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
             }
@@ -1464,7 +1467,7 @@ const SpeakersController = () => {
 
                 const [numberOfAffectedRows, affectedRows] = await SpeakersPanel.update({ 
                     usersAddedToThisAgenda: newArray
-                },{where: {id: PanelId}})
+                },{where: {id: PanelId, visible: true}})
 
                 return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
             }
@@ -1554,7 +1557,7 @@ const SpeakersController = () => {
     
         try {
           const panel = await SpeakersPanel.findOne({
-            where: { id },
+            where: { id: id, visible: true },
           });
     
           if (!panel) {
@@ -1636,8 +1639,8 @@ const SpeakersController = () => {
                             let mailOptions = {
                                 from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                                 to: data.email,
-                                subject: LabEmails.REGISTER_CONFERENCE_2023.subject(data.firstName),
-                                html: LabEmails.REGISTER_CONFERENCE_2023.body(data.firstName),
+                                subject: LabEmails.REMEMBER_TO_SPEAKERS.subject(data.firstName),
+                                html: LabEmails.REMEMBER_TO_SPEAKERS.body(data.firstName),
                             };
                 
                             return smtpService().sendMailUsingSendInBlue(mailOptions);
@@ -1657,6 +1660,51 @@ const SpeakersController = () => {
 
     }
 
+    const sendEmailsAutomaticToSpeakersCompleteProfile = async () => {
+        try{
+
+            const allUserSpeakersWithoutSession = await User.findAll(
+                {
+                    where: {
+                        speakersAuthorization: {[Op.eq]: "accepted"},
+                        percentOfCompletion: {[Op.ne]: 100}
+                    },
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                        }
+                    ]
+                }
+            )
+
+            await Promise.all(
+                allUserSpeakersWithoutSession.map(async (data) => {
+                    
+                    await Promise.resolve(
+                        (() => {
+                            let mailOptions = {
+                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                                to: data.email,
+                                subject: LabEmails.REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE.subject(data.firstName),
+                                html: LabEmails.REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE.body(data.firstName),
+                            };
+                
+                            return smtpService().sendMailUsingSendInBlue(mailOptions);
+                        })()
+                    );
+                    
+                })
+            );
+
+
+        }catch (error) {
+            console.log(error);
+            return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+        }
+    }
+
     return {
         addNewPanelSpeaker,
         addNewSpeakersAdmin,
@@ -1664,6 +1712,7 @@ const SpeakersController = () => {
         allPanelSpeakers,
         editAuthorizationSpeakers,
         sendEmailsAutomaticToSpeakers,
+        sendEmailsAutomaticToSpeakersCompleteProfile,
         addUserSpeakerToPanel,
         removeUserSpeakerToPanel,
         registerUserIfNotAreRegisterConference2023,
