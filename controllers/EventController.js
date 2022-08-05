@@ -996,8 +996,8 @@ const EventController = () => {
       );
 
       const calendarInvite = smtpService().generateCalendarInvite(
-        startTime,
-        endTime,
+        startTime.format("YYYY-MM-DD HH:mm:ss"),
+        endTime.format("YYYY-MM-DD HH:mm:ss"),
         event.title,
         "",
         "",
