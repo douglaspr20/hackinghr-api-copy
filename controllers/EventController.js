@@ -322,7 +322,7 @@ const EventController = () => {
           event.timezone,
           user.timezone
         );
-        if (startTime?.isAfter(moment())) {
+        if (moment(startTime)?.isAfter(moment())) {
           await NotificationController().createNotification({
             message: `New Event "${
               event.title || eventInfo.title
@@ -457,6 +457,13 @@ const EventController = () => {
       };
 
       if (role === USER_ROLE.EVENT_ORGANIZER) {
+        where = {
+          ...where,
+          organizerEmail: email,
+        };
+      }
+
+      if (role === USER_ROLE.CHAPTER_LEADER) {
         where = {
           ...where,
           organizerEmail: email,

@@ -28,6 +28,7 @@ const checkIsAdmin = async (req, res, next) => {
         UserRoles.PODCAST,
         UserRoles.CONFERENCE,
         UserRoles.EVENT_ORGANIZER,
+        UserRoles.CHAPTER_LEADER,
       ];
 
       if (user.role === UserRoles.CHANNEL_ADMIN) {
@@ -84,6 +85,7 @@ const checkAdminRole = async (req, res, next) => {
         UserRoles.PODCAST,
         UserRoles.CONFERENCE,
         UserRoles.EVENT_ORGANIZER,
+        UserRoles.CHAPTER_LEADER,
       ];
 
       if (user.role === UserRoles.CHANNEL_ADMIN) {
