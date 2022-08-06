@@ -240,7 +240,7 @@ const BonfireController = () => {
               bonfireCreatorInfo,
               startTime.format("MMM DD"),
               startTime.format("h:mm a"),
-              bonfire.dataValues.timezone,
+              timezoneUser.utc[0],
               googleLink,
               yahooLink
             ),
@@ -704,8 +704,8 @@ const BonfireController = () => {
       );
 
       const calendarInvite = smtpService().generateCalendarInvite(
-        startTime,
-        endTime,
+        startTime.format("YYYY-MM-DD HH:mm:ss"),
+        endTime.format("YYYY-MM-DD HH:mm:ss"),
         bonfire.title,
         bonfire.description,
         "https://www.hackinghrlab.io/bonfires",
