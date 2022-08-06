@@ -5,4 +5,5 @@ module.exports = {
   CONFERENCE: "conference",
   CHANNEL_ADMIN: "channel_admin",
   EVENT_ORGANIZER: "event_organizer",
+  CHAPTER_LEADER: "chapter_leader"
 };
