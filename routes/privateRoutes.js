@@ -112,6 +112,7 @@ const privateRoutes = {
   "PUT /podcast/:id/save-for-later": "PodcastController.saveForLater",
   "DELETE /event/channel/:id": "EventController.deleteChannelEvent",
   "PUT /event/:id": "EventController.updateEvent",
+  "GET /events/channels": "EventController.getAllEventsChannels",
   "PUT /event/user-assistence/:id": "EventController.updateEventUserAssistence",
   "PUT /event/channel/:id": "EventController.updateEvent",
   "PUT /channel/follow/:id": "ChannelController.setFollow",
