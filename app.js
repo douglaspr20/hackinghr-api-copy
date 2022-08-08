@@ -67,7 +67,7 @@ cron.schedule("0 8 * * SUN", () => {
 //*/59 * * * * *
 // cron.schedule("FRI") 0 8 * * 3
 cron.schedule("0 8 * * 5", () => {
-  console.log("running a task every friday");
+  console.log("running a task every friday speakers");
   Speakers2023Controller().sendEmailsAutomaticToSpeakers();
 });
 
