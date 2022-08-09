@@ -1004,6 +1004,18 @@ module.exports = {
     `,
   },
 
+  NOTIFICATION_NEW_CONTENT_CHANNEL: {
+    subject: `New Creator Content`,
+    body: (channelName,channelAdmin,channelAdminEmail,contentType,name,link) => `
+      <p><b>Channel name:</b> ${channelName} </p>
+      <p><b>Channel admin:</b> ${channelAdmin} </p>
+      <p><b>Channel admin email:</b> ${channelAdminEmail} </p>
+      <p><b>Content type:</b> ${contentType} </p>
+      <p><b>Name:</b> ${name} </p>
+      <p><b>Link:</b> ${link} </p>
+    `
+  },
+
   REJECT_USER_APPLY_PARTNER_BUSSINESS: {
     subject:
       "Your Application for Hacking HR’s HR Business Partners Community was not approved",

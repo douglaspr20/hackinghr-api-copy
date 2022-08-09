@@ -102,6 +102,7 @@ const privateRoutes = {
   "GET /channel/:id": "ChannelController.get",
   "GET /channel-category/:id": "ChannelCategoryController.get",
   "POST /event/channel": "EventController.create",
+  "POST /email/notfication/channel": "ChannelController.emailNotification",
   "GET /event/channel": "EventController.getChannelEvents",
   "DELETE /library/channel/:id": "LibraryController.deleteChannelLibrary",
   "PUT /library/channel/:id": "LibraryController.update",
