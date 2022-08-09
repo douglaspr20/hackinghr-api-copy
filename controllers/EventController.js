@@ -15,6 +15,7 @@ const { convertToLocalTime, convertJSONToExcel } = require("../utils/format");
 const NotificationController = require("../controllers/NotificationController");
 
 const Event = db.Event;
+const Channel = db.Channel;
 const User = db.User;
 const EventInstructor = db.EventInstructor;
 const Instructor = db.Instructor;
@@ -441,6 +442,36 @@ const EventController = () => {
         .json({ numberOfAffectedRows, affectedRows });
     } catch (error) {
       console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
+  const getAllEventsChannels = async (req, res) => {
+    try {
+
+      let channelEvents = await Event.findAll(
+        { 
+          where:{channel: {[Op.gte]: 1}}, 
+          raw: true,
+        },
+      );
+
+      let channelData = await Channel.findAll();
+
+      allEventsChannels = channelEvents.map((event) => {
+        let channelSelect = channelData.filter((data) => data.id === event.channel)
+        return {
+          ...event,
+          channelSelect: channelSelect[0],
+          startAndEndTimes: compact(channelEvents.startAndEndTimes),
+        };
+      });
+
+      return res.status(HttpCodes.OK).json({ allEventsChannels });
+    } catch (err) {
+      console.log(err);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error" });
@@ -1295,6 +1326,7 @@ const EventController = () => {
     claimAttendance,
     getChannelsEventsOfLastWeek,
     eventCertificateMetaData,
+    getAllEventsChannels
   };
 };
 

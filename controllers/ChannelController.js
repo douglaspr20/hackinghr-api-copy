@@ -5,7 +5,9 @@ const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 const { isEmpty } = require("lodash");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
+const { LabEmails } = require("../enum");
 const Sequelize = require("sequelize");
+const smtpService = require("../services/smtp.service");
 
 const Channel = db.Channel;
 const User = db.User;
@@ -349,6 +351,23 @@ const ChannelController = () => {
     }
   };
 
+  const emailNotification = async (req, res) => {
+    const {channelName,channelAdmin,channelAdminEmail,contentType,name,link} = req.body
+
+    await Promise.resolve(
+        (() => {
+            let mailOptions = {
+                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                to: "enrique@hackinghr.io",
+                subject: LabEmails.NOTIFICATION_NEW_CONTENT_CHANNEL.subject,
+                html: LabEmails.NOTIFICATION_NEW_CONTENT_CHANNEL.body(channelName,channelAdmin,channelAdminEmail,contentType,name,link),
+            };
+
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
+    ); 
+  }
+
   return {
     create,
     get,
@@ -357,6 +376,7 @@ const ChannelController = () => {
     remove,
     setFollow,
     unsetFollow,
+    emailNotification
   };
 };
 
