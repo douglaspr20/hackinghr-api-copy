@@ -5,6 +5,7 @@ const { Op, Sequelize } = require("sequelize");
 const { LabEmails } = require("../enum");
 const { convertToLocalTime } = require("../utils/format");
 const smtpService = require("../services/smtp.service");
+const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const NotificationController = require("./NotificationController");
@@ -299,12 +300,150 @@ const BonfireController = () => {
         onlyFor: usersId,
       });
 
+      setOrganizerReminders(bonfire, bonfireCreatorInfo);
+
       return res.status(HttpCodes.OK).json({ bonfire });
     } catch (error) {
       console.log(error);
       return res
         .status(HttpCodes.INTERNAL_SERVER_ERROR)
         .json({ msg: "Internal server error", error });
+    }
+  };
+
+  const sendParticipantsListToCreator = async (
+    bonfire,
+    bonfireCreatorInfo,
+    type
+  ) => {
+    console.log("***************************");
+    console.log("************** send email to creator *************");
+    console.log("***** bonfire = ", bonfire);
+    let targetBonfire = await Bonfire.findOne({ where: { id: bonfire.id } });
+    targetBonfire = targetBonfire.toJSON();
+    console.log("***** targetBonfire = ", targetBonfire);
+    const bonfireUsers = await Promise.all(
+      (targetBonfire.joinedUsers || []).map((user) => {
+        return User.findOne({
+          where: {
+            id: user,
+          },
+        });
+      })
+    );
+    console.log("***** eventUsers = ", bonfireUsers);
+    const buffer = await convertJSONToExcel(
+      bonfire.title,
+      [
+        {
+          label: "First Name",
+          value: "firstName",
+          width: 20,
+        },
+        {
+          label: "Last Name",
+          value: "lastName",
+          width: 20,
+        },
+        {
+          label: "Email",
+          value: "email",
+          width: 20,
+        },
+      ],
+      bonfireUsers.map((user) => user.toJSON())
+    );
+
+    let mailOptions = {
+      from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+      to: bonfireCreatorInfo.email,
+      subject: LabEmails.BONFIRE_REMINDER_1_DAY_BEFORE.subject(
+        bonfireCreatorInfo.firstName,
+        moment(bonfire.startTime).format("YYYY-MM-DD HH:mm:ss"),
+        bonfire.timezone
+      ),
+      body: LabEmails.BONFIRE_REMINDER_1_DAY_BEFORE.body(),
+      attachments: [
+        {
+          filename: `${bonfire.title}.xls`,
+          content: buffer,
+        },
+      ],
+    };
+
+    if (type === "hour") {
+      mailOptions = {
+        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+        to: bonfireCreatorInfo.email,
+        subject: LabEmails.BONFIRE_REMINDER_1_HOUR_BEFORE.subject(
+          bonfireCreatorInfo.firstName
+        ),
+        body: LabEmails.BONFIRE_REMINDER_1_HOUR_BEFORE.body(
+          bonfireCreatorInfo.firstName
+        ),
+        attachments: [
+          {
+            filename: `${bonfire.title}.xls`,
+            content: buffer,
+          },
+        ],
+      };
+    }
+
+    console.log("******* start sending email ******");
+    console.log("***** mailOptions = ", mailOptions);
+    await smtpService().sendMailUsingSendInBlue(mailOptions);
+
+    if (type === "hour") {
+      await Promise.all(
+        bonfireUsers.map((user) => {
+          const _user = user.toJSON();
+          let mailOptions = {
+            from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+            to: _user.email,
+            subject: LabEmails.BONFIRE_USERS_JOINED_1_HOUR_REMINDER.subject(
+              _user.firstName,
+              bonfire.title
+            ),
+            html: LabEmails.BONFIRE_USERS_JOINED_1_HOUR_REMINDER.body(
+              _user,
+              targetEvent,
+              targetEventDate.format("MMM DD"),
+              targetEventDate.format("h:mm a")
+            ),
+          };
+
+          console.log("***** mailOptions ", mailOptions);
+
+          return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })
+      );
+    }
+    console.log("******* end sending email ******");
+  };
+
+  const setOrganizerReminders = (bonfire, bonfireCreatorInfo) => {
+    const dates1DayBefore = moment(bonfire.startDate).subtract(1, "days");
+    const dates1HourBefore = moment(bonfire.startDate).subtract(1, "hours");
+    console.log("/////////////////////////////////////////////////////");
+    console.log("//////// setOrganizerReminders ///////");
+
+    const interval = `10 ${dates1DayBefore.minutes()} ${dates1DayBefore.hours()} ${dates1DayBefore.date()} ${dates1DayBefore.month()} *`;
+    const interval2 = `10 ${dates1HourBefore.minutes()} ${dates1HourBefore.hours()} ${dates1HourBefore.date()} ${dates1HourBefore.month()} *`;
+    if (dates1DayBefore.isAfter(moment())) {
+      cronService().addTask(
+        `${bonfire.id}-users-join-reminder-1-day-before`,
+        interval,
+        true,
+        () => sendParticipantsListToCreator(bonfire, bonfireCreatorInfo, "day")
+      );
+
+      cronService().addTask(
+        `${bonfire.id}-users-join-reminder-1-hour-before`,
+        interval2,
+        true,
+        () => sendParticipantsListToCreator(bonfire, bonfireCreatorInfo, "hour")
+      );
     }
   };
 
@@ -399,7 +538,7 @@ const BonfireController = () => {
         }
 
         const usersId = prevBonfire.dataValues.invitedUsers.concat(
-          prevBonfire.dataValues.uninvitedJoinedUsers
+          prevBonfire.dataValues.joinedUsers
         );
 
         const usersJoinedToBonfire = await Promise.all(
@@ -489,7 +628,7 @@ const BonfireController = () => {
         }
 
         const usersId = bonfireToDelete.invitedUsers.concat(
-          bonfireToDelete.uninvitedJoinedUsers
+          bonfireToDelete.joinedUsers
         );
 
         const usersJoinedToBonfire = await Promise.all(
@@ -500,6 +639,8 @@ const BonfireController = () => {
             return dataValues;
           })
         );
+
+        removeOrganizerReminders(bonfireToDelete);
 
         await Bonfire.destroy({
           where: {
@@ -568,6 +709,12 @@ const BonfireController = () => {
           .json({ msg: "Internal server error" });
       }
     }
+  };
+
+  const removeOrganizerReminders = (bonfire) => {
+    Array.from(Array(5).keys()).forEach((index) => {
+      cronService().stopTask(`${bonfire.id}-users-join-reminder-${index}`);
+    });
   };
 
   const inviteUser = async (req, res) => {

@@ -1070,9 +1070,9 @@ const UserController = () => {
 
       await Bonfire.update(
         {
-          uninvitedJoinedUsers: Sequelize.fn(
+          joinedUsers: Sequelize.fn(
             "array_append",
-            Sequelize.col("uninvitedJoinedUsers"),
+            Sequelize.col("joinedUsers"),
             affectedRows.dataValues.id
           ),
         },
@@ -1196,9 +1196,9 @@ const UserController = () => {
 
       await Bonfire.update(
         {
-          uninvitedJoinedUsers: Sequelize.fn(
+          joinedUsers: Sequelize.fn(
             "array_remove",
-            Sequelize.col("uninvitedJoinedUsers"),
+            Sequelize.col("joinedUsers"),
             affectedRows.dataValues.id
           ),
         },
