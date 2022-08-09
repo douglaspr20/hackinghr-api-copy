@@ -660,7 +660,18 @@ const SpeakersController = () => {
                         "percentOfCompletion"
                     ],
                     order: [["firstName", "ASC"]],
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                        }
+                    ]
                 });
+
+                if(type === "conference"){
+                    userSpeakers = userSpeakers.filter(data => {
+                        return data.SpeakerMemberPanels.length > 0
+                    })
+                }
             }
     
             return res.status(HttpCodes.OK).json({ userSpeakers });
