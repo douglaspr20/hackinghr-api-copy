@@ -70,7 +70,7 @@ const SpeakersController = () => {
             },{order: [["id", "DESC"]]})
 
             if(type === "Panels"){
-                const allSpeakersAccepted = await User.findAll({where: {speakersAuthorization: {[Op.eq]: "accepted"}}});
+                const allSpeakersAccepted = await User.findAll({where: {speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""}}});
 
                 await Promise.all(
                     allSpeakersAccepted.map(async (data) => {
@@ -611,7 +611,7 @@ const SpeakersController = () => {
                 userSpeakers = await User.findAll({
                     where: {
                         [Op.or]: [
-                            {speakersAuthorization: {[Op.eq]: "accepted"}},
+                            {speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""}},
                             {speakersAuthorization: {[Op.eq]: "pending"}},
                             {speakersAuthorization: {[Op.eq]: "reject"}}
                         ]
@@ -638,7 +638,7 @@ const SpeakersController = () => {
             }else{
                 userSpeakers = await User.findAll({
                     where: {
-                        speakersAuthorization: {[Op.eq]: "accepted"},
+                        speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""},
                         percentOfCompletion: 100
                     },
                     attributes: [
@@ -660,7 +660,18 @@ const SpeakersController = () => {
                         "percentOfCompletion"
                     ],
                     order: [["firstName", "ASC"]],
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                        }
+                    ]
                 });
+
+                if(type === "conference"){
+                    userSpeakers = userSpeakers.filter(data => {
+                        return data.SpeakerMemberPanels.length > 0
+                    })
+                }
             }
     
             return res.status(HttpCodes.OK).json({ userSpeakers });
@@ -1618,7 +1629,7 @@ const SpeakersController = () => {
 
             const allUserSpeakersWithoutSession = await User.findAll(
                 {
-                    where: {speakersAuthorization: {[Op.eq]: "accepted"}},
+                    where: {speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""}},
                     include: [
                         {
                             model: SpeakerMemberPanel,
@@ -1632,6 +1643,7 @@ const SpeakersController = () => {
             })
 
             await Promise.all(
+
                 newArray.map(async (data) => {
 
                     await Promise.resolve(
@@ -1666,7 +1678,7 @@ const SpeakersController = () => {
             const allUserSpeakersWithoutSession = await User.findAll(
                 {
                     where: {
-                        speakersAuthorization: {[Op.eq]: "accepted"},
+                        speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""},
                         percentOfCompletion: {[Op.ne]: 100}
                     },
                     include: [
@@ -1679,7 +1691,6 @@ const SpeakersController = () => {
 
             await Promise.all(
                 allUserSpeakersWithoutSession.map(async (data) => {
-                    
                     await Promise.resolve(
                         (() => {
                             let mailOptions = {
