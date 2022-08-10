@@ -228,8 +228,8 @@ const BonfireController = () => {
               _user.firstName,
               bonfire,
               bonfireCreatorInfo,
-              bonfire.startTime.format("MMM DD"),
-              bonfire.start.format("h:mm a"),
+              bonfire.dataValues.startTime.format("MMM DD"),
+              bonfire.dataValues.startTime.format("h:mm a"),
               bonfire.link,
               bonfire.timezone
             ),
