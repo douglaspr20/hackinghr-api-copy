@@ -292,6 +292,7 @@ module.exports = {
       bonfireCreator,
       startDate,
       startTime,
+      link,
       timezone
     ) => `
       <p>Hi ${firstName}</p>
@@ -308,10 +309,10 @@ module.exports = {
       }” and the main topics of the discussion are ${bonfire.categories.join(
       ", "
     )} and you were invited because you have interests that align with the topic of this conversation! </p>
-    <p>We hope you can join. If you are joining, please click here to CONFIRM ATTENDANCE and download the calendar reminders!</p>
-    <p>This is the link to connect: <a href="${
+    <p>We hope you can join. If you are joining, please click here to <a href="${
       process.env.DOMAIN_URL
-    }bonfires?key=my-bonfires" target="_blank">LINK</a></p>
+    }bonfires?key=my-bonfires" tagert="_blanck">CONFIRM ATTENDANCE</a> and download the calendar reminders!</p>
+    <p>This is the link to connect: <a href="${link}bonfires?key=my-bonfires" target="_blank">LINK</a></p>
     <p>Attached a calendar invite including all details, just in case!</p>
     <p>Happy networking!</p>
     <p>Hacking HR LAB</p>
@@ -337,10 +338,13 @@ module.exports = {
     We created the Bonfire tool as a cool and valuable way for networking, collaboration and learning among HR professionals. We are thankful with you for creating this space for meaningful conversations and networking.
     </p>
     <p>
-    Based on areas of interest, we have selected 20 conference participants to join your bonfire and sent them the invitations via email. We can’t guarantee they will join, but surely we hope they do! But please feel free to also promote in your network as well.
+    Based on areas of interest, we have selected 30 Hacking HR LAB members to join your bonfire and sent them the invitations via email. We can’t guarantee they will join, but surely we hope they do! But please feel free to also promote in your network as well.
     </p>
     <p>
-    Also, we added the bonfire in the “Bonfire” list in the Hacking HR LAB so that anyone can find it and join!
+    Hacking HR LAB members invited to the Bonfire have to confirm their attendance. You will receive an email the day before and one hour before the scheduled Bonfire with the confirmed attendees’ contact information. PLEASE: DO NOT, under ANY circumstance, add their emails to any emailing list without their explicit consent. Doing so will ban you from creating future Bonfires. THANK YOU!
+    </p>
+    <p>
+    Also, we added the bonfire in the “Bonfire” list in the Hacking HR LAB so that anyone can find it and join! 
     </p>
     <p>
     One last thing: as the creator of the Bonfire you have a wonderful opportunity to shape the conversation to be meaningful and valuable for those who join you. We count on you to facilitate a wonderful space that is safe, respectful and tolerant. Partisan political conversations or sales pitches are not allowed and should you engage in such conversations you will be banned from creating future bonfires.
@@ -365,6 +369,7 @@ module.exports = {
       bonfireCreator,
       startDate,
       startTime,
+      link,
       timezone
     ) => `
     <p>
@@ -391,9 +396,7 @@ module.exports = {
     }" and the main topics of the discussion are ${bonfire.categories.join(
       ", "
     )}.</p>
-    <p>This is the link to connect: <a href="${
-      process.env.DOMAIN_URL
-    }bonfires?key=my-bonfires" target="_blank">Link</a>
+    <p>This is the link to connect: <a href="${link}" target="_blank">Link</a>
     </p>
     <p>Attached a calendar invite including all details, just in case!</p>
     <p>Happy networking!</p>
@@ -1012,14 +1015,21 @@ module.exports = {
 
   NOTIFICATION_NEW_CONTENT_CHANNEL: {
     subject: `New Creator Content`,
-    body: (channelName,channelAdmin,channelAdminEmail,contentType,name,link) => `
+    body: (
+      channelName,
+      channelAdmin,
+      channelAdminEmail,
+      contentType,
+      name,
+      link
+    ) => `
       <p><b>Channel name:</b> ${channelName} </p>
       <p><b>Channel admin:</b> ${channelAdmin} </p>
       <p><b>Channel admin email:</b> ${channelAdminEmail} </p>
       <p><b>Content type:</b> ${contentType} </p>
       <p><b>Name:</b> ${name} </p>
       <p><b>Link:</b> ${link} </p>
-    `
+    `,
   },
 
   REJECT_USER_APPLY_PARTNER_BUSSINESS: {

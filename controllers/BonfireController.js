@@ -85,7 +85,7 @@ const BonfireController = () => {
       });
 
       const userAlwaysInvited = await User.findOne({
-        where: { email: "enrique@hackinghr.io" },
+        where: { email: "douglas.eduardo2000@gmail.com" },
       });
 
       if (userAlwaysInvited?.dataValues?.id) {
@@ -241,41 +241,11 @@ const BonfireController = () => {
               bonfireCreatorInfo,
               startTime.format("MMM DD"),
               startTime.format("h:mm a"),
-              timezoneUser.utc[0],
-              googleLink,
-              yahooLink
+              bonfire.link,
+              bonfire.timezone
             ),
             contentType: "text/calendar",
           };
-
-          const calendarInvite = smtpService()
-            .generateCalendarInvite(
-              startTime,
-              endTime,
-              bonfire.dataValues.title,
-              bonfire.dataValues.description,
-              "",
-              bonfire.dataValues.link,
-              bonfireCreatorInfo.firstName,
-              process.env.SEND_IN_BLUE_SMTP_SENDER,
-              userTimezone
-            )
-            .toString();
-
-          let icsContent = calendarInvite.replace(
-            "BEGIN:VEVENT",
-            `METHOD:REQUEST\r\nBEGIN:VEVENT`
-          );
-
-          mailOptions["attachments"] = [
-            {
-              filename: "invite.ics",
-              content: icsContent,
-              contentType: "application/ics; charset=UTF-8; method=REQUEST",
-              contentDisposition: "inline",
-            },
-          ];
-
           console.log("***** mailOptions ", mailOptions);
 
           return smtpService().sendMailUsingSendInBlue(mailOptions);

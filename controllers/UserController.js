@@ -1148,9 +1148,8 @@ const UserController = () => {
               bonfireCreator,
               targetBonfireDate.format("MMM DD"),
               targetBonfireDate.format("h:mm a"),
-              userTimezone,
-              googleLink,
-              yahooLink
+              bonfireToJoin.link,
+              userTimezone
             ),
             contentType: "text/calendar",
           };
