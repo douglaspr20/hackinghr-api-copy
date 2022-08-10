@@ -220,17 +220,6 @@ const BonfireController = () => {
               timezone.text === _user.timezone
           );
 
-          const googleLink = googleCalendar(
-            bonfire.dataValues,
-            bonfire.timezone,
-            timezoneUser.utc[0]
-          );
-          const yahooLink = yahooCalendar(
-            bonfire.dataValues,
-            bonfire.timezone,
-            timezoneUser.utc[0]
-          );
-
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: _user.email,
@@ -239,8 +228,8 @@ const BonfireController = () => {
               _user.firstName,
               bonfire,
               bonfireCreatorInfo,
-              startTime.format("MMM DD"),
-              startTime.format("h:mm a"),
+              bonfire.startTime.format("MMM DD"),
+              bonfire.start.format("h:mm a"),
               bonfire.link,
               bonfire.timezone
             ),
@@ -821,13 +810,13 @@ const BonfireController = () => {
       );
 
       const calendarInvite = smtpService().generateCalendarInvite(
-        startTime.format("YYYY-MM-DD HH:mm:ss"),
-        endTime.format("YYYY-MM-DD HH:mm:ss"),
+        startTime,
+        endTime,
         bonfire.title,
         bonfire.description,
         "https://www.hackinghrlab.io/bonfires",
         // event.location,
-        `${process.env.DOMAIN_URL}${bonfire.id}`,
+        `${process.env.DOMAIN_URL}/bonfires`,
         "hacking Lab HR",
         process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
         userTimezone

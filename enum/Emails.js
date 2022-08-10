@@ -285,7 +285,7 @@ module.exports = {
   },
   BONFIRE_INVITATION: {
     subject: (firstName) =>
-      `${firstName} You have been invited to a Bonfire, a Hacking HR networking experience created by members of the community!`,
+      `${firstName}: You have been invited to a Bonfire, a Hacking HR networking experience created by members of the community!`,
     body: (
       firstName,
       bonfire,
@@ -295,7 +295,7 @@ module.exports = {
       link,
       timezone
     ) => `
-      <p>Hi ${firstName}</p>
+      <p>Hi ${firstName},</p>
       <p>Bonfires are networking opportunities created by and for members of the Hacking HR community.</p>
       <p>We created this tool to promote collaboration, learning and networking! All our Hacking HR LAB Premium members can create Bonfires, and all members (premium and free) can participate.</p>
       <p>Bonfires are excellent spaces for interesting discussions to help advance the HR profession and help you solve the most complex business challenges you may be dealing with!</p>
