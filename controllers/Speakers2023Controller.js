@@ -72,8 +72,12 @@ const SpeakersController = () => {
             if(type === "Panels"){
                 const allSpeakersAccepted = await User.findAll({where: {speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""}}});
 
+                let newArray = allSpeakersAccepted.filter(data => {
+                    return data.speakersAuthorization === "accepted"
+                })
+
                 await Promise.all(
-                    allSpeakersAccepted.map(async (data) => {
+                    newArray.map(async (data) => {
     
                         await Promise.resolve(
                             (() => {
@@ -520,11 +524,27 @@ const SpeakersController = () => {
     const removeUserSpeakerToPanel = async (req, res) => {
         const { UserId } = req.body;
 
+        const { firstName, lastName } = req.user.dataValues;
+
         try {
 
             await SpeakerMemberPanel.destroy({
-                where:{ id: UserId}
+                where:{ id: UserId?.id},
+                raw: true,
             })
+
+            await Promise.resolve(
+                (() => {
+                    let mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: "enrique@hackinghr.io",
+                        subject: LabEmails.USER_IS_WITHDRAW.subject,
+                        html: LabEmails.USER_IS_WITHDRAW.body(firstName, lastName, UserId?.panelName),
+                    };
+        
+                    return smtpService().sendMailUsingSendInBlue(mailOptions);
+                })()
+            );
 
             const panelsSpeakers = await SpeakersPanel.findAll({
                 order: [["id", "DESC"]],
@@ -1639,7 +1659,7 @@ const SpeakersController = () => {
             )
 
             let newArray = allUserSpeakersWithoutSession.filter(data => {
-                return data.SpeakerMemberPanels.length === 0
+                return data.SpeakerMemberPanels.length === 0 && data.speakersAuthorization === "accepted"
             })
 
             await Promise.all(
@@ -1689,8 +1709,13 @@ const SpeakersController = () => {
                 }
             )
 
+            let newArray = allUserSpeakersWithoutSession.filter(data => {
+                return data.speakersAuthorization === "accepted" && data.percentOfCompletion !== 100
+            })
+
             await Promise.all(
-                allUserSpeakersWithoutSession.map(async (data) => {
+                newArray.map(async (data) => {
+
                     await Promise.resolve(
                         (() => {
                             let mailOptions = {

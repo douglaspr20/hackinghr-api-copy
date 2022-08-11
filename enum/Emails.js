@@ -1004,6 +1004,14 @@ module.exports = {
     `,
   },
 
+  USER_IS_WITHDRAW: {
+    subject: `One speakers is withdrow of one panel`,
+    body: (firstName, lastName, panelName) => `
+      <p>${firstName} ${lastName}</p>
+      <p>${panelName}</p>
+    `,
+  },
+
   REJECT_USER_APPLY_PARTNER_BUSSINESS: {
     subject:
       "Your Application for Hacking HR’s HR Business Partners Community was not approved",
