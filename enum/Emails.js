@@ -1005,7 +1005,7 @@ module.exports = {
   },
 
   USER_IS_WITHDRAW: {
-    subject: `One speakers is withdrow of one panel`,
+    subject: `One speakers is withdraw of one panel`,
     body: (firstName, lastName, panelName) => `
       <p>${firstName} ${lastName}</p>
       <p>${panelName}</p>
