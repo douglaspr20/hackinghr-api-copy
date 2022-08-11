@@ -53,7 +53,6 @@ const BonfireController = () => {
         where: {
           [Op.and]: [
             { percentOfCompletion: 100 },
-            { attendedToConference: 1 },
             {
               id: {
                 [Op.ne]: bonfireInfo.bonfireCreator,
@@ -67,7 +66,7 @@ const BonfireController = () => {
           ],
         },
         order: [[Sequelize.fn("RANDOM")]],
-        limit: 20,
+        limit: 30,
       });
 
       let usersValidated = [];
