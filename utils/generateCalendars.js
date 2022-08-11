@@ -10,7 +10,7 @@ const googleCalendar = (item, tz, userTimezone) => {
   ).format("YYYYMMDDTHHmmss");
 
   const convertedEndTime = convertToLocalTime(
-    item.startTime,
+    item.endTime,
     tz,
     userTimezone
   ).format("YYYYMMDDTHHmmss");
@@ -32,7 +32,7 @@ const yahooCalendar = (item, tz, userTimezone) => {
   ).format("YYYYMMDDTHHmmss");
 
   const convertedEndTime = convertToLocalTime(
-    item.startTime,
+    item.endTime,
     tz,
     userTimezone
   ).format("YYYYMMDDTHHmmss");

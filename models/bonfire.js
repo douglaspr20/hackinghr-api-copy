@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },
-      uninvitedJoinedUsers: {
+      joinedUsers: {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         defaultValue: [],
       },

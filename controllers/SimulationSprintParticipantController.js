@@ -1,5 +1,6 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
+const moment = require("moment-timezone");
 const smtpService = require("../services/smtp.service");
 const { LabEmails } = require("../enum");
 
@@ -36,9 +37,9 @@ const SimulationSprintParticipantController = () => {
           .json({ msg: "user not found" });
       }
 
-      if (userFound.simulationSprintsAvailable < 1) {
+      if (userFound.memberShip !== "premium") {
         return res.status(HttpCodes.BAD_REQUEST).json({
-          msg: "You have no more simulations available, please purchase more.",
+          msg: "You have to be a premium user to join the simulations ",
         });
       }
 
@@ -71,9 +72,9 @@ const SimulationSprintParticipantController = () => {
             ),
             html: LabEmails.JOIN_SIMULATION_SPRINT.body(
               user.firstName,
-              simulationSprint.tile,
-              moment(simulationSprint.startDate).format(),
-              moment(simulationSprint.endDate).format()
+              simulationSprint.title,
+              moment(simulationSprint.startDate).format("LL"),
+              moment(simulationSprint.endDate).format("LL")
             ),
           };
 

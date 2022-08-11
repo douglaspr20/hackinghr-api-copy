@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   SimulationSprintGroup.init(
     {
-      groupNumber: DataTypes.NUMBER,
+      groupName: DataTypes.STRING,
     },
     {
       sequelize,

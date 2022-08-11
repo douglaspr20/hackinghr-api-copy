@@ -1,5 +1,7 @@
 const db = require("../models");
+const moment = require("moment-timezone");
 const HttpCodes = require("http-codes");
+const smtpService = require("../services/smtp.service");
 
 const SimulationSprintActivity = db.SimulationSprintActivity;
 
@@ -150,12 +152,71 @@ const SimulationSprintActivityController = () => {
       .json({ msg: "Bad Request: Simulation Sprint Resource id is wrong." });
   };
 
+  const downloadICS = async (req, res) => {
+    const { id } = req.params;
+    const { userTimezone } = req.query;
+
+    try {
+      const simulationSprintActivity = await SimulationSprintActivity.findOne({
+        where: {
+          id,
+        },
+      });
+
+      if (!simulationSprintActivity) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+
+      let time = moment(simulationSprintActivity.deliveryDate).format(
+        "YYYY-MM-DD"
+      );
+
+      const calendarInvite = smtpService().generateCalendarInvite(
+        time,
+        time,
+        simulationSprintActivity.title,
+        "",
+        "https://www.hackinghrlab.io/",
+        // event.location,
+        `${process.env.DOMAIN_URL}`,
+        "hacking Lab HR",
+        process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
+        userTimezone
+      );
+
+      let icsContent = calendarInvite.toString();
+      icsContent = icsContent.replace(
+        "BEGIN:VEVENT",
+        `METHOD:REQUEST\r\nBEGIN:VEVENT`
+      );
+
+      res.setHeader("Content-Type", "application/ics; charset=UTF-8;");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=${encodeURIComponent(
+          simulationSprintActivity.title
+        )}.ics`
+      );
+      res.setHeader("Content-Length", icsContent.length);
+      return res.end(icsContent);
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   return {
     create,
     getAll,
     get,
     remove,
     update,
+    downloadICS,
   };
 };
 
