@@ -84,7 +84,7 @@ const BonfireController = () => {
       });
 
       const userAlwaysInvited = await User.findOne({
-        where: { email: "douglas.eduardo2000@gmail.com" },
+        where: { email: "enrique@hackinghr.io" },
       });
 
       if (userAlwaysInvited?.dataValues?.id) {
