@@ -522,14 +522,14 @@ const SpeakersController = () => {
     };
 
     const removeUserSpeakerToPanel = async (req, res) => {
-        const { UserId } = req.body;
+        const { data } = req.body;
 
         const { firstName, lastName } = req.user.dataValues;
 
         try {
 
             await SpeakerMemberPanel.destroy({
-                where:{ id: UserId?.id},
+                where:{ id: data?.id},
                 raw: true,
             })
 
@@ -539,7 +539,7 @@ const SpeakersController = () => {
                         from: process.env.SEND_IN_BLUE_SMTP_SENDER,
                         to: "enrique@hackinghr.io",
                         subject: LabEmails.USER_IS_WITHDRAW.subject,
-                        html: LabEmails.USER_IS_WITHDRAW.body(firstName, lastName, UserId?.panelName),
+                        html: LabEmails.USER_IS_WITHDRAW.body(firstName, lastName, data?.panelName),
                     };
         
                     return smtpService().sendMailUsingSendInBlue(mailOptions);
