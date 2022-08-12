@@ -131,9 +131,7 @@ async function convertJSONToExcelBonfiresUsersParticipants(
 
   const worksheet = workbook.getWorksheet(sheet);
 
-  if (worksheet) {
-    workbook.removeWorksheet(worksheet?.id);
-  }
+  workbook.removeWorksheet(worksheet?.id);
 
   return;
 }
