@@ -130,7 +130,10 @@ async function convertJSONToExcelBonfiresUsersParticipants(
   await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
 
   const worksheet = workbook.getWorksheet(sheet);
-  workbook.removeWorksheet(worksheet.id);
+
+  if (worksheet) {
+    workbook.removeWorksheet(worksheet?.id);
+  }
 
   return;
 }
