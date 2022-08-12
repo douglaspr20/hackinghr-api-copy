@@ -338,10 +338,7 @@ module.exports = {
     We created the Bonfire tool as a cool and valuable way for networking, collaboration and learning among HR professionals. We are thankful with you for creating this space for meaningful conversations and networking.
     </p>
     <p>
-    Based on areas of interest, we have selected 30 Hacking HR LAB members to join your bonfire and sent them the invitations via email. We can’t guarantee they will join, but surely we hope they do! But please feel free to also promote in your network as well.
-    </p>
-    <p>
-    Hacking HR LAB members invited to the Bonfire have to confirm their attendance. You will receive an email the day before and one hour before the scheduled Bonfire with the confirmed attendees’ contact information. PLEASE: DO NOT, under ANY circumstance, add their emails to any emailing list without their explicit consent. Doing so will ban you from creating future Bonfires. THANK YOU!
+    Hacking HR LAB members invited to the Bonfire have to confirm their attendance. In the Bonfires that you create you can download a list of those who have confirmed their attendance. Go back to the Hacking HR LAB, click on Bonfires, search for the Bonfire you created and click on Download Confirmed Participants. PLEASE: DO NOT, under ANY circumstance, add their emails to any emailing list without their explicit consent. Doing so will ban you from creating future Bonfires. THANK YOU!
     </p>
     <p>
     Also, we added the bonfire in the “Bonfire” list in the Hacking HR LAB so that anyone can find it and join! 
@@ -463,11 +460,14 @@ module.exports = {
       `${firstName}: please open this email to check the list of confirmed attendees for your Bonfire that starts tomorrow at ${startTime} (${timezone})!`,
     body: (firstName) => `
   <p>
-  Hi ${firstName}
+  Hi ${firstName},
   </p>
   <p>
-  Please see below the confirmed attendees to your Bonfire!
+  You can download a list of those who have confirmed their attendance to your Bonfire. 
   </P>
+  <p>
+  Go back to the Hacking HR LAB, click on Bonfires, search for the Bonfire you created and click on Download Confirmed Participants. 
+  </p>
   <p>Thank you and happy networking!</p>
   <p>Hacking HR LAB</p>
   <p>
@@ -477,14 +477,17 @@ module.exports = {
   },
   BONFIRE_REMINDER_1_HOUR_BEFORE: {
     subject: (firstName) =>
-      `${firstName}:please open this email to check the list of confirmed attendees for your Bonfire that starts in one hour!`,
+      `${firstName}: please open this email to check the list of confirmed attendees for your Bonfire that starts in one hour!`,
     body: (firstName) => `
     <p>
-    Hi ${firstName}
+    Hi ${firstName},
     </p>
     <p>
-    Please see below the confirmed attendees to your Bonfire that starts in one hour!
+    You can download a list of those who have confirmed their attendance to your Bonfire that starts in one hour. 
     </P>
+    <p>
+    Go back to the Hacking HR LAB, click on Bonfires, search for the Bonfire you created and click on Download Confirmed Participants. 
+    </p>
     <p>Thank you and happy networking!</p>
     <p>Hacking HR LAB</p>
     <p>
@@ -1018,9 +1021,9 @@ module.exports = {
     body: (firstName, lastName, panelName) => `
       <p>${firstName} ${lastName}</p>
       <p>${panelName}</p>
-      `
+      `,
   },
-      
+
   NOTIFICATION_NEW_CONTENT_CHANNEL: {
     subject: `New Creator Content`,
     body: (

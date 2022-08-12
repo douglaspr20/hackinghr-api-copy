@@ -1,14 +1,21 @@
 const db = require("../models");
 const HttpCodes = require("http-codes");
 const moment = require("moment-timezone");
+const fs = require("fs");
+const path = require("path");
 const { Op, Sequelize } = require("sequelize");
 const { LabEmails } = require("../enum");
-const { convertToLocalTime } = require("../utils/format");
+const {
+  convertToLocalTime,
+  convertJSONToExcel,
+  convertJSONToExcelBonfiresUsersParticipants,
+} = require("../utils/format");
 const smtpService = require("../services/smtp.service");
 const cronService = require("../services/cron.service");
 const TimeZoneList = require("../enum/TimeZoneList");
 const { googleCalendar, yahooCalendar } = require("../utils/generateCalendars");
 const NotificationController = require("./NotificationController");
+const { COUNTRIES } = require("../enum/ProfileSettings");
 
 const Bonfire = db.Bonfire;
 const User = db.User;
@@ -763,6 +770,76 @@ const BonfireController = () => {
     }
   };
 
+  const exportUsersToCSV = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      let targetBonfire = await Bonfire.findOne({ where: { id } });
+      targetBonfire = targetBonfire.toJSON();
+
+      let bonfireUsers = await User.findAll({
+        where: {
+          bonfires: {
+            [Op.overlap]: [id],
+          },
+        },
+      });
+
+      bonfireUsers = bonfireUsers.map((user) => user.toJSON());
+
+      bonfireUsers = bonfireUsers.map((user) => {
+        const country = COUNTRIES.find((c) => c.value === user.location);
+
+        return {
+          ...user,
+          location: country.text || user.location,
+        };
+      });
+      await convertJSONToExcelBonfiresUsersParticipants(
+        targetBonfire.title,
+        [
+          {
+            label: "First Name",
+            value: "firstName",
+            width: 20,
+          },
+          {
+            label: "Last Name",
+            value: "lastName",
+            width: 20,
+          },
+          {
+            label: "Country",
+            value: "location",
+            width: 20,
+          },
+          {
+            label: "Email",
+            value: "email",
+            width: 20,
+          },
+        ],
+        bonfireUsers
+      );
+
+      await res
+        .status(HttpCodes.OK)
+        .download(
+          `${path.join(__dirname, "../utils")}/${targetBonfire.title}.xlsx`,
+          function () {
+            fs.unlinkSync(
+              `${path.join(__dirname, "../utils")}/${targetBonfire.title}.xlsx`
+            );
+          }
+        );
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const downloadICS = async (req, res) => {
     const { id } = req.params;
     const { userTimezone } = req.query;
@@ -830,6 +907,7 @@ const BonfireController = () => {
     update,
     remove,
     inviteUser,
+    exportUsersToCSV,
     downloadICS,
   };
 };
