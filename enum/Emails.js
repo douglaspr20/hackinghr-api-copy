@@ -1013,6 +1013,14 @@ module.exports = {
     `,
   },
 
+  USER_IS_WITHDRAW: {
+    subject: `One speakers is withdraw of one panel`,
+    body: (firstName, lastName, panelName) => `
+      <p>${firstName} ${lastName}</p>
+      <p>${panelName}</p>
+      `
+  },
+      
   NOTIFICATION_NEW_CONTENT_CHANNEL: {
     subject: `New Creator Content`,
     body: (
