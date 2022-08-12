@@ -1018,6 +1018,7 @@ module.exports = {
     body: (firstName, lastName, panelName) => `
       <p>${firstName} ${lastName}</p>
       <p>${panelName}</p>
+      `
   },
       
   NOTIFICATION_NEW_CONTENT_CHANNEL: {
