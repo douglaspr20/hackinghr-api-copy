@@ -105,25 +105,6 @@ const BonfireController = () => {
         },
       });
 
-      await Promise.all(
-        invitedUsers.map((idUser) => {
-          return User.update(
-            {
-              bonfires: Sequelize.fn(
-                "array_append",
-                Sequelize.col("bonfires"),
-                bonfire.id
-              ),
-            },
-            {
-              where: { id: idUser },
-              returning: true,
-              plain: true,
-            }
-          );
-        })
-      );
-
       await User.update(
         {
           bonfires: Sequelize.fn(
