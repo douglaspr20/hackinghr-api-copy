@@ -530,7 +530,7 @@ const BonfireController = () => {
                 affectedRows.dataValues,
                 targetBonfireDate.format("MMM DD"),
                 targetBonfireDate.format("h:mm a"),
-                userTimezone.utc[0]
+                affectedRows.dataValues.timezone
               ),
             };
 
@@ -573,9 +573,7 @@ const BonfireController = () => {
             .json({ msg: "Bad Request: Bonfire not found." });
         }
 
-        const usersId = bonfireToDelete.invitedUsers.concat(
-          bonfireToDelete.joinedUsers
-        );
+        const usersId = bonfireToDelete.joinedUsers;
 
         const usersJoinedToBonfire = await Promise.all(
           usersId.map(async (userId) => {
