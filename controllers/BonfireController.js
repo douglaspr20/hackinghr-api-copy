@@ -505,16 +505,6 @@ const BonfireController = () => {
 
         await Promise.all(
           usersJoinedToBonfire.map((user) => {
-            const userTimezone = TimeZoneList.find(
-              (timezone) => timezone.value === user.timezone
-            );
-
-            const targetBonfireDate = convertToLocalTime(
-              affectedRows.dataValues.startTime,
-              affectedRows.dataValues.timezone,
-              userTimezone.utc[0]
-            );
-
             let mailOptions = {
               from: process.env.SEND_IN_BLUE_SMTP_SENDER,
               to: user.email,
@@ -526,8 +516,8 @@ const BonfireController = () => {
                 user.firstName,
                 prevBonfire.dataValues.title,
                 affectedRows.dataValues,
-                targetBonfireDate.format("MMM DD"),
-                targetBonfireDate.format("h:mm a"),
+                affectedRows.dataValues.startTime.format("MMM DD"),
+                affectedRows.dataValues.startTime.format("h:mm a"),
                 affectedRows.dataValues.timezone
               ),
             };
