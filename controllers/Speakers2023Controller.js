@@ -1643,112 +1643,12 @@ const SpeakersController = () => {
         }
     };
 
-    const sendEmailsAutomaticToSpeakers = async (req, res) => {
-
-        try{
-
-            const allUserSpeakersWithoutSession = await User.findAll(
-                {
-                    where: {speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""}},
-                    include: [
-                        {
-                            model: SpeakerMemberPanel,
-                        }
-                    ]
-                }
-            )
-
-            let newArray = allUserSpeakersWithoutSession.filter(data => {
-                return data.SpeakerMemberPanels.length === 0 && data.speakersAuthorization === "accepted"
-            })
-
-            await Promise.all(
-
-                newArray.map(async (data) => {
-
-                    await Promise.resolve(
-                        (() => {
-                            let mailOptions = {
-                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                to: data.email,
-                                subject: LabEmails.REMEMBER_TO_SPEAKERS.subject(data.firstName),
-                                html: LabEmails.REMEMBER_TO_SPEAKERS.body(data.firstName),
-                            };
-                
-                            return smtpService().sendMailUsingSendInBlue(mailOptions);
-                        })()
-                    );
-                    
-                })
-            );
-
-
-        }catch (error) {
-            console.log(error);
-            return res
-              .status(HttpCodes.INTERNAL_SERVER_ERROR)
-              .json({ msg: "Internal server error" });
-        }
-
-    }
-
-    const sendEmailsAutomaticToSpeakersCompleteProfile = async () => {
-        try{
-
-            const allUserSpeakersWithoutSession = await User.findAll(
-                {
-                    where: {
-                        speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""},
-                        percentOfCompletion: {[Op.ne]: 100}
-                    },
-                    include: [
-                        {
-                            model: SpeakerMemberPanel,
-                        }
-                    ]
-                }
-            )
-
-            let newArray = allUserSpeakersWithoutSession.filter(data => {
-                return data.speakersAuthorization === "accepted" && data.percentOfCompletion !== 100
-            })
-
-            await Promise.all(
-                newArray.map(async (data) => {
-
-                    await Promise.resolve(
-                        (() => {
-                            let mailOptions = {
-                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                to: data.email,
-                                subject: LabEmails.REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE.subject(data.firstName),
-                                html: LabEmails.REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE.body(data.firstName),
-                            };
-                
-                            return smtpService().sendMailUsingSendInBlue(mailOptions);
-                        })()
-                    );
-                    
-                })
-            );
-
-
-        }catch (error) {
-            console.log(error);
-            return res
-              .status(HttpCodes.INTERNAL_SERVER_ERROR)
-              .json({ msg: "Internal server error" });
-        }
-    }
-
     return {
         addNewPanelSpeaker,
         addNewSpeakersAdmin,
         addToMyPersonalAgenda,
         allPanelSpeakers,
         editAuthorizationSpeakers,
-        sendEmailsAutomaticToSpeakers,
-        sendEmailsAutomaticToSpeakersCompleteProfile,
         addUserSpeakerToPanel,
         removeUserSpeakerToPanel,
         registerUserIfNotAreRegisterConference2023,
