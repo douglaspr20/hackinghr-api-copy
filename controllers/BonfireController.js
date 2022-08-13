@@ -91,7 +91,7 @@ const BonfireController = () => {
       });
 
       const userAlwaysInvited = await User.findOne({
-        where: { email: "enrique@hackinghr.io" },
+        where: { email: "enrique@hackinghr" },
       });
 
       if (userAlwaysInvited?.dataValues?.id) {
@@ -201,12 +201,6 @@ const BonfireController = () => {
         usersValidated.map((user) => {
           const _user = user.toJSON();
 
-          const timezoneUser = TimeZoneList.find(
-            (timezone) =>
-              timezone.value === _user.timezone ||
-              timezone.text === _user.timezone
-          );
-
           let mailOptions = {
             from: process.env.SEND_IN_BLUE_SMTP_SENDER,
             to: _user.email,
@@ -215,8 +209,8 @@ const BonfireController = () => {
               _user.firstName,
               bonfire,
               bonfireCreatorInfo,
-              moment(bonfire.dataValues.startTime).format("MMM DD"),
-              moment(bonfire.dataValues.startTime).format("h:mm a"),
+              moment(bonfire.dataValues.startTime).utc().format("MMM DD"),
+              moment(bonfire.dataValues.startTime).utc().format("h:mm a"),
               bonfire.link,
               bonfire.timezone
             ),
@@ -516,8 +510,8 @@ const BonfireController = () => {
                 user.firstName,
                 prevBonfire.dataValues.title,
                 affectedRows.dataValues,
-                moment(affectedRows.startTime).format("MMM DD"),
-                moment(affectedRows.startTimes).format("h:mm a"),
+                moment(affectedRows.startTime).utc().format("MMM DD"),
+                moment(affectedRows.startTime).utc().format("h:mm a"),
                 affectedRows.dataValues.timezone
               ),
             };
