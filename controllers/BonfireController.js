@@ -516,8 +516,8 @@ const BonfireController = () => {
                 user.firstName,
                 prevBonfire.dataValues.title,
                 affectedRows.dataValues,
-                affectedRows.dataValues.startTime.format("MMM DD"),
-                affectedRows.dataValues.startTime.format("h:mm a"),
+                moment(affectedRows.dataValues.startTime).format("MMM DD"),
+                moment(affectedRows.dataValues.startTimes).format("h:mm a"),
                 affectedRows.dataValues.timezone
               ),
             };
