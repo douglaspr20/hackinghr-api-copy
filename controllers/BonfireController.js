@@ -483,9 +483,7 @@ const BonfireController = () => {
             .json({ msg: "Bad Request: Bonfire not found." });
         }
 
-        const usersId = prevBonfire.dataValues.invitedUsers.concat(
-          prevBonfire.dataValues.joinedUsers
-        );
+        const usersId = prevBonfire.dataValues.joinedUsers;
 
         const usersJoinedToBonfire = await Promise.all(
           usersId.map(async (userId) => {
