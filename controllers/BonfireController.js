@@ -70,6 +70,11 @@ const BonfireController = () => {
                 [Op.ne]: "enrique@hackinghr.io",
               },
             },
+            {
+              topicsOfInterest: {
+                [Op.overlap]: bonfireInfo.categories,
+              },
+            },
           ],
         },
         order: [[Sequelize.fn("RANDOM")]],
@@ -852,7 +857,7 @@ const BonfireController = () => {
         endTime,
         bonfire.title,
         bonfire.description,
-        "https://www.hackinghrlab.io/bonfires",
+        bonfire.link,
         // event.location,
         `${process.env.DOMAIN_URL}/bonfires`,
         "hacking Lab HR",
