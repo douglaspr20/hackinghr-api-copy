@@ -427,7 +427,7 @@ module.exports = {
   },
   BONFIRE_EDITED: {
     subject: (firstName, bonfireTitle) =>
-      `${firstName}: "${bonfireTitle}" was edited`,
+      `${firstName}: The Bonfire "${bonfireTitle}" was edited. Please download the new calendar reminder`,
     body: (
       firstName,
       oldBonfireTitle,
@@ -440,14 +440,17 @@ module.exports = {
     Hi ${firstName}
     </p>
     <p>
-    The bonfire: “${oldBonfireTitle}” has been edited. These are the new details: 
+    The bonfire: “${oldBonfireTitle}” has been edited.
     </P>
+    <p>
+    These are the new details: 
+    </p>
     <p>${newBonfireinfo.title}</p>
     <p>${startDate}</p>
     <p>${startTime} (${timezone})</p>
     <p>${newBonfireinfo.link}</p>
     <p>
-    Please delete the previous calendar invite and use the attached calendar invite as the updated one.
+    Please go to the Hacking HR LAB -> Bonfires and search for this Bonfire in the tab “My Bonfires” to download the new calendar reminder. 
     </p>
     <p>Thank you and happy networking!</p>
     <p>

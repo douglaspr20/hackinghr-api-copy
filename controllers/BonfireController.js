@@ -363,13 +363,14 @@ const BonfireController = () => {
   };
 
   const setOrganizerReminders = (bonfire, bonfireCreatorInfo) => {
-    const dates1DayBefore = moment(bonfire.startDate).subtract(1, "days");
-    const dates1HourBefore = moment(bonfire.startDate).subtract(1, "hours");
+    const dates1DayBefore = moment(bonfire.startTime).subtract(1, "days");
+    const dates1HourBefore = moment(bonfire.startTime).subtract(1, "hours");
     console.log("/////////////////////////////////////////////////////");
     console.log("//////// setOrganizerReminders ///////");
 
     const interval = `10 ${dates1DayBefore.minutes()} ${dates1DayBefore.hours()} ${dates1DayBefore.date()} ${dates1DayBefore.month()} *`;
     const interval2 = `10 ${dates1HourBefore.minutes()} ${dates1HourBefore.hours()} ${dates1HourBefore.date()} ${dates1HourBefore.month()} *`;
+
     if (dates1DayBefore.isAfter(moment())) {
       cronService().addTask(
         `${bonfire.id}-users-join-reminder-1-day-before`,
