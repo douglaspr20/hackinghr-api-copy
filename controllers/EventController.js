@@ -417,25 +417,29 @@ const EventController = () => {
         }
       );
 
-      const instructorIds = eventInfo.instructorIds.map((instructorId) => ({
+      const instructorIds = eventInfo?.instructorIds?.map((instructorId) => ({
         InstructorId: instructorId,
         EventId: id,
       }));
 
-      await EventInstructor.bulkCreate(instructorIds);
+      if(instructorIds !== undefined){
 
-      await db.sequelize.transaction(async (t) => {
-        await EventInstructor.destroy(
-          {
-            where: {
-              EventId: id,
+        await EventInstructor.bulkCreate(instructorIds);
+
+        await db.sequelize.transaction(async (t) => {
+          await EventInstructor.destroy(
+            {
+              where: {
+                EventId: id,
+              },
             },
-          },
-          { transaction: t }
-        );
+            { transaction: t }
+          );
 
-        await EventInstructor.bulkCreate(instructorIds, { transaction: t });
-      });
+          await EventInstructor.bulkCreate(instructorIds, { transaction: t });
+        });
+    
+      }
 
       return res
         .status(HttpCodes.OK)
