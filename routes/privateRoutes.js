@@ -100,6 +100,7 @@ const privateRoutes = {
   "POST /channel/": "ChannelController.create",
   "GET /channel/": "ChannelController.getAll",
   "GET /channel/:id": "ChannelController.get",
+  "GET /channel/forName/:name": "ChannelController.getForName",
   "GET /channel-category/:id": "ChannelCategoryController.get",
   "POST /event/channel": "EventController.create",
   "POST /email/notfication/channel": "ChannelController.emailNotification",
