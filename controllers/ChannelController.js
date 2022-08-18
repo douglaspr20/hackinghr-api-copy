@@ -108,6 +108,40 @@ const ChannelController = () => {
       .json({ msg: "Bad Request: Channel id is wrong" });
   };
 
+  const getForName = async (req, res) => {
+    const { name } = req.params;
+
+    if (name) {
+      try {
+        const channel = await Channel.findOne({
+          where: {
+            name,
+          },
+          include: {
+            model: User,
+          },
+        });
+
+        if (!channel) {
+          return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Bad Request: Channel not found" });
+        }
+
+        return res.status(HttpCodes.OK).json({ channel });
+      } catch (err) {
+        console.log(err);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+      }
+    }
+
+    return res
+      .status(HttpCodes.BAD_REQUEST)
+      .json({ msg: "Bad Request: Channel id is wrong" });
+  };
+
   const getAll = async (req, res) => {
     const params = req.query;
 
@@ -371,6 +405,7 @@ const ChannelController = () => {
   return {
     create,
     get,
+    getForName,
     getAll,
     put,
     remove,
