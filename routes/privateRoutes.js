@@ -187,6 +187,8 @@ const privateRoutes = {
   "PUT /bonfire/:id/invitedUser/:userId": "BonfireController.inviteUser",
   "DELETE /bonfire/:id": "BonfireController.remove",
   "GET /bonfire-download/:id": "BonfireController.exportUsersToCSV",
+  "GET /bonfire-participant-download/:id":
+    "BonfireController.exportParticipantBonfireToCSV",
   "GET /skill-cohort": "SkillCohortController.getAllActiveUserSide",
   "GET /skill-cohort/my-cohort/:UserId":
     "SkillCohortController.getAllOfMyCohort",

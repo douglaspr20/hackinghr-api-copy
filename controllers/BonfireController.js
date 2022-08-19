@@ -832,6 +832,106 @@ const BonfireController = () => {
     }
   };
 
+  const exportParticipantBonfireToCSV = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+      let targetBonfire = await Bonfire.findOne({ where: { id } });
+      targetBonfire = targetBonfire.toJSON();
+
+      const usersId = [
+        ...new Set(
+          targetBonfire.invitedUsers.concat(targetBonfire.joinedUsers)
+        ),
+      ];
+
+      let bonfireUsers = await Promise.all(
+        usersId.map(async (id) => {
+          return await User.findOne({
+            where: {
+              id,
+            },
+            attributes: ["id", "firstName", "lastName", "email", "location"],
+          });
+        })
+      );
+
+      bonfireUsers = bonfireUsers.map((user) => user.toJSON());
+
+      bonfireUsers = bonfireUsers.map((user) => {
+        const country = COUNTRIES.find((c) => c.value === user.location);
+
+        const invitedUser = targetBonfire.invitedUsers.includes(user.id)
+          ? "Yes"
+          : "No";
+
+        const joinedBonfire = targetBonfire.joinedUsers.includes(user.id)
+          ? "Yes"
+          : "No";
+
+        return {
+          ...user,
+          location: country.text || user.location,
+          invitedUser,
+          joinedBonfire,
+        };
+      });
+
+      await convertJSONToExcelBonfiresUsersParticipants(
+        targetBonfire.title,
+        [
+          {
+            label: "First Name",
+            value: "firstName",
+            width: 20,
+          },
+          {
+            label: "Last Name",
+            value: "lastName",
+            width: 20,
+          },
+          {
+            label: "Country",
+            value: "location",
+            width: 20,
+          },
+          {
+            label: "Email",
+            value: "email",
+            width: 20,
+          },
+          {
+            label: "Invited User",
+            value: "invitedUser",
+            width: 20,
+          },
+          {
+            label: "Confirm Attendance / Joined Bonfire",
+            value: "joinedBonfire",
+            width: 40,
+          },
+        ],
+        bonfireUsers
+      );
+
+      await res
+        .status(HttpCodes.OK)
+        .download(
+          `${path.join(__dirname, "../utils")}/${targetBonfire.title}.xlsx`,
+          function () {
+            fs.unlinkSync(
+              `${path.join(__dirname, "../utils")}/${targetBonfire.title}.xlsx`
+            );
+          }
+        );
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  };
+
   const downloadICS = async (req, res) => {
     const { id } = req.params;
     const { userTimezone } = req.query;
@@ -900,6 +1000,7 @@ const BonfireController = () => {
     remove,
     inviteUser,
     exportUsersToCSV,
+    exportParticipantBonfireToCSV,
     downloadICS,
   };
 };
