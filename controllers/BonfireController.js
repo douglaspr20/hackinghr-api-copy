@@ -394,13 +394,14 @@ const BonfireController = () => {
   };
 
   const getAll = async (req, res) => {
-    const { category } = req.query;
+    const { category, date } = req.query;
     const categories = category ? JSON.parse(category) : [];
 
     try {
-      let where = `WHERE public."Bonfires"."endTime" >='${moment()
-        .utc()
-        .format()}'`;
+      let where = ``;
+      if (date) {
+        where += `WHERE public."Bonfires"."endTime" >='${date}'`;
+      }
 
       if (categories && categories.length > 0) {
         let categoriesToString = [];
@@ -408,10 +409,15 @@ const BonfireController = () => {
         for (const cat of categories) {
           categoriesToString.push(`'${cat}'`);
         }
-
-        where += `AND public."Bonfires"."categories" && ARRAY[${categoriesToString.join(
-          ","
-        )}]::VARCHAR(255)[]`;
+        if (where.length > 0) {
+          where += `AND public."Bonfires"."categories" && ARRAY[${categoriesToString.join(
+            ","
+          )}]::VARCHAR(255)[]`;
+        } else {
+          where += `WHERE public."Bonfires"."categories" && ARRAY[${categoriesToString.join(
+            ","
+          )}]::VARCHAR(255)[]`;
+        }
       }
 
       const query = `SELECT public."Bonfires".*, public."Users"."id" as "bonfireOrganizerId", public."Users"."firstName", public."Users"."lastName", public."Users"."img",
