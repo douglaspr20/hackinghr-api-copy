@@ -856,6 +856,8 @@ const BonfireController = () => {
         })
       );
 
+      console.log(bonfireUsers);
+
       bonfireUsers = bonfireUsers.map((user) => user.toJSON());
 
       bonfireUsers = bonfireUsers.map((user) => {
