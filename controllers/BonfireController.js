@@ -839,7 +839,7 @@ const BonfireController = () => {
       let targetBonfire = await Bonfire.findOne({ where: { id } });
       targetBonfire = targetBonfire.toJSON();
 
-      const usersId = [
+      let usersId = [
         ...new Set(
           targetBonfire.invitedUsers.concat(targetBonfire.joinedUsers)
         ),
@@ -856,9 +856,9 @@ const BonfireController = () => {
         })
       );
 
-      console.log(bonfireUsers);
-
-      bonfireUsers = bonfireUsers.map((user) => user.toJSON());
+      bonfireUsers = bonfireUsers
+        .filter((user) => user !== null)
+        .map((user) => user.toJSON());
 
       bonfireUsers = bonfireUsers.map((user) => {
         const country = COUNTRIES.find((c) => c.value === user.location);
