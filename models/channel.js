@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       events: DataTypes.ARRAY(DataTypes.INTEGER),
       followedUsers: DataTypes.ARRAY(DataTypes.INTEGER),
       categories: DataTypes.ARRAY(DataTypes.STRING),
+      image2: DataTypes.TEXT
     },
     {
       sequelize,
