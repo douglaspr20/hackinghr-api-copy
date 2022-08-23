@@ -238,6 +238,21 @@ const ChannelController = () => {
         await s3Service().deleteUserPicture(prevChannel.image);
       }
 
+      if (channel.image2 && !isValidURL(channel.image2)) {
+        channelInfo.image2 = await s3Service().getChannelImageUrl(
+          "",
+          channel.image2
+        );
+
+        if (prevChannel.image2) {
+          await s3Service().deleteUserPicture(prevChannel.image2);
+        }
+      }
+
+      if (prevChannel.image2 && !channel.image2) {
+        await s3Service().deleteUserPicture(prevChannel.image2);
+      }
+
       const [numberOfAffectedRows, affectedRows] = await Channel.update(
         channelInfo,
         {
