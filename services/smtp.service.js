@@ -109,7 +109,7 @@ const smtpService = () => {
         name,
         email,
       },
-      // timezone,
+      timezone,
     };
 
     console.log("**** eventObject ", eventObject);

@@ -318,24 +318,15 @@ const EventController = () => {
         setEventReminders(event.dataValues);
         setOrganizerReminders(event);
 
-        const startTime = convertToLocalTime(
-          event?.startDate,
-          event.timezone,
-          user.timezone
-        );
-        if (moment(startTime)?.isAfter(moment())) {
-          await NotificationController().createNotification({
-            message: `New Event "${
-              event.title || eventInfo.title
-            }" was created.`,
-            type: "event",
-            meta: {
-              ...event,
-              publicLink: `${process.env.DOMAIN_URL}${event.id}`,
-            },
-            onlyFor: [-1],
-          });
-        }
+        await NotificationController().createNotification({
+          message: `New Event "${event.title || eventInfo.title}" was created.`,
+          type: "event",
+          meta: {
+            ...event,
+            publicLink: `${process.env.DOMAIN_URL}${event.id}`,
+          },
+          onlyFor: [-1],
+        });
 
         return res.status(HttpCodes.OK).json({ event: affectedRows });
       } catch (error) {
@@ -422,8 +413,7 @@ const EventController = () => {
         EventId: id,
       }));
 
-      if(instructorIds !== undefined){
-
+      if (instructorIds !== undefined) {
         await EventInstructor.bulkCreate(instructorIds);
 
         await db.sequelize.transaction(async (t) => {
@@ -438,7 +428,6 @@ const EventController = () => {
 
           await EventInstructor.bulkCreate(instructorIds, { transaction: t });
         });
-    
       }
 
       return res
@@ -454,18 +443,17 @@ const EventController = () => {
 
   const getAllEventsChannels = async (req, res) => {
     try {
-
-      let channelEvents = await Event.findAll(
-        { 
-          where:{channel: {[Op.gte]: 1}}, 
-          raw: true,
-        },
-      );
+      let channelEvents = await Event.findAll({
+        where: { channel: { [Op.gte]: 1 } },
+        raw: true,
+      });
 
       let channelData = await Channel.findAll();
 
       allEventsChannels = channelEvents.map((event) => {
-        let channelSelect = channelData.filter((data) => data.id === event.channel)
+        let channelSelect = channelData.filter(
+          (data) => data.id === event.channel
+        );
         return {
           ...event,
           channelSelect: channelSelect[0],
@@ -1006,7 +994,7 @@ const EventController = () => {
 
   const downloadICS = async (req, res) => {
     const { id } = req.params;
-    const { day, userTimezone } = req.query;
+    let { day, userTimezone } = req.query;
 
     try {
       let event = await Event.findOne({
@@ -1036,6 +1024,14 @@ const EventController = () => {
         event.timezone,
         userTimezone
       );
+
+      if (
+        userTimezone === "America/Los_Angeles" &&
+        moment(endTime).month() >= 2 &&
+        moment(endTime).month() <= 10
+      ) {
+        userTimezone = "America/phoenix";
+      }
 
       const calendarInvite = smtpService().generateCalendarInvite(
         startTime.format("YYYY-MM-DD HH:mm:ss"),
@@ -1330,7 +1326,7 @@ const EventController = () => {
     claimAttendance,
     getChannelsEventsOfLastWeek,
     eventCertificateMetaData,
-    getAllEventsChannels
+    getAllEventsChannels,
   };
 };
 

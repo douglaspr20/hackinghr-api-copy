@@ -299,9 +299,17 @@ const UserController = () => {
             userTimezone
           );
 
+          if (
+            userTimezone === "America/Los_Angeles" &&
+            moment(endTime).month() >= 2 &&
+            moment(endTime).month() <= 10
+          ) {
+            userTimezone = "America/phoenix";
+          }
+
           return smtpService().generateCalendarInvite(
-            startTime,
-            endTime,
+            startTime.format("YYYY-MM-DD HH:mm:ss"),
+            endTime.format("YYYY-MM-DD HH:mm:ss"),
             event.title,
             getEventDescription(event.description),
             "",
