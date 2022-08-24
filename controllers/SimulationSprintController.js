@@ -13,6 +13,8 @@ const SimulationSprint = db.SimulationSprint;
 const SimulationSprintResource = db.SimulationSprintResource;
 const SimulationSprintParticipant = db.SimulationSprintParticipant;
 const SimulationSprintGroup = db.SimulationSprintGroup;
+const SimulationSprintDeliverable = db.SimulationSprintDeliverable;
+const SimulationSprintActivity = db.SimulationSprintActivity;
 
 const User = db.User;
 
@@ -172,6 +174,17 @@ const SimulationSprintController = () => {
           },
           include: [
             {
+              model: SimulationSprintDeliverable,
+              include: [
+                {
+                  model: SimulationSprintResource,
+                },
+              ],
+            },
+            {
+              model: SimulationSprintActivity,
+            },
+            {
               model: SimulationSprintGroup,
               include: [
                 {
@@ -184,7 +197,16 @@ const SimulationSprintController = () => {
               include: [
                 {
                   model: User,
-                  attributes: ["firstName", "lastName", "email", "img"],
+                  attributes: [
+                    "firstName",
+                    "lastName",
+                    "email",
+                    "img",
+                    "abbrName",
+                    "titleProfessions",
+                    "company",
+                    "personalLinks",
+                  ],
                 },
               ],
             },

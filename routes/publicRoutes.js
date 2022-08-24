@@ -32,6 +32,8 @@ const publicRoutes = {
   "GET /speakers/get-all-sponsor": "Speakers2023Controller.getAllSponsor",
   "GET /speakers/all-panel-of-user":
     "Speakers2023Controller.getAllPanelsOfOneUser",
+  "GET /simulation-sprint-activity/ics/:id":
+    "SimulationSprintActivityController.downloadICS",
 };
 
 module.exports = publicRoutes;

@@ -831,15 +831,17 @@ const StripeController = () => {
   };
 
   /*
-  * TO DO: Only use when you need upgrade prices of subscriptios.
   const upgradeSubscription = async (req, res) => {
-    let price = "{}";
+    //Old price
+    let price = "price_1K1CJqDpOfzNo2tyT9NSKNVe";
     let customerIds = [];
     const subscriptions = await stripe.subscriptions.list({
+      //Filter by customer only for tests
+      //customer: "cus_Lq8yePhHUriaGh",
       price,
       limit: 200,
     });
-
+    console.log(subscriptions);
     for (let item of subscriptions.data) {
       const subscription = await stripe.subscriptions.retrieve(item.id);
       for (let i of subscription.items.data) {
@@ -848,12 +850,13 @@ const StripeController = () => {
           itemId = i.id;
         }
         if (itemId != null) {
+          // New Price
           stripe.subscriptions.update(item.id, {
             proration_behavior: "none",
             items: [
               {
                 id: itemId,
-                price: "{}",
+                price: "price_1LG9vFDpOfzNo2tyX2nnHqmu",
               },
             ],
           });
@@ -862,10 +865,8 @@ const StripeController = () => {
         }
       }
     }
-
     return res.status(HttpCodes.OK).json({ customerIds });
-  };
-  */
+  };*/
 
   return {
     createCheckoutSession,

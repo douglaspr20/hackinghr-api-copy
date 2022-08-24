@@ -18,7 +18,7 @@ module.exports = {
       We have a bunch of great features and content for you. And we are working nonstop in product development and improvement. That means that you will be seeing changes and a lot of more value every time you log in.
       </p>
       <p>
-      If you think this is a good place for you to invest some money, please become a PREMIUM member for $119 a year. Just click on UPGRADE. You will get access to EVERYTHING. And when I say EVERYTHING, I mean everything that we have now and everything we will develop and deploy in the future.
+      If you think this is a good place for you to invest some money, please become a PREMIUM member for $159 a year. Just click on UPGRADE. You will get access to EVERYTHING. And when I say EVERYTHING, I mean everything that we have now and everything we will develop and deploy in the future.
       </p>
       <p>
       Well. Long email… 
@@ -284,106 +284,72 @@ module.exports = {
     `,
   },
   BONFIRE_INVITATION: {
-    subject: `You have been invited to a bonfire! A networking experience as part of the Hacking HR 2022 Global Online Conference`,
+    subject: (firstName) =>
+      `${firstName}: You have been invited to a Bonfire, a Hacking HR networking experience created by members of the community!`,
     body: (
-      user,
+      firstName,
       bonfire,
       bonfireCreator,
       startDate,
       startTime,
-      endTime,
-      timezone,
-      googleLink,
-      yahooLink
+      link,
+      timezone
     ) => `
-      <p>
-      Hi, ${user.firstName}
-      </p>
-      <p>
-      You have been selected to join the bonfire "${bonfire.title}" on ${startDate} at ${startTime}-${endTime} (${timezone}), 
-      created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email}).
-      </p>
-      <p>
-      Bonfires are networking opportunities as part of the Hacking HR 2022 Global Online 
-      Conference. Participants of the conference can create bonfires and we select a 
-      group of other participants to join. Like a “professional blind date”! 
-      </p>
-      <p>
-      This bonfire is about “${bonfire.description}” and you were invited because you have 
-      interests that align with the topic of this conversation! 
-      </p>
-      <p>
-      We hope you can join. 
-      </p>
-      <p>
-      This is the link to connect: <a target="_blank" href="${bonfire.link}">${bonfire.link}</a>
-      </p>
-      <p>
-      Attached a calendar invite including all details, just in case! 
-      </p>
-      <p>
-      <a href="${googleLink}" target="_blank">Google Calendar</a>
-      <br>
-      <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
-      </p>
-      <p>
-      Happy networking! 
-      </p>
-      <br />
-      <br />
-      Hacking HR LAB
-      <br/>
-      <p>
-      P.S.: Bonfires <b>ARE NOT</b> tools for sales or marketing pitches. If this happens during 
-      your bonfire and the bonfire organizer is selling anything, marketing a product or 
-      service, or using you for any purpose other than networking, please report it to us 
-      (enrique@hackinghr.io). We will take immediate action.
-      </p>
+      <p>Hi ${firstName},</p>
+      <p>Bonfires are networking opportunities created by and for members of the Hacking HR community.</p>
+      <p>We created this tool to promote collaboration, learning and networking! All our Hacking HR LAB Premium members can create Bonfires, and all members (premium and free) can participate.</p>
+      <p>Bonfires are excellent spaces for interesting discussions to help advance the HR profession and help you solve the most complex business challenges you may be dealing with!</p>
+      <p>You have been invited to join this upcoming bonfire:</p>
+      <h3>${bonfire.title}</h3>
+      <p>Date: ${startDate} at ${startTime} (${timezone}) created by ${
+      bonfireCreator.firstName
+    } ${bonfireCreator.lastName} (${bonfireCreator.email})</p>
+      <p>This bonfire is about “${
+        bonfire.description
+      }” and the main topics of the discussion are ${bonfire.categories.join(
+      ", "
+    )} and you were invited because you have interests that align with the topic of this conversation! </p>
+    <p>We hope you can join. If you are joining, please click here to <a href="${
+      process.env.DOMAIN_URL
+    }bonfires?key=my-bonfires" tagert="_blanck">CONFIRM ATTENDANCE</a> and download the calendar reminders!</p>
+    <p>This is the link to connect: <a href="${link}bonfires?key=my-bonfires" target="_blank">LINK</a></p>
+    <p>Attached a calendar invite including all details, just in case!</p>
+    <p>Happy networking!</p>
+    <p>Hacking HR LAB</p>
+
+    <p>P.S.: Bonfires <strong>ARE NOT</strong> tools for sales or marketing pitches. If this happens during your bonfire and the bonfire organizer is selling or marketing a product or service, 
+    or using you for any purpose other than networking, collaboration and learning, please report it to us (enrique@hackinghr.io). We will take immediate action.</p>
     `,
   },
   BONFIRE_CREATOR: {
-    subject: `Thank you creating a Bonfire as part of the networking experience at the Hacking HR 2022 Global Online Conference`,
-    body: (bonfireCreator, bonfire, startDate, startTime, timezone) => `
+    subject: (firstName) =>
+      `${firstName}! Thank you for creating a Bonfire in the Hacking HR LAB!`,
+    body: (firstName, bonfire, startDate, startTime, timezone) => `
     <p>
-    Hi, ${bonfireCreator.firstName}
+    Hi, ${firstName},
     </p>
     <p>
     Thank you so much for creating the bonfire: "${bonfire.title}" on ${startDate} at ${startTime} (${timezone})
     </p>
     <p>
-    <b>Quick note before moving on: time zones are always a headache for 
-    everyone. PLEASE make sure that you entered the proper time zone when 
-    creating your Bonfire. Thank you!.</b>
+    <b>Quick note before moving on: time zones are always a headache for everyone. PLEASE make sure that you entered the proper time zone when creating your Bonfire. Thank you!.</b>
     </p>
     <p>
-    You are so AWESOME!!! THANK YOU!
+    We created the Bonfire tool as a cool and valuable way for networking, collaboration and learning among HR professionals. We are thankful with you for creating this space for meaningful conversations and networking.
     </p>
     <p>
-    We created Bonfires as a cool and valuable way for networking as part of the 
-    Hacking HR 2022 Global Online Conference. We are thankful with you for creating 
-    this space for meaningful conversation and networking.
+    Hacking HR LAB members invited to the Bonfire have to confirm their attendance. In the Bonfires that you create you can download a list of those who have confirmed their attendance. Go back to the Hacking HR LAB, click on Bonfires, search for the Bonfire you created and click on Download Confirmed Participants. PLEASE: DO NOT, under ANY circumstance, add their emails to any emailing list without their explicit consent. Doing so will ban you from creating future Bonfires. THANK YOU!
     </p>
     <p>
-    Based on areas of interest, we have selected 20 conference participants to join your
-    bonfire and sent them the invitations via email. We hope they join! But please feel 
-    free to promote as well in your network.
+    Also, we added the bonfire in the “Bonfire” list in the Hacking HR LAB so that anyone can find it and join! 
     </p>
     <p>
-    Also, we added the bonfire in the “Bonfire” list in the <a href="https://www.hackinghrlab.io/global-conference">Conference application</a> 
-    so that anyone can find it and join!
-    </p>
-    <p>
-    One last thing: as the creator of the Bonfire you have a wonderful opportunity to 
-    shape the conversation to be meaningful and valuable for those who join you. We 
-    count on you to facilitate a wonderful space that is safe, respectful and tolerant, 
-    and partisan political conversations or sales pitches are not allowed and 
-    immediately stopped.
+    One last thing: as the creator of the Bonfire you have a wonderful opportunity to shape the conversation to be meaningful and valuable for those who join you. We count on you to facilitate a wonderful space that is safe, respectful and tolerant. Partisan political conversations or sales pitches are not allowed and should you engage in such conversations you will be banned from creating future bonfires.
     </p>
     <p>Thank you so much!!!</p>
     <p>
     Happy networking! 
     </p>
-    <br>
     <br>
     <p>Enrique Rubio</p>
     <p>Founder</p>
@@ -392,117 +358,166 @@ module.exports = {
     `,
   },
   BONFIRE_JOINING: {
-    subject: `Thank you for joining a Bonfire as part of the networking experience at the Hacking HR 2022 Global Online Conference`,
+    subject: (firstName) =>
+      `${firstName}! Thank you for joining a Bonfire, a Hacking HR networking experience created by members of the community!`,
     body: (
-      user,
+      firstName,
       bonfire,
       bonfireCreator,
       startDate,
       startTime,
-      endTime,
-      timezone,
-      googleLink,
-      yahooLink
+      link,
+      timezone
     ) => `
     <p>
-    Hi ${user.firstName}
+    Hi ${firstName},
     </p>
     <p>
-    Thank you for joining the bonfire: “${bonfire.title}” on ${startDate} at ${startTime}-${endTime} (${timezone}), 
-    created by ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email})!
+    Bonfires are networking opportunities created by and for members of the Hacking HR community.
     </p>
     <p>
-    Bonfires are networking opportunities as part of the Hacking HR 2022 Global Online 
-    Conference. Participants of the conference can create bonfires and we select a 
-    group of other participants to join. Like a “professional blind date”! 
+    We created this tool to promote collaboration, learning and networking! All our Hacking HR LAB Premium members can create Bonfires, and all members (premium and free) can participate.
     </p>
     <p>
-    This bonfire is about “${bonfire.description}” and you were invited because you have 
-    interests that align with the topic of this conversation!
+    Bonfires are excellent spaces for interesting discussions to help advance the HR profession and help you solve the most complex business challenges you may be dealing with! 
     </p>
     <p>
-    This is the link to connect: ${bonfire.link}
+    Thank you for joining the upcoming bonfire: 
     </p>
-    <p>
-    Attached a calendar invite including all details, just in case!
+    <h3>${bonfire.title}</h3>
+    <p>Date: ${startDate} at ${startTime} (${timezone}) created by ${
+      bonfireCreator.firstName
+    } ${bonfireCreator.lastName} (${bonfireCreator.email})!</p>
+    <p>This bonfire is about "${
+      bonfire.description
+    }" and the main topics of the discussion are ${bonfire.categories.join(
+      ", "
+    )}.</p>
+    <p>This is the link to connect: <a href="${link}" target="_blank">Link</a>
     </p>
-    <p>
-    <a href="${googleLink}" target="_blank">Google Calendar</a>
-    <br>
-    <a href="${yahooLink}" target="_blank">Yahoo calendar</a>
-    </p>
-    <br>
-    <br>
-    <p>
-    Happy networking!
-    </p>
-    <br>
-    <p>
-    Hacking HR LAB
-    </p>
-    <br>
-    <p>
-    P.S.: Bonfires <b>ARE NOT</b> tools for sales or marketing pitches. If this happens during 
-    your bonfire and the bonfire organizer is selling anything, marketing a product or 
-    service, or using you for any purpose other than networking, please report it to us 
-    (enrique@hackinghr.io). We will take immediate actio
-    </p>
+    <p>Attached a calendar invite including all details, just in case!</p>
+    <p>Happy networking!</p>
+    <p>Hacking HR LAB</p>
+
+    <p>P.S.: Bonfires <strong>ARE NOT</strong> tools for sales or marketing pitches. If this happens during your bonfire and the bonfire organizer is selling or marketing a product or service, 
+    or using you for any purpose other than networking, collaboration and learning, please report it to us (enrique@hackinghr.io). We will take immediate action.</p>
     `,
   },
   BONFIRE_DELETED: {
-    subject: (bonfireTitle) => `"${bonfireTitle}" was deleted`,
-    body: (user, bonfire, startDate, startTime, endTime, timezone) => `
+    subject: (firstName, bonfireTitle) =>
+      `${firstName}: "${bonfireTitle}" was deleted`,
+    body: (firstName, bonfire, startDate, startTime, timezone) => `
     <p>
-    Hi ${user.firstName}
+    Hi ${firstName}
     </p>
     <p>
     We are sorry to let you know that the bonfire: “${bonfire.title}” which was 
-    scheduled for ${startDate} and ${startTime}-${endTime} (${timezone}) has been deleted by its creator. 
+    scheduled for ${startDate} and ${startTime} (${timezone}) has been deleted by its creator. 
     </P>
     <p>
-    Please visit the <a href="https://www.hackinghrlab.io/global-conference">Global Conference application</a> in the Hacking HR LAB and join other 
-    bonfires. 
+    Please visit the <a href="https://www.hackinghrlab.io/">Hacking HR LAB</a> to check and join other bonfires. 
     </p>
-    <br>
     <p>
     Thank you! 
     </p>
-    <br>
     <p>
     Hacking HR LAB
     </p>
     `,
   },
   BONFIRE_EDITED: {
-    subject: (bonfireTitle) => `"${bonfireTitle}" was edited`,
+    subject: (firstName, bonfireTitle) =>
+      `${firstName}: The Bonfire "${bonfireTitle}" was edited. Please download the new calendar reminder`,
     body: (
-      user,
+      firstName,
       oldBonfireTitle,
       newBonfireinfo,
       startDate,
       startTime,
-      endTime,
       timezone
     ) => `
     <p>
-    Hi ${user.firstName}
+    Hi ${firstName}
     </p>
     <p>
-    The bonfire: “${oldBonfireTitle}” has been edited. These are the new details: 
+    The bonfire: “${oldBonfireTitle}” has been edited.
     </P>
+    <p>
+    These are the new details: 
+    </p>
     <p>${newBonfireinfo.title}</p>
     <p>${startDate}</p>
-    <p>${startTime}-${endTime} (${timezone})</p>
+    <p>${startTime} (${timezone})</p>
     <p>${newBonfireinfo.link}</p>
-    <br>
-    <br>
     <p>
-    Please make sure to update your calendar with the new details
+    Please go to the Hacking HR LAB -> Bonfires and search for this Bonfire in the tab “My Bonfires” to download the new calendar reminder. 
     </p>
-    <br>
     <p>Thank you and happy networking!</p>
     <p>
     Hacking HR LAB
+    </p>
+    `,
+  },
+  BONFIRE_REMINDER_1_DAY_BEFORE: {
+    subject: (firstName, startTime, timezone) =>
+      `${firstName}: please open this email to check the list of confirmed attendees for your Bonfire that starts tomorrow at ${startTime} (${timezone})!`,
+    body: (firstName) => `
+  <p>
+  Hi ${firstName},
+  </p>
+  <p>
+  You can download a list of those who have confirmed their attendance to your Bonfire. 
+  </P>
+  <p>
+  Go back to the Hacking HR LAB, click on Bonfires, search for the Bonfire you created and click on Download Confirmed Participants. 
+  </p>
+  <p>Thank you and happy networking!</p>
+  <p>Hacking HR LAB</p>
+  <p>
+  P.S.: DO NOT, under ANY circumstance, add their emails to any emailing list without their explicit consent. Doing so will ban you from creating future Bonfires. THANK YOU!
+  </p>
+  `,
+  },
+  BONFIRE_REMINDER_1_HOUR_BEFORE: {
+    subject: (firstName) =>
+      `${firstName}: please open this email to check the list of confirmed attendees for your Bonfire that starts in one hour!`,
+    body: (firstName) => `
+    <p>
+    Hi ${firstName},
+    </p>
+    <p>
+    You can download a list of those who have confirmed their attendance to your Bonfire that starts in one hour. 
+    </P>
+    <p>
+    Go back to the Hacking HR LAB, click on Bonfires, search for the Bonfire you created and click on Download Confirmed Participants. 
+    </p>
+    <p>Thank you and happy networking!</p>
+    <p>Hacking HR LAB</p>
+    <p>
+    P.S.: DO NOT, under ANY circumstance, add their emails to any emailing list without their explicit consent. Doing so will ban you from creating future Bonfires. THANK YOU!
+    </p>
+    `,
+  },
+  BONFIRE_USERS_JOINED_1_HOUR_REMINDER: {
+    subject: (firstName, bonfireTile) =>
+      `${firstName}: The Bonfire ("${bonfireTile}") is startin in one hour!`,
+    body: (firstName, bonfireTile, link, bonfireCreator) => `
+    <p>
+    Hi ${firstName}
+    </p>
+    <p>
+    We are excited that you are joining ${bonfireTile} which is starting in one hour!
+    </P>
+
+    <p>This is the link to connect: <a href="${link}" target="_blank">LINK</a></p>
+    
+    <p>If you have any question, please contact the Bonfire creator directly: ${bonfireCreator.firstName} ${bonfireCreator.lastName} (${bonfireCreator.email})!</p>
+    <p>Happy networking!</p>
+    <p>Hacking HR LAB</p>
+    <p>
+    P.S.: Bonfires <strong>ARE NOT</strong> tools for sales or marketing pitches. If this happens during your bonfire and the bonfire organizer is selling or 
+    marketing a product or service, or using you for any purpose other than networking, collaboration and learning, please report it to us (enrique@hackinghr.io). 
+    We will take immediate action.
     </p>
     `,
   },
@@ -1004,16 +1019,31 @@ module.exports = {
     `,
   },
 
+  USER_IS_WITHDRAW: {
+    subject: `One speakers is withdraw of one panel`,
+    body: (firstName, lastName, panelName) => `
+      <p>${firstName} ${lastName}</p>
+      <p>${panelName}</p>
+      `,
+  },
+
   NOTIFICATION_NEW_CONTENT_CHANNEL: {
     subject: `New Creator Content`,
-    body: (channelName,channelAdmin,channelAdminEmail,contentType,name,link) => `
+    body: (
+      channelName,
+      channelAdmin,
+      channelAdminEmail,
+      contentType,
+      name,
+      link
+    ) => `
       <p><b>Channel name:</b> ${channelName} </p>
       <p><b>Channel admin:</b> ${channelAdmin} </p>
       <p><b>Channel admin email:</b> ${channelAdminEmail} </p>
       <p><b>Content type:</b> ${contentType} </p>
       <p><b>Name:</b> ${name} </p>
       <p><b>Link:</b> ${link} </p>
-    `
+    `,
   },
 
   REJECT_USER_APPLY_PARTNER_BUSSINESS: {
@@ -1650,7 +1680,8 @@ module.exports = {
       `,
   },
   NEW_PANEL_CONFERENCE_2023: {
-    subject: (firstName) => `${firstName}: a new panel has been added to the sessions at Hacking HR’s FORWARD2023. In case you want to join this session!`,
+    subject: (firstName) =>
+      `${firstName}: a new panel has been added to the sessions at Hacking HR’s FORWARD2023. In case you want to join this session!`,
     body: (firstName, panelName) => `
         <p>Hi ${firstName},</p>
         <p>We have added a new panel to the agenda of the Hacking HR 2023 Global Conference, now called: <b>FORWARD 2023</b>!</p>
@@ -1674,7 +1705,8 @@ module.exports = {
         <br />`,
   },
   REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE: {
-    subject: (firstName) => `${firstName}: please complete your speaker profile in the Hacking HR LAB for FORWARD2023`,
+    subject: (firstName) =>
+      `${firstName}: please complete your speaker profile in the Hacking HR LAB for FORWARD2023`,
     body: (firstName) => `
         <p>Hi ${firstName},</p>
         <p>I am excited that you are in our roster of speakers for the Hacking HR 2023 Global Conference, now called: <b>FORWARD 2023</b>!</p>
@@ -1698,7 +1730,8 @@ module.exports = {
         <br />`,
   },
   REMEMBER_TO_SPEAKERS: {
-    subject: (firstName) => `${firstName}: you haven’t selected the panel(s) you will join at Hacking HR’s FORWARD2023. Please select soon!`,
+    subject: (firstName) =>
+      `${firstName}: you haven’t selected the panel(s) you will join at Hacking HR’s FORWARD2023. Please select soon!`,
     body: (firstName) => `
         <p>Hi ${firstName},</p>
         <p>I am excited that you are in our roster of speakers for the Hacking HR 2023 Global Conference, now called: <b>FORWARD 2023</b>!</p>
@@ -1723,7 +1756,8 @@ module.exports = {
         <br />`,
   },
   REGISTER_CONFERENCE_2023: {
-    subject: (firstName) => `${firstName}: Thank you for registering to participate in Hacking HR’s FORWARD2023!  Please read this email with further information.`,
+    subject: (firstName) =>
+      `${firstName}: Thank you for registering to participate in Hacking HR’s FORWARD2023!  Please read this email with further information.`,
     body: (firstName) => `
         <p>Hi ${firstName},</p>
         <p>I am excited that you are joining us as a participating at Hacking HR’s <b>FORWARD2023</b>!</p>
@@ -1820,7 +1854,7 @@ module.exports = {
 
     <p>Enrique Rubio</p>
     <p>Founder</p>
-    <p>Hackig Hr</p>
+    <p>Hacking Hr</p>
   `,
   },
   ADVERTISEMENT_CAMPAIGN_START: {
@@ -2014,18 +2048,15 @@ module.exports = {
     `,
   },
   JOIN_SIMULATION_SPRINT: {
-    subject: (
-      firstName,
-      simulationSprintTitle
-    ) => `${firstName} Thank you for registering for Hacking HR’s 
-    Simulation Sprint: ${simulationSprintTitle}`,
+    subject: (firstName, simulationSprintTitle) =>
+      `${firstName}: Thank you for registering for Hacking HR’s Simulation Sprint: ${simulationSprintTitle}`,
     body: (
       firstName,
       simulationSprintTitle,
       simulationSprintStartDate,
       simulationSprintEndDate
     ) => `
-    <p>Hi ${firstName}</p>
+    <p>Hi ${firstName},</p>
 
     <p>Thank you so much for registering for Hacking HR’s Simulation Sprint: ${simulationSprintTitle}.</p>
 

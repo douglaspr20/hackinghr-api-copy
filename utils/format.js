@@ -110,6 +110,32 @@ async function convertJSONToExcel(sheet, fields, content) {
   return buffer;
 }
 
+async function convertJSONToExcelBonfiresUsersParticipants(
+  sheet,
+  fields,
+  content
+) {
+  // Create page
+  const ws1 = workbook.addWorksheet(sheet);
+  ws1.addRow(fields.map((item) => item.label));
+  fields.forEach((field, index) => {
+    ws1.getColumn(index + 1).width = field.width;
+  });
+
+  content.forEach((item) => {
+    const row = fields.map((field) => item[field.value]);
+    ws1.addRow(row);
+  });
+
+  await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
+
+  const worksheet = workbook.getWorksheet(sheet);
+
+  workbook.removeWorksheet(worksheet?.id);
+
+  return;
+}
+
 async function convertJSONToExcelUsersSpeakers2023(sheet, fields, content) {
   // Create page
 
@@ -138,7 +164,6 @@ async function convertJSONToExcelPanelsConference2023(
   fields2,
   content
 ) {
-
   const wb = workbook.addWorksheet(sheet);
 
   let number = 2;
@@ -268,7 +293,6 @@ async function convertJSONToExcelRegisterConference2023(
   fields1,
   content
 ) {
-
   const wb = workbook.addWorksheet(sheet);
 
   let number = 2;
@@ -279,18 +303,18 @@ async function convertJSONToExcelRegisterConference2023(
     const cell2 = wb.getCell(`A${number}`);
     cell2.value = "";
 
-    if(item.panel !== undefined){
+    if (item.panel !== undefined) {
       item.panel.forEach((itemsPanel) => {
         wb.getRow(`${number}`).fill = {
           type: "pattern",
           pattern: "solid",
           fgColor: { argb: "c0c0c0" },
         };
-        const row1 = ["firstName", item.firstName]
+        const row1 = ["firstName", item.firstName];
         wb.addRow(row1, `${number + 1}`);
-        const row2 = ["lastName", item.lastName]
+        const row2 = ["lastName", item.lastName];
         wb.addRow(row2, `${number + 2}`);
-        const row3 = ["email", item.email]
+        const row3 = ["email", item.email];
         wb.addRow(row3, `${number + 3}`);
 
         const row5 = fields1.map((field) => itemsPanel[field.value]);
@@ -307,23 +331,22 @@ async function convertJSONToExcelRegisterConference2023(
           right: { style: "thin" },
         };
 
-        number = number + 5
-      })
-    }else{
+        number = number + 5;
+      });
+    } else {
       wb.getRow(`${number}`).fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "c0c0c0" },
       };
-      const row1 = ["firstName", item.firstName]
+      const row1 = ["firstName", item.firstName];
       wb.addRow(row1, `${number + 1}`);
-      const row2 = ["lastName", item.lastName]
+      const row2 = ["lastName", item.lastName];
       wb.addRow(row2, `${number + 2}`);
-      const row3 = ["email", item.email]
+      const row3 = ["email", item.email];
       wb.addRow(row3, `${number + 3}`);
-      number = number + 4
+      number = number + 4;
     }
-
   });
 
   await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
@@ -345,5 +368,6 @@ module.exports = {
   convertJSONToExcelUsersSpeakers2023,
   convertJSONToExcelPanelsConference2023,
   convertJSONToExcelRegisterConference2023,
-  convertJSONToExcelFollowersChannels
+  convertJSONToExcelFollowersChannels,
+  convertJSONToExcelBonfiresUsersParticipants,
 };

@@ -72,8 +72,12 @@ const SpeakersController = () => {
             if(type === "Panels"){
                 const allSpeakersAccepted = await User.findAll({where: {speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""}}});
 
+                let newArray = allSpeakersAccepted.filter(data => {
+                    return data.speakersAuthorization === "accepted"
+                })
+
                 await Promise.all(
-                    allSpeakersAccepted.map(async (data) => {
+                    newArray.map(async (data) => {
     
                         await Promise.resolve(
                             (() => {
@@ -518,13 +522,29 @@ const SpeakersController = () => {
     };
 
     const removeUserSpeakerToPanel = async (req, res) => {
-        const { UserId } = req.body;
+        const { data } = req.body;
+
+        const { firstName, lastName } = req.user.dataValues;
 
         try {
 
             await SpeakerMemberPanel.destroy({
-                where:{ id: UserId}
+                where:{ id: data?.id},
+                raw: true,
             })
+
+            await Promise.resolve(
+                (() => {
+                    let mailOptions = {
+                        from: process.env.SEND_IN_BLUE_SMTP_SENDER,
+                        to: "enrique@hackinghr.io",
+                        subject: LabEmails.USER_IS_WITHDRAW.subject,
+                        html: LabEmails.USER_IS_WITHDRAW.body(firstName, lastName, data?.panelName),
+                    };
+        
+                    return smtpService().sendMailUsingSendInBlue(mailOptions);
+                })()
+            );
 
             const panelsSpeakers = await SpeakersPanel.findAll({
                 order: [["id", "DESC"]],
@@ -660,7 +680,18 @@ const SpeakersController = () => {
                         "percentOfCompletion"
                     ],
                     order: [["firstName", "ASC"]],
+                    include: [
+                        {
+                            model: SpeakerMemberPanel,
+                        }
+                    ]
                 });
+
+                if(type === "conference"){
+                    userSpeakers = userSpeakers.filter(data => {
+                        return data.SpeakerMemberPanels.length > 0
+                    })
+                }
             }
     
             return res.status(HttpCodes.OK).json({ userSpeakers });
@@ -1612,107 +1643,12 @@ const SpeakersController = () => {
         }
     };
 
-    const sendEmailsAutomaticToSpeakers = async (req, res) => {
-
-        try{
-
-            const allUserSpeakersWithoutSession = await User.findAll(
-                {
-                    where: {speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""}},
-                    include: [
-                        {
-                            model: SpeakerMemberPanel,
-                        }
-                    ]
-                }
-            )
-
-            let newArray = allUserSpeakersWithoutSession.filter(data => {
-                return data.SpeakerMemberPanels.length === 0
-            })
-
-            await Promise.all(
-
-                newArray.map(async (data) => {
-
-                    await Promise.resolve(
-                        (() => {
-                            let mailOptions = {
-                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                to: data.email,
-                                subject: LabEmails.REMEMBER_TO_SPEAKERS.subject(data.firstName),
-                                html: LabEmails.REMEMBER_TO_SPEAKERS.body(data.firstName),
-                            };
-                
-                            return smtpService().sendMailUsingSendInBlue(mailOptions);
-                        })()
-                    );
-                    
-                })
-            );
-
-
-        }catch (error) {
-            console.log(error);
-            return res
-              .status(HttpCodes.INTERNAL_SERVER_ERROR)
-              .json({ msg: "Internal server error" });
-        }
-
-    }
-
-    const sendEmailsAutomaticToSpeakersCompleteProfile = async () => {
-        try{
-
-            const allUserSpeakersWithoutSession = await User.findAll(
-                {
-                    where: {
-                        speakersAuthorization: {[Op.eq]: "accepted",[Op.not]: null, [Op.ne]: ""},
-                        percentOfCompletion: {[Op.ne]: 100}
-                    },
-                    include: [
-                        {
-                            model: SpeakerMemberPanel,
-                        }
-                    ]
-                }
-            )
-
-            await Promise.all(
-                allUserSpeakersWithoutSession.map(async (data) => {
-                    await Promise.resolve(
-                        (() => {
-                            let mailOptions = {
-                                from: process.env.SEND_IN_BLUE_SMTP_SENDER,
-                                to: data.email,
-                                subject: LabEmails.REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE.subject(data.firstName),
-                                html: LabEmails.REMEMBER_TO_SPEAKERS_COMPLETE_PROFILE.body(data.firstName),
-                            };
-                
-                            return smtpService().sendMailUsingSendInBlue(mailOptions);
-                        })()
-                    );
-                    
-                })
-            );
-
-
-        }catch (error) {
-            console.log(error);
-            return res
-              .status(HttpCodes.INTERNAL_SERVER_ERROR)
-              .json({ msg: "Internal server error" });
-        }
-    }
-
     return {
         addNewPanelSpeaker,
         addNewSpeakersAdmin,
         addToMyPersonalAgenda,
         allPanelSpeakers,
         editAuthorizationSpeakers,
-        sendEmailsAutomaticToSpeakers,
-        sendEmailsAutomaticToSpeakersCompleteProfile,
         addUserSpeakerToPanel,
         removeUserSpeakerToPanel,
         registerUserIfNotAreRegisterConference2023,

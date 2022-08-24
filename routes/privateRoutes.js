@@ -190,6 +190,9 @@ const privateRoutes = {
   "PUT /bonfire/:id": "BonfireController.update",
   "PUT /bonfire/:id/invitedUser/:userId": "BonfireController.inviteUser",
   "DELETE /bonfire/:id": "BonfireController.remove",
+  "GET /bonfire-download/:id": "BonfireController.exportUsersToCSV",
+  "GET /bonfire-participant-download/:id":
+    "BonfireController.exportParticipantBonfireToCSV",
   "GET /skill-cohort": "SkillCohortController.getAllActiveUserSide",
   "GET /skill-cohort/my-cohort/:UserId":
     "SkillCohortController.getAllOfMyCohort",
@@ -323,11 +326,11 @@ const privateRoutes = {
     "Speakers2023Controller.excelAllsersSpeakersAndPanels",
   "GET /speakers/get-member-speakers-of-one-user":
     "Speakers2023Controller.allMemberSpeakerToPanel",
-  "POST /speakers/add-new-speakers-admin": "Speakers2023Controller.addNewSpeakersAdmin",
+  "POST /speakers/add-new-speakers-admin":
+    "Speakers2023Controller.addNewSpeakersAdmin",
   "GET /speakers/all-panel-of-user":
     "Speakers2023Controller.getAllPanelsOfOneUser",
-    "GET /speakers/all-my-panel-of-user":
-    "Speakers2023Controller.getAllMyPanels",
+  "GET /speakers/all-my-panel-of-user": "Speakers2023Controller.getAllMyPanels",
   "POST /speakers/add-new-speakers-admin":
     "Speakers2023Controller.addNewSpeakersAdmin",
   "POST /speakers/add-speaker-to-panel":

@@ -19,12 +19,12 @@ module.exports = (sequelize, DataTypes) => {
   }
   SkillCohortResources.init(
     {
-      title: DataTypes.STRING,
-      description: DataTypes.STRING,
+      title: DataTypes.TEXT,
+      description: DataTypes.TEXT,
       level: DataTypes.ENUM("basic", "intermediate", "advance"),
       type: DataTypes.ENUM("video", "article", "podcast"),
       duration: DataTypes.STRING,
-      resourceLink: DataTypes.STRING,
+      resourceLink: DataTypes.TEXT,
       releaseDate: DataTypes.DATE,
     },
     {
