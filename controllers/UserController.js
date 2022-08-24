@@ -308,8 +308,8 @@ const UserController = () => {
           }
 
           return smtpService().generateCalendarInvite(
-            startTime.format("YYYY-MM-DD HH:mm:ss"),
-            endTime.format("YYYY-MM-DD HH:mm:ss"),
+            startTime,
+            endTime,
             event.title,
             getEventDescription(event.description),
             "",
