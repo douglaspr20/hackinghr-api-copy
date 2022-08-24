@@ -540,8 +540,6 @@ const EventController = () => {
   const getEventAdmin = async (req, res) => {
     const { id } = req.params;
 
-    console.log("//////////////////////////////////////" + 4)
-
     if (id) {
       try {
         const event = await Event.findOne({
@@ -577,8 +575,6 @@ const EventController = () => {
 
   const getEvent = async (req, res) => {
     const { id } = req.params;
-
-    console.log("//////////////////////////////////////" + id)
 
     if (id) {
       try {
