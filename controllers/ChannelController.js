@@ -5,9 +5,16 @@ const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
 const { isEmpty } = require("lodash");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
-const { LabEmails } = require("../enum");
+const {formatFollowers} = require("../utils/formatFollowers.js")
+const { LabEmails, USER_ROLE } = require("../enum");
 const Sequelize = require("sequelize");
+const path = require("path")
+const fs = require("fs")
 const smtpService = require("../services/smtp.service");
+const {
+  convertJSONToExcelFollowersChannels
+} = require("../utils/format");
+const moment = require("moment")
 
 const Channel = db.Channel;
 const User = db.User;
@@ -122,13 +129,27 @@ const ChannelController = () => {
           },
         });
 
+        const followers = await User.findAll({
+          where: {
+            id: channel.dataValues.followedUsers,
+          },
+          attributes: [
+            "id",
+            "firstName",
+            "lastName",
+            "titleProfessions",
+            "img",
+            "abbrName"
+          ],
+        });
+
         if (!channel) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Bad Request: Channel not found" });
         }
 
-        return res.status(HttpCodes.OK).json({ channel });
+        return res.status(HttpCodes.OK).json({ channel, followers });
       } catch (err) {
         console.log(err);
         return res
@@ -234,7 +255,7 @@ const ChannelController = () => {
         }
       }
 
-      if (prevChannel.image && !channel.image) {
+      if (prevChannel.image && !channel.image && !channel.image2) {
         await s3Service().deleteUserPicture(prevChannel.image);
       }
 
@@ -249,7 +270,7 @@ const ChannelController = () => {
         }
       }
 
-      if (prevChannel.image2 && !channel.image2) {
+      if (prevChannel.image2 && !channel.image2 && !channel.image) {
         await s3Service().deleteUserPicture(prevChannel.image2);
       }
 
@@ -415,7 +436,139 @@ const ChannelController = () => {
             return smtpService().sendMailUsingSendInBlue(mailOptions);
         })()
     ); 
+  };
+
+  const exportFollowers = async (req, res) => {
+    const {idChannel} = req.params
+
+    try{
+
+      const channel = await Channel.findOne({
+          where: {id: idChannel},
+      })
+
+      const followers = await User.findAll({
+        where: {
+          id: channel.dataValues.followedUsers,
+        },
+        attributes: [
+          "firstName",
+          "lastName",
+          "personalLinks",
+          "location",
+          "titleProfessions",
+          "company",
+          "sizeOfOrganization"
+        ],
+      });
+
+      const nombre = moment().format("MM-DD-HH-mm-s")
+
+      await convertJSONToExcelFollowersChannels(
+          nombre,
+          formatFollowers,
+          followers.map((follower) => follower.toJSON())
+      );
+
+      await res.status(HttpCodes.OK).download(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`, function(){
+          fs.unlinkSync(`${path.join(__dirname, '../utils')}/${nombre}.xlsx`)
+      })
+
+    }catch (error) {
+        console.log(error);
+        return res
+          .status(HttpCodes.INTERNAL_SERVER_ERROR)
+          .json({ msg: "Internal server error" });
+    }
+  };
+
+  const newContentEditor = async (req, res) => {
+    const {idUsers, channelId} = req.body;
+
+    try {
+
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          role: USER_ROLE.CHANNEL_CONTENT_EDITOR,
+          channel: channelId
+        },
+        {
+          where: { id: idUsers },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
   }
+
+  const removeContentEditor = async (req, res) => {
+    const {id} = req.params;
+
+    try {
+
+      const [numberOfAffectedRows, affectedRows] = await User.update(
+        {
+          role: USER_ROLE.USER,
+          channel: 0
+        },
+        {
+          where: { id },
+          returning: true,
+          plain: true,
+        }
+      );
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ numberOfAffectedRows, affectedRows });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  }
+
+  const getContentEditor = async (req, res) => {
+    const {id} = req.params;
+
+    try {
+
+    const contentEditors = await User.findAll({
+      where: {
+        role: USER_ROLE.CHANNEL_CONTENT_EDITOR,
+        channel: id
+      },
+      attributes: [
+        "firstName",
+        "lastName",
+        "personalLinks",
+        "location",
+        "titleProfessions",
+        "company",
+      ],
+    });
+
+      return res
+        .status(HttpCodes.OK)
+        .json({ contentEditors });
+    } catch (error) {
+      console.log(error);
+      return res
+        .status(HttpCodes.INTERNAL_SERVER_ERROR)
+        .json({ msg: "Internal server error" });
+    }
+  }
+
 
   return {
     create,
@@ -426,7 +579,11 @@ const ChannelController = () => {
     remove,
     setFollow,
     unsetFollow,
-    emailNotification
+    emailNotification,
+    exportFollowers,
+    newContentEditor,
+    removeContentEditor,
+    getContentEditor,
   };
 };
 

@@ -237,6 +237,57 @@ async function convertJSONToExcelPanelsConference2023(
   return;
 }
 
+async function convertJSONToExcelFollowersChannels(
+  sheet,
+  fields1,
+  content
+) {
+
+  const wb = workbook.addWorksheet(sheet);
+  const words = ['A','B','C','D','E','F','G']
+
+  wb.addRow(fields1.map((item) => item?.label));
+  fields1.forEach((field, index) => {
+    wb.getColumn(index + 1).width = field?.width;
+    wb.getCell(`${words[index]}1`).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "ffbba6" },
+    };
+    wb.getCell(`${words[index]}1`).border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
+    };
+    wb.getCell(`${words[index]}1`).alignment = { 
+      vertical: 'middle', 
+      horizontal: 'center' 
+    };
+  });
+
+  wb.getRow(1).height = 30;
+
+  content.forEach((item) => {
+    const row = fields1.map((field) => {
+      if(field?.value === 'personalLinks'){
+        return item[field?.value]?.linkedin
+      }else{
+        return item[field?.value]
+      }
+      
+    });
+    wb.addRow(row);
+  });
+  
+  await workbook.xlsx.writeFile(`./utils/${sheet}.xlsx`);
+
+  const worksheet = workbook.getWorksheet(sheet);
+  workbook.removeWorksheet(worksheet.id);
+
+  return;
+}
+
 async function convertJSONToExcelRegisterConference2023(
   sheet,
   fields1,
@@ -317,5 +368,6 @@ module.exports = {
   convertJSONToExcelUsersSpeakers2023,
   convertJSONToExcelPanelsConference2023,
   convertJSONToExcelRegisterConference2023,
+  convertJSONToExcelFollowersChannels,
   convertJSONToExcelBonfiresUsersParticipants,
 };
