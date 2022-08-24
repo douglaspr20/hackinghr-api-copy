@@ -472,6 +472,7 @@ const EventController = () => {
 
   const getAllEvents = async (req, res) => {
     const { role, email } = req.user;
+
     try {
       let where = {
         level: {
