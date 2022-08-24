@@ -13,7 +13,7 @@ const publicRoutes = {
   "POST /stripe/webhook": "StripeController.webhook",
   "POST /marketPlace/": "MarketPlaceController.getAll",
   "GET /marketPlace-categories/": "MarketplaceCategoriesController.getAll",
-  "GET /event/:id/": "EventController.getEvent",
+  "GET /event/get/:id": "EventController.getEvent",
   "GET /event/ics/:id": "EventController.downloadICS",
   "GET /global-conference/ics/:id": "AnnualConferenceController.downloadICS",
   "GET /bonfire/ics/:id": "BonfireController.downloadICS",
@@ -34,6 +34,11 @@ const publicRoutes = {
     "Speakers2023Controller.getAllPanelsOfOneUser",
   "GET /simulation-sprint-activity/ics/:id":
     "SimulationSprintActivityController.downloadICS",
+  "GET /channel/forName/:name": "ChannelController.getForName",
+  "GET /library/channel/": "LibraryController.getChannelLibraries",
+  "GET /podcast/channel": "PodcastController.getChannelPodcasts",
+  "GET /event/channel": "EventController.getChannelEvents",
+  "GET /blogpost/:ChannelId": "BlogPostController.getByChannelId",
 };
 
 module.exports = publicRoutes;
