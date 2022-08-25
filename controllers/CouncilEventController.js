@@ -296,8 +296,8 @@ const CouncilEventController = () => {
             (tz) => tz.value === councilEvent.timezone
           );
 
-          const startDate = moment.tz(councilEvent.startDate, timezone.utc[0]);
-          const endDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
+          const startDate = moment.utc(councilEvent.startDate);
+          const endDate = moment.utc(councilEvent.endDate);
 
           const event = {
             startDate: startDate.format("LL"),
@@ -311,7 +311,7 @@ const CouncilEventController = () => {
           };
 
           const panels = councilEvent.CouncilEventPanels.map((panel) => {
-            const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+            const startDate = moment.utc(panel.startDate);
 
             return `<p>${startDate.format("LL")} at ${startDate.format(
               "HH:mm"
@@ -1056,15 +1056,8 @@ const CouncilEventController = () => {
           ],
         });
 
-        const timezone = TimeZoneList.find(
-          (tz) => tz.value === councilEvent.timezone
-        );
-
-        const eventStartDate = moment.tz(
-          councilEvent.startDate,
-          timezone.utc[0]
-        );
-        const eventEndDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
+        const eventStartDate = moment.utc(councilEvent.startDate);
+        const eventEndDate = moment.utc(councilEvent.endDate);
 
         transformedEvent = {
           startDate: eventStartDate.format("LL"),
@@ -1082,8 +1075,8 @@ const CouncilEventController = () => {
             .map((panelist) => {
               const panel = panelist.CouncilEventPanel;
 
-              const startDate = moment.tz(panel.startDate, timezone.utc[0]);
-              const endDate = moment.tz(panel.endDate, timezone.utc[0]);
+              const startDate = moment.utc(panel.startDate);
+              const endDate = moment.utc(panel.endDate);
 
               const transformedPanels = `<p>${
                 panel.panelName
@@ -1163,8 +1156,8 @@ const CouncilEventController = () => {
             .map((panelist) => {
               const panel = panelist.CouncilEventPanel;
 
-              const startDate = moment.tz(panel.startDate, timezone.utc[0]);
-              const endDate = moment.tz(panel.endDate, timezone.utc[0]);
+              const startDate = moment.utc(panel.startDate);
+              const endDate = moment.utc(panel.endDate);
 
               const transformedPanels = `<p>${
                 panel.panelName
@@ -1276,16 +1269,12 @@ const CouncilEventController = () => {
             transformedComments = [];
           }
 
-          const timezone = TimeZoneList.find(
-            (tz) => tz.value === event.timezone
-          );
-
           const transformedPanel = {
             linkToJoin: panel.linkToJoin,
             panelName: panel.panelName,
             startTime: `${moment
-              .tz(panel.startDate, timezone.utc[0])
-              .format("HH:mm")} ${timezone.abbr}`,
+              .utc(panel.startDate, timezone)
+              .format("HH:mm")} ${event.timezone}`,
           };
 
           let moderator = panelists.filter((panelist) => panelist.isModerator);
