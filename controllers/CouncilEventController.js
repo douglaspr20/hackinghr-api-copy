@@ -19,7 +19,7 @@ const CouncilEventController = () => {
   const createOrEditConcil = async (req, res) => {
     const data = req.body;
     try {
-      if(data.isEdit === false){
+      if (data.isEdit === false) {
         const councilEvent = await db.sequelize.transaction(async (t) => {
           const councilEvent = await CouncilEvent.create({
             eventName: data.eventName,
@@ -29,12 +29,12 @@ const CouncilEventController = () => {
             numberOfPanels: data.numberOfPanels,
             timezone: data.timezone,
             maxNumberOfPanelsUsersCanJoin: data.maxNumberOfPanelsUsersCanJoin,
-            status: data.status
+            status: data.status,
           });
 
           if (data.panels[0] === undefined) {
-            
-            const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
+            const isPanelFull =
+              data.panels.length > +councilEvent.numberOfPanels;
 
             if (isPanelFull) {
               throw new Error();
@@ -65,17 +65,15 @@ const CouncilEventController = () => {
           }
 
           const councilEventPanels = await data.panels?.map(async (panel) => {
-            return await CouncilEventPanel.create(
-              {
-                CouncilEventId: councilEvent.id,
-                panelName: panel.panelName,
-                panelStartAndEndDate: data.panelStartAndEndDate,
-                numberOfPanelists: panel.numberOfPanelists,
-                linkToJoin: panel.linkToJoin,
-                startDate: panel.startDate,
-                endDate: panel.endDate,
-              }
-            );
+            return await CouncilEventPanel.create({
+              CouncilEventId: councilEvent.id,
+              panelName: panel.panelName,
+              panelStartAndEndDate: data.panelStartAndEndDate,
+              numberOfPanelists: panel.numberOfPanelists,
+              linkToJoin: panel.linkToJoin,
+              startDate: panel.startDate,
+              endDate: panel.endDate,
+            });
           });
 
           if (!isEmpty(councilEventPanels)) {
@@ -125,8 +123,14 @@ const CouncilEventController = () => {
             (tz) => tz.value === councilEvent.timezone
           );
 
-          const startDate = moment.tz(councilEvent.startDate, timezone.utc[0]);
-          const endDate = moment.tz(councilEvent.endDate, timezone.utc[0]);
+          const startDate = moment.tz(
+            councilEvent.startDate,
+            timezone?.utc[0] || data.timezone
+          );
+          const endDate = moment.tz(
+            councilEvent.endDate,
+            timezone?.utc[0] || data.timezone
+          );
 
           const event = {
             startDate: startDate.format("LL"),
@@ -140,7 +144,10 @@ const CouncilEventController = () => {
           };
 
           const panels = councilEvent.CouncilEventPanels.map((panel) => {
-          const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+            const startDate = moment.tz(
+              panel.startDate,
+              timezone?.utc[0] || data.timezone
+            );
 
             return `<p>${startDate.format("LL")} at ${startDate.format(
               "HH:mm"
@@ -177,30 +184,30 @@ const CouncilEventController = () => {
         }
 
         return res.status(HttpCodes.OK).json({ councilEvent });
-      }else{
+      } else {
         const councilEvent = await db.sequelize.transaction(async (t) => {
-          const councilEvent = await CouncilEvent.update({
-            eventName: data.eventName,
-            startDate: data.startDate,
-            endDate: data.endDate,
-            description: data.description,
-            numberOfPanels: data.numberOfPanels,
-            timezone: data.timezone,
-            maxNumberOfPanelsUsersCanJoin: data.maxNumberOfPanelsUsersCanJoin,
-            status: data.status
-          },{where: { id: data.id }}
+          const councilEvent = await CouncilEvent.update(
+            {
+              eventName: data.eventName,
+              startDate: data.startDate,
+              endDate: data.endDate,
+              description: data.description,
+              numberOfPanels: data.numberOfPanels,
+              timezone: data.timezone,
+              maxNumberOfPanelsUsersCanJoin: data.maxNumberOfPanelsUsersCanJoin,
+              status: data.status,
+            },
+            { where: { id: data.id } }
           );
 
-          if (data.panels[0] === undefined) {
-            
-            const isPanelFull = data.panels.length > +councilEvent.numberOfPanels;
+          if (data?.panels && data.panels[0] === undefined) {
+            const isPanelFull =
+              data.panels.length > +councilEvent.numberOfPanels;
 
             if (isPanelFull) {
               throw new Error();
             }
-          }
 
-          if (data.panels[0] === undefined) {
             const _councilEventPanels = await CouncilEventPanel.findAll({
               where: {
                 CouncilEventId: councilEvent.id,
@@ -224,6 +231,7 @@ const CouncilEventController = () => {
           }
 
           const councilEventPanels = await data.panels?.map(async (panel) => {
+            if (panel.id) {
               return await CouncilEventPanel.update(
                 {
                   CouncilEventId: data.id,
@@ -233,8 +241,20 @@ const CouncilEventController = () => {
                   linkToJoin: panel.linkToJoin,
                   startDate: panel.startDate,
                   endDate: panel.endDate,
-                },{where: { id: panel.id }}
+                },
+                { where: { id: panel.id } }
               );
+            } else {
+              return await CouncilEventPanel.create({
+                CouncilEventId: data.id,
+                panelName: panel.panelName,
+                panelStartAndEndDate: data.panelStartAndEndDate,
+                numberOfPanelists: panel.numberOfPanelists,
+                linkToJoin: panel.linkToJoin,
+                startDate: panel.startDate,
+                endDate: panel.endDate,
+              });
+            }
           });
 
           if (!isEmpty(councilEventPanels)) {
@@ -299,7 +319,7 @@ const CouncilEventController = () => {
           };
 
           const panels = councilEvent.CouncilEventPanels.map((panel) => {
-          const startDate = moment.tz(panel.startDate, timezone.utc[0]);
+            const startDate = moment.tz(panel.startDate, timezone.utc[0]);
 
             return `<p>${startDate.format("LL")} at ${startDate.format(
               "HH:mm"
@@ -370,7 +390,7 @@ const CouncilEventController = () => {
                           "lastName",
                           "titleProfessions",
                           "img",
-                          "abbrName"
+                          "abbrName",
                         ],
                       },
                     ],
@@ -388,7 +408,7 @@ const CouncilEventController = () => {
                       "lastName",
                       "titleProfessions",
                       "img",
-                      "abbrName"
+                      "abbrName",
                     ],
                   },
                 ],
@@ -440,7 +460,7 @@ const CouncilEventController = () => {
                           "lastName",
                           "titleProfessions",
                           "img",
-                          "abbrName"
+                          "abbrName",
                         ],
                       },
                     ],
@@ -458,7 +478,7 @@ const CouncilEventController = () => {
                       "lastName",
                       "titleProfessions",
                       "img",
-                      "abbrName"
+                      "abbrName",
                     ],
                   },
                 ],
@@ -567,52 +587,27 @@ const CouncilEventController = () => {
           },
         });
 
-        let _userTimezone;
-
-        if (isAddedByAdmin) {
-          _userTimezone = TimeZoneList.find(
-            (item) => item.value === user.timezone
-          );
-        } else {
-          _userTimezone = TimeZoneList.find((item) =>
-            item.utc.includes(userTimezone)
-          );
-        }
-
-        const timezone = TimeZoneList.find(
-          (tz) => tz.value === councilEventPanel.CouncilEvent.timezone
-        );
-        const offset = timezone.offset;
-
         const startTime = councilEventPanel.startDate;
         const endTime = councilEventPanel.endDate;
 
-        const convertedStartTime = convertToCertainTime(
-          moment(startTime),
-          councilEventPanel.CouncilEvent.timezone
+        const convertedStartTime = convertToLocalTime(
+          startTime,
+          councilEventPanel.CouncilEvent.timezone,
+          userTimezone
         );
 
-        const convertedEndTime = convertToCertainTime(
-          moment(endTime),
-          councilEventPanel.CouncilEvent.timezone
+        const convertedEndTime = convertToLocalTime(
+          endTime,
+          councilEventPanel.CouncilEvent.timezone,
+          userTimezone
         );
 
         let icsContent;
 
         if (!isAddedByAdmin) {
-          const localStartTime = convertToLocalTime(
-            moment(convertedStartTime).utcOffset(offset, true)
-            // _userTimezone.utc[0]
-          );
-
-          const localEndTime = convertToLocalTime(
-            moment(convertedEndTime).utcOffset(offset, true)
-            // _userTimezone.utc[0]
-          );
-
           const calendarInvite = smtpService().generateCalendarInvite(
-            localStartTime,
-            localEndTime,
+            convertedStartTime,
+            convertedEndTime,
             councilEventPanel.panelName,
             `Link to join: ${councilEventPanel.linkToJoin}`,
             "",
@@ -620,7 +615,7 @@ const CouncilEventController = () => {
             "",
             "Hacking HR",
             process.env.FEEDBACK_EMAIL_CONFIG_SENDER,
-            _userTimezone.utc[0]
+            userTimezone
           );
 
           icsContent = calendarInvite.toString();
@@ -659,13 +654,13 @@ const CouncilEventController = () => {
                 user.firstName,
                 event,
                 panel,
-                timezone.abbr
+                councilEventPanel.CouncilEvent.timezone
               )
             : LabEmails.COUNCIL_EVENT_JOIN.body(
                 user.firstName,
                 event,
                 panel,
-                timezone.abbr
+                userTimezone
               ),
           contentType: "text/calendar",
         };
@@ -968,12 +963,12 @@ const CouncilEventController = () => {
       const user = await CouncilEventPanelist.findAll({
         where: {
           CouncilEventPanelId: data.CouncilEventPanelId,
-          isModerator: true
-        }
-      })
+          isModerator: true,
+        },
+      });
 
-      if(user[0] !== undefined){
-        if(user.length === 1){
+      if (user[0] !== undefined) {
+        if (user.length === 1) {
           const Moderador = await User.findOne({
             attributes: ["firstName", "email"],
             where: {
@@ -987,9 +982,9 @@ const CouncilEventController = () => {
             to: Moderador.dataValues.email,
             subject: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.subject(
               Moderador.dataValues.firstName,
-              councilEvent.dataValues.eventName,
+              councilEvent.dataValues.eventName
             ),
-            html:LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.message(
+            html: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.message(
               payload.CouncilEventPanelist.User.firstName,
               payload.CouncilEventPanelist.User.lastName
             ),
@@ -998,8 +993,8 @@ const CouncilEventController = () => {
 
           smtpService().sendMailUsingSendInBlue(mailOptions);
         }
-        if(user.length > 1){
-          for(let i = 0; i < user.length ; i++){
+        if (user.length > 1) {
+          for (let i = 0; i < user.length; i++) {
             const Moderador = await User.findOne({
               attributes: ["firstName", "email"],
               where: {
@@ -1013,9 +1008,9 @@ const CouncilEventController = () => {
               to: Moderador.dataValues.email,
               subject: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.subject(
                 Moderador.dataValues.firstName,
-                councilEvent.dataValues.eventName,
+                councilEvent.dataValues.eventName
               ),
-              html:LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.message(
+              html: LabEmails.NOTICE_NEW_MESSAGE_MODERATOR.message(
                 payload.CouncilEventPanelist.User.firstName,
                 payload.CouncilEventPanelist.User.lastName
               ),
@@ -1043,8 +1038,10 @@ const CouncilEventController = () => {
       const councilEvents = await CouncilEvent.findAll({
         where: {
           status: "active",
-          startDate: aWeekLaterStartOfHour.format("YYYY-MM-DD HH:mm:ss.000 +00:00")
-        }
+          startDate: aWeekLaterStartOfHour.format(
+            "YYYY-MM-DD HH:mm:ss.000 +00:00"
+          ),
+        },
       });
 
       councilEvents.forEach(async (councilEvent) => {
@@ -1137,7 +1134,9 @@ const CouncilEventController = () => {
     try {
       const councilEvents = await CouncilEvent.findAll({
         where: {
-          startDate: aDayBeforeStartOfHour.format("YYYY-MM-DD HH:mm:ss.000 +00:00"),
+          startDate: aDayBeforeStartOfHour.format(
+            "YYYY-MM-DD HH:mm:ss.000 +00:00"
+          ),
           status: "active",
         },
       });
@@ -1216,7 +1215,9 @@ const CouncilEventController = () => {
     try {
       const councilEventPanels = await CouncilEventPanel.findAll({
         where: {
-          startDate: anHourBeforeStartOfHour.format("YYYY-MM-DD HH:mm:ss.000 +00:00"),
+          startDate: anHourBeforeStartOfHour.format(
+            "YYYY-MM-DD HH:mm:ss.000 +00:00"
+          ),
         },
         order: [["startDate", "ASC"]],
         include: [
@@ -1225,8 +1226,8 @@ const CouncilEventController = () => {
             attributes: ["timezone"],
             required: true,
             where: {
-              status: "active"
-            }
+              status: "active",
+            },
           },
           {
             model: CouncilEventPanelist,
@@ -1279,8 +1280,8 @@ const CouncilEventController = () => {
                 return `<li>${user.firstName} ${user.lastName}: ${comment.comment}</li>`;
               }
             );
-          }else{
-            transformedComments = []
+          } else {
+            transformedComments = [];
           }
 
           const timezone = TimeZoneList.find(
@@ -1299,17 +1300,17 @@ const CouncilEventController = () => {
 
           let moderatorText;
 
-          if(moderator !== undefined){
-            moderatorText = `The moderator for your panel is:`
+          if (moderator !== undefined) {
+            moderatorText = `The moderator for your panel is:`;
             moderator.forEach((moderato, index) => {
-              if(index === 0){
-                moderatorText = `${moderatorText} ${moderato.User.firstName} ${moderato.User.lastName}`
-              }else{
-                moderatorText = `${moderatorText}, ${moderato.User.firstName} ${moderato.User.lastName}`
+              if (index === 0) {
+                moderatorText = `${moderatorText} ${moderato.User.firstName} ${moderato.User.lastName}`;
+              } else {
+                moderatorText = `${moderatorText}, ${moderato.User.firstName} ${moderato.User.lastName}`;
               }
-            })
-          }else{
-            moderatorText = ``
+            });
+          } else {
+            moderatorText = ``;
           }
 
           panelists.forEach((panelist) => {
