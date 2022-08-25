@@ -123,14 +123,9 @@ const CouncilEventController = () => {
             (tz) => tz.value === councilEvent.timezone
           );
 
-          const startDate = moment.tz(
-            councilEvent.startDate,
-            timezone?.utc[0] || data.timezone
-          );
-          const endDate = moment.tz(
-            councilEvent.endDate,
-            timezone?.utc[0] || data.timezone
-          );
+          const startDate = moment.utc(councilEvent.startDate);
+
+          const endDate = moment.utc(councilEvent.endDate);
 
           const event = {
             startDate: startDate.format("LL"),
