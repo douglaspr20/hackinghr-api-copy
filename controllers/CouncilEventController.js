@@ -139,10 +139,7 @@ const CouncilEventController = () => {
           };
 
           const panels = councilEvent.CouncilEventPanels.map((panel) => {
-            const startDate = moment.tz(
-              panel.startDate,
-              timezone?.utc[0] || data.timezone
-            );
+            const startDate = moment.utc(panel.startDate);
 
             return `<p>${startDate.format("LL")} at ${startDate.format(
               "HH:mm"
