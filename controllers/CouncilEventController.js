@@ -231,7 +231,6 @@ const CouncilEventController = () => {
           }
 
           const councilEventPanels = await data.panels?.map(async (panel) => {
-            console.log(panel);
             if (panel.id) {
               return await CouncilEventPanel.update(
                 {
