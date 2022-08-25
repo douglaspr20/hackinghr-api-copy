@@ -200,16 +200,14 @@ const CouncilEventController = () => {
             { where: { id: data.id } }
           );
 
-          if (data.panels[0] === undefined) {
+          if (data?.panels && data.panels[0] === undefined) {
             const isPanelFull =
               data.panels.length > +councilEvent.numberOfPanels;
 
             if (isPanelFull) {
               throw new Error();
             }
-          }
 
-          if (data.panels[0] === undefined) {
             const _councilEventPanels = await CouncilEventPanel.findAll({
               where: {
                 CouncilEventId: councilEvent.id,
