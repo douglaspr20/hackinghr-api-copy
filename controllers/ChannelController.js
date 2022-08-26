@@ -3,7 +3,7 @@ const HttpCodes = require("http-codes");
 const { Op } = require("sequelize");
 const s3Service = require("../services/s3.service");
 const { isValidURL } = require("../utils/profile");
-const { isEmpty } = require("lodash");
+const { isEmpty, compact} = require("lodash");
 const SortOptions = require("../enum/FilterSettings").SORT_OPTIONS;
 const {formatFollowers} = require("../utils/formatFollowers.js")
 const { LabEmails, USER_ROLE } = require("../enum");
@@ -18,6 +18,10 @@ const moment = require("moment")
 
 const Channel = db.Channel;
 const User = db.User;
+const Library = db.Library;
+const Event = db.Event;
+const BlogPost = db.BlogPost;
+const Podcast = db.Podcast;
 
 const ChannelController = () => {
   const create = async (req, res) => {
@@ -122,7 +126,7 @@ const ChannelController = () => {
 
     if (nameSelected.name) {
       try {
-        const channel = await Channel.findOne({
+        const channelConsult = await Channel.findOne({
           where: {
             name: nameSelected.name,
           },
@@ -133,7 +137,7 @@ const ChannelController = () => {
 
         const followers = await User.findAll({
           where: {
-            id: channel.dataValues.followedUsers,
+            id: channelConsult.dataValues.followedUsers,
           },
           attributes: [
             "id",
@@ -145,7 +149,46 @@ const ChannelController = () => {
           ],
         });
 
-        if (!channel) {
+        const podcast = await Podcast.count({
+          where: {
+            channel: channelConsult.dataValues.id
+          },
+          order: [["order", "DESC"]],
+        });
+
+        const blogsPostByChannel = await BlogPost.count({
+          where: {
+            ChannelId: channelConsult.dataValues.id,
+          },
+          order: [["createdAt", "DESC"]],
+        });
+
+        const channelEvents = await Event.count({ where: {channel: channelConsult.dataValues.id}, raw: true });
+  
+        const librariesResources = await Library.count({
+          where: {
+            channel: channelConsult.dataValues.id,
+            contentType: 'article',
+          },
+        });
+
+        const librariesVideos = await Library.count({
+          where: {
+            channel: channelConsult.dataValues.id,
+            contentType: 'video',
+          },
+        });
+
+        const channel = {
+          podcast,
+          blogsPostByChannel,
+          channelEvents,
+          librariesResources,
+          librariesVideos,
+          ...channelConsult.dataValues
+        }
+
+        if (!channelConsult) {
           return res
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Bad Request: Channel not found" });
@@ -209,12 +252,102 @@ const ChannelController = () => {
         default:
       }
 
-      const channels = await Channel.findAndCountAll({
+      const channelsFind = await Channel.findAndCountAll({
         where,
         offset: (params.page - 1) * params.num,
         limit: params.num,
         order,
       });
+
+      const followersConsult = await User.findAll({
+        where: {
+          followChannels: {[Op.ne]: []},
+        },
+        attributes: [
+          "id",
+          "firstName",
+          "lastName",
+          "titleProfessions",
+          "img",
+          "abbrName"
+        ],
+      });
+
+      let podcast = await Podcast.findAndCountAll({
+        where: {
+          channel: {[Op.gte]: 1}
+        },
+        attributes: ['channel'],
+        order: [["order", "DESC"]],
+      });
+
+      const blogsPostByChannel = await BlogPost.findAndCountAll({
+        where: {
+          ChannelId: {[Op.gte]: 1},
+        },
+        attributes: ['ChannelId'],
+        order: [["createdAt", "DESC"]],
+      });
+
+      let channelEvents = await Event.findAndCountAll({ where: {channel: {[Op.gte]: 1}}, raw: true, attributes: ['channel'], });
+
+      const librariesResources = await Library.findAndCountAll({
+        where: {
+          channel: {[Op.gte]: 1},
+          contentType: 'article',
+        },
+        attributes: ['channel'],
+      });
+
+      const librariesVideos = await Library.findAndCountAll({
+        where: {
+          channel: {[Op.gte]: 1},
+          contentType: 'video',
+        },
+        attributes: ['channel'],
+      });
+
+      const channelsCount = channelsFind.rows.map((channel) => {
+
+        let podcastCount = podcast.rows.filter((data) => {
+          return data.channel === channel.dataValues.id
+        })
+
+        let blogCount = blogsPostByChannel.rows.filter((data) => {
+          return data.ChannelId === channel.dataValues.id
+        })
+
+        let eventCount = channelEvents.rows.filter((data) => {
+          return data.channel === channel.dataValues.id
+        })
+
+        let resourcesCount = librariesResources.rows.filter((data) => {
+          return data.channel === channel.dataValues.id
+        })
+
+        let videosCount = librariesVideos.rows.filter((data) => {
+          return data.channel === channel.dataValues.id
+        })
+
+        let followers = followersConsult.filter((follower) => {
+          return channel?.dataValues?.followedUsers.some((data) => data === follower.dataValues.id)
+        })
+
+        return {
+          followers,
+          podcast: podcastCount.length,
+          blogsPostByChannel: blogCount.length,
+          channelEvents: eventCount.length,
+          librariesResources: resourcesCount.length,
+          librariesVideos: videosCount.length,
+          ...channel.dataValues,
+        }
+      })
+
+      const channels = {
+        count: channelsFind.count,
+        rows: channelsCount
+      }
 
       return res.status(HttpCodes.OK).json({ channels });
     } catch (err) {
@@ -574,7 +707,6 @@ const ChannelController = () => {
         .json({ msg: "Internal server error" });
     }
   }
-
 
   return {
     create,
