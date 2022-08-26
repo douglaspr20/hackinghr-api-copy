@@ -255,7 +255,7 @@ const EventController = () => {
   };
 
   const create = async (req, res) => {
-    const { body, user } = req;
+    const { body } = req;
 
     if (body.title) {
       try {
@@ -297,12 +297,14 @@ const EventController = () => {
             .json({ msg: "Internal server error" });
         }
 
-        const instructorIds = eventInfo.instructorIds.map((id) => ({
+        const instructorIds = eventInfo?.instructorIds?.map((id) => ({
           InstructorId: id,
           EventId: event.id,
         }));
 
-        await EventInstructor.bulkCreate(instructorIds);
+        if (instructorIds) {
+          await EventInstructor.bulkCreate(instructorIds);
+        }
 
         const [_, affectedRows] = await Event.update(
           {
@@ -315,7 +317,10 @@ const EventController = () => {
           }
         );
 
-        setEventReminders(event.dataValues);
+        if (event.startAndEndTimes.length > 0) {
+          setEventReminders(event.dataValues);
+        }
+
         setOrganizerReminders(event);
 
         await NotificationController().createNotification({

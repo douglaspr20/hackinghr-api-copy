@@ -2,6 +2,7 @@ const db = require("../models");
 const HttpCodes = require("http-codes");
 const s3Service = require("../services/s3.service");
 const { Op } = require("sequelize");
+const NotificationController = require("../controllers/NotificationController");
 const sendInBlueService = require("../services/sendinblue.service");
 
 const BlogPost = db.BlogPost;
@@ -31,6 +32,15 @@ const BlogPostController = () => {
             .status(HttpCodes.INTERNAL_SERVER_ERROR)
             .json({ msg: "Internal server error" });
         }
+
+        await NotificationController().createNotification({
+          message: `New Blog "${newBlogPost.title}" was created.`,
+          type: "Blog",
+          meta: {
+            ...newBlogPost,
+          },
+          onlyFor: [-1],
+        });
 
         return res.status(HttpCodes.OK).json({ blogPost: newBlogPost });
       } catch (error) {
