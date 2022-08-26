@@ -118,11 +118,13 @@ const ChannelController = () => {
   const getForName = async (req, res) => {
     const { name } = req.params;
 
-    if (name) {
+    let nameSelected = JSON.parse(name)
+
+    if (nameSelected.name) {
       try {
         const channel = await Channel.findOne({
           where: {
-            name,
+            name: nameSelected.name,
           },
           include: {
             model: User,
