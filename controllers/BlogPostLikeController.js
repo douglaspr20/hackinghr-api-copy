@@ -24,7 +24,7 @@ const BlogPostLikeController = () => {
       if (data.UserId !== data.blogPostOwnerUserId) {
         await NotificationController().createNotification({
           message: `${firstName} ${lastName} liked your post.`,
-          type: "post",
+          type: "Blog Post",
           meta: {
             ...blogPostLike,
           },

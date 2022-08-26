@@ -232,9 +232,9 @@ const BonfireController = () => {
         attributes: ["id"],
       });
 
-      const usersId = usersReceivingNotification.map((user) => {
-        return user.dataValues.id;
-      });
+      // const usersId = usersReceivingNotification.map((user) => {
+      //   return user.dataValues.id;
+      // });
 
       await NotificationController().createNotification({
         message: `New Bonfire "${bonfire.title || bonfire.title}" was created.`,
@@ -242,7 +242,7 @@ const BonfireController = () => {
         meta: {
           ...bonfire,
         },
-        onlyFor: usersId,
+        onlyFor: [-1],
       });
 
       setOrganizerReminders(bonfire, bonfireCreatorInfo);
