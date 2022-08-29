@@ -1027,6 +1027,11 @@ module.exports = {
       `,
   },
 
+  ATTENDEE_CHANNEL: {
+    subject: (subject) => `${subject}`,
+    body: (message) => `${message}`
+  },
+
   NOTIFICATION_NEW_CONTENT_CHANNEL: {
     subject: `New Creator Content`,
     body: (

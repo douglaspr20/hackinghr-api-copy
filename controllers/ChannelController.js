@@ -708,6 +708,39 @@ const ChannelController = () => {
     }
   }
 
+  const emailAttendee = async (req, res) => {
+    const {name,replyToEmail,to,subject,message} = req.body
+
+    const searchUserEmail = await User.findAll({
+      where: {
+        id: to,
+      },
+      attributes: [
+        "email"
+      ],
+    });
+
+    const userEmail = searchUserEmail.map((data) => data.dataValues.email)
+
+    await Promise.all(
+      userEmail.map(async (data) => {
+        await Promise.resolve(
+          (() => {
+              let mailOptions = {
+                  from: `"${name}" ${replyToEmail}`,
+                  to: data,
+                  subject: LabEmails.ATTENDEE_CHANNEL.subject(subject),
+                  html: LabEmails.ATTENDEE_CHANNEL.body(message),
+              };
+  
+              return smtpService().sendMailUsingSendInBlue(mailOptions);
+          })()
+      ); 
+      })
+    )
+  
+  };
+
   return {
     create,
     get,
@@ -718,6 +751,7 @@ const ChannelController = () => {
     setFollow,
     unsetFollow,
     emailNotification,
+    emailAttendee,
     exportFollowers,
     newContentEditor,
     removeContentEditor,
