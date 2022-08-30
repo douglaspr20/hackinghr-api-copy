@@ -473,7 +473,7 @@ const ChannelController = () => {
           plain: true,
         }
       );
-      const channel = await Channel.findOne({
+      const channelConsult = await Channel.findOne({
         where: {
           id,
         },
@@ -495,6 +495,45 @@ const ChannelController = () => {
           plain: true,
         }
       );
+
+      const podcast = await Podcast.count({
+        where: {
+          channel: channelConsult.dataValues.id
+        },
+        order: [["order", "DESC"]],
+      });
+
+      const blogsPostByChannel = await BlogPost.count({
+        where: {
+          ChannelId: channelConsult.dataValues.id,
+        },
+        order: [["createdAt", "DESC"]],
+      });
+
+      const channelEvents = await Event.count({ where: {channel: channelConsult.dataValues.id}, raw: true });
+
+      const librariesResources = await Library.count({
+        where: {
+          channel: channelConsult.dataValues.id,
+          contentType: 'article',
+        },
+      });
+
+      const librariesVideos = await Library.count({
+        where: {
+          channel: channelConsult.dataValues.id,
+          contentType: 'video',
+        },
+      });
+
+      const channel = {
+        podcast,
+        blogsPostByChannel,
+        channelEvents,
+        librariesResources,
+        librariesVideos,
+        ...channelConsult.dataValues
+      }
 
       return res.status(HttpCodes.OK).json({ user: affectedRows, channel });
     } catch (err) {
@@ -524,7 +563,7 @@ const ChannelController = () => {
           plain: true,
         }
       );
-      const channel = await Channel.findOne({
+      const channelConsult = await Channel.findOne({
         where: {
           id,
         },
@@ -546,6 +585,45 @@ const ChannelController = () => {
           plain: true,
         }
       );
+
+      const podcast = await Podcast.count({
+        where: {
+          channel: channelConsult.dataValues.id
+        },
+        order: [["order", "DESC"]],
+      });
+
+      const blogsPostByChannel = await BlogPost.count({
+        where: {
+          ChannelId: channelConsult.dataValues.id,
+        },
+        order: [["createdAt", "DESC"]],
+      });
+
+      const channelEvents = await Event.count({ where: {channel: channelConsult.dataValues.id}, raw: true });
+
+      const librariesResources = await Library.count({
+        where: {
+          channel: channelConsult.dataValues.id,
+          contentType: 'article',
+        },
+      });
+
+      const librariesVideos = await Library.count({
+        where: {
+          channel: channelConsult.dataValues.id,
+          contentType: 'video',
+        },
+      });
+
+      const channel = {
+        podcast,
+        blogsPostByChannel,
+        channelEvents,
+        librariesResources,
+        librariesVideos,
+        ...channelConsult.dataValues
+      }
 
       return res.status(HttpCodes.OK).json({ user: affectedRows, channel });
     } catch (err) {
