@@ -1029,7 +1029,10 @@ module.exports = {
 
   ATTENDEE_CHANNEL: {
     subject: (subject) => `${subject}`,
-    body: (message) => `${message}`
+    body: (message) => `
+      ${message}
+      <p>You are receiving this email because you follow CHANNEL NAME in the Hacking HR LAB</p>
+    `
   },
 
   NOTIFICATION_NEW_CONTENT_CHANNEL: {
