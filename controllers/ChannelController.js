@@ -739,6 +739,9 @@ const ChannelController = () => {
       })
     )
   
+    return res
+        .status(HttpCodes.OK)
+        .json();
   };
 
   return {
