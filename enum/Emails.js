@@ -537,7 +537,7 @@ module.exports = {
     </p>
     <p>
     Our goal with ProjectX is to help you learn or improve your knowledge in the specific
-    skill covered in COHORT NAME HERE through daily resources and personal 
+    skill covered in ${cohort.title} through daily resources and personal 
     reflections.  
     </p>
     <p>
