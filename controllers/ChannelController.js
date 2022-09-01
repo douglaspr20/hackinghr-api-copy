@@ -735,7 +735,6 @@ const ChannelController = () => {
       const hoy = moment().isoWeekday();
       
       if (hoy <= diaRequerido) {
-        console.log(moment().isoWeekday(diaRequerido))
         return moment().isoWeekday(diaRequerido);
       } else {
         /*Si no pertenece a la semana actual ir a proxima semana */
