@@ -22,6 +22,7 @@ const Library = db.Library;
 const Event = db.Event;
 const BlogPost = db.BlogPost;
 const Podcast = db.Podcast;
+const EmailDraftChannel = db.EmailDraftChannel
 
 const ChannelController = () => {
   const create = async (req, res) => {
@@ -787,7 +788,7 @@ const ChannelController = () => {
   }
 
   const emailAttendee = async (req, res) => {
-    const {name,replyToEmail,to,subject,message} = req.body
+    const {name,replyToEmail,to,subject,message,test,testEmail,nameChannel,idChannel} = req.body
 
     const searchUserEmail = await User.findAll({
       where: {
@@ -800,27 +801,207 @@ const ChannelController = () => {
 
     const userEmail = searchUserEmail.map((data) => data.dataValues.email)
 
-    await Promise.all(
-      userEmail.map(async (data) => {
-        await Promise.resolve(
-          (() => {
-              let mailOptions = {
-                  from: `"${name}" ${replyToEmail}`,
-                  to: data,
-                  subject: LabEmails.ATTENDEE_CHANNEL.subject(subject),
-                  html: LabEmails.ATTENDEE_CHANNEL.body(message),
-              };
-  
-              return smtpService().sendMailUsingSendInBlue(mailOptions);
-          })()
+    const channel = await Channel.findOne({
+      where: {
+        id: idChannel,
+      },
+      attributes: ['lastEmailSent']
+    });
+
+    function buscar(dia) {
+      const diaRequerido = dia;
+      const hoy = moment().isoWeekday();
+      
+      if (hoy <= diaRequerido) {
+        return moment().isoWeekday(diaRequerido);
+      } else {
+        /*Si no pertenece a la semana actual ir a proxima semana */
+        return moment().add(1, 'weeks').isoWeekday(diaRequerido);
+      }
+    }
+
+    if(test){
+      await Promise.resolve(
+        (() => {
+            let mailOptions = {
+                from: `"${name}" ${replyToEmail}`,
+                to: testEmail,
+                subject: LabEmails.ATTENDEE_CHANNEL.subject(subject),
+                html: LabEmails.ATTENDEE_CHANNEL.body(message, nameChannel),
+            };
+
+            return smtpService().sendMailUsingSendInBlue(mailOptions);
+        })()
       ); 
-      })
-    )
-  
-    return res
+
+      return res
         .status(HttpCodes.OK)
         .json();
+    }else{
+
+      if(channel.dataValues.lastEmailSent === ''){
+  
+        const [numberOfAffectedRows, affectedRows] = await Channel.update(
+          {lastEmailSent: buscar(1).tz("America/Los_Angeles").startOf("day").add(7, 'hours').format('YYYY-MM-DD hh:mm a')},
+          {
+            where: { id: idChannel },
+          }
+        );
+
+        await Promise.all(
+          userEmail.map(async (data) => {
+            await Promise.resolve(
+              (() => {
+                  let mailOptions = {
+                      from: `"${name}" ${replyToEmail}`,
+                      to: data,
+                      subject: LabEmails.ATTENDEE_CHANNEL.subject(subject),
+                      html: LabEmails.ATTENDEE_CHANNEL.body(message, nameChannel),
+                  };
+      
+                  return smtpService().sendMailUsingSendInBlue(mailOptions);
+              })()
+          ); 
+          })
+        )
+        return res
+          .status(HttpCodes.OK)
+          .json();
+      }else{
+        let dateToday = moment().tz("America/Los_Angeles")
+
+        if(moment(dateToday,'YYYY-MM-DD hh:mm a').isBefore(moment(channel.dataValues.lastEmailSent,'YYYY-MM-DD hh:mm a'), 'minute') === true){
+          return res
+          .status(HttpCodes.BAD_REQUEST)
+          .json({message: "Sorry, you don't have more emails for this week"});
+        }else{
+          let dateOtherMonday = buscar(1).tz("America/Los_Angeles").startOf("day").add(7, 'hours')
+
+          if(moment(dateToday,'YYYY-MM-DD hh:mm a').isBefore(moment(dateOtherMonday,'YYYY-MM-DD hh:mm a'), 'day') === false){
+            dateOtherMonday.add(1, 'weeks')
+          }
+
+          const [numberOfAffectedRows, affectedRows] = await Channel.update(
+            {lastEmailSent: dateOtherMonday.format('YYYY-MM-DD hh:mm a')},
+            {
+              where: { id: idChannel },
+            }
+          );
+  
+          await Promise.all(
+            userEmail.map(async (data) => {
+              await Promise.resolve(
+                (() => {
+                    let mailOptions = {
+                        from: `"${name}" ${replyToEmail}`,
+                        to: data,
+                        subject: LabEmails.ATTENDEE_CHANNEL.subject(subject),
+                        html: LabEmails.ATTENDEE_CHANNEL.body(message, nameChannel),
+                    };
+        
+                    return smtpService().sendMailUsingSendInBlue(mailOptions);
+                })()
+            ); 
+            })
+          )
+          return res
+            .status(HttpCodes.OK)
+            .json();
+        }
+      }
+  
+    }
+      
+
   };
+
+  const addDraftEmail = async (req, res) => {
+
+      const { draftEmail } = req.body;
+
+      const { idChannel, name, to, subject, message } = draftEmail
+
+      try {
+
+          const draftEmailResponse = await EmailDraftChannel.create({
+            idChannel,
+            name,
+            to,
+            subject,
+            message,
+          })
+
+          return res.status(HttpCodes.OK).json({draftEmailResponse})
+
+      } catch (error) {
+          console.log(error);
+          return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+      }
+
+  }
+
+  const getAllDraftEmail = async (req, res) => {
+
+    const { id } = req.params;
+
+      try {
+
+          const draftEmailResponse = await EmailDraftChannel.findAll({
+              order: [["id", "DESC"]],
+              where: {idChannel: id}
+          })
+
+          return res.status(HttpCodes.OK).json({ draftEmailResponse });
+
+      } catch (error) {
+          console.log(error);
+          return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+      }
+  }
+
+  const editDraftEmail = async (req, res) => {
+      const { draftEmail } = req.body;
+
+      const { name, to, subject, message, id } = draftEmail
+      try {
+
+          const [numberOfAffectedRows, affectedRows] = await EmailDraftChannel.update({ 
+              name,
+              to, 
+              subject,
+              message
+          },{where: {id: id}})
+
+          return res.status(HttpCodes.OK).json({ numberOfAffectedRows, affectedRows })
+
+      } catch (error) {
+          console.log(error);
+          return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+      }
+  }
+
+  const deleteDraftEmail = async (req, res) => {
+      const { draftEmailId } = req.params;
+
+      try {
+
+          await EmailDraftChannel.destroy({where: {id: draftEmailId}})
+
+          return res.status(HttpCodes.OK).json({})
+
+      } catch (error) {
+          console.log(error);
+          return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+      }
+  }
 
   return {
     create,
@@ -837,6 +1018,10 @@ const ChannelController = () => {
     newContentEditor,
     removeContentEditor,
     getContentEditor,
+    addDraftEmail, 
+    getAllDraftEmail, 
+    editDraftEmail, 
+    deleteDraftEmail, 
   };
 };
 

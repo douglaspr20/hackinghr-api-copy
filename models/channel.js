@@ -31,7 +31,9 @@ module.exports = (sequelize, DataTypes) => {
       events: DataTypes.ARRAY(DataTypes.INTEGER),
       followedUsers: DataTypes.ARRAY(DataTypes.INTEGER),
       categories: DataTypes.ARRAY(DataTypes.STRING),
-      image2: DataTypes.TEXT
+      image2: DataTypes.TEXT,
+      image2: DataTypes.TEXT,
+      lastEmailSent: DataTypes.TEXT
     },
     {
       sequelize,
