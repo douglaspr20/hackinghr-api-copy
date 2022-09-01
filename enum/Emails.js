@@ -1029,9 +1029,9 @@ module.exports = {
 
   ATTENDEE_CHANNEL: {
     subject: (subject) => `${subject}`,
-    body: (message) => `
+    body: (message, nameChannel) => `
       ${message}
-      <p>You are receiving this email because you follow CHANNEL NAME in the Hacking HR LAB</p>
+      <p>You are receiving this email because you follow ${nameChannel} in the Hacking HR LAB</p>
     `
   },
 

@@ -367,6 +367,11 @@ const privateRoutes = {
     "Speakers2023Controller.addToMyPersonalAgenda",
   "DELETE /speakers/delete-parraf/:ParrafId":
     "Speakers2023Controller.deleteParraf",
+  "POST /channel/add-email-draft": "ChannelController.addDraftEmail",
+  "GET /channel/get-all-email-draft/:id": "ChannelController.getAllDraftEmail",
+  "POST /channel/edit-email-draft": "ChannelController.editDraftEmail",
+  "DELETE /channel/delete-email-draft/:draftEmailId":
+    "ChannelController.deleteDraftEmail",
   "POST /speakers/edit-parraf": "Speakers2023Controller.editParraf",
   "GET /simulation-sprints": "SimulationSprintController.getAll",
   "GET /simulation-sprints/:id": "SimulationSprintController.get",
