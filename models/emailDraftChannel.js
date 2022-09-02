@@ -28,6 +28,15 @@ module.exports = (sequelize, DataTypes) => {
       message: {
           type: DataTypes.TEXT,
           allowNull: false,
+      },
+      draft: {
+        type: DataTypes.BOOLEAN,
+      },
+      send: {
+        type: DataTypes.BOOLEAN,
+      },
+      date: {
+        type: DataTypes.TEXT,
       }
     },
 

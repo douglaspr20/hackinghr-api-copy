@@ -369,7 +369,9 @@ const privateRoutes = {
     "Speakers2023Controller.deleteParraf",
   "POST /channel/add-email-draft": "ChannelController.addDraftEmail",
   "GET /channel/get-all-email-draft/:id": "ChannelController.getAllDraftEmail",
+  "GET /channel/get-all-email-send/:id": "ChannelController.getAllSendEmail",
   "POST /channel/edit-email-draft": "ChannelController.editDraftEmail",
+  "POST /channel/copy-email-send": "ChannelController.copyEmailAttendee",
   "DELETE /channel/delete-email-draft/:draftEmailId":
     "ChannelController.deleteDraftEmail",
   "POST /speakers/edit-parraf": "Speakers2023Controller.editParraf",
