@@ -770,6 +770,18 @@ const ChannelController = () => {
           }
         );
 
+        await EmailDraftChannel.create({
+          idChannel,
+          name,
+          to,
+          subject,
+          message,
+          send: true,
+          date: moment
+          .utc(moment().format("YYYY-MM-DD HH:mm"))
+          .format()
+        })
+
         await Promise.all(
           userEmail.map(async (data) => {
             await Promise.resolve(
@@ -793,10 +805,13 @@ const ChannelController = () => {
         let dateToday = moment().tz("America/Los_Angeles")
 
         if(moment(dateToday,'YYYY-MM-DD hh:mm a').isBefore(moment(channel.dataValues.lastEmailSent,'YYYY-MM-DD hh:mm a'), 'minute') === true){
+          
           return res
           .status(HttpCodes.BAD_REQUEST)
           .json({message: "Sorry, you don't have more emails for this week"});
+          
         }else{
+
           let dateOtherMonday = buscar(1).tz("America/Los_Angeles").startOf("day").add(7, 'hours')
 
           if(moment(dateToday,'YYYY-MM-DD hh:mm a').isBefore(moment(dateOtherMonday,'YYYY-MM-DD hh:mm a'), 'day') === false){
@@ -809,6 +824,18 @@ const ChannelController = () => {
               where: { id: idChannel },
             }
           );
+
+          await EmailDraftChannel.create({
+            idChannel,
+            name,
+            to,
+            subject,
+            message,
+            send: true,
+            date: moment
+            .utc(moment().format("YYYY-MM-DD HH:mm"))
+            .format()
+          })
   
           await Promise.all(
             userEmail.map(async (data) => {
@@ -837,6 +864,32 @@ const ChannelController = () => {
 
   };
 
+  const copyEmailAttendee = async (req, res) => {
+    const { draftEmail } = req.body;
+
+    const { name, to, subject, message, idChannel } = draftEmail
+
+    try {
+
+      const draftEmailResponse = await EmailDraftChannel.create({
+        idChannel,
+        name,
+        to,
+        subject,
+        message,
+        draft: true
+      })
+
+      return res.status(HttpCodes.OK).json({draftEmailResponse})
+
+    } catch (error) {
+        console.log(error);
+        return res
+            .status(HttpCodes.INTERNAL_SERVER_ERROR)
+            .json({ msg: "Internal server error" });
+    }
+  }
+
   const addDraftEmail = async (req, res) => {
 
       const { draftEmail } = req.body;
@@ -851,6 +904,7 @@ const ChannelController = () => {
             to,
             subject,
             message,
+            draft: true
           })
 
           return res.status(HttpCodes.OK).json({draftEmailResponse})
@@ -872,7 +926,28 @@ const ChannelController = () => {
 
           const draftEmailResponse = await EmailDraftChannel.findAll({
               order: [["id", "DESC"]],
-              where: {idChannel: id}
+              where: {idChannel: id, draft: true}
+          })
+
+          return res.status(HttpCodes.OK).json({ draftEmailResponse });
+
+      } catch (error) {
+          console.log(error);
+          return res
+              .status(HttpCodes.INTERNAL_SERVER_ERROR)
+              .json({ msg: "Internal server error" });
+      }
+  }
+
+  const getAllSendEmail = async (req, res) => {
+
+    const { id } = req.params;
+
+      try {
+
+          const draftEmailResponse = await EmailDraftChannel.findAll({
+              order: [["id", "DESC"]],
+              where: {idChannel: id, send: true}
           })
 
           return res.status(HttpCodes.OK).json({ draftEmailResponse });
@@ -944,6 +1019,8 @@ const ChannelController = () => {
     getAllDraftEmail, 
     editDraftEmail, 
     deleteDraftEmail, 
+    copyEmailAttendee,
+    getAllSendEmail
   };
 };
 
