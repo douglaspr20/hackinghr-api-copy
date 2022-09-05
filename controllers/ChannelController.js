@@ -128,7 +128,7 @@ const ChannelController = () => {
       try {
         const channelConsult = await Channel.findOne({
           where: {
-            name: nameSelected.name,
+            name: nameSelected?.name,
           },
           include: {
             model: User,
@@ -137,7 +137,7 @@ const ChannelController = () => {
 
         const followers = await User.findAll({
           where: {
-            id: channelConsult.dataValues.followedUsers,
+            id: channelConsult?.dataValues?.followedUsers,
           },
           attributes: [
             "id",
@@ -151,30 +151,30 @@ const ChannelController = () => {
 
         const podcast = await Podcast.count({
           where: {
-            channel: channelConsult.dataValues.id
+            channel: channelConsult?.dataValues?.id
           },
           order: [["order", "DESC"]],
         });
 
         const blogsPostByChannel = await BlogPost.count({
           where: {
-            ChannelId: channelConsult.dataValues.id,
+            ChannelId: channelConsult?.dataValues?.id,
           },
           order: [["createdAt", "DESC"]],
         });
 
-        const channelEvents = await Event.count({ where: {channel: channelConsult.dataValues.id}, raw: true });
+        const channelEvents = await Event.count({ where: {channel: channelConsult?.dataValues?.id}, raw: true });
   
         const librariesResources = await Library.count({
           where: {
-            channel: channelConsult.dataValues.id,
+            channel: channelConsult?.dataValues?.id,
             contentType: 'article',
           },
         });
 
         const librariesVideos = await Library.count({
           where: {
-            channel: channelConsult.dataValues.id,
+            channel: channelConsult?.dataValues?.id,
             contentType: 'video',
           },
         });
@@ -185,7 +185,7 @@ const ChannelController = () => {
           channelEvents,
           librariesResources,
           librariesVideos,
-          ...channelConsult.dataValues
+          ...channelConsult?.dataValues
         }
 
         if (!channelConsult) {
