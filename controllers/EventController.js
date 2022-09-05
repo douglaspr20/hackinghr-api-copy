@@ -455,7 +455,7 @@ const EventController = () => {
 
       let channelData = await Channel.findAll();
 
-      allEventsChannels = channelEvents.map((event) => {
+      let allEventsChannels = channelEvents.map((event) => {
         let channelSelect = channelData.filter(
           (data) => data.id === event.channel
         );
