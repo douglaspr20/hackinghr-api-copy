@@ -26,14 +26,14 @@ const LibraryController = () => {
           link: body.link ? `https://${body.link}` : "",
         };
 
-        if (libraryInfo.image) {
+        if (libraryInfo?.image) {
           libraryInfo.image = await s3Service().getLibraryImageUrl(
             "",
             libraryInfo.image
           );
         }
 
-        if (libraryInfo.image2) {
+        if (libraryInfo?.image2) {
           libraryInfo.image2 = await s3Service().getLibraryImageUrl(
             "",
             libraryInfo.image2
