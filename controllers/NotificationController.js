@@ -181,30 +181,30 @@ const NotificationController = () => {
 
     const totalCount = await Notification.count();
 
-    if (totalCount > MAX_NUMBER_OF_NOTIFICATION) {
-      const [lastElement] = await Notification.findAll({
-        where: {
-          onlyFor: {
-            [Op.or]: [
-              { [Op.contains]: notification.onlyFor },
-              { [Op.contains]: [-1] },
-            ],
-          },
-        },
-        offset: 0,
-        limit: 1,
-        order: [["createdAt", "ASC"]],
-        raw: true,
-      });
+    // if (totalCount > MAX_NUMBER_OF_NOTIFICATION) {
+    //   const [lastElement] = await Notification.findAll({
+    //     where: {
+    //       onlyFor: {
+    //         [Op.or]: [
+    //           { [Op.contains]: notification.onlyFor },
+    //           { [Op.contains]: [-1] },
+    //         ],
+    //       },
+    //     },
+    //     offset: 0,
+    //     limit: 1,
+    //     order: [["id", "ASC"]],
+    //     raw: true,
+    //   });
 
-      if (lastElement) {
-        await Notification.destroy({
-          where: {
-            id: lastElement.id,
-          },
-        });
-      }
-    }
+    //   if (lastElement) {
+    //     await Notification.destroy({
+    //       where: {
+    //         id: lastElement.id,
+    //       },
+    //     });
+    //   }
+    // }
 
     socketService().emit(SocketEventType.NEW_EVENT, newNotification);
 
